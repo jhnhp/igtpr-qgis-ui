@@ -1,1 +1,123 @@
-const $=(s,r=document)=>r.querySelector(s);const $$=(s,r=document)=>[...r.querySelectorAll(s)];document.addEventListener('DOMContentLoaded',()=>{const p=document.body.dataset.page||'operator';const nav=$$('.nav a');nav.forEach(a=>{if(a.dataset.page===p)a.classList.add('active')});$$('[data-tab]').forEach(b=>b.addEventListener('click',()=>{const group=b.closest('[data-tabs]');$$('[data-tab]',group).forEach(x=>x.classList.toggle('active',x===b));$$('[data-panel]',group).forEach(x=>x.hidden=x.dataset.panel!==b.dataset.tab)}));$$('[data-filter]').forEach(i=>i.addEventListener('input',()=>{const target=$(i.dataset.filter);if(!target)return;const q=i.value.toLowerCase();$$('tbody tr',target).forEach(tr=>tr.hidden=!tr.innerText.toLowerCase().includes(q))}));$$('[data-action]').forEach(b=>b.addEventListener('click',()=>{const action=b.dataset.action;if(action==='load-baseline')toast('Load Baseline siap disambungkan ke layer QGIS.');else if(action==='upload')$('#fileInput')?.click();else if(action==='run')toast('Parameter valid. Proses ini masih berupa prototipe UI.');else if(action==='approve')toast('Aksi persetujuan masih berupa prototipe.');else if(action==='reject')toast('Catatan perbaikan perlu dikonfigurasi sebelum dikirim.');else if(action==='export')toast('Ekspor akan tersedia setelah data terhubung.')}));const file=$('#fileInput');if(file)file.addEventListener('change',()=>{const label=$('#fileName');if(label&&file.files[0])label.textContent=file.files[0].name});$$('tbody tr[data-href]').forEach(tr=>tr.addEventListener('click',()=>location.href=tr.dataset.href));});function toast(msg){let t=$('#toast');if(!t){t=document.createElement('div');t.id='toast';Object.assign(t.style,{position:'fixed',bottom:'22px',right:'22px',zIndex:9999,background:'#102b59',color:'#fff',padding:'13px 17px',borderRadius:'9px',boxShadow:'0 8px 28px #102b5930',fontSize:'12px',maxWidth:'340px'});document.body.appendChild(t)}t.textContent=msg;t.style.opacity='1';clearTimeout(window.__toastTimer);window.__toastTimer=setTimeout(()=>t.style.opacity='0',3200)}function status(s){const c=s==='Disetujui'?'ok':s==='Perlu perbaikan'?'fix':s==='Dalam verifikasi'?'info':'';return '<span class="status '+c+'">'+s+'</span>'}
+// Shared interactions for the IGT-PR QGIS UI mockup.
+// Every QGIS-related action is a simulation: it only shows a toast.
+
+const $ = (selector, root = document) => root.querySelector(selector);
+const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+
+const ACTION_MESSAGES = {
+  'load-baseline': 'Load Baseline siap disambungkan ke layer QGIS.',
+  run: 'Parameter valid. Proses ini masih berupa prototipe UI.',
+  approve: 'Aksi persetujuan masih berupa prototipe.',
+  reject: 'Catatan perbaikan perlu dikonfigurasi sebelum dikirim.',
+  export: 'Ekspor akan tersedia setelah data terhubung.',
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  initNav();
+  initTabs();
+  initFilters();
+  initActions();
+  initFileInput();
+  initClickableRows();
+});
+
+// Highlight the sidebar link that matches <body data-page="...">.
+function initNav() {
+  const page = document.body.dataset.page || 'operator';
+  $$('.nav a').forEach((link) => {
+    if (link.dataset.page === page) link.classList.add('active');
+  });
+}
+
+// <div data-tabs> with [data-tab] buttons and [data-panel] sections.
+function initTabs() {
+  $$('[data-tab]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const group = button.closest('[data-tabs]');
+      $$('[data-tab]', group).forEach((tab) => tab.classList.toggle('active', tab === button));
+      $$('[data-panel]', group).forEach((panel) => {
+        panel.hidden = panel.dataset.panel !== button.dataset.tab;
+      });
+    });
+  });
+}
+
+// <input data-filter="#table"> hides table body rows that do not match the text.
+function initFilters() {
+  $$('[data-filter]').forEach((input) => {
+    input.addEventListener('input', () => {
+      const target = $(input.dataset.filter);
+      if (!target) return;
+      const query = input.value.toLowerCase();
+      $$('tbody tr', target).forEach((row) => {
+        row.hidden = !row.innerText.toLowerCase().includes(query);
+      });
+    });
+  });
+}
+
+function initActions() {
+  $$('[data-action]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const { action } = button.dataset;
+      if (action === 'upload') $('#fileInput')?.click();
+      else if (Object.hasOwn(ACTION_MESSAGES, action)) toast(ACTION_MESSAGES[action]);
+    });
+  });
+}
+
+function initFileInput() {
+  const input = $('#fileInput');
+  if (!input) return;
+  input.addEventListener('change', () => {
+    const label = $('#fileName');
+    if (label && input.files[0]) label.textContent = input.files[0].name;
+  });
+}
+
+// Table rows with data-href behave like links (mouse and keyboard).
+function initClickableRows() {
+  $$('tbody tr[data-href]').forEach((row) => {
+    const open = () => { location.href = row.dataset.href; };
+    row.tabIndex = 0;
+    row.addEventListener('click', open);
+    row.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') open();
+    });
+  });
+}
+
+function toast(message) {
+  let el = $('#toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'toast';
+    Object.assign(el.style, {
+      position: 'fixed',
+      bottom: '22px',
+      right: '22px',
+      zIndex: 9999,
+      background: '#102b59',
+      color: '#fff',
+      padding: '13px 17px',
+      borderRadius: '9px',
+      boxShadow: '0 8px 28px #102b5930',
+      fontSize: '12px',
+      maxWidth: '340px',
+    });
+    document.body.appendChild(el);
+  }
+  el.textContent = message;
+  el.style.opacity = '1';
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(() => { el.style.opacity = '0'; }, 3200);
+}
+
+// Status badge markup used by table renderers.
+function status(label) {
+  const cls = label === 'Disetujui' ? 'ok'
+    : label === 'Perlu perbaikan' ? 'fix'
+    : label === 'Dalam verifikasi' ? 'info'
+    : '';
+  return `<span class="status ${cls}">${label}</span>`;
+}

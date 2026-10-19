@@ -62,6 +62,7 @@ igtpr-qgis-ui/
 
 ## Shared assets
 - `styles.css` and `app.js` live at the repository root; every page references them with a relative path from its own folder (e.g. `../../../styles.css`).
+- Pages shown inside the 3:4 panel opt in to the compact layout in `styles.css` with `<body class="panel ...">` (`panel-dash`, `panel-home`, `panel-list`, `panel-detail` add stat cards, Beranda, list and detail rules). Only page-specific rules stay in each page's own `<style>`.
 - Tables use `data-href` / plain links for list-to-detail navigation; `app.js` handles tabs (`data-tab`), search filtering (`data-filter`) and simulated actions (`data-action`).
 
 ## Preview locally
