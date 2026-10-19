@@ -44,7 +44,7 @@ const IgtData = (() => {
     superadmin: { label: 'Superadmin', avatar: 'SA', view: ALL, upload: ALL },
     admin: { label: 'Admin', avatar: 'AD', view: ALL, upload: ['pertanahan', 'tata-ruang', 'derivatif'] },
     operator: { label: 'Operator Pusat', avatar: 'JH', view: ALL, upload: ['pertanahan', 'tata-ruang', 'derivatif'] },
-    umum: { label: 'Umum', avatar: 'UM', view: ALL, upload: ['derivatif'], ownSubmissionsOnly: true, modelBuilder: false },
+    umum: { label: 'Umum', avatar: 'UM', view: ALL, upload: ['derivatif'], ownSubmissionsOnly: true },
   };
 
   // `n` is the record index understood by the shared detail pages (igt-utama-detail, layer-derivatif-detail).
