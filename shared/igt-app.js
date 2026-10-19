@@ -263,7 +263,8 @@ const IgtApp = (() => {
     const params = new URLSearchParams(location.search);
     const requested = params.get('tab');
     let tab = categories.includes(requested) ? requested : (requested === 'pertanahan' || requested === 'tata-ruang') && categories.includes('igt-utama') ? 'igt-utama' : categories[0];
-    let statusTab = params.get('status') || 'Semua';
+    // Default to the leftmost status tab for the initially selected category.
+    let statusTab = params.get('status') || (tab === 'igt-utama' && role === 'operator' ? 'Revisi' : tab === 'igt-utama' ? 'Diproses' : tab === 'derivatif' && (role === 'operator' || role === 'umum') ? 'Semua' : tab === 'derivatif' ? 'Diproses' : 'Semua');
     let nextDerivative = 9;
 
     $('#view').innerHTML =
@@ -351,7 +352,8 @@ const IgtApp = (() => {
     document.querySelectorAll('[data-tab]').forEach((t) =>
       t.addEventListener('click', () => {
         tab = t.dataset.tab;
-        statusTab = 'Semua';
+        const isMainTab = tab === 'igt-utama';
+        statusTab = isMainTab ? (role === 'operator' ? 'Revisi' : 'Diproses') : tab === 'derivatif' ? ((role === 'operator' || role === 'umum') ? 'Semua' : 'Diproses') : 'Semua';
         try {
           history.replaceState(null, '', '?tab=' + tab);
         } catch (e) {
