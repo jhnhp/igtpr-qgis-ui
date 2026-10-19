@@ -1026,6 +1026,10 @@ tbody tr:hover {
   margin-top: 20px;
 }
 
+.model-builder-buttons {
+  margin-top: 10px;
+}
+
 .menu-tool {
   display: inline-block;
   margin-top: 16px;
