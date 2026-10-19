@@ -111,13 +111,13 @@ const IgtApp = (() => {
       `Tombol WMS dan WFS adalah simulasi; belum ada layanan nyata yang terhubung.</div>` +
       `<section class="card"><div class="card-head"><div><h2>${config.noun.charAt(0).toUpperCase() + config.noun.slice(1)}</h2><p id="catalog-count"></p></div></div>` +
       `<div class="field catalog-search"><label for="catalog-search">PENCARIAN</label><input id="catalog-search" type="search" placeholder="Cari nama IGT..."></div>` +
-      `<div class="table-wrap"><table class="stack"><thead><tr><th><button type="button" class="sort-header" data-sort="name">Nama IGT <span aria-hidden="true">↕</span></button></th><th><button type="button" class="sort-header" data-sort="ditjen">Ditjen <span aria-hidden="true">↕</span></button></th></tr></thead>` +
+      `<div class="table-wrap"><table class="stack"><thead><tr><th><button type="button" class="sort-header" data-sort="name">Nama IGT <span aria-hidden="true">↕</span></button></th><th><button type="button" class="sort-header" data-sort="ditjen">Ditjen <span aria-hidden="true">↕</span></button></th><th><button type="button" class="sort-header" data-sort="updated">Tanggal Update <span aria-hidden="true">↕</span></button></th><th>Tampilkan WMS</th><th>Tampilkan WFS</th></tr></thead>` +
       `<tbody id="catalog-rows"></tbody></table></div>` +
       `<div class="empty-state" id="empty-state" hidden></div></section>`;
 
     function render() {
       const q = query.toLowerCase();
-      const shown = datasets.filter((d) => (d.name + ' ' + (d.ditjen || '')).toLowerCase().includes(q));
+      const shown = datasets.filter((d) => (d.name + ' ' + (d.ditjen || '') + ' ' + d.id).toLowerCase().includes(q));
       if (sortKey) {
         const value = (d) => sortKey === 'name' ? d.name
           : sortKey === 'ditjen' ? (d.ditjen || d.source || '')
@@ -134,7 +134,10 @@ const IgtApp = (() => {
         .map((d) => {
           return (
             `<tr><td data-label="Nama IGT"><div class="primary-cell">${d.name}</div></td>` +
-            `<td data-label="Ditjen">${d.ditjen || "—"}</td></tr>`
+            `<td data-label="Ditjen">${d.ditjen || "—"}</td>` +
+            `<td data-label="Tanggal Update">${d.updated || "—"}</td>` +
+            `<td data-label="Tampilkan WMS">${button('btn-soft', 'wms', d.id, '▧ WMS', ` aria-label="Tampilkan WMS untuk ${d.name}"`)}</td>` +
+            `<td data-label="Tampilkan WFS">${button('btn-soft', 'wfs', d.id, '▤ WFS', ` aria-label="Tampilkan WFS untuk ${d.name}"`)}</td></tr>`
           );
         })
         .join('');
