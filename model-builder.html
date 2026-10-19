@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Model Builder Geoportal · IGT-PR</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+.app{display:block;min-height:100vh;background:#f0f0f0;padding:8px}.workspace{min-width:0;max-width:100%}
+.main{max-width:100%;padding:12px 10px;background:#fff;border:1px solid #d3dbe6;border-radius:9px;min-height:calc(100vh - 48px)}
+.topbar{height:28px;padding:0 3px;background:transparent;border:0;box-shadow:none}
+.topbar .crumb{font-size:13px}.top-actions{display:none}
+.text-tools{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#44638a;font-size:11px;margin:0 0 10px}
+.font-buttons{display:flex;align-items:center;gap:5px}.font-buttons button{border:1px solid #cbd5e1;background:#f8fafc;color:#23436c;border-radius:5px;padding:5px 8px;font-weight:700;font-size:11px}
+.brand-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 8px 24px}
+.brand-logo{width:54px;height:54px;border:2px solid #e3edf6;border-radius:50%;display:grid;place-items:center;color:#134a7e;font-size:24px;font-weight:800;background:radial-gradient(circle,#fff 42%,#dbeaf5 43%,#fff 68%)}
+.brand-title{text-align:center;font-size:12px;font-weight:800;color:#243c5a;letter-spacing:.3px}
+.search-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.search-row input{min-width:0;flex:1;border:2px solid #365b9a;border-radius:7px;padding:8px 10px;font-size:12px;outline:none}
+.search-row button{border:0;background:transparent;color:#274a7e;font-size:11px;cursor:pointer;padding:7px 2px}
+.model-table-wrap{height:calc(100vh - 255px);min-height:300px;overflow:auto;border:1px solid #cbd8e8;border-radius:5px}
+.model-table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+.model-table th{background:#edf3f9;color:#182f4c;font-size:13px;font-weight:800;text-align:left;padding:7px 5px;border-bottom:1px solid #cbd8e8}
+.model-table td{padding:6px 4px;border-bottom:1px solid #e3e8ef;overflow-wrap:anywhere;vertical-align:top}
+.model-table th:last-child,.model-table td:last-child{text-align:center;width:64px}
+.model-table th:first-child{width:36%}.model-table th:nth-child(2){width:auto}
+.run-btn{background:#3e5f9d;color:#fff;border:0;border-radius:3px;padding:4px 6px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap}
+.empty-row{text-align:center!important;color:#75859a;padding:20px!important}
+.back-row{text-align:center;margin-top:12px}.back-row a{font-size:10px;color:#203f6d;text-decoration:none}
+@media(max-width:400px){.main{padding:10px 8px}.brand-logo{width:44px;height:44px}.model-table{font-size:12px}.model-table th{font-size:12px}.run-btn{font-size:9px;padding:4px}.model-table-wrap{height:calc(100vh - 240px)}}
+</style></head>
+<body data-page="model-builder"><div class="app"><div class="workspace">
+<header class="topbar"><div class="crumb"><strong>IGT-PR</strong>　/　Model Builder Geoportal</div></header>
+<main class="main">
+<div class="text-tools"><span>⌕ Ukuran Teks:</span><div class="font-buttons"><button id="font-down" aria-label="Perkecil teks">A-</button><button id="zoom-reset">90%</button><button id="font-up" aria-label="Perbesar teks">A+</button></div></div>
+<div class="brand-row"><div class="brand-logo" aria-label="Logo ATR/BPN">🌐</div><div class="brand-title">MODEL BUILDER GEOPORTAL</div><div class="brand-logo" aria-label="Logo Geoportal">◉</div></div>
+<div class="search-row"><input id="model-search" type="search" placeholder="⌕ Cari model analisis..." aria-label="Cari model analisis"><button id="refresh-models">↻ Refresh</button></div>
+<div class="model-table-wrap"><table class="model-table"><thead><tr><th>Nama Model</th><th>Keterangan</th><th>Aksi</th></tr></thead><tbody id="model-rows">
+<tr data-name="Intersect dan Join"><td>Intersect dan Join</td><td>Intersect dan Join</td><td><button class="run-btn" data-model="Intersect dan Join">▸ Jalankan</button></td></tr>
+<tr data-name="Test Builder Lutfi"><td>Test Builder Lutfi</td><td>test</td><td><button class="run-btn" data-model="Test Builder Lutfi">▸ Jalankan</button></td></tr>
+</tbody></table></div>
+<div class="back-row"><a href="01-beranda-operator.html">← Kembali ke Dashboard</a></div>
+</main></div></div>
+<script>
+const rows=[...document.querySelectorAll('#model-rows tr')],search=document.getElementById('model-search');
+search.addEventListener('input',()=>{const q=search.value.toLowerCase();rows.forEach(row=>row.hidden=!row.dataset.name.toLowerCase().includes(q));});
+document.getElementById('refresh-models').addEventListener('click',()=>{search.value='';rows.forEach(row=>row.hidden=false);alert('Daftar model diperbarui (simulasi).');});
+document.querySelectorAll('.run-btn').forEach(btn=>btn.addEventListener('click',()=>alert('Simulasi: model "'+btn.dataset.model+'" akan dijalankan di QGIS.')));
+let fontSize=13;function applyFont(){document.querySelector('.model-table').style.fontSize=fontSize+'px';document.getElementById('zoom-reset').textContent=Math.round(fontSize/13*90)+'%';}
+document.getElementById('font-down').addEventListener('click',()=>{fontSize=Math.max(10,fontSize-1);applyFont();});
+document.getElementById('font-up').addEventListener('click',()=>{fontSize=Math.min(20,fontSize+1);applyFont();});
+document.getElementById('zoom-reset').addEventListener('click',()=>{fontSize=13;applyFont();});
+</script></body></html>
