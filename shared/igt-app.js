@@ -244,7 +244,7 @@ const IgtApp = (() => {
       : link(`${DETAIL_URL[kind]}?id=${r.n}&role=${role}`, 'Detail');
     const extras = [];
     if (kind === 'utama') {
-      if (reviewer && r.status === 'Proses') extras.push(button('btn-primary', 'topology', r.id, '⌁ Verifikasi Topologi'));
+      if (reviewer && r.status === 'Terkompilasi') extras.push(button('btn-primary', 'topology', r.id, '⌁ Verifikasi Topologi'));
       if (role === 'operator' && r.status === 'Revisi') extras.push(button('btn-soft', 'revision', r.id, '✎ Revisi'));
     } else if (reviewer && r.status === 'Diajukan') {
       extras.push(button('btn-primary', 'approve', r.id, '✓ Setujui'), button('btn-soft', 'reject', r.id, '✕ Tolak'));
