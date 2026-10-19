@@ -205,8 +205,8 @@ const IgtApp = (() => {
       }
       if (role === 'operator') {
         return (
-          `<div class="toolbar"><a class="btn btn-primary" href="${LEGACY}06-derivative-kawasan.html">＋ Derivative Kawasan</a>` +
-          `<a class="btn btn-soft" href="${LEGACY}07-derivative-bidang.html">＋ Derivative Bidang</a></div>` +
+          `<div class="toolbar"><a class="btn btn-primary" href="${LEGACY}06-derivative-kawasan.html">↑ Upload Derivatif Kawasan</a>` +
+          `<a class="btn btn-primary" href="${LEGACY}07-derivative-bidang.html">↑ Upload Derivatif Bidang</a></div>` +
           `<div class="notice"><strong>Catatan</strong>Pengajuan berstatus Diajukan sampai disetujui atau ditolak oleh Admin atau Superadmin.</div>`
         );
       }
@@ -288,7 +288,7 @@ const IgtApp = (() => {
       setText('tab-heading', isMain ? 'IGT Utama' : CATEGORIES[tab].label);
       setText('tab-description', isMain ? 'Kelola pengajuan IGT Pertanahan dan IGT Tata Ruang dari satu tab.' : UPLOAD_TEXT[tab]);
       $('#upload-panel').innerHTML = isMain
-        ? `<div class="grid quick-grid"><div class="quick"><div class="q-icon">▦</div><b>IGT Pertanahan</b><p>Muat baseline bidang atau unggah atribut baru.</p><button class="btn btn-primary" data-open-upload-modal="pertanahan">Upload IGT Pertanahan</button></div><div class="quick"><div class="q-icon">▧</div><b>IGT Tata Ruang</b><p>Unggah geometri dan atribut kawasan.</p><button class="btn btn-primary" data-open-upload-modal="tata-ruang">Upload IGT Tata Ruang</button></div></div>`
+        ? `<div class="grid quick-grid"><div class="quick"><div class="q-icon">▦</div><b>IGT Pertanahan</b><p>Muat baseline bidang atau unggah atribut baru.</p><button class="btn btn-primary" data-open-upload-modal="pertanahan">↑ Upload IGT Pertanahan</button></div><div class="quick"><div class="q-icon">▧</div><b>IGT Tata Ruang</b><p>Unggah geometri dan atribut kawasan.</p><button class="btn btn-primary" data-open-upload-modal="tata-ruang">↑ Upload IGT Tata Ruang</button></div></div>`
         : uploadPanel(role, tab);
       const own = records.filter((r) => isMain ? (r.category === 'pertanahan' || r.category === 'tata-ruang') : r.category === tab);
       const statusOptions = isMain
