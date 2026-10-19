@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IGT Utama · Admin · IGT-PR</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+.app{display:block;min-height:100vh}.workspace{min-width:0}.main{max-width:100%;padding:16px}.topbar{height:46px;padding:0 12px}
+.stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.card{padding:12px}.stat .num{font-size:23px}
+.toolbar{display:flex;gap:7px;flex-wrap:wrap}.tabs{margin-bottom:14px}.tab{padding:10px 12px}.table-wrap{max-width:100%}
+.action-cell{white-space:nowrap}.qgis-action{font-size:12px;padding:6px 8px;white-space:nowrap}
+@media(max-width:400px){.stats{grid-template-columns:1fr}.main{padding:10px}}
+</style>
+</head>
+<body data-page="admin-igt-utama">
+<div class="app" style="display:block;min-height:100vh"><div class="workspace">
+<header class="topbar"><div class="crumb">Geoportal IGT-PR　/　<strong>Admin · IGT Utama</strong></div><div class="top-actions"><button class="icon-btn" aria-label="Notifikasi">♧</button><div class="user-chip"><div class="avatar">AD</div><span>Admin</span></div></div></header>
+<main class="main">
+<div class="page-head"><div><div class="eyebrow">Sistem Informasi Geospasial</div><h1>IGT Utama</h1><p>Tinjau pengajuan IGT Utama dan lakukan verifikasi topologi pada data yang masih dalam proses.</p></div><a class="btn btn-soft" href="admin-beranda.html">← Kembali ke Beranda</a></div>
+<div class="grid stats">
+<div class="card stat"><div><div class="label">Total pengajuan</div><div class="num" id="count-total">4</div><div class="hint">Bidang dan kawasan</div></div><div class="stat-icon">▦</div></div>
+<div class="card stat"><div><div class="label">Proses</div><div class="num" id="count-process">2</div><div class="hint">Menunggu pemeriksaan</div></div><div class="stat-icon amber">◷</div></div>
+<div class="card stat"><div><div class="label">Terintegrasi</div><div class="num" id="count-integrated">2</div><div class="hint">Data terintegrasi</div></div><div class="stat-icon green">✓</div></div>
+<div class="card stat"><div><div class="label">Perlu perhatian</div><div class="num" id="count-attention">1</div><div class="hint">Ada catatan revisi</div></div><div class="stat-icon red">!</div></div>
+</div>
+<section class="card">
+<div class="tabs" data-tabs><button class="tab active" data-tab="semua">Semua</button><button class="tab" data-tab="proses">Proses</button><button class="tab" data-tab="terintegrasi">Terintegrasi</button></div>
+<div class="card-head"><div><h2 id="tab-heading">Semua pengajuan IGT Utama</h2><p id="tab-description">Seluruh pengajuan IGT Utama, baik berbasis bidang maupun kawasan.</p></div></div>
+<div class="table-wrap"><table><thead><tr><th>ID pengajuan</th><th>Nama IGT</th><th>Tanggal upload</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="submission-rows">
+<tr data-kind="bidang" data-status="Proses"><td><a class="text-link" href="igt-utama-detail.html?id=0&role=admin">IGT-2026-012</a></td><td>IGT Bidang Wilayah A</td><td>18 Okt 2026</td><td><span class="status info">Proses</span></td><td class="action-cell"><div class="toolbar"><button class="btn btn-primary qgis-action" data-action="topology" data-id="IGT-2026-012">⌁ Verifikasi Topologi</button><button class="btn btn-soft qgis-action" data-action="show-qgis" data-id="IGT-2026-012">▧ Tampilkan di QGIS</button></div></td></tr>
+<tr data-kind="kawasan" data-status="Terintegrasi"><td><a class="text-link" href="igt-utama-detail.html?id=1&role=admin">IGT-2026-011</a></td><td>IGT Kawasan Hutan</td><td>16 Okt 2026</td><td><span class="status ok">Terintegrasi</span></td><td class="action-cell"><button class="btn btn-soft qgis-action" data-action="show-qgis" data-id="IGT-2026-011">▧ Tampilkan di QGIS</button></td></tr>
+<tr data-kind="bidang" data-status="Revisi"><td><a class="text-link" href="igt-utama-detail.html?id=2&role=admin">IGT-2026-010</a></td><td>IGT Bidang Wilayah B</td><td>15 Okt 2026</td><td><span class="status warn">Revisi</span></td><td class="action-cell"><button class="btn btn-soft qgis-action" data-action="show-qgis" data-id="IGT-2026-010">▧ Tampilkan di QGIS</button></td></tr>
+<tr data-kind="kawasan" data-status="Terintegrasi"><td><a class="text-link" href="igt-utama-detail.html?id=3&role=admin">IGT-2026-009</a></td><td>IGT Kawasan Lindung</td><td>14 Okt 2026</td><td><span class="status ok">Terintegrasi</span></td><td class="action-cell"><button class="btn btn-soft qgis-action" data-action="show-qgis" data-id="IGT-2026-009">▧ Tampilkan di QGIS</button></td></tr>
+<tr data-kind="bidang" data-status="Proses"><td><a class="text-link" href="igt-utama-detail.html?id=4&role=admin">IGT-2026-008</a></td><td>IGT Bidang Infrastruktur</td><td>12 Okt 2026</td><td><span class="status info">Proses</span></td><td class="action-cell"><div class="toolbar"><button class="btn btn-primary qgis-action" data-action="topology" data-id="IGT-2026-008">⌁ Verifikasi Topologi</button><button class="btn btn-soft qgis-action" data-action="show-qgis" data-id="IGT-2026-008">▧ Tampilkan di QGIS</button></div></td></tr>
+</tbody></table></div>
+</section>
+<div class="footer">Mockup UI plugin QGIS · data contoh</div></main></div></div>
+<script>
+const tabs=[...document.querySelectorAll('[data-tab]')];
+function setTab(kind){
+ tabs.forEach(t=>t.classList.toggle('active',t.dataset.tab===kind));
+ document.querySelectorAll('#submission-rows tr').forEach(row=>{
+  const status=row.dataset.status;
+  row.hidden=kind==='semua'?false:(kind==='proses'?status!=='Proses':status!=='Terintegrasi');
+ });
+ const h=document.getElementById('tab-heading'),d=document.getElementById('tab-description');
+ if(kind==='semua'){h.textContent='Semua pengajuan IGT Utama';d.textContent='Seluruh pengajuan IGT Utama, baik berbasis bidang maupun kawasan.';}
+ if(kind==='proses'){h.textContent='Pengajuan dalam proses';d.textContent='Lakukan verifikasi topologi pada pengajuan yang masih dalam proses.';}
+ if(kind==='terintegrasi'){h.textContent='IGT Utama terintegrasi';d.textContent='Daftar pengajuan IGT Utama yang telah terintegrasi.';}
+}
+tabs.forEach(t=>t.addEventListener('click',()=>setTab(t.dataset.tab)));
+document.addEventListener('click',e=>{const b=e.target.closest('[data-action]');if(!b)return;if(b.dataset.action==='topology')alert('Simulasi verifikasi topologi untuk '+b.dataset.id+'. Pada implementasi QGIS, aksi ini menjalankan pemeriksaan topologi pada layer terkait.');if(b.dataset.action==='show-qgis')alert('Simulasi plugin QGIS: layer '+b.dataset.id+' akan ditampilkan pada kanvas peta QGIS.');});
+</script></body></html>
