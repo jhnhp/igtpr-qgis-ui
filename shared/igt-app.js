@@ -267,7 +267,7 @@ const IgtApp = (() => {
       `<section class="card" style="width:min(760px,100%);max-height:90vh;overflow:auto;margin:auto"><div class="card-head"><div><h2 id="igt-upload-modal-title">Upload IGT</h2><p id="igt-upload-modal-description"></p></div><button type="button" class="btn btn-soft" data-close-upload-modal>✕ Tutup</button></div><div id="igt-upload-modal-content"></div></section></div>` +
       `<div id="submission-status-tabs" class="tabs" data-status-tabs></div>` +
       `<div class="card-head submissions-head"><div><h2>Pengajuan</h2><p id="submission-count"></p></div></div>` +
-      `<div class="table-wrap"><table class="stack"><thead><tr><th>ID Pengajuan</th><th>Layer Target</th><th>Tanggal Upload</th><th>Status</th><th>Aksi</th></tr></thead>` +
+      `<div class="table-wrap"><table class="stack"><thead><tr><th>ID Pengajuan</th><th>Layer Target</th><th id="submission-date-heading">Tanggal Upload</th><th>Status</th><th>Aksi</th></tr></thead>` +
       `<tbody id="submission-rows"></tbody></table></div><div class="empty-state" id="empty-state" hidden>Belum ada pengajuan pada kategori ini.</div></section>`;
 
     function renderCounts() {
@@ -284,6 +284,7 @@ const IgtApp = (() => {
         t.setAttribute('aria-selected', t.dataset.tab === tab);
       });
       const isMain = tab === 'igt-utama';
+      setText('submission-date-heading', isMain ? 'Tanggal Terintegrasi' : tab === 'derivatif' ? 'Tanggal Disetujui' : 'Tanggal Upload');
       setText('tab-heading', isMain ? 'IGT Utama' : CATEGORIES[tab].label);
       setText('tab-description', isMain ? 'Kelola pengajuan IGT Pertanahan dan IGT Tata Ruang dari satu tab.' : UPLOAD_TEXT[tab]);
       $('#upload-panel').innerHTML = isMain
@@ -325,7 +326,7 @@ const IgtApp = (() => {
             : `<a class="text-link" href="${DETAIL_URL[CATEGORIES[r.category].detail]}?id=${r.n}&role=${role}">${r.id}</a>`;
           return (
             `<tr data-category="${r.category}"><td data-label="ID Pengajuan">${id}</td><td data-label="Layer Target">${r.name}</td>` +
-            `<td data-label="Tanggal Upload">${r.date}</td><td data-label="Status">${badge(r.status)}</td>` +
+            `<td data-label="${tab === 'igt-utama' ? 'Tanggal Terintegrasi' : tab === 'derivatif' ? 'Tanggal Disetujui' : 'Tanggal Upload'}">${tab === 'igt-utama' || tab === 'derivatif' ? (r.updated || "—") : r.date}</td><td data-label="Status">${badge(r.status)}</td>` +
             `<td data-label="Aksi" class="action-cell">${rowActions(role, r)}</td></tr>`
           );
         })
