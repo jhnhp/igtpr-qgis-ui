@@ -39,11 +39,12 @@ const IgtData = (() => {
   // Permissions. Every role may browse all four catalogs (`view`). Uploading and managing submissions
   // (`upload`) is narrower: IGT Lainnya (Eksternal) can only be managed by Superadmin, and Umum (public users) can only upload IGT Derivatif.
   // Umum sees only its own submissions (records with `owner: 'umum'`).
+// `derivatifWorkflow` marks the role that gets the Derivatif Kawasan / Bidang workflow pages (Operator only).
   const ALL = ['pertanahan', 'tata-ruang', 'derivatif', 'lainnya'];
   const ROLES = {
     superadmin: { label: 'Superadmin', avatar: 'SA', view: ALL, upload: ALL },
     admin: { label: 'Admin', avatar: 'AD', view: ALL, upload: ['pertanahan', 'tata-ruang', 'derivatif'] },
-    operator: { label: 'Operator Pusat', avatar: 'JH', view: ALL, upload: ['pertanahan', 'tata-ruang', 'derivatif'] },
+    operator: { label: 'Operator Pusat', avatar: 'JH', view: ALL, upload: ['pertanahan', 'tata-ruang', 'derivatif'], derivatifWorkflow: true },
     umum: { label: 'Umum', avatar: 'UM', view: ALL, upload: ['derivatif'], ownSubmissionsOnly: true },
   };
 

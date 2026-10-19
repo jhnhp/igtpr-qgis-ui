@@ -39,6 +39,7 @@ const IgtApp = (() => {
     utama: '../../operator/igt-utama-detail/index.html',
     derivatif: '../../operator/layer-derivatif-detail/index.html',
   };
+  const BIDANG_WORKFLOW_URL = '../../operator/derivatif-bidang/index.html';
 
   // ----------------------------------------------------------------- dashboard
 
@@ -204,7 +205,7 @@ const IgtApp = (() => {
       if (role === 'operator') {
         return (
           `<div class="toolbar"><a class="btn btn-primary" href="${LEGACY}06-derivative-kawasan.html">↑ Upload Derivatif Kawasan</a>` +
-          `<a class="btn btn-primary" href="${LEGACY}07-derivative-bidang.html">↑ Upload Derivatif Bidang</a></div>` +
+          `<a class="btn btn-primary" href="${BIDANG_WORKFLOW_URL}">↑ Upload Derivatif Bidang</a></div>` +
           `<div class="notice"><strong>Catatan</strong>Pengajuan berstatus Diajukan sampai disetujui atau ditolak oleh Admin atau Superadmin.</div>`
         );
       }

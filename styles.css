@@ -1065,3 +1065,292 @@ tbody tr:hover {
   font-size: 11px;
   line-height: 1.5;
 }
+
+/* ==========================================================================
+   Upload Derivatif Bidang workflow (shared/derivatif-bidang.js)
+   ========================================================================== */
+
+.step:nth-child(5):before {
+  content: "5";
+}
+
+.step:nth-child(6):before {
+  content: "6";
+}
+
+.step.done {
+  color: var(--green);
+}
+
+.step.done:before {
+  content: "✓";
+  background: #e2f7ed;
+  color: var(--green);
+}
+
+.wizard-steps {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 8px;
+}
+
+.step-btn {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+.step-btn:disabled {
+  cursor: not-allowed;
+}
+
+.step-btn:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+.part-note {
+  margin: 0 0 18px;
+}
+
+.wizard #step-title:focus {
+  outline: none;
+}
+
+.wizard table tbody tr {
+  cursor: default;
+}
+
+.wizard-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.nav-hint {
+  order: 3;
+  flex: 1 1 100%;
+  margin: 0;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.btn:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.btn:disabled:hover {
+  background: inherit;
+  border-color: inherit;
+}
+
+.notice.ok {
+  background: #e9f8f1;
+  border-color: #c5ebd9;
+  color: #14664a;
+}
+
+.notice.warn {
+  background: #fff6e5;
+  border-color: #f5dfb0;
+  color: #8a5400;
+}
+
+.notice.error {
+  background: #fff1f2;
+  border-color: #f4d0d4;
+  color: #a2303b;
+}
+
+.notice .toolbar {
+  margin-top: 10px;
+}
+
+.field-error {
+  min-height: 0;
+  color: var(--red);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.field input[aria-invalid="true"] {
+  border-color: #e4a1a8;
+}
+
+.type-hint {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0 4px;
+  font-size: 11px;
+  color: #526984;
+}
+
+.choice-list {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 14px;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.choice-list legend {
+  padding: 0;
+  margin-bottom: 8px;
+  font-size: 10px;
+  font-weight: 800;
+  color: #526984;
+}
+
+.choice {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #fff;
+}
+
+.choice:has(input:checked) {
+  border-color: #91b6f0;
+  background: #f6f9ff;
+}
+
+.choice input {
+  margin-top: 2px;
+}
+
+.choice strong, .choice small {
+  display: block;
+}
+
+.choice small {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.filename-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.filename-row input {
+  flex: 1;
+  min-width: 0;
+}
+
+.filename-row .ext {
+  font-weight: 700;
+  color: #526984;
+}
+
+.id-banner {
+  display: grid;
+  gap: 2px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  border-radius: 9px;
+  background: #eaf2ff;
+  border: 1px solid #d9e8ff;
+  color: #1557b8;
+}
+
+.id-banner span, .id-banner small {
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.id-banner strong {
+  font-size: 18px;
+  letter-spacing: .5px;
+  overflow-wrap: anywhere;
+}
+
+.canvas-sim {
+  position: relative;
+  margin: 12px 0;
+  border: 1.5px dashed #b7cce7;
+  border-radius: 10px;
+  background: #f4f8fd;
+  overflow: hidden;
+}
+
+.canvas-sim svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.canvas-tag {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 1;
+  padding: 3px 7px;
+  border-radius: 5px;
+  background: #fff2d9;
+  color: #996000;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.parcel-shape {
+  fill: #dbe8fb;
+  stroke: #6d8fc4;
+  stroke-width: 1.5;
+}
+
+.parcel-label {
+  font-size: 10px;
+  font-weight: 700;
+  fill: #35527f;
+  pointer-events: none;
+}
+
+.canvas-sim.active .parcel-shape {
+  cursor: pointer;
+}
+
+.canvas-sim.active .parcel-shape:hover {
+  fill: #c3d9f8;
+}
+
+.canvas-sim .parcel-shape.selected {
+  fill: #1768e8;
+  fill-opacity: .55;
+  stroke: #0b55c7;
+}
+
+#view .detail-grid + .toolbar,
+#view .table-wrap + .toolbar,
+#view .field + .toolbar {
+  margin-top: 14px;
+}
+
+.wizard a.btn {
+  text-decoration: none;
+}
+
+.wizard .toolbar + .toolbar,
+.wizard .notice + .toolbar {
+  margin-top: 10px;
+}

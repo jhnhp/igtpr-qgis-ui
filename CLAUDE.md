@@ -24,6 +24,7 @@ Browsing integrated data is separate from managing submissions. Keep it that way
 - Upload Data holds all upload and submission management: submission dashboard, one tab per authorized category, upload controls (Load Baseline only under IGT Pertanahan), and the submission table with role-specific actions (Verifikasi Topologi, Revisi, Setujui/Tolak, Hapus, Detail). Admin derivative uploads enter `Disetujui` directly.
 - The Dashboard shows repository status (Terkompilasi / Terintegrasi counts over Pertanahan and Tata Ruang only, computed from `shared/igt-data.js`), not submissions. Below the overview are one button per catalog (4, the same for every role) plus one Upload Data button. Model Builder is a small link under them.
 - Records, statuses and permissions live only in `shared/igt-data.js`. Role pages are thin shells that call `IgtApp.dashboard`, `IgtApp.catalog` or `IgtApp.upload`. Detail pages are shared (`roles/operator/*-detail/`) and keep the role through `?role=`.
+- Operator only: Upload Derivatif Bidang is a dedicated six-step workflow page (`roles/operator/derivatif-bidang/`, logic in `shared/derivatif-bidang.js`, guarded by `derivatifWorkflow` in `shared/igt-data.js`); Upload Derivatif Kawasan still links to `legacy/06`. Everything in it is simulated and it creates no submission row.
 - After changing pages or navigation, run `python3 tools/check_links.py` and open each role's pages: the Dashboard buttons are built in JavaScript and the script cannot see them.
 
 ## Folder-structure refactor task
@@ -44,12 +45,14 @@ igtpr-qgis-ui/
 │   ├── {superadmin,admin}/{beranda,igt-pertanahan,igt-tata-ruang,igt-derivatif,igt-lainnya,upload-data}/index.html
 │   ├── operator/
 │   │   ├── {beranda,igt-pertanahan,igt-tata-ruang,igt-derivatif,igt-lainnya,upload-data}/index.html
+│   │   ├── derivatif-bidang/index.html
 │   │   ├── igt-utama-detail/index.html
 │   │   └── layer-derivatif-detail/index.html
 │   └── umum/{beranda,igt-pertanahan,igt-tata-ruang,igt-derivatif,igt-lainnya,upload-data}/index.html
 ├── shared/
 │   ├── igt-data.js
 │   ├── igt-app.js
+│   ├── derivatif-bidang.js
 │   └── model-builder/index.html
 └── legacy/
     ├── 02-beranda-superadmin.html

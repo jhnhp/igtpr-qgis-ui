@@ -42,8 +42,22 @@ Columns: **Nama IGT**, **Tanggal Update**, **Tampilkan WMS**, **Tampilkan WFS**.
 | --- | --- | --- |
 | IGT Pertanahan | Load Baseline (only here) and Upload Data | Detail; Verifikasi Topologi on `Proses` rows (Admin, Superadmin); Revisi on `Revisi` rows (Operator) |
 | IGT Tata Ruang | Upload form (dropzone, tema, nama layer, wilayah, deskripsi) | same as Pertanahan |
-| IGT Derivatif | Admin: Upload Derivatif (goes straight to `Disetujui`). Umum: Upload Derivatif (becomes `Diajukan`). Operator: Derivative Kawasan / Bidang workflows (`legacy/`). Superadmin: review only | Detail; Setujui and Tolak on `Diajukan` rows (Admin, Superadmin) |
+| IGT Derivatif | Admin: Upload Derivatif (goes straight to `Disetujui`). Umum: Upload Derivatif (becomes `Diajukan`). Operator: Upload Derivatif Kawasan (`legacy/06`) and Upload Derivatif Bidang (dedicated workflow page, see below). Superadmin: review only | Detail; Setujui and Tolak on `Diajukan` rows (Admin, Superadmin) |
 | IGT Lainnya | Upload layer (simulated; layers are added through QGIS) | Hapus |
+
+### Upload Derivatif Bidang workflow (Operator)
+`roles/operator/derivatif-bidang/index.html` is a single page with six steps, opened from Upload Data → IGT Derivatif → *Upload Derivatif Bidang* (its back links return to that tab). The logic is in `shared/derivatif-bidang.js` (`DerivatifBidang.init('operator')`); access is guarded by the `derivatifWorkflow` flag on the role in `shared/igt-data.js`, which only Operator has. Upload Derivatif Kawasan still opens `legacy/06-derivative-kawasan.html`.
+
+| Step | What it does |
+| --- | --- |
+| 1 Pilih Sumber Bidang Tanah | Load Baseline (simulated), source status `Belum dimuat` / `Siap digunakan` |
+| 2 Pilih Bidang Tanah | Simulated QGIS Canvas: activate the select tool, choose one sample parcel, see its attributes |
+| 3 Atur Struktur Atribut | Dummy template (A/B) or manual fields (name + type text/integer/decimal/date, optional "wajib"); empty, malformed and duplicate names are rejected |
+| 4 Isi Atribut | Form generated from the structure, ID Bidang shown prominently, per-type validation, values kept when going back and forth |
+| 5 Simpan File | Filename + GeoPackage (`.gpkg`, default) or JSON; summary; simulated save, then *Lanjut ke Integrasi* or *Selesai, integrasikan nanti* |
+| 6 Integrasikan Atribut | Pick a saved or sample attribute file, inspect it, join to the sample baseline by ID Bidang, review matched / unmatched IDs, *Tampilkan Hasil di QGIS* (simulated) |
+
+Step 6 is always reachable from the stepper (or `?step=6`), so the integration can be done later. Saving is a simulation: no file is created. Only the list of "saved" files is mirrored to `sessionStorage` so step 6 can find them after leaving the page; everything else lives in the open page. The parcels, templates and sample attribute files are dummy data. Saving does not create a row in the submissions table, so the Derivatif approval lifecycle is untouched.
 
 ### Statuses and data model
 - One record in `shared/igt-data.js` is one dataset plus its latest submission, so counting records counts datasets. Re-submissions are not modelled.
@@ -74,12 +88,14 @@ igtpr-qgis-ui/
 │   ├── {superadmin,admin}/{beranda,igt-pertanahan,igt-tata-ruang,igt-derivatif,igt-lainnya,upload-data}/index.html
 │   ├── operator/
 │   │   ├── {beranda,igt-pertanahan,igt-tata-ruang,igt-derivatif,igt-lainnya,upload-data}/index.html
+│   │   ├── derivatif-bidang/index.html          # Upload Derivatif Bidang workflow (Operator only)
 │   │   ├── igt-utama-detail/index.html          # Shared detail page (all roles, ?role=)
 │   │   └── layer-derivatif-detail/index.html    # Shared detail page (all roles, ?role=)
 │   └── umum/{beranda,igt-pertanahan,igt-tata-ruang,igt-derivatif,igt-lainnya,upload-data}/index.html   # public role
 ├── shared/
 │   ├── igt-data.js             # Sample records, categories, role permissions
 │   ├── igt-app.js              # Navigation, Dashboard, catalog and Upload Data logic
+│   ├── derivatif-bidang.js     # Six-step Upload Derivatif Bidang workflow
 │   └── model-builder/index.html
 └── legacy/                     # Earlier pages kept for reference only
     └── 02-beranda-superadmin.html … 08-verifikasi-data.html
@@ -88,7 +104,7 @@ igtpr-qgis-ui/
 Each role page is a thin shell: it loads `shared/igt-data.js` and `shared/igt-app.js` and calls `IgtApp.dashboard(role)`, `IgtApp.catalog(role, category)` or `IgtApp.upload(role)`.
 
 ### Legacy pages
-`legacy/` holds the original numbered pages (`02`–`08`) with the old desktop sidebar. They are not part of the role navigation; their sidebar links now point to the matching Upload Data tab. The only link into `legacy/` from a role page is Operator → Upload Data → IGT Derivatif (Derivative Kawasan / Bidang workflows), because those workflow pages were never replaced.
+`legacy/` holds the original numbered pages (`02`–`08`) with the old desktop sidebar. They are not part of the role navigation; their sidebar links now point to the matching Upload Data tab. The only link into `legacy/` from a role page is Operator → Upload Data → IGT Derivatif → Upload Derivatif Kawasan, because that workflow page was never replaced (Derivatif Bidang now has its own page).
 
 ## Shared styling
 - Tables marked `class="stack"` (with a `data-label` on each cell) turn into labelled blocks below 600px of panel width, so lists do not scroll sideways in the portrait preview. `class="compact"` keeps a real table with tighter padding.
