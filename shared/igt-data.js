@@ -42,7 +42,7 @@ const IgtData = (() => {
 // `derivatifWorkflow` enables the shared Derivatif Bidang workflow for every role.
   const ALL = ['pertanahan', 'tata-ruang', 'derivatif', 'lainnya'];
   const ROLES = {
-    superadmin: { label: 'Superadmin', avatar: 'SA', view: ALL, upload: ['pertanahan', 'tata-ruang', 'lainnya'] },
+    superadmin: { label: 'Superadmin', avatar: 'SA', view: ALL, upload: ALL },
     admin: { label: 'Admin', avatar: 'AD', view: ALL, upload: ['pertanahan', 'tata-ruang', 'derivatif'], derivatifWorkflow: true },
     operator: { label: 'Operator Pusat', avatar: 'JH', view: ALL, upload: ['pertanahan', 'tata-ruang', 'derivatif'], derivatifWorkflow: true },
     umum: { label: 'Umum', avatar: 'UM', view: ALL, upload: ['derivatif'], ownSubmissionsOnly: true, derivatifWorkflow: true },
