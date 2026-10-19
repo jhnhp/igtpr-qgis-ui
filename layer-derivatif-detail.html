@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Detail Layer Derivatif · IGT-PR</title><link rel="stylesheet" href="styles.css">
+<style>
+.app{display:block;min-height:100vh}.workspace{min-width:0}.main{max-width:100%;padding:16px}.topbar{height:46px;padding:0 12px}
+.detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.detail-item{padding:12px;border:1px solid var(--border,#e5e7eb);border-radius:10px;min-width:0}.detail-label{font-size:12px;color:var(--muted,#6b7280);margin-bottom:6px}.detail-value{font-size:14px;font-weight:600;overflow-wrap:anywhere}.detail-section{margin-top:14px}.detail-actions{display:flex;gap:8px;flex-wrap:wrap}
+@media(max-width:400px){.main{padding:10px}.detail-grid{grid-template-columns:1fr}}
+</style></head><body data-page="layer-derivatif-detail"><div class="app" style="display:block;min-height:100vh"><div class="workspace">
+<header class="topbar"><div class="crumb">Geoportal IGT-PR　/　<a href="igt-derivatif.html">Layer Derivatif</a>　/　<strong>Detail</strong></div><div class="top-actions"><button class="icon-btn" aria-label="Notifikasi">♧</button><div class="user-chip"><div class="avatar">JH</div><span>Operator Pusat</span></div></div></header>
+<main class="main"><div class="page-head"><div><div class="eyebrow">Sistem Informasi Geospasial</div><h1 id="layer-name">Detail Layer Derivatif</h1><p>Informasi pengajuan, gaya tampilan, dan masa berlaku layer.</p></div></div>
+<div class="detail-actions"><a class="btn btn-soft" href="01-beranda-operator.html">← Kembali ke Beranda</a><a class="btn btn-soft" href="igt-derivatif.html">Kembali ke daftar Layer Derivatif</a></div>
+<section class="card detail-section"><div class="card-head"><div><h2>Informasi Pengajuan</h2><p>Identitas dan metadata layer derivatif.</p></div><span id="status-badge" class="status ok">Disetujui</span></div>
+<div class="detail-grid">
+<div class="detail-item"><div class="detail-label">ID Pengajuan</div><div class="detail-value" id="layer-id">DRV-2026-008</div></div>
+<div class="detail-item"><div class="detail-label">Nama Direktorat</div><div class="detail-value">Direktorat Survei dan Pemetaan Tematik</div></div>
+<div class="detail-item"><div class="detail-label">Nama Layer</div><div class="detail-value" id="layer-name-meta">Derivatif Kawasan Hutan</div></div>
+<div class="detail-item"><div class="detail-label">Jenis Data</div><div class="detail-value" id="layer-kind">Berbasis Kawasan</div></div>
+<div class="detail-item"><div class="detail-label">Tanggal Pengajuan</div><div class="detail-value" id="layer-date">16 Okt 2026</div></div>
+<div class="detail-item"><div class="detail-label">Status</div><div class="detail-value" id="layer-status">Disetujui</div></div>
+<div class="detail-item"><div class="detail-label">SLD</div><div class="detail-value" id="layer-sld">derivatif-kawasan-hutan.sld</div></div>
+<div class="detail-item"><div class="detail-label">Kadaluwarsa dalam</div><div class="detail-value" id="layer-expiry">30 hari</div></div>
+<div class="detail-item" style="grid-column:1/-1"><div class="detail-label">Keterangan</div><div class="detail-value" id="layer-notes">Layer derivatif telah disetujui dan siap digunakan.</div></div>
+</div></section>
+<section class="card detail-section"><div class="card-head"><div><h2>Pratinjau Layer</h2><p>Ringkasan pratinjau layer pada mockup plugin.</p></div><button class="btn btn-soft" id="show-layer">▧ Tampilkan di QGIS</button></div><div class="empty-state"><div class="empty-icon">▧</div><strong>Pratinjau peta belum tersedia</strong><p>Penayangan layer merupakan simulasi pada prototipe ini.</p></div></section>
+<div class="footer">Mockup UI plugin QGIS · data contoh</div></main></div></div>
+<script>
+const data={
+"0":{id:"DRV-2026-008",nama:"Derivatif Kawasan Hutan",jenis:"Berbasis Kawasan",tanggal:"16 Okt 2026",status:"Disetujui",sld:"derivatif-kawasan-hutan.sld",expired:"30 hari",notes:"Layer derivatif telah disetujui dan siap digunakan."},
+"1":{id:"DRV-2026-007",nama:"Derivatif Bidang Wilayah A",jenis:"Berbasis Bidang",tanggal:"15 Okt 2026",status:"Diajukan",sld:"derivatif-bidang-wilayah-a.sld",expired:"—",notes:"Pengajuan menunggu pemeriksaan."},
+"2":{id:"DRV-2026-006",nama:"Derivatif Kawasan Lindung",jenis:"Berbasis Kawasan",tanggal:"14 Okt 2026",status:"Ditolak",sld:"derivatif-kawasan-lindung.sld",expired:"—",notes:"Pengajuan ditolak; periksa catatan evaluasi."},
+"3":{id:"DRV-2026-005",nama:"Derivatif Bidang Wilayah B",jenis:"Berbasis Bidang",tanggal:"12 Okt 2026",status:"Disetujui",sld:"derivatif-bidang-wilayah-b.sld",expired:"14 hari",notes:"Layer derivatif telah disetujui dan siap digunakan."}
+};
+const params=new URLSearchParams(location.search),d=data[params.get("id")]||data["0"];
+document.title=d.nama+" · Detail Layer Derivatif";
+document.getElementById("layer-name").textContent=d.nama;
+document.getElementById("layer-name-meta").textContent=d.nama;
+document.getElementById("layer-id").textContent=d.id;
+document.getElementById("layer-kind").textContent=d.jenis;
+document.getElementById("layer-date").textContent=d.tanggal;
+document.getElementById("layer-status").textContent=d.status;
+document.getElementById("layer-sld").textContent=d.sld;
+document.getElementById("layer-expiry").textContent=d.expired;
+document.getElementById("layer-notes").textContent=d.notes;
+const badge=document.getElementById("status-badge");badge.textContent=d.status;badge.className="status "+(d.status==="Disetujui"?"ok":d.status==="Ditolak"?"fix":"info");
+document.getElementById("show-layer").addEventListener("click",()=>alert("Simulasi plugin QGIS: layer "+d.id+" akan ditampilkan pada kanvas peta."));
+</script></body></html>
