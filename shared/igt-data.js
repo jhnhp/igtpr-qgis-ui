@@ -20,11 +20,15 @@ const IgtData = (() => {
     lainnya: { label: 'IGT Lainnya', slug: 'igt-lainnya' },
   };
 
-  // Permissions. IGT Lainnya (Eksternal) is Superadmin only. Umum has no pages yet.
+  // Permissions. Every role may browse all four catalogs (`view`). Uploading and managing submissions
+  // (`upload`) is narrower: IGT Lainnya (Eksternal) can only be managed by Superadmin, and Umum (public users) can only upload IGT Derivatif.
+  // Umum sees only its own submissions (records with `owner: 'umum'`) and has no Model Builder.
+  const ALL = ['pertanahan', 'tata-ruang', 'derivatif', 'lainnya'];
   const ROLES = {
-    superadmin: { label: 'Superadmin', avatar: 'SA', categories: ['pertanahan', 'tata-ruang', 'derivatif', 'lainnya'] },
-    admin: { label: 'Admin', avatar: 'AD', categories: ['pertanahan', 'tata-ruang', 'derivatif'] },
-    operator: { label: 'Operator Pusat', avatar: 'JH', categories: ['pertanahan', 'tata-ruang', 'derivatif'] },
+    superadmin: { label: 'Superadmin', avatar: 'SA', view: ALL, upload: ALL },
+    admin: { label: 'Admin', avatar: 'AD', view: ALL, upload: ['pertanahan', 'tata-ruang', 'derivatif'] },
+    operator: { label: 'Operator Pusat', avatar: 'JH', view: ALL, upload: ['pertanahan', 'tata-ruang', 'derivatif'] },
+    umum: { label: 'Umum', avatar: 'UM', view: ALL, upload: ['derivatif'], ownSubmissionsOnly: true, modelBuilder: false },
   };
 
   // `n` is the record index understood by the shared detail pages (igt-utama-detail, layer-derivatif-detail).
@@ -52,17 +56,13 @@ const IgtData = (() => {
     { category: 'lainnya', id: 'IGT-EXT-001', name: 'Peta Risiko Bencana', source: 'Badan Nasional Penanggulangan Bencana', date: '10 Okt 2026', updated: '10 Okt 2026', status: 'Terintegrasi' },
   ];
 
-  // Main menu in display order. `category` ties an entry to a permission.
-  const MENU = [
-    { key: 'beranda', label: 'Dashboard', slug: 'beranda' },
-    ...CATEGORY_ORDER.map((key) => ({ key, label: CATEGORIES[key].label, slug: CATEGORIES[key].slug, category: key })),
-    { key: 'upload', label: 'Upload Data', slug: 'upload-data' },
-  ];
-
-  const can = (role, category) => Boolean(ROLES[role] && ROLES[role].categories.includes(category));
-  const menuFor = (role) => MENU.filter((item) => !item.category || can(role, item.category));
+  const canView = (role, category) => Boolean(ROLES[role] && ROLES[role].view.includes(category));
+  const canUpload = (role, category) => Boolean(ROLES[role] && ROLES[role].upload.includes(category));
+  // Submissions a role may see in Upload Data: its upload categories, and only its own records for Umum.
+  const submissionsFor = (role, records) =>
+    records.filter((r) => canUpload(role, r.category) && (!ROLES[role].ownSubmissionsOnly || r.owner === role));
   const loadRecords = () => RECORDS.map((record) => ({ ...record }));
   const countByStatus = (records, status) => records.filter((record) => record.status === status).length;
 
-  return { CATEGORY_ORDER, CATEGORIES, ROLES, MENU, can, menuFor, loadRecords, countByStatus };
+  return { CATEGORY_ORDER, CATEGORIES, ROLES, canView, canUpload, submissionsFor, loadRecords, countByStatus };
 })();

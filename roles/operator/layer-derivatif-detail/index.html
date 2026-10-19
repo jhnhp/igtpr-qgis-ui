@@ -25,9 +25,9 @@ const data={
 "2":{id:"DRV-2026-006",nama:"Derivatif Kawasan Lindung",jenis:"Berbasis Kawasan",tanggal:"14 Okt 2026",status:"Ditolak",sld:"derivatif-kawasan-lindung.sld",expired:"—",notes:"Pengajuan ditolak; periksa catatan evaluasi."},
 "3":{id:"DRV-2026-005",nama:"Derivatif Bidang Wilayah B",jenis:"Berbasis Bidang",tanggal:"12 Okt 2026",status:"Disetujui",sld:"derivatif-bidang-wilayah-b.sld",expired:"14 hari",notes:"Layer derivatif telah disetujui dan siap digunakan."}
 };
-const params=new URLSearchParams(location.search),d=data[params.get("id")]||data["0"],role=["superadmin","admin"].includes(params.get("role"))?params.get("role"):"operator",isSuperadmin=role==="superadmin",isAdmin=role==="admin";
+const params=new URLSearchParams(location.search),d=data[params.get("id")]||data["0"],role=["superadmin","admin","umum"].includes(params.get("role"))?params.get("role"):"operator",isSuperadmin=role==="superadmin",isAdmin=role==="admin";
 const uploadUrl="../../"+role+"/upload-data/index.html?tab=derivatif";
-if(isAdmin||isSuperadmin){document.querySelector(".user-chip span").textContent=isAdmin?"Admin":"Superadmin";document.querySelector(".avatar").textContent=isAdmin?"AD":"SA";}
+if(role!=="operator"){const who={superadmin:["Superadmin","SA"],admin:["Admin","AD"],umum:["Umum","UM"]}[role];document.querySelector(".user-chip span").textContent=who[0];document.querySelector(".avatar").textContent=who[1];}
 document.getElementById("back-home").href="../../"+role+"/beranda/index.html";document.getElementById("back-list").href=uploadUrl;
 document.querySelector(".crumb").innerHTML='Geoportal IGT-PR　/　<a href="'+uploadUrl+'">Upload Data</a>　/　<strong>Detail</strong>';
 document.title=d.nama+" · Detail Layer Derivatif";

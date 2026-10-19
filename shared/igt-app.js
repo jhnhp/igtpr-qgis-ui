@@ -31,41 +31,30 @@ const IgtApp = (() => {
     derivatif: '../../operator/layer-derivatif-detail/index.html',
   };
 
-  // ---------------------------------------------------------------- navigation
-
-  // The menu is built from the role's permissions, so a role never receives a link it may not use.
-  function mountNav(role, activeKey) {
-    const items = IgtData.menuFor(role)
-      .map((item) => {
-        const active = item.key === activeKey;
-        return `<a href="../${item.slug}/index.html"${active ? ' class="active" aria-current="page"' : ''}>${item.label}</a>`;
-      })
-      .join('');
-    const nav = document.createElement('nav');
-    nav.className = 'panel-nav';
-    nav.setAttribute('aria-label', 'Menu utama ' + ROLES[role].label);
-    nav.innerHTML = items;
-    $('main.main').prepend(nav);
-  }
-
   // ----------------------------------------------------------------- dashboard
 
   // Repository overview: how many datasets are compiled and integrated. No upload controls here.
   function dashboard(role) {
-    mountNav(role, 'beranda');
-    const records = IgtData.loadRecords().filter((r) => IgtData.can(role, r.category));
+    // The Dashboard has no menu bar: navigation is the buttons below the overview.
+    const records = IgtData.loadRecords().filter((r) => IgtData.canView(role, r.category));
     const compiled = IgtData.countByStatus(records, 'Terkompilasi');
     const integrated = IgtData.countByStatus(records, 'Terintegrasi');
+    const categories = CATEGORY_ORDER.filter((key) => IgtData.canView(role, key));
 
-    const rows = CATEGORY_ORDER.filter((key) => IgtData.can(role, key))
+    const rows = categories
       .map((key) => {
         const own = records.filter((r) => r.category === key);
         return (
-          `<tr><td data-label="Kategori"><a class="text-link" href="../${CATEGORIES[key].slug}/index.html">${CATEGORIES[key].label}</a></td>` +
+          `<tr><td data-label="Kategori">${CATEGORIES[key].label}</td>` +
           `<td data-label="Terkompilasi">${IgtData.countByStatus(own, 'Terkompilasi')}</td>` +
           `<td data-label="Terintegrasi">${IgtData.countByStatus(own, 'Terintegrasi')}</td></tr>`
         );
       })
+      .join('');
+
+    // One button per catalog the role may open, then a single button for Upload Data.
+    const catalogButtons = categories
+      .map((key) => `<a class="btn btn-soft menu-btn" href="../${CATEGORIES[key].slug}/index.html">▧ ${CATEGORIES[key].label}</a>`)
       .join('');
 
     $('#view').innerHTML =
@@ -77,8 +66,14 @@ const IgtApp = (() => {
       `<p>Jumlah dataset menurut status, dihitung dari data contoh. Satu catatan mewakili satu dataset.</p></div></div>` +
       `<div class="table-wrap"><table class="compact"><thead><tr><th>Kategori</th><th>Terkompilasi</th><th>Terintegrasi</th></tr></thead>` +
       `<tbody id="category-rows">${rows}</tbody></table></div></section>` +
-      `<section class="card"><div class="grid quick-grid"><a class="quick" href="../../../shared/model-builder/index.html?role=${role}">` +
-      `<div class="q-icon">⚙</div><b>Model Builder</b><p>Akses model dan alur pemrosesan spasial.</p></a></div></section>`;
+      `<section class="card"><div class="card-head"><div><h2>Lihat peta IGT</h2><p>Buka katalog dataset yang sudah terintegrasi.</p></div></div>` +
+      `<div class="menu-buttons" id="catalog-buttons">${catalogButtons}</div>` +
+      `<div class="card-head menu-upload-head"><div><h2>Kelola data</h2><p>Unggah data baru dan pantau status pengajuan.</p></div></div>` +
+      `<div class="menu-buttons"><a class="btn btn-primary menu-btn" id="upload-button" href="../upload-data/index.html">↑ Upload Data</a></div>` +
+      (ROLES[role].modelBuilder === false
+        ? ''
+        : `<a class="text-link menu-tool" href="../../../shared/model-builder/index.html?role=${role}">⚙ Model Builder</a>`) +
+      `</section>`;
   }
 
   // ------------------------------------------------------------------- catalog
@@ -92,9 +87,8 @@ const IgtApp = (() => {
 
   // Integrated datasets of one category. Only status Terintegrasi is listed; nothing can be edited here.
   function catalog(role, category) {
-    mountNav(role, category);
     const view = $('#view');
-    if (!IgtData.can(role, category)) {
+    if (!IgtData.canView(role, category)) {
       view.innerHTML = `<div class="notice"><strong>Akses ditolak</strong>${CATEGORIES[category].label} tidak tersedia untuk role ini.</div>`;
       return;
     }
@@ -187,6 +181,12 @@ const IgtApp = (() => {
           `<div class="notice"><strong>Catatan</strong>Unggahan Admin langsung berstatus Disetujui. Pengajuan Operator berstatus Proses sampai diputuskan.</div>`
         );
       }
+      if (role === 'umum') {
+        return (
+          `<div class="toolbar"><button class="btn btn-primary" data-action="upload-derivatif">↑ Upload Derivatif</button></div>` +
+          `<div class="notice"><strong>Catatan</strong>Pengajuan Umum berstatus Proses sampai disetujui atau ditolak oleh Admin atau Superadmin. Anda hanya melihat pengajuan Anda sendiri.</div>`
+        );
+      }
       if (role === 'operator') {
         return (
           `<div class="toolbar"><a class="btn btn-primary" href="${LEGACY}06-derivative-kawasan.html">＋ Derivative Kawasan</a>` +
@@ -224,9 +224,8 @@ const IgtApp = (() => {
 
   // Submission management: summary, one tab per authorized category, upload controls and submission table.
   function upload(role) {
-    mountNav(role, 'upload');
-    const categories = CATEGORY_ORDER.filter((key) => IgtData.can(role, key));
-    const records = IgtData.loadRecords().filter((r) => IgtData.can(role, r.category));
+    const categories = CATEGORY_ORDER.filter((key) => IgtData.canUpload(role, key));
+    const records = IgtData.submissionsFor(role, IgtData.loadRecords());
     const requested = new URLSearchParams(location.search).get('tab');
     let tab = categories.includes(requested) ? requested : categories[0];
     let nextDerivative = 9;
@@ -311,14 +310,19 @@ const IgtApp = (() => {
         record.status = action === 'approve' ? 'Disetujui' : 'Ditolak';
         render();
       } else if (action === 'upload-derivatif') {
-        // Admin uploads skip review and are approved immediately.
-        if (!confirm('Simulasi: pilih berkas layer derivatif. Unggahan Admin langsung berstatus Disetujui. Lanjutkan?')) return;
+        // Admin uploads skip review and are approved immediately; Umum uploads wait for a decision.
+        const direct = role !== 'umum';
+        const message = direct
+          ? 'Simulasi: pilih berkas layer derivatif. Unggahan Admin langsung berstatus Disetujui. Lanjutkan?'
+          : 'Simulasi: pilih berkas layer derivatif. Pengajuan Umum berstatus Proses dan menunggu keputusan Admin atau Superadmin. Lanjutkan?';
+        if (!confirm(message)) return;
         records.unshift({
           category: 'derivatif',
           id: 'DRV-2026-' + String(nextDerivative).padStart(3, '0'),
-          name: 'Derivatif Unggahan Admin ' + nextDerivative,
+          name: (direct ? 'Derivatif Unggahan Admin ' : 'Derivatif Unggahan Umum ') + nextDerivative,
           date: '19 Okt 2026',
-          status: 'Disetujui',
+          status: direct ? 'Disetujui' : 'Proses',
+          owner: role === 'umum' ? 'umum' : undefined,
         });
         nextDerivative += 1;
         render();

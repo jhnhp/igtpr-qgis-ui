@@ -17,13 +17,13 @@ This repository contains HTML/CSS/JavaScript **UI mockups for a QGIS plugin**. I
 
 Browsing integrated data is separate from managing submissions. Keep it that way.
 
-- Main menu (built by `shared/igt-app.js` from the permission table in `shared/igt-data.js`): Dashboard, IGT Pertanahan, IGT Tata Ruang, IGT Derivatif, IGT Lainnya, Upload Data.
-- Permissions: Superadmin sees all six. Admin and Operator do not get IGT Lainnya (Superadmin only). Admin has no Verifikasi Data menu. Umum stays an empty placeholder. Never expose a restricted menu by only hiding its label: leave the link out of the generated menu and guard the page.
+- Navigation has no tab/menu bar on any page. The Dashboard is the hub with buttons to IGT Pertanahan, IGT Tata Ruang, IGT Derivatif, IGT Lainnya and Upload Data; every other page has a single "← Kembali ke Dashboard" back button, and the shared detail pages go back to the role's Dashboard or Upload Data tab. Do not reintroduce a top menu.
+- Permissions have two levels in `shared/igt-data.js`: `view` (browse a catalog) and `upload` (Upload Data tab and its actions). Every role may view all four catalogs, including IGT Lainnya. Upload and management of IGT Lainnya (upload layer, Hapus) is Superadmin only, so Admin and Operator get no IGT Lainnya tab in Upload Data. Admin has no Verifikasi Data menu. Umum (public users) may view all four catalogs but can only upload IGT Derivatif: its submissions start as `Proses`, it sees only its own submissions, and it has no Model Builder. Never expose a restricted action by only hiding its label: leave it out of the generated UI and guard the page.
 - Catalog pages (the four IGT menus) list only `Terintegrasi` records with columns Nama IGT, Tanggal Update, Tampilkan WMS, Tampilkan WFS. No upload, approval or rejection controls there. No real WMS/WFS URLs exist, so those buttons are labelled simulations; do not invent endpoints.
 - Upload Data holds all upload and submission management: submission dashboard, one tab per authorized category, upload controls (Load Baseline only under IGT Pertanahan), and the submission table with role-specific actions (Verifikasi Topologi, Revisi, Setujui/Tolak, Hapus, Detail). Admin derivative uploads enter `Disetujui` directly.
-- The Dashboard shows repository status (Terkompilasi / Terintegrasi counts computed from `shared/igt-data.js`), not submissions.
+- The Dashboard shows repository status (Terkompilasi / Terintegrasi counts computed from `shared/igt-data.js`), not submissions. Below the overview are one button per catalog (4, the same for every role) plus one Upload Data button. Model Builder is a small link under them.
 - Records, statuses and permissions live only in `shared/igt-data.js`. Role pages are thin shells that call `IgtApp.dashboard`, `IgtApp.catalog` or `IgtApp.upload`. Detail pages are shared (`roles/operator/*-detail/`) and keep the role through `?role=`.
-- After changing pages or navigation, run `python3 tools/check_links.py` and open each role's pages: menu links are built in JavaScript and the script cannot see them.
+- After changing pages or navigation, run `python3 tools/check_links.py` and open each role's pages: the Dashboard buttons are built in JavaScript and the script cannot see them.
 
 ## Folder-structure refactor task
 
@@ -40,13 +40,12 @@ igtpr-qgis-ui/
 ├── CLAUDE.md
 ├── tools/check_links.py
 ├── roles/
-│   ├── superadmin/{beranda,igt-pertanahan,igt-tata-ruang,igt-derivatif,igt-lainnya,upload-data}/index.html
-│   ├── admin/{beranda,igt-pertanahan,igt-tata-ruang,igt-derivatif,upload-data}/index.html
+│   ├── {superadmin,admin}/{beranda,igt-pertanahan,igt-tata-ruang,igt-derivatif,igt-lainnya,upload-data}/index.html
 │   ├── operator/
-│   │   ├── {beranda,igt-pertanahan,igt-tata-ruang,igt-derivatif,upload-data}/index.html
+│   │   ├── {beranda,igt-pertanahan,igt-tata-ruang,igt-derivatif,igt-lainnya,upload-data}/index.html
 │   │   ├── igt-utama-detail/index.html
 │   │   └── layer-derivatif-detail/index.html
-│   └── umum/
+│   └── umum/{beranda,igt-pertanahan,igt-tata-ruang,igt-derivatif,igt-lainnya,upload-data}/index.html
 ├── shared/
 │   ├── igt-data.js
 │   ├── igt-app.js
@@ -61,7 +60,7 @@ igtpr-qgis-ui/
     └── 08-verifikasi-data.html
 ```
 
-Adjust placement only if repository inspection reveals a clear reason; document any deviation. Keep the root entry point and shared assets at the root. Legacy pages should be retained for reference, not added to primary navigation unless the existing design requires it. Keep `roles/umum/` empty if there is no existing Umum page; do not invent a feature to fill it.
+Adjust placement only if repository inspection reveals a clear reason; document any deviation. Keep the root entry point and shared assets at the root. Legacy pages should be retained for reference, not added to primary navigation unless the existing design requires it. (Historical: `roles/umum/` was kept empty while no Umum page existed; it now holds the Umum role's pages.)
 
 ### Refactor requirements
 
@@ -74,7 +73,7 @@ Adjust placement only if repository inspection reveals a clear reason; document 
    - relative CSS, JavaScript, image, icon, and other asset references;
    - local file paths embedded in JavaScript or dynamically generated markup.
 4. Preserve the 3:4 portrait role preview and the four roles: Superadmin, Admin, Operator, and Umum.
-5. Keep role-specific pages separate. Admin pages must point to Admin pages, not Superadmin pages. The Superadmin-only **IGT Lainnya (Eksternal)** module must not appear in the Admin dashboard. Admin must not have a **Verifikasi Data** menu or link in its dashboard.
+5. Keep role-specific pages separate. Admin pages must point to Admin pages, not Superadmin pages. (Historical: IGT Lainnya (Eksternal) was once Superadmin-only. Viewing it is now allowed for every role; only upload and management stay Superadmin-only.) Admin must not have a **Verifikasi Data** menu or link in its dashboard.
 6. Preserve existing content, sample records, distinct IGT Utama details, tabs, query parameters, and simulated actions. This is a QGIS plugin mockup, not a redesign or real QGIS integration.
 7. Keep `model-builder.html` as a shared module at `shared/model-builder/index.html`, preserving its behavior.
 8. Update `README.md` to document the actual final folder tree, role pages, shared assets, how to preview locally, and the fact that QGIS actions are simulations.

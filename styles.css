@@ -967,38 +967,6 @@ tbody tr:hover {
    Role navigation, catalog and Upload Data (shared/igt-app.js)
    ========================================================================== */
 
-/* Main menu: chips that wrap instead of scrolling sideways */
-.panel-nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 16px;
-}
-
-.panel-nav a {
-  flex: 1 1 28%;
-  padding: 9px 8px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #fff;
-  color: #526883;
-  font-size: 11px;
-  font-weight: 700;
-  text-align: center;
-  text-decoration: none;
-}
-
-.panel-nav a:hover {
-  border-color: #a8c7f6;
-  color: var(--blue);
-}
-
-.panel-nav a.active {
-  background: var(--blue);
-  border-color: var(--blue);
-  color: #fff;
-}
-
 .catalog-search {
   margin-bottom: 12px;
   max-width: 320px;
@@ -1038,4 +1006,28 @@ tbody tr:hover {
 
 #upload-panel .toolbar {
   margin-top: 12px;
+}
+
+/* Dashboard menu buttons (catalog buttons, then Upload Data): one column, top to bottom */
+.menu-buttons {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+
+.menu-btn {
+  justify-content: center;
+  padding: 13px 10px;
+  text-align: center;
+  text-decoration: none;
+}
+
+.menu-upload-head {
+  margin-top: 20px;
+}
+
+.menu-tool {
+  display: inline-block;
+  margin-top: 16px;
+  text-decoration: none;
 }
