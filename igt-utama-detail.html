@@ -18,7 +18,7 @@
 <header class="topbar"><div class="crumb">Geoportal IGT-PR　/　<a href="igt-utama.html">IGT Utama</a>　/　<strong>Detail IGT</strong></div><div class="top-actions"><button class="icon-btn" aria-label="Notifikasi">♧</button><div class="user-chip"><div class="avatar">JH</div><span>Operator Pusat</span></div></div></header>
 <main class="main">
 <div class="page-head"><div><div class="eyebrow">Sistem Informasi Geospasial</div><h1 id="igt-name">Detail IGT Utama</h1><p>Informasi pengajuan dan status data IGT yang dipilih.</p></div></div>
-<div class="detail-actions"><a class="btn btn-soft" href="01-beranda-operator.html">← Kembali ke Beranda</a><a class="btn btn-soft" href="igt-utama.html">Kembali ke daftar IGT Utama</a><button class="btn btn-primary" id="show-canvas">▧ Tampilkan di Canvas</button><button class="btn btn-soft" id="revise-igt" hidden>✎ Revisi</button></div>
+<div class="detail-actions"><a class="btn btn-soft" href="01-beranda-operator.html">← Kembali ke Beranda</a><a class="btn btn-soft" href="igt-utama.html">Kembali ke daftar IGT Utama</a><button class="btn btn-primary" id="show-canvas">▧ Tampilkan di Canvas</button><button class="btn btn-soft" id="verify-topology" hidden>⌁ Verifikasi Topologi</button><button class="btn btn-soft" id="revise-igt" hidden>✎ Revisi</button></div>
 <section class="card detail-section"><div class="card-head"><div><h2>Informasi Pengajuan</h2><p>Identitas dan metadata data IGT.</p></div><span id="status-badge" class="status info">Terkompilasi</span></div>
 <div class="detail-grid">
 <div class="detail-item"><div class="detail-label">ID Pengajuan</div><div class="detail-value" id="igt-id">IGT-2026-012</div></div>
@@ -33,13 +33,15 @@
 </main></div></div>
 <script>
 const records={
-"0":{id:"IGT-2026-012",nama:"IGT Bidang Wilayah A",jenis:"Berbasis Bidang",tanggal:"18 Okt 2026",keterangan:"Data bidang telah dikompilasi.",status:"Terkompilasi"},
+"0":{id:"IGT-2026-012",nama:"IGT Bidang Wilayah A",jenis:"Berbasis Bidang",tanggal:"18 Okt 2026",keterangan:"Data bidang telah dikompilasi.",status:"Proses"},
 "1":{id:"IGT-2026-011",nama:"IGT Kawasan Hutan",jenis:"Berbasis Kawasan",tanggal:"16 Okt 2026",keterangan:"Data kawasan telah terintegrasi.",status:"Terintegrasi"},
-"2":{id:"IGT-2026-010",nama:"IGT Bidang Wilayah B",jenis:"Berbasis Bidang",tanggal:"15 Okt 2026",keterangan:"Data bidang telah dikompilasi.",status:"Terkompilasi"},
+"2":{id:"IGT-2026-010",nama:"IGT Bidang Wilayah B",jenis:"Berbasis Bidang",tanggal:"15 Okt 2026",keterangan:"Data bidang telah dikompilasi.",status:"Revisi"},
 "3":{id:"IGT-2026-009",nama:"IGT Kawasan Lindung",jenis:"Berbasis Kawasan",tanggal:"14 Okt 2026",keterangan:"Data kawasan telah terintegrasi.",status:"Terintegrasi"}
 };
-const params=new URLSearchParams(location.search),d=records[params.get("id")]||records["0"];
+const params=new URLSearchParams(location.search),d=records[params.get("id")]||records["0"],isSuperadmin=params.get("role")==="superadmin";
 document.title=d.nama+" · Detail IGT-PR";
+document.querySelector(".crumb").innerHTML=isSuperadmin?'Geoportal IGT-PR　/　<a href="superadmin-igt-utama.html">IGT Utama</a>　/　<strong>Detail IGT</strong>':'Geoportal IGT-PR　/　<a href="igt-utama.html">IGT Utama</a>　/　<strong>Detail IGT</strong>';
+if(isSuperadmin){document.querySelector(".user-chip").innerHTML='<div class="avatar">SA</div><span>Superadmin</span>';document.querySelector(".detail-actions a[href=\"01-beranda-operator.html\"]").href="superadmin-beranda.html";document.querySelector(".detail-actions a[href=\"igt-utama.html\"]").href="superadmin-igt-utama.html";}
 document.getElementById("igt-name").textContent=d.nama;
 document.getElementById("igt-name-meta").textContent=d.nama;
 document.getElementById("igt-id").textContent=d.id;
@@ -47,6 +49,6 @@ document.getElementById("igt-jenis").textContent=d.jenis;
 document.getElementById("igt-tanggal").textContent=d.tanggal;
 document.getElementById("igt-status").textContent=d.status;
 document.getElementById("igt-keterangan").textContent=d.keterangan;
-const badge=document.getElementById("status-badge");badge.textContent=d.status;badge.className="status "+(d.status==="Terintegrasi"?"ok":d.status==="Revisi"?"warn":"info");const reviseButton=document.getElementById("revise-igt");reviseButton.hidden=d.status!=="Revisi";document.getElementById("show-canvas").addEventListener("click",()=>alert("Simulasi plugin QGIS: layer "+d.id+" akan ditampilkan pada canvas peta."));reviseButton.addEventListener("click",()=>alert("Simulasi: buka formulir revisi untuk pengajuan "+d.id+"."));
+const badge=document.getElementById("status-badge");badge.textContent=d.status;badge.className="status "+(d.status==="Terintegrasi"?"ok":d.status==="Revisi"?"warn":"info");const reviseButton=document.getElementById("revise-igt"),topologyButton=document.getElementById("verify-topology");reviseButton.hidden=d.status!=="Revisi";topologyButton.hidden=!(isSuperadmin&&d.status==="Proses");document.getElementById("show-canvas").addEventListener("click",()=>alert("Simulasi plugin QGIS: layer "+d.id+" akan ditampilkan pada kanvas peta QGIS."));topologyButton.addEventListener("click",()=>alert("Simulasi verifikasi topologi untuk "+d.id+". Pada implementasi QGIS, aksi ini menjalankan pemeriksaan topologi pada layer terkait."));reviseButton.addEventListener("click",()=>alert("Simulasi: buka formulir revisi untuk pengajuan "+d.id+"."));
 </script>
 </body></html>
