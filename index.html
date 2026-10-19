@@ -1,24 +1,14 @@
 <!doctype html>
 <html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>IGT-PR · Role UI Preview</title><link rel="stylesheet" href="styles.css">
 <style>
-.preview-layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:24px;align-items:start}.role-drawer{background:#102b59;border-radius:14px;padding:14px;color:#fff;box-shadow:0 12px 32px #102b591a}.role-drawer .drawer-title{font-size:10px;font-weight:800;letter-spacing:1.2px;color:#a9c2e6;padding:9px 10px 13px}.role-tab{display:flex;align-items:center;gap:10px;width:100%;border:0;border-radius:9px;background:transparent;color:#d4e1f3;text-align:left;padding:13px 11px;margin-bottom:5px;font-weight:700;font-size:12px;transition:.18s}.role-tab:hover{background:#ffffff12}.role-tab.active{background:#2166d2;color:white;box-shadow:0 5px 14px #001c4d38}.role-symbol{width:27px;height:27px;border-radius:8px;display:grid;place-items:center;background:#ffffff16;font-size:14px}.role-note{border-top:1px solid #ffffff24;padding:14px 9px 4px;margin-top:15px;color:#9db5d8;font-size:10px;line-height:1.55}.stage{display:flex;justify-content:center;min-width:0}.portrait-device{width:min(100%,390px);background:#e5ebf3;border:1px solid #d5deea;border-radius:15px;padding:9px;box-shadow:0 16px 38px #17365a12}.device-bar{height:24px;display:flex;justify-content:space-between;align-items:center;padding:0 7px;color:#7788a0;font-size:9px}.portrait-frame{height:720px;max-height:calc(100vh - 205px);min-height:570px;overflow:auto;border-radius:8px;background:#f3f6fb;border:1px solid #d7e0eb}.portrait-frame iframe{display:block;width:100%;height:100%;min-height:720px;border:0;background:white}.stage-label{text-align:center;color:#7c8da3;font-size:10px;margin-top:10px}.role-content{display:none}.role-content.active{display:block;animation:fade .22s ease}.operator-note{margin-top:16px;font-size:11px;color:#74849a;line-height:1.6}.page-head{margin-bottom:18px}@media(max-width:850px){.preview-layout{grid-template-columns:1fr}.role-drawer{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;padding:8px}.role-drawer .drawer-title,.role-note{display:none}.role-tab{justify-content:center;flex-direction:column;gap:5px;padding:9px 3px;font-size:10px;margin:0}.portrait-frame{height:700px;max-height:none}.stage{padding-bottom:20px}}
+.preview-layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:24px;align-items:start}.role-drawer{background:#102b59;border-radius:14px;padding:14px;color:#fff;box-shadow:0 12px 32px #102b591a}.role-drawer .drawer-title{font-size:10px;font-weight:800;letter-spacing:1.2px;color:#a9c2e6;padding:9px 10px 13px}.role-tab{display:flex;align-items:center;gap:10px;width:100%;border:0;border-radius:9px;background:transparent;color:#d4e1f3;text-align:left;padding:13px 11px;margin-bottom:5px;font-weight:700;font-size:12px;transition:.18s}.role-tab:hover{background:#ffffff12}.role-tab.active{background:#2166d2;color:white;box-shadow:0 5px 14px #001c4d38}.role-symbol{width:27px;height:27px;border-radius:8px;display:grid;place-items:center;background:#ffffff16;font-size:14px}.role-note{border-top:1px solid #ffffff24;padding:14px 9px 4px;margin-top:15px;color:#9db5d8;font-size:10px;line-height:1.55}.stage{display:flex;justify-content:center;min-width:0}.portrait-device{width:min(100%,720px);aspect-ratio:4/3;display:flex;flex-direction:column;background:#e5ebf3;border:1px solid #d5deea;border-radius:15px;padding:9px;box-shadow:0 16px 38px #17365a12}.device-bar{height:24px;display:flex;justify-content:space-between;align-items:center;padding:0 7px;color:#7788a0;font-size:9px}.portrait-frame{flex:1;min-height:0;overflow:auto;border-radius:8px;background:#f3f6fb;border:1px solid #d7e0eb}.portrait-frame iframe{display:block;width:100%;height:100%;min-height:0;border:0;background:white}.stage-label{text-align:center;color:#7c8da3;font-size:10px;margin-top:10px}.role-content{display:none}.role-content.active{display:block;animation:fade .22s ease}.operator-note{margin-top:16px;font-size:11px;color:#74849a;line-height:1.6}.page-head{margin-bottom:18px}@media(max-width:850px){.preview-layout{grid-template-columns:1fr}.role-drawer{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;padding:8px}.role-drawer .drawer-title,.role-note{display:none}.role-tab{justify-content:center;flex-direction:column;gap:5px;padding:9px 3px;font-size:10px;margin:0}.portrait-device{width:min(100%,760px);aspect-ratio:4/3}.portrait-frame{height:auto;max-height:none;min-height:0}.stage{padding-bottom:20px}}
 </style></head>
 <body>
 <div class="app">
-<aside class="sidebar">
- <div class="brand"><div class="brand-mark">I</div><div><strong>IGT-PR</strong><small>GEOportal · ATR/BPN</small></div></div>
- <div><div class="nav-label">ROLE PREVIEW</div><nav class="nav">
- <a href="#superadmin" data-role="superadmin"><span class="ico">✦</span>Superadmin</a>
- <a href="#admin" data-role="admin"><span class="ico">▣</span>Admin</a>
- <a href="#operator" data-role="operator" class="active"><span class="ico">◉</span>Operator</a>
- <a href="#umum" data-role="umum"><span class="ico">◎</span>Umum</a>
- </nav></div>
- <div class="sidebar-bottom">Pilih role untuk melihat rancangan antarmuka masing-masing. Saat ini fokus pembahasan: Operator.</div>
-</aside>
 <div class="workspace">
-<header class="topbar"><div class="crumb">Geoportal IGT-PR　/　<strong>Role UI Preview</strong></div><div class="top-actions"><span class="status info">UI/UX brainstorming</span></div></header>
+<header class="topbar"><div class="crumb">IGT-PR　/　<strong>Mockup Plugin QGIS</strong></div><div class="top-actions"><span class="status info">UI/UX mockup</span></div></header>
 <main class="main">
- <div class="page-head"><div><div class="eyebrow">Rancangan antarmuka</div><h1>Role-based UI</h1><p>Drawer kiri hanya berisi empat role. Area preview menggunakan format portrait seperti panel plugin QGIS.</p></div></div>
+ <div class="page-head"><div><div class="eyebrow">Prototipe antarmuka plugin</div><h1>IGT-PR · QGIS</h1><p>Pilih role untuk berpindah tampilan mockup. Area utama meniru panel plugin QGIS dengan rasio 4:3.</p></div></div>
  <div class="preview-layout">
   <aside class="role-drawer">
    <div class="drawer-title">PILIH ROLE</div>
@@ -26,17 +16,17 @@
    <button class="role-tab" data-switch="admin"><span class="role-symbol">▣</span>Admin</button>
    <button class="role-tab active" data-switch="operator"><span class="role-symbol">◉</span>Operator</button>
    <button class="role-tab" data-switch="umum"><span class="role-symbol">◎</span>Umum</button>
-   <div class="role-note">Empat role ini menjadi navigasi utama preview. Menu operasional ditampilkan di dalam tampilan role, bukan sebagai tab role tambahan.</div>
+   <div class="role-note">Pilihan role ini hanya alat navigasi untuk brainstorming mockup, bukan bagian dari plugin final.</div>
   </aside>
   <div>
    <section class="role-content active" data-content="operator">
-    <div class="stage"><div class="portrait-device"><div class="device-bar"><span>IGT-PR · QGIS Plugin</span><span>▁ □ ×</span></div><div class="portrait-frame"><iframe src="01-beranda-operator.html" title="Pratinjau Beranda Operator"></iframe></div></div></div>
-    <div class="stage-label">Pratinjau portrait · Beranda Operator</div>
-    <p class="operator-note">Kita fokuskan diskusi pada Operator terlebih dahulu. Tab Superadmin, Admin, dan Umum sudah disediakan sebagai placeholder dan bisa dirancang setelah alur Operator disepakati.</p>
+    <div class="stage"><div class="portrait-device"><div class="device-bar"><span>IGT-PR · QGIS Plugin Mockup</span><span>4:3 preview</span></div><div class="portrait-frame"><iframe src="01-beranda-operator.html" title="Pratinjau Beranda Operator"></iframe></div></div></div>
+    <div class="stage-label">Mockup panel plugin · rasio 4:3</div>
+    <p class="operator-note">Kita fokuskan diskusi pada Operator terlebih dahulu. Role lain masih placeholder. Semua interaksi hanya simulasi untuk mengevaluasi tata letak dan alur kerja.</p>
    </section>
-   <section class="role-content" data-content="superadmin"><div class="card"><div class="eyebrow">Role preview</div><h2>Superadmin</h2><p class="sub">Placeholder. Nanti berisi pengelolaan role, cakupan akses, konfigurasi sistem, dan monitoring seluruh pengajuan sesuai kewenangan.</p></div></section>
-   <section class="role-content" data-content="admin"><div class="card"><div class="eyebrow">Role preview</div><h2>Admin</h2><p class="sub">Placeholder. Nanti berisi antrean verifikasi, pemeriksaan data, persetujuan, dan pengembalian untuk perbaikan.</p></div></section>
-   <section class="role-content" data-content="umum"><div class="card"><div class="eyebrow">Role preview</div><h2>Umum</h2><p class="sub">Placeholder. Nanti berisi akses katalog dan layanan publik yang diizinkan tanpa fitur pengajuan atau verifikasi internal.</p></div></section>
+   <section class="role-content" data-content="superadmin"><div class="card"><div class="eyebrow">Role preview</div><h2>Superadmin</h2><p class="sub">Placeholder untuk rancangan antarmuka Superadmin.</p></div></section>
+   <section class="role-content" data-content="admin"><div class="card"><div class="eyebrow">Role preview</div><h2>Admin</h2><p class="sub">Placeholder untuk rancangan antarmuka Admin.</p></div></section>
+   <section class="role-content" data-content="umum"><div class="card"><div class="eyebrow">Role preview</div><h2>Umum</h2><p class="sub">Placeholder untuk rancangan antarmuka Umum.</p></div></section>
   </div>
  </div>
 </main></div></div>
