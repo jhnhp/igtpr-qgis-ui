@@ -80,7 +80,7 @@ const IgtApp = (() => {
       `<div class="menu-buttons"><a class="btn btn-primary menu-btn" id="upload-button" href="../upload-data/index.html">↑ Upload Data</a></div>` +
       (ROLES[role].modelBuilder === false
         ? ''
-        : `<div class="menu-buttons"><a class="btn btn-primary menu-btn" id="model-builder-button" href="../../../shared/model-builder/index.html?role=${role}">⚙ Model Builder</a></div>`) +
+        : `<div class="menu-buttons model-builder-buttons"><a class="btn btn-primary menu-btn" id="model-builder-button" href="../../../shared/model-builder/index.html?role=${role}">⚙ Model Builder</a></div>`) +
       `</section>`;
   }
 
