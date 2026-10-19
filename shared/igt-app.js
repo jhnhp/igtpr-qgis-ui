@@ -64,7 +64,7 @@ const IgtApp = (() => {
       `<section class="card"><div class="card-head"><div><h2>Lihat peta IGT</h2><p>Buka katalog dataset yang sudah tersedia.</p></div></div>` +
       `<div class="menu-buttons" id="catalog-buttons">${catalogButtons}</div>` +
       `<div class="card-head menu-upload-head"><div><h2>Kelola data</h2><p>Unggah data baru dan pantau status pengajuan.</p></div></div>` +
-      `<div class="menu-buttons"><a class="btn btn-primary menu-btn" id="upload-button" href="../upload-data/index.html">↑ Upload Data</a></div>` +
+      `<div class="menu-buttons"><a class="btn btn-primary menu-btn" id="upload-button" href="../upload-data/index.html">↻ Update Data</a></div>` +
       (ROLES[role].modelBuilder === false
         ? ''
         : `<div class="menu-buttons model-builder-buttons"><a class="btn btn-primary menu-btn" id="model-builder-button" href="../../../shared/model-builder/index.html?role=${role}">⚙ Model Builder</a></div>`) +
