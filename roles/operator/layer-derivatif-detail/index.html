@@ -20,10 +20,11 @@
 <div class="footer">Mockup UI plugin QGIS · data contoh</div></main></div></div>
 <script>
 const data={
-"0":{id:"DRV-2026-008",nama:"Derivatif Kawasan Hutan",jenis:"Berbasis Kawasan",tanggal:"16 Okt 2026",status:"Terintegrasi",sld:"derivatif-kawasan-hutan.sld",expired:"30 hari",notes:"Layer derivatif telah disetujui, terintegrasi, dan siap digunakan."},
-"1":{id:"DRV-2026-007",nama:"Derivatif Bidang Wilayah A",jenis:"Berbasis Bidang",tanggal:"15 Okt 2026",status:"Proses",sld:"derivatif-bidang-wilayah-a.sld",expired:"—",notes:"Pengajuan dalam proses dan menunggu keputusan."},
+"0":{id:"DRV-2026-008",nama:"Derivatif Kawasan Hutan",jenis:"Berbasis Kawasan",tanggal:"16 Okt 2026",status:"Disetujui",sld:"derivatif-kawasan-hutan.sld",expired:"30 hari",notes:"Layer derivatif telah disetujui dan siap digunakan."},
+"1":{id:"DRV-2026-007",nama:"Derivatif Bidang Wilayah A",jenis:"Berbasis Bidang",tanggal:"15 Okt 2026",status:"Diajukan",sld:"derivatif-bidang-wilayah-a.sld",expired:"—",notes:"Pengajuan menunggu keputusan Admin atau Superadmin."},
 "2":{id:"DRV-2026-006",nama:"Derivatif Kawasan Lindung",jenis:"Berbasis Kawasan",tanggal:"14 Okt 2026",status:"Ditolak",sld:"derivatif-kawasan-lindung.sld",expired:"—",notes:"Pengajuan ditolak; periksa catatan evaluasi."},
-"3":{id:"DRV-2026-005",nama:"Derivatif Bidang Wilayah B",jenis:"Berbasis Bidang",tanggal:"12 Okt 2026",status:"Disetujui",sld:"derivatif-bidang-wilayah-b.sld",expired:"14 hari",notes:"Layer derivatif telah disetujui dan siap digunakan."}
+"3":{id:"DRV-2026-005",nama:"Derivatif Bidang Wilayah B",jenis:"Berbasis Bidang",tanggal:"12 Okt 2026",status:"Disetujui",sld:"derivatif-bidang-wilayah-b.sld",expired:"14 hari",notes:"Layer derivatif telah disetujui dan siap digunakan."},
+"4":{id:"DRV-2026-004",nama:"Derivatif Kawasan Permukiman",jenis:"Berbasis Kawasan",tanggal:"2 Okt 2026",status:"Kadaluwarsa",sld:"derivatif-kawasan-permukiman.sld",expired:"Berakhir",notes:"Masa berlaku layer telah berakhir; layer tidak lagi ditampilkan di katalog."}
 };
 const params=new URLSearchParams(location.search),d=data[params.get("id")]||data["0"],role=["superadmin","admin","umum"].includes(params.get("role"))?params.get("role"):"operator",isSuperadmin=role==="superadmin",isAdmin=role==="admin";
 const uploadUrl="../../"+role+"/upload-data/index.html?tab=derivatif";
@@ -40,8 +41,8 @@ document.getElementById("layer-status").textContent=d.status;
 document.getElementById("layer-sld").textContent=d.sld;
 document.getElementById("layer-expiry").textContent=d.expired;
 document.getElementById("layer-notes").textContent=d.notes;
-const badge=document.getElementById("status-badge");badge.textContent=d.status;badge.className="status "+(d.status==="Disetujui"||d.status==="Terintegrasi"?"ok":d.status==="Ditolak"?"fix":"info");
-const review=document.getElementById("detail-review");review.hidden=!((isSuperadmin||isAdmin)&&d.status==="Proses");
+const badge=document.getElementById("status-badge");badge.textContent=d.status;badge.className="status "+(d.status==="Disetujui"?"ok":d.status==="Ditolak"?"fix":d.status==="Kadaluwarsa"?"warn":"info");
+const review=document.getElementById("detail-review");review.hidden=!((isSuperadmin||isAdmin)&&d.status==="Diajukan");
 function decide(approved){if(!confirm((approved?"Setujui":"Tolak")+" pengajuan "+d.id+"?"))return;d.status=approved?"Disetujui":"Ditolak";d.notes=approved?"Layer derivatif telah disetujui dan siap digunakan.":"Pengajuan ditolak oleh "+(isAdmin?"Admin":"Superadmin")+".";d.expired=approved?"30 hari":"—";badge.textContent=d.status;badge.className="status "+(approved?"ok":"fix");document.getElementById("layer-status").textContent=d.status;document.getElementById("layer-notes").textContent=d.notes;document.getElementById("layer-expiry").textContent=d.expired;review.hidden=true;alert("Status pengajuan "+d.id+" diperbarui menjadi "+d.status+".");}
 document.getElementById("detail-approve").addEventListener("click",()=>decide(true));document.getElementById("detail-reject").addEventListener("click",()=>decide(false));
 document.getElementById("show-canvas").addEventListener("click",()=>alert("Simulasi plugin QGIS: layer "+d.id+" akan ditampilkan pada canvas peta."));

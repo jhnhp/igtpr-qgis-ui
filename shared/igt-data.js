@@ -6,18 +6,34 @@
 // - The catalog pages show only records with status `Terintegrasi`.
 // - The Upload Data page shows every record of a category (the submission lifecycle).
 //
-// Lifecycle
+// Lifecycle (statuses differ per category)
 // - IGT Pertanahan / IGT Tata Ruang: Proses -> Terkompilasi -> Terintegrasi (Revisi = returned to Operator).
-// - IGT Derivatif: Proses -> Disetujui -> Terintegrasi (Ditolak = rejected). Admin uploads start as Disetujui.
-// - IGT Lainnya: external layers added by Superadmin are available immediately (Terintegrasi).
+//   Only these two categories use Terkompilasi / Terintegrasi.
+// - IGT Derivatif: Diajukan -> Disetujui or Ditolak; an approved layer later becomes Kadaluwarsa when its
+//   validity period ends. Admin uploads start as Disetujui, Operator/Umum uploads start as Diajukan.
+// - IGT Lainnya: everything uploaded (Superadmin only) is available immediately, status Tersedia.
+// A record enters its catalog when its status equals the category's `catalogStatus`.
 const IgtData = (() => {
   const CATEGORY_ORDER = ['pertanahan', 'tata-ruang', 'derivatif', 'lainnya'];
 
   const CATEGORIES = {
-    pertanahan: { label: 'IGT Pertanahan', slug: 'igt-pertanahan', kind: 'bidang', detail: 'utama' },
-    'tata-ruang': { label: 'IGT Tata Ruang', slug: 'igt-tata-ruang', kind: 'kawasan', detail: 'utama' },
-    derivatif: { label: 'IGT Derivatif', slug: 'igt-derivatif', detail: 'derivatif' },
-    lainnya: { label: 'IGT Lainnya', slug: 'igt-lainnya' },
+    pertanahan: {
+      label: 'IGT Pertanahan', slug: 'igt-pertanahan', kind: 'bidang', detail: 'utama', integration: true,
+      catalogStatus: 'Terintegrasi', noun: 'dataset terintegrasi', rule: 'Hanya dataset berstatus Terintegrasi yang tampil.',
+    },
+    'tata-ruang': {
+      label: 'IGT Tata Ruang', slug: 'igt-tata-ruang', kind: 'kawasan', detail: 'utama', integration: true,
+      catalogStatus: 'Terintegrasi', noun: 'dataset terintegrasi', rule: 'Hanya dataset berstatus Terintegrasi yang tampil.',
+    },
+    derivatif: {
+      label: 'IGT Derivatif', slug: 'igt-derivatif', detail: 'derivatif',
+      catalogStatus: 'Disetujui', noun: 'layer disetujui',
+      rule: 'Hanya layer berstatus Disetujui yang tampil; layer Diajukan, Ditolak, dan Kadaluwarsa tidak ditampilkan.',
+    },
+    lainnya: {
+      label: 'IGT Lainnya', slug: 'igt-lainnya',
+      catalogStatus: 'Tersedia', noun: 'layer tersedia', rule: 'Semua layer eksternal yang diunggah langsung masuk katalog.',
+    },
   };
 
   // Permissions. Every role may browse all four catalogs (`view`). Uploading and managing submissions
@@ -45,15 +61,16 @@ const IgtData = (() => {
     { category: 'tata-ruang', n: 3, id: 'IGT-2026-009', name: 'IGT Kawasan Lindung', date: '14 Okt 2026', status: 'Terkompilasi' },
     { category: 'tata-ruang', n: 6, id: 'IGT-2026-006', name: 'IGT Kawasan Rawan Bencana', date: '9 Okt 2026', updated: '11 Okt 2026', status: 'Terintegrasi' },
     // IGT Derivatif
-    { category: 'derivatif', n: 0, id: 'DRV-2026-008', name: 'Derivatif Kawasan Hutan', date: '16 Okt 2026', updated: '17 Okt 2026', status: 'Terintegrasi' },
-    { category: 'derivatif', n: 1, id: 'DRV-2026-007', name: 'Derivatif Bidang Wilayah A', date: '15 Okt 2026', status: 'Proses' },
+    { category: 'derivatif', n: 0, id: 'DRV-2026-008', name: 'Derivatif Kawasan Hutan', date: '16 Okt 2026', updated: '17 Okt 2026', status: 'Disetujui' },
+    { category: 'derivatif', n: 1, id: 'DRV-2026-007', name: 'Derivatif Bidang Wilayah A', date: '15 Okt 2026', status: 'Diajukan' },
     { category: 'derivatif', n: 2, id: 'DRV-2026-006', name: 'Derivatif Kawasan Lindung', date: '14 Okt 2026', status: 'Ditolak' },
-    { category: 'derivatif', n: 3, id: 'DRV-2026-005', name: 'Derivatif Bidang Wilayah B', date: '12 Okt 2026', status: 'Disetujui' },
-    // IGT Lainnya (eksternal): no detail page, available immediately
-    { category: 'lainnya', id: 'IGT-EXT-004', name: 'Rencana Tata Ruang Wilayah', source: 'Dinas Pertanahan dan Tata Ruang DIY', date: '18 Okt 2026', updated: '18 Okt 2026', status: 'Terintegrasi' },
-    { category: 'lainnya', id: 'IGT-EXT-003', name: 'Tutupan Lahan Nasional', source: 'Kementerian Lingkungan Hidup', date: '15 Okt 2026', updated: '15 Okt 2026', status: 'Terintegrasi' },
-    { category: 'lainnya', id: 'IGT-EXT-002', name: 'Batas Wilayah Administrasi', source: 'Badan Informasi Geospasial', date: '12 Okt 2026', updated: '12 Okt 2026', status: 'Terintegrasi' },
-    { category: 'lainnya', id: 'IGT-EXT-001', name: 'Peta Risiko Bencana', source: 'Badan Nasional Penanggulangan Bencana', date: '10 Okt 2026', updated: '10 Okt 2026', status: 'Terintegrasi' },
+    { category: 'derivatif', n: 3, id: 'DRV-2026-005', name: 'Derivatif Bidang Wilayah B', date: '12 Okt 2026', updated: '13 Okt 2026', status: 'Disetujui' },
+    { category: 'derivatif', n: 4, id: 'DRV-2026-004', name: 'Derivatif Kawasan Permukiman', date: '2 Okt 2026', status: 'Kadaluwarsa' },
+    // IGT Lainnya (eksternal): no detail page, everything uploaded is available immediately
+    { category: 'lainnya', id: 'IGT-EXT-004', name: 'Rencana Tata Ruang Wilayah', source: 'Dinas Pertanahan dan Tata Ruang DIY', date: '18 Okt 2026', updated: '18 Okt 2026', status: 'Tersedia' },
+    { category: 'lainnya', id: 'IGT-EXT-003', name: 'Tutupan Lahan Nasional', source: 'Kementerian Lingkungan Hidup', date: '15 Okt 2026', updated: '15 Okt 2026', status: 'Tersedia' },
+    { category: 'lainnya', id: 'IGT-EXT-002', name: 'Batas Wilayah Administrasi', source: 'Badan Informasi Geospasial', date: '12 Okt 2026', updated: '12 Okt 2026', status: 'Tersedia' },
+    { category: 'lainnya', id: 'IGT-EXT-001', name: 'Peta Risiko Bencana', source: 'Badan Nasional Penanggulangan Bencana', date: '10 Okt 2026', updated: '10 Okt 2026', status: 'Tersedia' },
   ];
 
   const canView = (role, category) => Boolean(ROLES[role] && ROLES[role].view.includes(category));
@@ -61,8 +78,11 @@ const IgtData = (() => {
   // Submissions a role may see in Upload Data: its upload categories, and only its own records for Umum.
   const submissionsFor = (role, records) =>
     records.filter((r) => canUpload(role, r.category) && (!ROLES[role].ownSubmissionsOnly || r.owner === role));
+  const inCatalog = (record) => record.status === CATEGORIES[record.category].catalogStatus;
+  // Terkompilasi / Terintegrasi exist only for categories with an integration step.
+  const integrationRecords = (records) => records.filter((r) => CATEGORIES[r.category].integration);
   const loadRecords = () => RECORDS.map((record) => ({ ...record }));
   const countByStatus = (records, status) => records.filter((record) => record.status === status).length;
 
-  return { CATEGORY_ORDER, CATEGORIES, ROLES, canView, canUpload, submissionsFor, loadRecords, countByStatus };
+  return { CATEGORY_ORDER, CATEGORIES, ROLES, canView, canUpload, submissionsFor, inCatalog, integrationRecords, loadRecords, countByStatus };
 })();

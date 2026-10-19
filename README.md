@@ -10,7 +10,7 @@ Browsing integrated data is separate from uploading and managing submissions.
 
 | Page | Purpose |
 | --- | --- |
-| Dashboard | Repository overview: number of datasets that are **Terkompilasi** and **Terintegrasi** (total and per category). Below it, one *Lihat peta IGT* button per catalog (4, the same for every role) and one *Upload Data* button. This is the navigation hub. No upload controls on the page itself. |
+| Dashboard | Repository overview: number of datasets that are **Terkompilasi** and **Terintegrasi** (only IGT Pertanahan and IGT Tata Ruang have these statuses; per-category table for those two). Below it, one *Lihat peta IGT* button per catalog (4, the same for every role) and one *Upload Data* button. This is the navigation hub. No upload controls on the page itself. |
 | IGT Pertanahan | Catalog of integrated datasets (berbasis bidang) |
 | IGT Tata Ruang | Catalog of integrated datasets (berbasis kawasan) |
 | IGT Derivatif | Catalog of integrated derivative layers |
@@ -31,10 +31,10 @@ Every role gets the same Dashboard buttons (the four catalogs and Upload Data). 
 Permissions live in `shared/igt-data.js`. Two permission levels exist: `view` (catalogs) and `upload` (Upload Data tabs and actions). The Upload Data tabs and `?tab=` are checked against `upload`, so `?tab=lainnya` is ignored for Admin/Operator. Managing IGT Lainnya (upload layer, Hapus) stays Superadmin only.
 
 ### Catalog pages
-Columns: **Nama IGT**, **Tanggal Update**, **Tampilkan WMS**, **Tampilkan WFS**. They list only records with status `Terintegrasi` and contain no upload or approval controls. The WMS and WFS buttons are labelled simulations: they show a message saying which service type would be added to QGIS and that no real service is connected. No service URLs exist in this repository. An empty category shows an empty state; a search with no match shows a different one.
+Columns: **Nama IGT**, **Tanggal Update**, **Tampilkan WMS**, **Tampilkan WFS**. They list only records that belong in the catalog and contain no upload or approval controls: `Terintegrasi` for IGT Pertanahan / Tata Ruang, `Disetujui` for IGT Derivatif (Diajukan, Ditolak and Kadaluwarsa layers are not shown), and every layer of IGT Lainnya (all `Tersedia`). The WMS and WFS buttons are labelled simulations: they show a message saying which service type would be added to QGIS and that no real service is connected. No service URLs exist in this repository. An empty category shows an empty state; a search with no match shows a different one.
 
 ### Upload Data page
-1. **Submission dashboard** (Total pengajuan, Proses, Menunggu integrasi, Perlu perhatian) for the categories the role may use.
+1. **Submission dashboard** (Total pengajuan, Dalam proses = Proses or Diajukan, Menunggu integrasi = Terkompilasi, Perlu perhatian = Revisi, Ditolak or Kadaluwarsa) for the categories the role may use.
 2. **Category tabs**: IGT Pertanahan, IGT Tata Ruang, IGT Derivatif, and IGT Lainnya (Superadmin only; Admin and Operator can still view it in the catalog). The tab can be preselected with `?tab=pertanahan|tata-ruang|derivatif|lainnya`.
 3. **Upload controls and submission table** (ID Pengajuan, Layer Target, Tanggal Upload, Status, Aksi) for the selected tab:
 
@@ -42,15 +42,16 @@ Columns: **Nama IGT**, **Tanggal Update**, **Tampilkan WMS**, **Tampilkan WFS**.
 | --- | --- | --- |
 | IGT Pertanahan | Load Baseline (only here) and Upload Data | Detail; Verifikasi Topologi on `Proses` rows (Admin, Superadmin); Revisi on `Revisi` rows (Operator) |
 | IGT Tata Ruang | Upload form (dropzone, tema, nama layer, wilayah, deskripsi) | same as Pertanahan |
-| IGT Derivatif | Admin: Upload Derivatif (goes straight to `Disetujui`). Umum: Upload Derivatif (becomes `Proses`). Operator: Derivative Kawasan / Bidang workflows (`legacy/`). Superadmin: review only | Detail; Setujui and Tolak on `Proses` rows (Admin, Superadmin) |
+| IGT Derivatif | Admin: Upload Derivatif (goes straight to `Disetujui`). Umum: Upload Derivatif (becomes `Diajukan`). Operator: Derivative Kawasan / Bidang workflows (`legacy/`). Superadmin: review only | Detail; Setujui and Tolak on `Diajukan` rows (Admin, Superadmin) |
 | IGT Lainnya | Upload layer (simulated; layers are added through QGIS) | Hapus |
 
 ### Statuses and data model
-- One record in `shared/igt-data.js` is one dataset plus its latest submission, so counting records counts datasets. Re-submissions of an integrated dataset are not modelled.
-- IGT Pertanahan / Tata Ruang: `Proses` → `Terkompilasi` → `Terintegrasi`; `Revisi` = returned to the Operator. *Verifikasi Topologi* moves a row to `Terkompilasi`.
-- IGT Derivatif: `Proses` → `Disetujui` → `Terintegrasi`; `Ditolak` = rejected. Admin uploads start as `Disetujui`; Umum uploads start as `Proses` and wait for an Admin or Superadmin decision.
-- IGT Lainnya: external layers are available immediately (`Terintegrasi`).
-- Moving from `Terkompilasi`/`Disetujui` to `Terintegrasi` happens outside the mockup, so no button does it. Derivative layers that are only `Disetujui` count in neither Dashboard total.
+- One record in `shared/igt-data.js` is one dataset plus its latest submission, so counting records counts datasets. Re-submissions are not modelled.
+- **Statuses differ per category.** Only IGT Pertanahan and IGT Tata Ruang use `Terkompilasi` and `Terintegrasi`.
+- IGT Pertanahan / Tata Ruang: `Proses` → `Terkompilasi` → `Terintegrasi`; `Revisi` = returned to the Operator. *Verifikasi Topologi* moves a row to `Terkompilasi`. Moving on to `Terintegrasi` happens outside the mockup, so no button does it.
+- IGT Derivatif: `Diajukan` → `Disetujui` or `Ditolak`; an approved layer becomes `Kadaluwarsa` when its validity period ends (no button; sample record DRV-2026-004). Admin uploads start as `Disetujui`; Operator and Umum uploads start as `Diajukan` and wait for an Admin or Superadmin decision.
+- IGT Lainnya: everything uploaded (Superadmin only) is available immediately, status `Tersedia`.
+- The Dashboard totals therefore cover only Pertanahan and Tata Ruang.
 - State changes (topology, approve/reject, upload, delete) live only in the open page; reloading restores the sample data. The Dashboard and catalogs always show the sample data.
 
 ### Detail pages are shared by query string

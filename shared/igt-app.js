@@ -11,6 +11,9 @@ const IgtApp = (() => {
     Revisi: 'warn',
     Disetujui: 'ok',
     Ditolak: 'fix',
+    Diajukan: 'info',
+    Kadaluwarsa: 'warn',
+    Tersedia: 'ok',
   };
 
   const badge = (status) => `<span class="status ${STATUS_CLASS[status] || ''}">${status}</span>`;
@@ -36,12 +39,15 @@ const IgtApp = (() => {
   // Repository overview: how many datasets are compiled and integrated. No upload controls here.
   function dashboard(role) {
     // The Dashboard has no menu bar: navigation is the buttons below the overview.
+    // Terkompilasi / Terintegrasi only exist for IGT Pertanahan and IGT Tata Ruang.
     const records = IgtData.loadRecords().filter((r) => IgtData.canView(role, r.category));
-    const compiled = IgtData.countByStatus(records, 'Terkompilasi');
-    const integrated = IgtData.countByStatus(records, 'Terintegrasi');
+    const staged = IgtData.integrationRecords(records);
+    const compiled = IgtData.countByStatus(staged, 'Terkompilasi');
+    const integrated = IgtData.countByStatus(staged, 'Terintegrasi');
     const categories = CATEGORY_ORDER.filter((key) => IgtData.canView(role, key));
 
     const rows = categories
+      .filter((key) => CATEGORIES[key].integration)
       .map((key) => {
         const own = records.filter((r) => r.category === key);
         return (
@@ -60,13 +66,15 @@ const IgtApp = (() => {
     $('#view').innerHTML =
       `<div class="grid stats">` +
       statCard('Terkompilasi', compiled, 'Menunggu integrasi', '▤', 'amber', 'count-compiled') +
-      statCard('Terintegrasi', integrated, 'Siap diakses di katalog', '✓', 'green', 'count-integrated') +
+      statCard('Terintegrasi', integrated, 'Pertanahan dan Tata Ruang', '✓', 'green', 'count-integrated') +
       `</div>` +
-      `<section class="card"><div class="card-head"><div><h2>Ringkasan per kategori</h2>` +
-      `<p>Jumlah dataset menurut status, dihitung dari data contoh. Satu catatan mewakili satu dataset.</p></div></div>` +
+      `<section class="card"><div class="card-head"><div><h2>Ringkasan status</h2>` +
+      `<p>Dihitung dari data contoh. Satu catatan mewakili satu dataset.</p></div></div>` +
       `<div class="table-wrap"><table class="compact"><thead><tr><th>Kategori</th><th>Terkompilasi</th><th>Terintegrasi</th></tr></thead>` +
-      `<tbody id="category-rows">${rows}</tbody></table></div></section>` +
-      `<section class="card"><div class="card-head"><div><h2>Lihat peta IGT</h2><p>Buka katalog dataset yang sudah terintegrasi.</p></div></div>` +
+      `<tbody id="category-rows">${rows}</tbody></table></div>` +
+      `<p class="summary-note">Hanya IGT Pertanahan dan IGT Tata Ruang melewati tahap Terkompilasi dan Terintegrasi. ` +
+      `IGT Derivatif tersedia setelah Disetujui, dan semua layer IGT Lainnya yang diunggah langsung tersedia.</p></section>` +
+      `<section class="card"><div class="card-head"><div><h2>Lihat peta IGT</h2><p>Buka katalog dataset yang sudah tersedia.</p></div></div>` +
       `<div class="menu-buttons" id="catalog-buttons">${catalogButtons}</div>` +
       `<div class="card-head menu-upload-head"><div><h2>Kelola data</h2><p>Unggah data baru dan pantau status pengajuan.</p></div></div>` +
       `<div class="menu-buttons"><a class="btn btn-primary menu-btn" id="upload-button" href="../upload-data/index.html">↑ Upload Data</a></div>` +
@@ -85,20 +93,21 @@ const IgtApp = (() => {
     `Simulasi WFS: layanan fitur "${name}" akan dimuat sebagai layer vektor WFS di QGIS. ` +
     'Belum terhubung ke layanan nyata.';
 
-  // Integrated datasets of one category. Only status Terintegrasi is listed; nothing can be edited here.
+  // Datasets of one category that are in its catalog (see CATEGORIES[...].catalogStatus); nothing can be edited here.
   function catalog(role, category) {
     const view = $('#view');
     if (!IgtData.canView(role, category)) {
       view.innerHTML = `<div class="notice"><strong>Akses ditolak</strong>${CATEGORIES[category].label} tidak tersedia untuk role ini.</div>`;
       return;
     }
-    const datasets = IgtData.loadRecords().filter((r) => r.category === category && r.status === 'Terintegrasi');
+    const config = CATEGORIES[category];
+    const datasets = IgtData.loadRecords().filter((r) => r.category === category && IgtData.inCatalog(r));
     let query = '';
 
     view.innerHTML =
-      `<div class="notice"><strong>Katalog data terintegrasi</strong>Hanya dataset berstatus Terintegrasi yang tampil. ` +
+      `<div class="notice"><strong>Isi katalog</strong>${config.rule} ` +
       `Tombol WMS dan WFS adalah simulasi; belum ada layanan nyata yang terhubung.</div>` +
-      `<section class="card"><div class="card-head"><div><h2>Dataset terintegrasi</h2><p id="catalog-count"></p></div></div>` +
+      `<section class="card"><div class="card-head"><div><h2>${config.noun.charAt(0).toUpperCase() + config.noun.slice(1)}</h2><p id="catalog-count"></p></div></div>` +
       `<div class="field catalog-search"><label for="catalog-search">PENCARIAN</label><input id="catalog-search" type="search" placeholder="Cari nama IGT..."></div>` +
       `<div class="table-wrap"><table class="stack"><thead><tr><th>Nama IGT</th><th>Tanggal Update</th><th>Tampilkan WMS</th><th>Tampilkan WFS</th></tr></thead>` +
       `<tbody id="catalog-rows"></tbody></table></div>` +
@@ -118,11 +127,11 @@ const IgtApp = (() => {
           );
         })
         .join('');
-      setText('catalog-count', `${datasets.length} dataset terintegrasi di ${CATEGORIES[category].label}.`);
+      setText('catalog-count', `${datasets.length} ${config.noun} di ${config.label}.`);
       const empty = $('#empty-state');
       empty.hidden = shown.length > 0;
       empty.textContent = datasets.length === 0
-        ? `Belum ada dataset terintegrasi pada ${CATEGORIES[category].label}.`
+        ? `Belum ada ${config.noun} pada ${config.label}.`
         : 'Tidak ada dataset yang cocok dengan pencarian.';
     }
 
@@ -178,23 +187,23 @@ const IgtApp = (() => {
       if (role === 'admin') {
         return (
           `<div class="toolbar"><button class="btn btn-primary" data-action="upload-derivatif">↑ Upload Derivatif</button></div>` +
-          `<div class="notice"><strong>Catatan</strong>Unggahan Admin langsung berstatus Disetujui. Pengajuan Operator berstatus Proses sampai diputuskan.</div>`
+          `<div class="notice"><strong>Catatan</strong>Unggahan Admin langsung berstatus Disetujui. Pengajuan Operator berstatus Diajukan sampai diputuskan.</div>`
         );
       }
       if (role === 'umum') {
         return (
           `<div class="toolbar"><button class="btn btn-primary" data-action="upload-derivatif">↑ Upload Derivatif</button></div>` +
-          `<div class="notice"><strong>Catatan</strong>Pengajuan Umum berstatus Proses sampai disetujui atau ditolak oleh Admin atau Superadmin. Anda hanya melihat pengajuan Anda sendiri.</div>`
+          `<div class="notice"><strong>Catatan</strong>Pengajuan Umum berstatus Diajukan sampai disetujui atau ditolak oleh Admin atau Superadmin. Anda hanya melihat pengajuan Anda sendiri.</div>`
         );
       }
       if (role === 'operator') {
         return (
           `<div class="toolbar"><a class="btn btn-primary" href="${LEGACY}06-derivative-kawasan.html">＋ Derivative Kawasan</a>` +
           `<a class="btn btn-soft" href="${LEGACY}07-derivative-bidang.html">＋ Derivative Bidang</a></div>` +
-          `<div class="notice"><strong>Catatan</strong>Pengajuan berstatus Proses sampai disetujui atau ditolak oleh Admin atau Superadmin.</div>`
+          `<div class="notice"><strong>Catatan</strong>Pengajuan berstatus Diajukan sampai disetujui atau ditolak oleh Admin atau Superadmin.</div>`
         );
       }
-      return `<div class="notice"><strong>Panel verifikasi</strong>Setujui atau tolak pengajuan yang berstatus Proses.</div>`;
+      return `<div class="notice"><strong>Panel verifikasi</strong>Setujui atau tolak pengajuan yang berstatus Diajukan.</div>`;
     }
     return (
       `<div class="toolbar"><button class="btn btn-primary" data-action="upload-lainnya">＋ Upload layer</button></div>` +
@@ -216,7 +225,7 @@ const IgtApp = (() => {
     if (kind === 'utama') {
       if (reviewer && r.status === 'Proses') extras.push(button('btn-primary', 'topology', r.id, '⌁ Verifikasi Topologi'));
       if (role === 'operator' && r.status === 'Revisi') extras.push(button('btn-soft', 'revision', r.id, '✎ Revisi'));
-    } else if (reviewer && r.status === 'Proses') {
+    } else if (reviewer && r.status === 'Diajukan') {
       extras.push(button('btn-primary', 'approve', r.id, '✓ Setujui'), button('btn-soft', 'reject', r.id, '✕ Tolak'));
     }
     return toolbar(...extras, detail);
@@ -233,9 +242,9 @@ const IgtApp = (() => {
     $('#view').innerHTML =
       `<div class="grid stats">` +
       statCard('Total pengajuan', '', 'Semua kategori', '▦', '', 'count-total') +
-      statCard('Proses', '', 'Menunggu pemeriksaan', '◷', 'amber', 'count-process') +
-      statCard('Menunggu integrasi', '', 'Terkompilasi atau Disetujui', '▤', '', 'count-waiting') +
-      statCard('Perlu perhatian', '', 'Revisi atau Ditolak', '!', 'red', 'count-attention') +
+      statCard('Dalam proses', '', 'Proses atau Diajukan', '◷', 'amber', 'count-process') +
+      statCard('Menunggu integrasi', '', 'Terkompilasi', '▤', '', 'count-waiting') +
+      statCard('Perlu perhatian', '', 'Revisi, Ditolak, atau Kadaluwarsa', '!', 'red', 'count-attention') +
       `</div><section class="card"><div class="tabs" data-tabs>` +
       categories.map((key) => `<button class="tab" data-tab="${key}">${CATEGORIES[key].label}</button>`).join('') +
       `</div><div class="card-head"><div><h2 id="tab-heading"></h2><p id="tab-description"></p></div></div>` +
@@ -247,9 +256,9 @@ const IgtApp = (() => {
     function renderCounts() {
       const count = (...statuses) => records.filter((r) => statuses.includes(r.status)).length;
       setText('count-total', records.length);
-      setText('count-process', count('Proses'));
-      setText('count-waiting', count('Terkompilasi', 'Disetujui'));
-      setText('count-attention', count('Revisi', 'Ditolak'));
+      setText('count-process', count('Proses', 'Diajukan'));
+      setText('count-waiting', count('Terkompilasi'));
+      setText('count-attention', count('Revisi', 'Ditolak', 'Kadaluwarsa'));
     }
 
     function render() {
@@ -314,14 +323,14 @@ const IgtApp = (() => {
         const direct = role !== 'umum';
         const message = direct
           ? 'Simulasi: pilih berkas layer derivatif. Unggahan Admin langsung berstatus Disetujui. Lanjutkan?'
-          : 'Simulasi: pilih berkas layer derivatif. Pengajuan Umum berstatus Proses dan menunggu keputusan Admin atau Superadmin. Lanjutkan?';
+          : 'Simulasi: pilih berkas layer derivatif. Pengajuan Umum berstatus Diajukan dan menunggu keputusan Admin atau Superadmin. Lanjutkan?';
         if (!confirm(message)) return;
         records.unshift({
           category: 'derivatif',
           id: 'DRV-2026-' + String(nextDerivative).padStart(3, '0'),
           name: (direct ? 'Derivatif Unggahan Admin ' : 'Derivatif Unggahan Umum ') + nextDerivative,
           date: '19 Okt 2026',
-          status: direct ? 'Disetujui' : 'Proses',
+          status: direct ? 'Disetujui' : 'Diajukan',
           owner: role === 'umum' ? 'umum' : undefined,
         });
         nextDerivative += 1;
