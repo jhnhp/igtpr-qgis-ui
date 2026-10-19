@@ -1015,6 +1015,29 @@ tbody tr:hover {
   gap: 8px;
 }
 
+.sort-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+  white-space: nowrap;
+}
+.sort-header span {
+  opacity: .7;
+  font-size: 11px;
+}
+.sort-header:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
 .menu-btn {
   justify-content: center;
   padding: 13px 10px;
