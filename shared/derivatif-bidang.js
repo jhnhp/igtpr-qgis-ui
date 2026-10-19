@@ -118,6 +118,7 @@ const DerivatifBidang = (() => {
 
     const state = {
       step: 1,
+      resumeMode: false,
       sourceLoaded: false,
       selectionActive: false,
       parcelId: '',
@@ -203,6 +204,10 @@ const DerivatifBidang = (() => {
         `<div class="detail-item"><div class="detail-label">Pengenal bidang</div><div class="detail-value">ID Bidang</div></div>` +
         `<div class="detail-item"><div class="detail-label">Koneksi</div><div class="detail-value">Simulasi · tanpa WFS</div></div></div>` +
         `<div class="toolbar"><button type="button" class="btn btn-primary" data-act="load-baseline" id="load-baseline">▦ ${ready ? 'Muat Ulang Baseline' : 'Load Baseline'}</button></div>` +
+        `<div class="card-head submissions-head"><div><h2>Lanjutkan data tersimpan</h2><p>Muat struktur dan nilai atribut dari berkas sebelumnya agar tidak perlu dibuat ulang.</p></div></div>` +
+        `<div class="field"><label for="resume-file-select">BERKAS DERIVATIF TERSIMPAN</label><select id="resume-file-select">${fileOptions()}</select></div>` +
+        `<div class="toolbar"><button type="button" class="btn btn-soft" data-act="load-saved-for-edit" id="load-saved-for-edit" ${state.fileKey ? '' : 'disabled'}>↻ Muat Data Tersimpan</button></div>` +
+        (state.loadError ? `<div class="notice error" role="alert"><strong>Berkas tidak dapat dimuat</strong>${esc(state.loadError)}</div>` : '') +
         (state.notice ? `<div class="notice" role="status"><strong>Simulasi</strong>${esc(state.notice)}</div>` : '') +
         `<p class="summary-note">Sudah punya berkas atribut? <button type="button" class="text-link" data-act="goto-approved">Langsung ke Atribut Disetujui</button></p>`
       );
@@ -258,6 +263,18 @@ const DerivatifBidang = (() => {
     function renderStructure() {
       const tpl = state.mode === 'template';
       const d = state.draft;
+      if (state.resumeMode) {
+        return (
+          `<div class="notice"><strong>Struktur dipulihkan dari berkas</strong>Kolom dan nilai yang tersimpan telah dimuat. Kamu bisa menghapus kolom yang tidak diperlukan atau menambahkan kolom baru; struktur tidak perlu dibuat ulang.</div>` +
+          `<div class="card-head submissions-head"><div><h2>Struktur atribut saat ini</h2><p>${esc(state.loadedFile ? state.loadedFile.fileName : '')} · ${currentFields().length} kolom dipulihkan.</p></div></div>` +
+          fieldTable(currentFields(), true) +
+          `<div class="form-grid" style="margin-top:14px"><div class="field"><label for="draft-name">NAMA KOLOM BARU</label><input id="draft-name" autocomplete="off" maxlength="30" placeholder="contoh: kode_guna" value="${esc(d.name)}" aria-describedby="draft-error"></div>` +
+          `<div class="field"><label for="draft-type">TIPE DATA</label><select id="draft-type">${Object.entries(FIELD_TYPES).map(([k, v]) => `<option value="${k}" ${d.type === k ? 'selected' : ''}>${v}</option>`).join('')}</select></div></div>` +
+          `<label class="check"><input type="checkbox" id="draft-required" ${d.required ? 'checked' : ''}> Wajib diisi pada langkah berikutnya</label>` +
+          `<div class="field-error" id="draft-error" role="alert">${esc(state.draftError)}</div>` +
+          `<div class="toolbar"><button type="button" class="btn btn-primary" data-act="add-field">＋ Tambah Kolom</button></div>`
+        );
+      }
       return (
         `<div class="choice-list" role="radiogroup" aria-label="Pendekatan struktur atribut">` +
         `<label class="choice"><input type="radio" name="mode" value="template" ${tpl ? 'checked' : ''}><span><strong>Gunakan Template Layer Derivatif</strong><small>Pakai daftar kolom dari template yang sudah ada.</small></span></label>` +
@@ -506,6 +523,49 @@ const DerivatifBidang = (() => {
       render('#save-success');
     }
 
+    function loadSavedForEdit() {
+      state.loadError = '';
+      const [kind, name] = [state.fileKey.slice(0, 1), state.fileKey.slice(2)];
+      const file = (kind === 's' ? state.savedFiles : SAMPLE_FILES).find((f) => f.fileName === name);
+      if (!file) {
+        state.loadError = 'Pilih berkas yang tersedia terlebih dahulu.';
+        state.notice = '';
+        render('#resume-file-select');
+        return;
+      }
+      if (file.invalid || !Array.isArray(file.fields) || !file.fields.length || !Array.isArray(file.records) || !file.records.length) {
+        state.loadError = file.invalid || 'Berkas tidak memiliki definisi kolom atau baris data yang dapat dipulihkan.';
+        state.notice = '';
+        render('#resume-file-select');
+        return;
+      }
+      const record = file.records[0];
+      state.loadedFile = file;
+      state.resumeMode = true;
+      state.sourceLoaded = true;
+      state.mode = 'manual';
+      state.templateId = '';
+      state.manualFields = file.fields.map((field) => ({
+        name: String(field.name),
+        type: FIELD_TYPES[field.type] ? field.type : 'text',
+        required: Boolean(field.required),
+      })).filter((field) => field.name.toLowerCase() !== ID_FIELD);
+      state.values = { ...(record.values || {}) };
+      state.parcelId = findParcel(String(record.id || '')) ? String(record.id) : '';
+      state.selectionActive = Boolean(state.parcelId);
+      state.filename = file.fileName.replace(/\.(gpkg|json)$/i, '');
+      state.filenameEdited = true;
+      state.format = file.format === 'json' ? 'json' : 'gpkg';
+      state.saveDone = false;
+      state.step = 2;
+      state.join = null;
+      state.notice = state.parcelId
+        ? 'Data tersimpan dipulihkan. Struktur dan nilai atribut siap ditinjau; bidang dari berkas telah dikenali.'
+        : 'Struktur dan nilai atribut dipulihkan, tetapi ID bidang pada berkas tidak ditemukan di baseline contoh. Pilih bidang pada langkah Bidang.';
+      render('#step-title');
+      window.scrollTo(0, 0);
+    }
+
     function loadFile() {
       state.join = null;
       state.notice = '';
@@ -550,6 +610,7 @@ const DerivatifBidang = (() => {
         render();
       } else if (act === 'save-file') saveFile();
       else if (act === 'load-file') loadFile();
+      else if (act === 'load-saved-for-edit') loadSavedForEdit();
       else if (act === 'run-join') runJoin();
       else if (act === 'show-in-qgis') {
         const n = state.join.rows.filter((r) => r.parcel).length;
@@ -599,6 +660,11 @@ const DerivatifBidang = (() => {
         state.format = el.value;
         touch();
         render('input[name="format"]:checked');
+      } else if (el.id === 'resume-file-select') {
+        state.fileKey = el.value;
+        state.loadError = '';
+        const button = $('#load-saved-for-edit');
+        if (button) button.disabled = !state.fileKey;
       } else if (el.id === 'file-select') {
         state.fileKey = el.value;
         state.loadedFile = null;
