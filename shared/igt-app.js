@@ -276,7 +276,9 @@ const IgtApp = (() => {
       categories.map((key) => `<button class="tab" data-tab="${key}">${key === 'igt-utama' ? 'IGT Utama' : CATEGORIES[key].label}</button>`).join('') +
       `</div><div class="card-head"><div><h2 id="tab-heading"></h2><p id="tab-description"></p></div></div>` +
       `<div id="upload-panel"></div>` +
-      `<div id="submission-status-tabs" class="tabs" data-status-tabs></div>` +
+      `<div id="igt-upload-modal" class="modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="igt-upload-modal-title" style="position:fixed;inset:0;z-index:1000;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;padding:20px;overflow:auto">` +
+      `<section class="card" style="width:min(760px,100%);max-height:90vh;overflow:auto;margin:auto"><div class="card-head"><div><h2 id="igt-upload-modal-title">Upload IGT</h2><p id="igt-upload-modal-description"></p></div><button type="button" class="btn btn-soft" data-close-upload-modal>✕ Tutup</button></div><div id="igt-upload-modal-content"></div></section></div>` +
+      `<div id="submission-status-tabs" class="tabs" data-status-tabs></div>`
       `<div class="card-head submissions-head"><div><h2>Pengajuan</h2><p id="submission-count"></p></div></div>` +
       `<div class="table-wrap"><table class="stack"><thead><tr><th>ID Pengajuan</th><th>Layer Target</th><th>Tanggal Upload</th><th>Status</th><th>Aksi</th></tr></thead>` +
       `<tbody id="submission-rows"></tbody></table></div><div class="empty-state" id="empty-state" hidden>Belum ada pengajuan pada kategori ini.</div></section>`;
@@ -297,7 +299,9 @@ const IgtApp = (() => {
       const isMain = tab === 'igt-utama';
       setText('tab-heading', isMain ? 'IGT Utama' : CATEGORIES[tab].label);
       setText('tab-description', isMain ? 'Kelola pengajuan IGT Pertanahan dan IGT Tata Ruang dari satu tab.' : UPLOAD_TEXT[tab]);
-      $('#upload-panel').innerHTML = isMain ? uploadPanel(role, 'pertanahan') + uploadPanel(role, 'tata-ruang') : uploadPanel(role, tab);
+      $('#upload-panel').innerHTML = isMain
+        ? `<div class="grid quick-grid"><div class="quick"><div class="q-icon">▦</div><b>IGT Pertanahan</b><p>Muat baseline bidang atau unggah atribut baru.</p><button class="btn btn-primary" data-open-upload-modal="pertanahan">Upload IGT Pertanahan</button></div><div class="quick"><div class="q-icon">▧</div><b>IGT Tata Ruang</b><p>Unggah geometri dan atribut kawasan.</p><button class="btn btn-primary" data-open-upload-modal="tata-ruang">Upload IGT Tata Ruang</button></div></div>`
+        : uploadPanel(role, tab);
       const own = records.filter((r) => isMain ? (r.category === 'pertanahan' || r.category === 'tata-ruang') : r.category === tab);
       const statusOptions = isMain
         ? (role === 'operator'
@@ -368,8 +372,24 @@ const IgtApp = (() => {
       if (!target) return;
       const { action, id } = target.dataset;
       const record = records.find((r) => r.id === id);
+      if (target.dataset.openUploadModal) {
+        const category = target.dataset.openUploadModal;
+        const modal = $('#igt-upload-modal');
+        $('#igt-upload-modal-title').textContent = category === 'pertanahan' ? 'Upload IGT Pertanahan' : 'Upload IGT Tata Ruang';
+        $('#igt-upload-modal-description').textContent = category === 'pertanahan' ? 'Muat baseline atau unggah atribut bidang.' : 'Unggah geometri dan atribut kawasan.';
+        $('#igt-upload-modal-content').innerHTML = uploadPanel(role, category);
+        modal.hidden = false;
+        modal.style.display = 'flex';
+        return;
+      }
+      if (target.hasAttribute('data-close-upload-modal') || target.id === 'igt-upload-modal') {
+        const modal = $('#igt-upload-modal');
+        modal.hidden = true;
+        modal.style.display = 'none';
+        return;
+      }
       if (action === 'load-baseline') alert('Simulasi: pilih layer baseline dari QGIS.');
-      else if (action === 'upload') alert('Simulasi: pilih file data untuk diunggah (' + (tab === 'igt-utama' ? 'IGT Utama' : CATEGORIES[tab].label) + ').');
+      else if (action === 'upload') alert('Simulasi: pilih file data untuk diunggah (' + (tab === 'igt-utama' ? ($('#igt-upload-modal-title').textContent || 'IGT Utama') : CATEGORIES[tab].label) + ').');
       else if (action === 'validate') alert('Parameter valid. Proses ini masih berupa prototipe UI.');
       else if (action === 'upload-lainnya') alert('Upload layer dan konfigurasi data dilakukan langsung melalui QGIS.');
       else if (action === 'revision') alert('Simulasi: buka formulir revisi untuk pengajuan ' + id + '.');
