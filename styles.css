@@ -786,6 +786,16 @@ tbody tr:hover {
   padding: 0 12px;
 }
 
+/* Card header: let the action buttons drop below the title when the panel is narrow */
+:where(.panel) .card-head {
+  flex-wrap: wrap;
+}
+
+:where(.panel) .card-head > :first-child {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
 /* Dashboard: stat cards */
 :where(.panel-dash) .stats {
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -883,11 +893,72 @@ tbody tr:hover {
     padding: 10px;
   }
 
-  :where(.panel-dash) .stats {
-    grid-template-columns: 1fr;
-  }
-
   :where(.panel-detail) .detail-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Narrow panel: stack table rows into labelled blocks instead of scrolling sideways.
+   Opt in per table with class="stack" and a data-label on each <td>. */
+@media (max-width: 600px) {
+  :where(.panel) table.stack,
+  :where(.panel) table.stack tbody,
+  :where(.panel) table.stack tr,
+  :where(.panel) table.stack td {
+    display: block;
+    white-space: normal;
+  }
+
+  :where(.panel) table.stack thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  :where(.panel) table.stack tr {
+    padding: 8px 12px;
+    border-bottom: 1px solid #edf1f6;
+  }
+
+  :where(.panel) table.stack tr[hidden] {
+    display: none;
+  }
+
+  :where(.panel) table.stack tr:last-child {
+    border-bottom: 0;
+  }
+
+  :where(.panel) table.stack td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 5px 0;
+    border: 0;
+    text-align: right;
+  }
+
+  :where(.panel) table.stack td::before {
+    content: attr(data-label);
+    flex: none;
+    max-width: 40%;
+    text-align: left;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .35px;
+    text-transform: uppercase;
+    color: #75859b;
+  }
+
+  :where(.panel) table.stack td.action-cell {
+    display: block;
+    padding-top: 8px;
+    text-align: left;
+  }
+
+  :where(.panel) table.stack td.action-cell::before {
+    display: none;
   }
 }

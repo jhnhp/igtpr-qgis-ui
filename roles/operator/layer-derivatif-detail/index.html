@@ -16,12 +16,12 @@
 <div class="detail-item"><div class="detail-label">Kadaluwarsa dalam</div><div class="detail-value" id="layer-expiry">30 hari</div></div>
 <div class="detail-item" style="grid-column:1/-1"><div class="detail-label">Keterangan</div><div class="detail-value" id="layer-notes">Layer derivatif telah disetujui dan siap digunakan.</div></div>
 </div></section>
-<div class="detail-actions" id="superadmin-review" hidden style="margin-top:14px;justify-content:flex-end"><button class="btn btn-primary" id="detail-approve">✓ Setujui</button><button class="btn btn-soft" id="detail-reject">✕ Tolak</button></div>
+<div class="detail-actions" id="detail-review" hidden style="margin-top:14px;justify-content:flex-end"><button class="btn btn-primary" id="detail-approve">✓ Setujui</button><button class="btn btn-soft" id="detail-reject">✕ Tolak</button></div>
 <div class="footer">Mockup UI plugin QGIS · data contoh</div></main></div></div>
 <script>
 const data={
 "0":{id:"DRV-2026-008",nama:"Derivatif Kawasan Hutan",jenis:"Berbasis Kawasan",tanggal:"16 Okt 2026",status:"Disetujui",sld:"derivatif-kawasan-hutan.sld",expired:"30 hari",notes:"Layer derivatif telah disetujui dan siap digunakan."},
-"1":{id:"DRV-2026-007",nama:"Derivatif Bidang Wilayah A",jenis:"Berbasis Bidang",tanggal:"15 Okt 2026",status:"Diajukan",sld:"derivatif-bidang-wilayah-a.sld",expired:"—",notes:"Pengajuan menunggu pemeriksaan."},
+"1":{id:"DRV-2026-007",nama:"Derivatif Bidang Wilayah A",jenis:"Berbasis Bidang",tanggal:"15 Okt 2026",status:"Proses",sld:"derivatif-bidang-wilayah-a.sld",expired:"—",notes:"Pengajuan dalam proses dan menunggu keputusan."},
 "2":{id:"DRV-2026-006",nama:"Derivatif Kawasan Lindung",jenis:"Berbasis Kawasan",tanggal:"14 Okt 2026",status:"Ditolak",sld:"derivatif-kawasan-lindung.sld",expired:"—",notes:"Pengajuan ditolak; periksa catatan evaluasi."},
 "3":{id:"DRV-2026-005",nama:"Derivatif Bidang Wilayah B",jenis:"Berbasis Bidang",tanggal:"12 Okt 2026",status:"Disetujui",sld:"derivatif-bidang-wilayah-b.sld",expired:"14 hari",notes:"Layer derivatif telah disetujui dan siap digunakan."}
 };
@@ -39,8 +39,8 @@ document.getElementById("layer-sld").textContent=d.sld;
 document.getElementById("layer-expiry").textContent=d.expired;
 document.getElementById("layer-notes").textContent=d.notes;
 const badge=document.getElementById("status-badge");badge.textContent=d.status;badge.className="status "+(d.status==="Disetujui"?"ok":d.status==="Ditolak"?"fix":"info");
-const review=document.getElementById("superadmin-review");review.hidden=!(isSuperadmin&&d.status==="Diajukan");
-function decide(approved){if(!confirm((approved?"Setujui":"Tolak")+" pengajuan "+d.id+"?"))return;d.status=approved?"Disetujui":"Ditolak";d.notes=approved?"Layer derivatif telah disetujui dan siap digunakan.":"Pengajuan ditolak oleh Superadmin.";d.expired=approved?"30 hari":"—";badge.textContent=d.status;badge.className="status "+(approved?"ok":"fix");document.getElementById("layer-status").textContent=d.status;document.getElementById("layer-notes").textContent=d.notes;document.getElementById("layer-expiry").textContent=d.expired;review.hidden=true;alert("Status pengajuan "+d.id+" diperbarui menjadi "+d.status+".");}
+const review=document.getElementById("detail-review");review.hidden=!((isSuperadmin||isAdmin)&&d.status==="Proses");
+function decide(approved){if(!confirm((approved?"Setujui":"Tolak")+" pengajuan "+d.id+"?"))return;d.status=approved?"Disetujui":"Ditolak";d.notes=approved?"Layer derivatif telah disetujui dan siap digunakan.":"Pengajuan ditolak oleh "+(isAdmin?"Admin":"Superadmin")+".";d.expired=approved?"30 hari":"—";badge.textContent=d.status;badge.className="status "+(approved?"ok":"fix");document.getElementById("layer-status").textContent=d.status;document.getElementById("layer-notes").textContent=d.notes;document.getElementById("layer-expiry").textContent=d.expired;review.hidden=true;alert("Status pengajuan "+d.id+" diperbarui menjadi "+d.status+".");}
 document.getElementById("detail-approve").addEventListener("click",()=>decide(true));document.getElementById("detail-reject").addEventListener("click",()=>decide(false));
 document.getElementById("show-canvas").addEventListener("click",()=>alert("Simulasi plugin QGIS: layer "+d.id+" akan ditampilkan pada canvas peta."));
 </script></body></html>

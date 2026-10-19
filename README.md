@@ -34,6 +34,7 @@ igtpr-qgis-ui/
 │   │   └── layer-derivatif-detail/index.html
 │   └── umum/                           # Empty: no Umum page exists yet (placeholder in index.html)
 ├── shared/
+│   ├── igt-lists.js                    # List logic: IGT Utama (all roles), IGT Derivatif (Admin, Superadmin)
 │   └── model-builder/index.html        # Model Builder, used by Superadmin, Admin and Operator
 └── legacy/                             # Earlier pages kept for reference only
     ├── 02-beranda-superadmin.html
@@ -54,6 +55,12 @@ igtpr-qgis-ui/
 | Operator | Beranda, IGT Utama (+ Bidang / Kawasan), IGT Derivatif, Model Builder |
 | Umum | Placeholder only |
 
+### IGT Utama and IGT Derivatif workflow
+- **IGT Utama** (Superadmin, Admin, Operator): tabs *Semua*, *Berbasis Bidang*, *Berbasis Kawasan*. *Load Baseline* appears only on *Berbasis Bidang*; *Upload Data* appears on all three tabs. Columns: ID pengajuan, Layer target, Tanggal upload, Status, Aksi.
+- **Statuses:** `Proses` (uploaded, awaiting topology verification) → `Terkompilasi` (topology verified, waiting for integration) → `Terintegrasi`; `Revisi` means returned to the Operator. Superadmin and Admin run *Verifikasi Topologi* on `Proses` rows (the mockup then marks the row `Terkompilasi`); the Operator sees *Revisi* on returned rows.
+- **IGT Derivatif** (Superadmin, Admin): tabs *Proses* and *Disetujui*. `Proses` rows offer *Setujui*, *Tolak* and *Detail*; rejected rows stay in `Proses` with *Detail* only. Admin also has *Upload Derivatif*, and an Admin upload goes straight to `Disetujui`. Operator keeps its own Kawasan/Bidang list with the legacy upload workflows.
+- Row data and role differences live in `shared/igt-lists.js`; the role pages only provide the page shell and call `IgtLists.utama(role)` / `IgtLists.derivatif(role)`.
+
 ### Detail pages are shared by query string
 `roles/operator/igt-utama-detail/` and `roles/operator/layer-derivatif-detail/` are the single detail pages for all roles. The role is chosen with `?id=<n>&role=<superadmin|admin>` (no `role` means Operator). The role decides the header chip, breadcrumb, back links (to that role's own Beranda/list) and which actions are shown. Example: `roles/operator/igt-utama-detail/index.html?id=0&role=admin`.
 
@@ -64,6 +71,7 @@ igtpr-qgis-ui/
 
 ## Shared assets
 - `styles.css` and `app.js` live at the repository root; every page references them with a relative path from its own folder (e.g. `../../../styles.css`).
+- Tables marked `class="stack"` (with a `data-label` on each cell) turn into labelled blocks below 600px of panel width, so list pages do not scroll sideways in the portrait preview.
 - Pages shown inside the 3:4 panel opt in to the compact layout in `styles.css` with `<body class="panel ...">` (`panel-dash`, `panel-home`, `panel-list`, `panel-detail` add stat cards, Beranda, list and detail rules). Only page-specific rules stay in each page's own `<style>`.
 - Tables use `data-href` / plain links for list-to-detail navigation; `app.js` handles tabs (`data-tab`), search filtering (`data-filter`) and simulated actions (`data-action`).
 
