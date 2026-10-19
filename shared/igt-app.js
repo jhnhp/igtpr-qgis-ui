@@ -191,7 +191,7 @@ const IgtApp = (() => {
     }
     if (category === 'derivatif') {
       const uploadButtons = [
-        ['operator', 'admin'].includes(role) ? `<a class="btn btn-primary" href="${LEGACY}06-derivative-kawasan.html">↑ Upload Derivatif Kawasan</a>` : '',
+        ['operator', 'admin', 'umum'].includes(role) ? `<a class="btn btn-primary" href="${LEGACY}06-derivative-kawasan.html">↑ Upload Derivatif Kawasan</a>` : '',
         `<a class="btn btn-primary" href="${BIDANG_WORKFLOW_URL}">↑ Upload Derivatif Bidang</a>`,
       ].join('');
       const note = role === 'admin'
