@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Detail IGT Utama · IGT-PR</title>
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="../../../styles.css">
 <style>
 .app{display:block;min-height:100vh}.workspace{min-width:0}.main{max-width:100%;padding:16px}
 .topbar{height:46px;padding:0 12px}.detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
@@ -15,10 +15,10 @@
 </head>
 <body data-page="utama-detail">
 <div class="app" style="display:block;min-height:100vh"><div class="workspace">
-<header class="topbar"><div class="crumb">Geoportal IGT-PR　/　<a href="igt-utama.html">IGT Utama</a>　/　<strong>Detail IGT</strong></div><div class="top-actions"><button class="icon-btn" aria-label="Notifikasi">♧</button><div class="user-chip"><div class="avatar">JH</div><span>Operator Pusat</span></div></div></header>
+<header class="topbar"><div class="crumb">Geoportal IGT-PR　/　<a href="../igt-utama/index.html">IGT Utama</a>　/　<strong>Detail IGT</strong></div><div class="top-actions"><button class="icon-btn" aria-label="Notifikasi">♧</button><div class="user-chip"><div class="avatar">JH</div><span>Operator Pusat</span></div></div></header>
 <main class="main">
 <div class="page-head"><div><div class="eyebrow">Sistem Informasi Geospasial</div><h1 id="igt-name">Detail IGT Utama</h1><p>Informasi pengajuan dan status data IGT yang dipilih.</p></div></div>
-<div class="detail-actions"><a class="btn btn-soft" href="01-beranda-operator.html">← Kembali ke Beranda</a><a class="btn btn-soft" href="igt-utama.html">Kembali ke daftar IGT Utama</a><button class="btn btn-primary" id="show-canvas">▧ Tampilkan di Canvas</button><button class="btn btn-soft" id="verify-topology" hidden>⌁ Verifikasi Topologi</button><button class="btn btn-soft" id="revise-igt" hidden>✎ Revisi</button></div>
+<div class="detail-actions"><a class="btn btn-soft" href="../beranda/index.html">← Kembali ke Beranda</a><a class="btn btn-soft" href="../igt-utama/index.html">Kembali ke daftar IGT Utama</a><button class="btn btn-primary" id="show-canvas">▧ Tampilkan di Canvas</button><button class="btn btn-soft" id="verify-topology" hidden>⌁ Verifikasi Topologi</button><button class="btn btn-soft" id="revise-igt" hidden>✎ Revisi</button></div>
 <section class="card detail-section"><div class="card-head"><div><h2>Informasi Pengajuan</h2><p>Identitas dan metadata data IGT.</p></div><span id="status-badge" class="status info">Terkompilasi</span></div>
 <div class="detail-grid">
 <div class="detail-item"><div class="detail-label">ID Pengajuan</div><div class="detail-value" id="igt-id">IGT-2026-012</div></div>
@@ -41,8 +41,8 @@ const records={
 };
 const params=new URLSearchParams(location.search),d=records[params.get("id")]||records["0"],role=params.get("role")||"operator",isSuperadmin=role==="superadmin",isAdmin=role==="admin";
 document.title=d.nama+" · Detail IGT-PR";
-document.querySelector(".crumb").innerHTML=(isSuperadmin?'Geoportal IGT-PR　/　<a href="superadmin-igt-utama.html">IGT Utama</a>':isAdmin?'Geoportal IGT-PR　/　<a href="08-verifikasi-data.html">Verifikasi Data</a>':'Geoportal IGT-PR　/　<a href="igt-utama.html">IGT Utama</a>')+'　/　<strong>Detail IGT</strong>';
-if(isSuperadmin||isAdmin){document.querySelector(".user-chip").innerHTML='<div class="avatar">'+(isSuperadmin?'SA':'AD')+'</div><span>'+(isSuperadmin?'Superadmin':'Admin')+'</span>';document.querySelector('.detail-actions a[href="01-beranda-operator.html"]').href=isSuperadmin?'superadmin-beranda.html':'08-verifikasi-data.html';document.querySelector('.detail-actions a[href="igt-utama.html"]').href=isSuperadmin?'superadmin-igt-utama.html':'08-verifikasi-data.html';}
+document.querySelector(".crumb").innerHTML=(isSuperadmin?'Geoportal IGT-PR　/　<a href="../../superadmin/igt-utama/index.html">IGT Utama</a>':isAdmin?'Geoportal IGT-PR　/　<a href="../../admin/igt-utama/index.html">IGT Utama</a>':'Geoportal IGT-PR　/　<a href="../igt-utama/index.html">IGT Utama</a>')+'　/　<strong>Detail IGT</strong>';
+if(isSuperadmin||isAdmin){document.querySelector(".user-chip").innerHTML='<div class="avatar">'+(isSuperadmin?'SA':'AD')+'</div><span>'+(isSuperadmin?'Superadmin':'Admin')+'</span>';document.querySelector('.detail-actions a[href="../beranda/index.html"]').href=isSuperadmin?'../../superadmin/beranda/index.html':'../../admin/beranda/index.html';document.querySelector('.detail-actions a[href="../igt-utama/index.html"]').href=isSuperadmin?'../../superadmin/igt-utama/index.html':'../../admin/igt-utama/index.html';}
 document.getElementById("igt-name").textContent=d.nama;
 document.getElementById("igt-name-meta").textContent=d.nama;
 document.getElementById("igt-id").textContent=d.id;
@@ -67,4 +67,4 @@ document.getElementById("show-canvas").addEventListener("click",()=>alert("Simul
 topologyButton.addEventListener("click",()=>alert("Simulasi verifikasi topologi untuk "+d.id+". Pada implementasi QGIS, aksi ini menjalankan pemeriksaan topologi pada layer terkait."));
 reviseButton.addEventListener("click",()=>alert("Simulasi: buka formulir revisi untuk pengajuan "+d.id+"."));
 if(isAdmin){const b=document.getElementById("verify-topology");b.hidden=false;b.textContent="✓ Verifikasi Data";b.addEventListener("click",()=>alert("Simulasi pemeriksaan Admin untuk "+d.id+"."));}
->
+</script></body></html>

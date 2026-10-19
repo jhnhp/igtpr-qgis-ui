@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Layer Derivatif · IGT-PR</title><link rel="stylesheet" href="styles.css">
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Layer Derivatif · IGT-PR</title><link rel="stylesheet" href="../../../styles.css">
 <style>
 .app{display:block;min-height:100vh}.workspace{min-width:0}.main{max-width:100%;padding:16px}.topbar{height:46px;padding:0 12px}
 .stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.card{padding:12px}.stat .num{font-size:23px}.toolbar{display:flex;gap:7px;flex-wrap:wrap}.tabs{margin-bottom:14px}.tab{padding:10px 12px}.table-wrap{max-width:100%}
@@ -8,7 +8,7 @@
 </style></head><body data-page="igtderivative"><div class="app" style="display:block;min-height:100vh"><div class="workspace">
 <header class="topbar"><div class="crumb">Geoportal IGT-PR　/　<strong>Layer Derivatif</strong></div><div class="top-actions"><button class="icon-btn" aria-label="Notifikasi">♧</button><div class="user-chip"><div class="avatar">JH</div><span>Operator Pusat</span></div></div></header>
 <main class="main">
-<div class="page-head"><div><div class="eyebrow">Sistem Informasi Geospasial</div><h1>Layer Derivatif</h1><p>Daftar layer derivatif yang pernah diajukan.</p></div><a class="btn btn-soft" href="01-beranda-operator.html">← Kembali ke Beranda</a></div>
+<div class="page-head"><div><div class="eyebrow">Sistem Informasi Geospasial</div><h1>Layer Derivatif</h1><p>Daftar layer derivatif yang pernah diajukan.</p></div><a class="btn btn-soft" href="../beranda/index.html">← Kembali ke Beranda</a></div>
 <div class="grid stats">
 <div class="card stat"><div><div class="label">Total pengajuan</div><div class="num">8</div><div class="hint">Semua layer derivatif</div></div><div class="stat-icon">▱</div></div>
 <div class="card stat"><div><div class="label">Diajukan</div><div class="num">3</div><div class="hint">Menunggu pemeriksaan</div></div><div class="stat-icon amber">◷</div></div>
@@ -17,12 +17,12 @@
 </div>
 <section class="card">
 <div class="tabs" data-tabs><button class="tab active" data-tab="semua">Semua</button><button class="tab" data-tab="kawasan">Berbasis Kawasan</button><button class="tab" data-tab="bidang">Berbasis Bidang</button></div>
-<div class="card-head"><div><h2 id="tab-heading">Semua layer derivatif</h2><p id="tab-description">Tampilkan seluruh pengajuan layer derivatif.</p></div><div class="toolbar" id="tab-actions"><a class="btn btn-primary" href="06-derivative-kawasan.html">＋ Derivative Kawasan</a><a class="btn btn-soft" href="07-derivative-bidang.html">＋ Derivative Bidang</a></div></div>
+<div class="card-head"><div><h2 id="tab-heading">Semua layer derivatif</h2><p id="tab-description">Tampilkan seluruh pengajuan layer derivatif.</p></div><div class="toolbar" id="tab-actions"><a class="btn btn-primary" href="../../../legacy/06-derivative-kawasan.html">＋ Derivative Kawasan</a><a class="btn btn-soft" href="../../../legacy/07-derivative-bidang.html">＋ Derivative Bidang</a></div></div>
 <div class="table-wrap"><table><thead><tr><th>ID pengajuan</th><th>Nama Layer</th><th>Tanggal pengajuan</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="submission-rows">
-<tr data-kind="kawasan"><td><a class="text-link" href="layer-derivatif-detail.html?id=0">DRV-2026-008</a></td><td>Derivatif Kawasan Hutan</td><td>16 Okt 2026</td><td><span class="status ok">Disetujui</span></td><td class="action-cell"><button class="btn btn-soft qgis-action" data-action="show-qgis" data-id="DRV-2026-008">▧ Tampilkan di QGIS</button></td></tr>
-<tr data-kind="bidang"><td><a class="text-link" href="layer-derivatif-detail.html?id=1">DRV-2026-007</a></td><td>Derivatif Bidang Wilayah A</td><td>15 Okt 2026</td><td><span class="status info">Diajukan</span></td><td class="action-cell"><button class="btn btn-soft qgis-action" data-action="show-qgis" data-id="DRV-2026-007">▧ Tampilkan di QGIS</button></td></tr>
-<tr data-kind="kawasan"><td><a class="text-link" href="layer-derivatif-detail.html?id=2">DRV-2026-006</a></td><td>Derivatif Kawasan Lindung</td><td>14 Okt 2026</td><td><span class="status fix">Ditolak</span></td><td class="action-cell"><button class="btn btn-soft qgis-action" data-action="show-qgis" data-id="DRV-2026-006">▧ Tampilkan di QGIS</button></td></tr>
-<tr data-kind="bidang"><td><a class="text-link" href="layer-derivatif-detail.html?id=3">DRV-2026-005</a></td><td>Derivatif Bidang Wilayah B</td><td>12 Okt 2026</td><td><span class="status ok">Disetujui</span></td><td class="action-cell"><button class="btn btn-soft qgis-action" data-action="show-qgis" data-id="DRV-2026-005">▧ Tampilkan di QGIS</button></td></tr>
+<tr data-kind="kawasan"><td><a class="text-link" href="../layer-derivatif-detail/index.html?id=0">DRV-2026-008</a></td><td>Derivatif Kawasan Hutan</td><td>16 Okt 2026</td><td><span class="status ok">Disetujui</span></td><td class="action-cell"><button class="btn btn-soft qgis-action" data-action="show-qgis" data-id="DRV-2026-008">▧ Tampilkan di QGIS</button></td></tr>
+<tr data-kind="bidang"><td><a class="text-link" href="../layer-derivatif-detail/index.html?id=1">DRV-2026-007</a></td><td>Derivatif Bidang Wilayah A</td><td>15 Okt 2026</td><td><span class="status info">Diajukan</span></td><td class="action-cell"><button class="btn btn-soft qgis-action" data-action="show-qgis" data-id="DRV-2026-007">▧ Tampilkan di QGIS</button></td></tr>
+<tr data-kind="kawasan"><td><a class="text-link" href="../layer-derivatif-detail/index.html?id=2">DRV-2026-006</a></td><td>Derivatif Kawasan Lindung</td><td>14 Okt 2026</td><td><span class="status fix">Ditolak</span></td><td class="action-cell"><button class="btn btn-soft qgis-action" data-action="show-qgis" data-id="DRV-2026-006">▧ Tampilkan di QGIS</button></td></tr>
+<tr data-kind="bidang"><td><a class="text-link" href="../layer-derivatif-detail/index.html?id=3">DRV-2026-005</a></td><td>Derivatif Bidang Wilayah B</td><td>12 Okt 2026</td><td><span class="status ok">Disetujui</span></td><td class="action-cell"><button class="btn btn-soft qgis-action" data-action="show-qgis" data-id="DRV-2026-005">▧ Tampilkan di QGIS</button></td></tr>
 </tbody></table></div></section>
 <div class="footer">Mockup UI plugin QGIS · data contoh</div></main></div></div>
 <script>

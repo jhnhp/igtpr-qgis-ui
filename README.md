@@ -1,23 +1,75 @@
 # IGT-PR QGIS UI Prototype
 
-Private repository for the IGT-PR QGIS plugin interface prototype.
+HTML/CSS/JavaScript **UI mockups** for the IGT-PR QGIS plugin. The root page previews each role inside a portrait 3:4 panel that imitates a QGIS plugin dock.
 
-## Pages
-- `index.html` — prototype page directory
-- `01-beranda-operator.html` — Operator dashboard
-- `02-beranda-superadmin.html` — Superadmin dashboard
-- `03-katalog-data.html` — IGT data catalog
-- `04-pengolahan-data.html` — spatial processing tools
-- `igt-utama.html` — IGT Utama dashboard with Bidang/Kawasan tabs
-- `igt-utama-bidang.html` — baseline loading and attribute upload for parcel-based IGT
-- `igt-utama-kawasan.html` — upload and tracking for area-based IGT
-- `05-tematik-derivative.html` — derivative menu
-- `igt-derivatif.html` — derivative dashboard and actions
-- `06-derivative-kawasan.html` — area-based derivative workflow
-- `07-derivative-bidang.html` — parcel-based derivative workflow
-- `08-verifikasi-data.html` — admin verification queue
-- `styles.css` — shared responsive design system
-- `app.js` — shared interactions (tabs, search filtering, file selection, prototype actions)
+> All QGIS actions (Load Baseline, Tampilkan di Canvas, Verifikasi Topologi, upload, run model, approve/reject, etc.) are **simulations**. There is no backend, authentication, database, or real QGIS integration. Example records and counts are illustrative.
 
-## Notes
-This is a UI prototype. Example records and counts are illustrative. Baseline loading, file upload persistence, geometry validation, geoprocessing, and approval actions are not connected to production services yet.
+## Folder structure
+
+```text
+igtpr-qgis-ui/
+├── index.html                  # Role preview (Superadmin / Admin / Operator / Umum), iframe in a 3:4 panel
+├── styles.css                  # Shared design system
+├── app.js                      # Shared interactions (tabs, filtering, file selection, simulated actions)
+├── README.md
+├── roles/
+│   ├── superadmin/
+│   │   ├── beranda/index.html
+│   │   ├── igt-utama/index.html
+│   │   ├── igt-derivatif/index.html
+│   │   └── igt-lainnya/index.html      # IGT Lainnya (Eksternal) — Superadmin only
+│   ├── admin/
+│   │   ├── beranda/index.html
+│   │   ├── igt-utama/index.html
+│   │   └── igt-derivatif/index.html
+│   ├── operator/
+│   │   ├── beranda/index.html
+│   │   ├── igt-utama/index.html
+│   │   ├── igt-utama-bidang/index.html
+│   │   ├── igt-utama-kawasan/index.html
+│   │   ├── igt-utama-detail/index.html
+│   │   ├── igt-derivatif/index.html
+│   │   └── layer-derivatif-detail/index.html
+│   └── umum/                           # Empty: no Umum page exists yet (placeholder in index.html)
+├── shared/
+│   └── model-builder/index.html        # Model Builder, used by Superadmin, Admin and Operator
+└── legacy/                             # Earlier pages kept for reference only
+    ├── 02-beranda-superadmin.html
+    ├── 03-katalog-data.html
+    ├── 04-pengolahan-data.html
+    ├── 05-tematik-derivative.html
+    ├── 06-derivative-kawasan.html
+    ├── 07-derivative-bidang.html
+    └── 08-verifikasi-data.html
+```
+
+## Role pages
+
+| Role | Pages |
+| --- | --- |
+| Superadmin | Beranda, IGT Utama, IGT Derivatif, IGT Lainnya (Eksternal), Model Builder |
+| Admin | Beranda, IGT Utama, IGT Derivatif, Model Builder. No IGT Lainnya (Eksternal) and no Verifikasi Data menu |
+| Operator | Beranda, IGT Utama (+ Bidang / Kawasan), IGT Derivatif, Model Builder |
+| Umum | Placeholder only |
+
+### Detail pages are shared by query string
+`roles/operator/igt-utama-detail/` and `roles/operator/layer-derivatif-detail/` are the single detail pages for all roles. The role is chosen with `?id=<n>&role=<superadmin|admin>` (no `role` means Operator). The role decides the header chip, breadcrumb, back links (to that role's own Beranda/list) and which actions are shown. Example: `roles/operator/igt-utama-detail/index.html?id=0&role=admin`.
+
+`shared/model-builder/index.html` accepts `?role=superadmin|admin` so its back link returns to that role's Beranda (default: Operator).
+
+### Legacy pages
+`legacy/` holds the original numbered pages (`02`–`08`) with the old sidebar layout. They are not part of the role navigation. Their sidebar links point to each other and to the Operator pages. Some Operator pages (IGT Utama Bidang/Kawasan sidebars and the derivative workflow shortcuts in Operator IGT Derivatif) still link into `legacy/` because the numbered pages were never replaced.
+
+## Shared assets
+- `styles.css` and `app.js` live at the repository root; every page references them with a relative path from its own folder (e.g. `../../../styles.css`).
+- Tables use `data-href` / plain links for list-to-detail navigation; `app.js` handles tabs (`data-tab`), search filtering (`data-filter`) and simulated actions (`data-action`).
+
+## Preview locally
+No build step. Open `index.html` directly in a browser, or serve the folder:
+
+```bash
+python3 -m http.server 8000
+# then open http://localhost:8000/
+```
+
+Use the role drawer on the left to switch between Superadmin, Admin, Operator and Umum.

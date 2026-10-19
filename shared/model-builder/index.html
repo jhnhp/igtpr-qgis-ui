@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Model Builder Geoportal · IGT-PR</title>
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="../../styles.css">
 <style>
 .app{display:block;min-height:100vh;background:#f0f0f0;padding:8px}.workspace{min-width:0;max-width:100%}
 .main{max-width:100%;padding:12px 10px;background:#fff;border:1px solid #d3dbe6;border-radius:9px;min-height:calc(100vh - 48px)}
@@ -38,7 +38,7 @@
 <tr data-name="Intersect dan Join"><td>Intersect dan Join</td><td>Intersect dan Join</td><td><button class="run-btn" data-model="Intersect dan Join">▸ Jalankan</button></td></tr>
 <tr data-name="Test Builder Lutfi"><td>Test Builder Lutfi</td><td>test</td><td><button class="run-btn" data-model="Test Builder Lutfi">▸ Jalankan</button></td></tr>
 </tbody></table></div>
-<div class="back-row"><a href="01-beranda-operator.html">← Kembali ke Dashboard</a></div>
+<div class="back-row"><a href="../../roles/operator/beranda/index.html">← Kembali ke Dashboard</a></div>
 </main></div></div>
 <script>
 const rows=[...document.querySelectorAll('#model-rows tr')],search=document.getElementById('model-search');
@@ -49,4 +49,5 @@ let fontSize=13;function applyFont(){document.querySelector('.model-table').styl
 document.getElementById('font-down').addEventListener('click',()=>{fontSize=Math.max(10,fontSize-1);applyFont();});
 document.getElementById('font-up').addEventListener('click',()=>{fontSize=Math.min(20,fontSize+1);applyFont();});
 document.getElementById('zoom-reset').addEventListener('click',()=>{fontSize=13;applyFont();});
+const backRole=new URLSearchParams(location.search).get("role");if(["superadmin","admin"].includes(backRole))document.querySelector(".back-row a").href="../../roles/"+backRole+"/beranda/index.html";
 </script></body></html>
