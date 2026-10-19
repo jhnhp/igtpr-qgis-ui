@@ -38,27 +38,13 @@ const IgtApp = (() => {
 
   // Repository overview: how many datasets are compiled and integrated. No upload controls here.
   function dashboard(role) {
-    // The Dashboard has no menu bar: navigation is the buttons below the overview.
-    // Terkompilasi / Terintegrasi only exist for IGT Pertanahan and IGT Tata Ruang.
+    // Dashboard overview with summary cards and navigation; the category summary table is intentionally omitted.
     const records = IgtData.loadRecords().filter((r) => IgtData.canView(role, r.category));
     const staged = IgtData.integrationRecords(records);
     const compiled = IgtData.countByStatus(staged, 'Terkompilasi');
     const integrated = IgtData.countByStatus(staged, 'Terintegrasi');
     const categories = CATEGORY_ORDER.filter((key) => IgtData.canView(role, key));
 
-    const rows = categories
-      .filter((key) => CATEGORIES[key].integration)
-      .map((key) => {
-        const own = records.filter((r) => r.category === key);
-        return (
-          `<tr><td data-label="Kategori">${CATEGORIES[key].label}</td>` +
-          `<td data-label="Terkompilasi">${IgtData.countByStatus(own, 'Terkompilasi')}</td>` +
-          `<td data-label="Terintegrasi">${IgtData.countByStatus(own, 'Terintegrasi')}</td></tr>`
-        );
-      })
-      .join('');
-
-    // One button per catalog the role may open, then a single button for Upload Data.
     const catalogButtons = categories
       .map((key) => `<a class="btn btn-soft menu-btn" href="../${CATEGORIES[key].slug}/index.html">▧ ${CATEGORIES[key].label}</a>`)
       .join('');
@@ -68,12 +54,6 @@ const IgtApp = (() => {
       statCard('Terkompilasi', compiled, 'Menunggu integrasi', '▤', 'amber', 'count-compiled') +
       statCard('Terintegrasi', integrated, 'Pertanahan dan Tata Ruang', '✓', 'green', 'count-integrated') +
       `</div>` +
-      `<section class="card"><div class="card-head"><div><h2>Ringkasan status</h2>` +
-      `<p>Dihitung dari data contoh. Satu catatan mewakili satu dataset.</p></div></div>` +
-      `<div class="table-wrap"><table class="compact"><thead><tr><th>Kategori</th><th>Terkompilasi</th><th>Terintegrasi</th></tr></thead>` +
-      `<tbody id="category-rows">${rows}</tbody></table></div>` +
-      `<p class="summary-note">Hanya IGT Pertanahan dan IGT Tata Ruang melewati tahap Terkompilasi dan Terintegrasi. ` +
-      `IGT Derivatif tersedia setelah Disetujui, dan semua layer IGT Lainnya yang diunggah langsung tersedia.</p></section>` +
       `<section class="card"><div class="card-head"><div><h2>Lihat peta IGT</h2><p>Buka katalog dataset yang sudah tersedia.</p></div></div>` +
       `<div class="menu-buttons" id="catalog-buttons">${catalogButtons}</div>` +
       `<div class="card-head menu-upload-head"><div><h2>Kelola data</h2><p>Unggah data baru dan pantau status pengajuan.</p></div></div>` +
