@@ -257,7 +257,7 @@ const IgtApp = (() => {
     const availableCategories = CATEGORY_ORDER.filter((key) => IgtData.canUpload(role, key));
     const categories = [
       ...(availableCategories.some((key) => key === 'pertanahan' || key === 'tata-ruang') ? ['igt-utama'] : []),
-      ...availableCategories.filter((key) => key !== 'pertanahan' && key !== 'tata-ruang' && !(role === 'superadmin' && key === 'lainnya')),
+      ...availableCategories.filter((key) => key !== 'pertanahan' && key !== 'tata-ruang'),
     ];
     const records = IgtData.submissionsFor(role, IgtData.loadRecords());
     const params = new URLSearchParams(location.search);
