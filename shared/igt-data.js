@@ -38,7 +38,7 @@ const IgtData = (() => {
 
   // Permissions. Every role may browse all four catalogs (`view`). Uploading and managing submissions
   // (`upload`) is narrower: IGT Lainnya (Eksternal) can only be managed by Superadmin, and Umum (public users) can only upload IGT Derivatif.
-  // Umum sees only its own submissions (records with `owner: 'umum'`) and has no Model Builder.
+  // Umum sees only its own submissions (records with `owner: 'umum'`).
   const ALL = ['pertanahan', 'tata-ruang', 'derivatif', 'lainnya'];
   const ROLES = {
     superadmin: { label: 'Superadmin', avatar: 'SA', view: ALL, upload: ALL },
@@ -50,16 +50,46 @@ const IgtData = (() => {
   // `n` is the record index understood by the shared detail pages (igt-utama-detail, layer-derivatif-detail).
   // `updated` is the date the dataset was last updated once integrated (catalog "Tanggal Update").
   const RECORDS = [
-    // IGT Pertanahan (berbasis bidang)
-    { category: 'pertanahan', n: 0, id: 'IGT-2026-012', name: 'IGT Bidang Wilayah A', date: '18 Okt 2026', status: 'Proses' },
-    { category: 'pertanahan', n: 2, id: 'IGT-2026-010', name: 'IGT Bidang Wilayah B', date: '15 Okt 2026', status: 'Revisi' },
-    { category: 'pertanahan', n: 4, id: 'IGT-2026-008', name: 'IGT Bidang Infrastruktur', date: '12 Okt 2026', status: 'Proses' },
-    { category: 'pertanahan', n: 5, id: 'IGT-2026-007', name: 'IGT Bidang Kota Yogyakarta', date: '10 Okt 2026', updated: '12 Okt 2026', status: 'Terintegrasi' },
-    { category: 'pertanahan', n: 7, id: 'IGT-2026-005', name: 'IGT Bidang Kecamatan Depok', date: '6 Okt 2026', updated: '8 Okt 2026', status: 'Terintegrasi' },
-    // IGT Tata Ruang (berbasis kawasan)
-    { category: 'tata-ruang', n: 1, id: 'IGT-2026-011', name: 'IGT Kawasan Hutan', date: '16 Okt 2026', updated: '17 Okt 2026', status: 'Terintegrasi' },
-    { category: 'tata-ruang', n: 3, id: 'IGT-2026-009', name: 'IGT Kawasan Lindung', date: '14 Okt 2026', status: 'Terkompilasi' },
-    { category: 'tata-ruang', n: 6, id: 'IGT-2026-006', name: 'IGT Kawasan Rawan Bencana', date: '9 Okt 2026', updated: '11 Okt 2026', status: 'Terintegrasi' },
+    // IGT Pertanahan dan Tata Ruang: 39 dataset dari daftar resmi yang diberikan.
+    { category: 'pertanahan', n: 0, id: 'IGT-PR-001', name: 'IGT Bidang Tanah', date: '18 Okt 2026', updated: '18 Okt 2026', status: 'Terintegrasi' },
+    { category: 'pertanahan', n: 1, id: 'IGT-PR-002', name: 'IGT Penguasaan Tanah', date: '18 Okt 2026', updated: '18 Okt 2026', status: 'Terintegrasi' },
+    { category: 'pertanahan', n: 2, id: 'IGT-PR-003', name: 'IGT Pemilikan Tanah', date: '18 Okt 2026', updated: '18 Okt 2026', status: 'Terintegrasi' },
+    { category: 'pertanahan', n: 3, id: 'IGT-PR-004', name: 'IGT Penggunaan Tanah', date: '18 Okt 2026', updated: '18 Okt 2026', status: 'Terintegrasi' },
+    { category: 'pertanahan', n: 4, id: 'IGT-PR-005', name: 'IGT Pemanfaatan Tanah', date: '18 Okt 2026', updated: '18 Okt 2026', status: 'Terintegrasi' },
+    { category: 'pertanahan', n: 5, id: 'IGT-PR-006', name: 'IGT Sebaran Lokasi Pemberdayaan Tanah Masyarakat', date: '18 Okt 2026', updated: '18 Okt 2026', status: 'Terintegrasi' },
+    { category: 'pertanahan', n: 6, id: 'IGT-PR-007', name: 'IGT Pertimbangan Teknis Pertanahan', date: '18 Okt 2026', updated: '18 Okt 2026', status: 'Terintegrasi' },
+    { category: 'pertanahan', n: 7, id: 'IGT-PR-008', name: 'IGT Inventarisasi Tanah Kritis', date: '18 Okt 2026', updated: '18 Okt 2026', status: 'Terintegrasi' },
+    { category: 'pertanahan', n: 8, id: 'IGT-PR-009', name: 'IGT Tanah Terindikasi Telantar', date: '18 Okt 2026', updated: '18 Okt 2026', status: 'Terintegrasi' },
+    { category: 'pertanahan', n: 9, id: 'IGT-PR-010', name: 'IGT Indikasi Pelanggaran Pemanfaatan Ruang', date: '18 Okt 2026', updated: '18 Okt 2026', status: 'Terintegrasi' },
+    { category: 'pertanahan', n: 10, id: 'IGT-PR-011', name: 'IGT Hak Atas Tanah', date: '18 Okt 2026', updated: '18 Okt 2026', status: 'Terintegrasi' },
+    { category: 'pertanahan', n: 11, id: 'IGT-PR-012', name: 'IGT Informasi Mengenai Sengketa, Konflik, dan Perkara Pertanahan', date: '18 Okt 2026', updated: '18 Okt 2026', status: 'Terintegrasi' },
+    { category: 'pertanahan', n: 12, id: 'IGT-PR-013', name: 'IGT Potensi Subjek Konsolidasi Tanah', date: '18 Okt 2026', updated: '18 Okt 2026', status: 'Terintegrasi' },
+    { category: 'pertanahan', n: 13, id: 'IGT-PR-014', name: 'IGT Nilai Bidang Tanah', date: '18 Okt 2026', updated: '18 Okt 2026', status: 'Terintegrasi' },
+    { category: 'pertanahan', n: 14, id: 'IGT-PR-015', name: 'IGT Desain Konsolidasi Tanah', date: '18 Okt 2026', updated: '18 Okt 2026', status: 'Terintegrasi' },
+    { category: 'pertanahan', n: 15, id: 'IGT-PR-016', name: 'IGT Hasil Penerapan Desain Konsolidasi Tanah', date: '18 Okt 2026', updated: '18 Okt 2026', status: 'Terintegrasi' },
+    { category: 'tata-ruang', n: 16, id: 'IGT-PR-017', name: 'IGT RTRW Nasional', date: '18 Okt 2026', updated: '18 Okt 2026', status: 'Terintegrasi' },
+    { category: 'tata-ruang', n: 17, id: 'IGT-PR-018', name: 'IGT RTRW Provinsi', date: '18 Okt 2026', updated: '18 Okt 2026', status: 'Terintegrasi' },
+    { category: 'tata-ruang', n: 18, id: 'IGT-PR-019', name: 'IGT RTRW Kabupaten', date: '18 Okt 2026', updated: '18 Okt 2026', status: 'Terintegrasi' },
+    { category: 'tata-ruang', n: 19, id: 'IGT-PR-020', name: 'IGT RTRW Kota', date: '18 Okt 2026', updated: '18 Okt 2026', status: 'Terintegrasi' },
+    { category: 'tata-ruang', n: 20, id: 'IGT-PR-021', name: 'IGT RDTR Kawasan Perbatasan Negara', date: '18 Okt 2026', updated: '18 Okt 2026', status: 'Terintegrasi' },
+    { category: 'tata-ruang', n: 21, id: 'IGT-PR-022', name: 'IGT RTR Pulau/Kepulauan', date: '18 Okt 2026', updated: '18 Okt 2026', status: 'Terintegrasi' },
+    { category: 'tata-ruang', n: 22, id: 'IGT-PR-023', name: 'IGT RTR Kawasan Strategis Nasional', date: '18 Okt 2026', updated: '18 Okt 2026', status: 'Terintegrasi' },
+    { category: 'tata-ruang', n: 23, id: 'IGT-PR-024', name: 'IGT RDTR Kabupaten/Kota', date: '18 Okt 2026', updated: '18 Okt 2026', status: 'Terintegrasi' },
+    { category: 'tata-ruang', n: 24, id: 'IGT-PR-025', name: 'IGT KKPR', date: '18 Okt 2026', updated: '18 Okt 2026', status: 'Terintegrasi' },
+    { category: 'tata-ruang', n: 25, id: 'IGT-PR-026', name: 'IGT Lahan Baku Sawah', date: '17 Okt 2026', status: 'Terkompilasi' },
+    { category: 'tata-ruang', n: 26, id: 'IGT-PR-027', name: 'IGT Kemampuan Tanah', date: '17 Okt 2026', status: 'Terkompilasi' },
+    { category: 'tata-ruang', n: 27, id: 'IGT-PR-028', name: 'IGT Neraca Penatagunaan Tanah', date: '17 Okt 2026', status: 'Terkompilasi' },
+    { category: 'tata-ruang', n: 28, id: 'IGT-PR-029', name: 'IGT Persebaran Pulau-Pulau Kecil Terluar di Indonesia', date: '17 Okt 2026', status: 'Terkompilasi' },
+    { category: 'tata-ruang', n: 29, id: 'IGT-PR-030', name: 'IGT Sebaran Tanah Objek Reforma Agraria', date: '17 Okt 2026', status: 'Terkompilasi' },
+    { category: 'tata-ruang', n: 30, id: 'IGT-PR-031', name: 'IGT Analisa Tanah Objek Reforma Agraria', date: '17 Okt 2026', status: 'Terkompilasi' },
+    { category: 'tata-ruang', n: 31, id: 'IGT-PR-032', name: 'IGT Potensi Objek Redistribusi Tanah', date: '17 Okt 2026', status: 'Terkompilasi' },
+    { category: 'tata-ruang', n: 32, id: 'IGT-PR-033', name: 'IGT Potensi WP3WT', date: '17 Okt 2026', status: 'Proses' },
+    { category: 'tata-ruang', n: 33, id: 'IGT-PR-034', name: 'IGT Tanah Timbul', date: '17 Okt 2026', status: 'Proses' },
+    { category: 'tata-ruang', n: 34, id: 'IGT-PR-035', name: 'IGT Unsur Dasar Pertanahan', date: '17 Okt 2026', status: 'Proses' },
+    { category: 'tata-ruang', n: 35, id: 'IGT-PR-036', name: 'IGT Lahan Sawah Dilindungi', date: '17 Okt 2026', status: 'Proses' },
+    { category: 'tata-ruang', n: 36, id: 'IGT-PR-037', name: 'IGT Kawasan Terindikasi Telantar', date: '17 Okt 2026', status: 'Proses' },
+    { category: 'tata-ruang', n: 37, id: 'IGT-PR-038', name: 'IGT Zona Nilai Tanah', date: '17 Okt 2026', status: 'Proses' },
+    { category: 'tata-ruang', n: 38, id: 'IGT-PR-039', name: 'IGT Sebaran Potensi Pengembangan Pertanahan', date: '17 Okt 2026', status: 'Proses' },
     // IGT Derivatif
     { category: 'derivatif', n: 0, id: 'DRV-2026-008', name: 'Derivatif Kawasan Hutan', date: '16 Okt 2026', updated: '17 Okt 2026', status: 'Disetujui' },
     { category: 'derivatif', n: 1, id: 'DRV-2026-007', name: 'Derivatif Bidang Wilayah A', date: '15 Okt 2026', status: 'Diajukan' },
