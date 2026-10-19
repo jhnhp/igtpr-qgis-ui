@@ -68,7 +68,7 @@ document.getElementById("history-list").innerHTML=d.history.map(([title,meta,not
 const badge=document.getElementById("status-badge");badge.textContent=d.status;badge.className="status "+(d.status==="Terintegrasi"?"ok":d.status==="Revisi"?"warn":"info");
 const reviseButton=document.getElementById("revise-igt"),topologyButton=document.getElementById("verify-topology");
 reviseButton.hidden=!(role==="operator"&&d.status==="Revisi");
-topologyButton.hidden=!((isSuperadmin||isAdmin)&&d.status==="Proses");
+topologyButton.hidden=!((isSuperadmin||isAdmin)&&d.status==="Terkompilasi");
 document.getElementById("show-canvas").addEventListener("click",()=>alert("Simulasi plugin QGIS: layer "+d.id+" akan ditampilkan pada kanvas peta QGIS."));
 topologyButton.addEventListener("click",()=>alert("Simulasi verifikasi topologi untuk "+d.id+". Pada implementasi QGIS, aksi ini menjalankan pemeriksaan topologi pada layer terkait."));
 reviseButton.addEventListener("click",()=>alert("Simulasi: buka formulir revisi untuk pengajuan "+d.id+"."));
