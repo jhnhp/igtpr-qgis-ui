@@ -222,20 +222,18 @@ const IgtApp = (() => {
   function rowActions(role, r) {
     const reviewer = role === 'admin' || role === 'superadmin';
     const kind = CATEGORIES[r.category].detail;
+    const extras = [button('btn-soft', 'show-qgis', r.id, '▧ Tampilkan di QGIS')];
     if (r.category === 'lainnya') {
-      return role === 'superadmin' ? toolbar(button('btn-danger', 'delete', r.id, 'Hapus')) : '';
+      if (role === 'superadmin') extras.push(button('btn-danger', 'delete', r.id, 'Hapus'));
+      return toolbar(...extras);
     }
-    const detail = r.n === undefined
-      ? button('btn-soft', 'detail-sim', r.id, 'Detail')
-      : link(`${DETAIL_URL[kind]}?id=${r.n}&role=${role}`, 'Detail');
-    const extras = [];
     if (kind === 'utama') {
       if (reviewer && r.status === 'Terkompilasi') extras.push(button('btn-primary', 'topology', r.id, '⌁ Verifikasi Topologi'));
       if (role === 'operator' && r.status === 'Revisi') extras.push(button('btn-soft', 'revision', r.id, '✎ Revisi'));
     } else if (reviewer && r.status === 'Diajukan') {
       extras.push(button('btn-primary', 'approve', r.id, '✓ Setujui'), button('btn-soft', 'reject', r.id, '✕ Tolak'));
     }
-    return toolbar(...extras, detail);
+    return toolbar(...extras);
   }
 
   // Submission management: summary, one tab per authorized category, upload controls and submission table.
@@ -382,7 +380,7 @@ const IgtApp = (() => {
       else if (action === 'validate') alert('Parameter valid. Proses ini masih berupa prototipe UI.');
       else if (action === 'upload-lainnya') alert('Upload layer dan konfigurasi data dilakukan langsung melalui QGIS.');
       else if (action === 'revision') alert('Simulasi: buka formulir revisi untuk pengajuan ' + id + '.');
-      else if (action === 'detail-sim') alert('Simulasi: detail ' + id + ' tersedia setelah data tersambung.');
+      else if (action === 'show-qgis') alert('Simulasi: layer ' + (record ? record.name : id) + ' akan ditampilkan di QGIS. Integrasi QGIS belum aktif pada prototipe ini.');
       else if (action === 'topology') {
         alert('Simulasi verifikasi topologi untuk ' + id + '. Pada implementasi QGIS, aksi ini menjalankan pemeriksaan topologi pada layer terkait.');
         record.status = 'Terkompilasi';
