@@ -103,19 +103,33 @@ const IgtApp = (() => {
     const config = CATEGORIES[category];
     const datasets = IgtData.loadRecords().filter((r) => r.category === category && IgtData.inCatalog(r));
     let query = '';
+    let sortKey = '';
+    let sortDirection = 1;
 
     view.innerHTML =
       `<div class="notice"><strong>Isi katalog</strong>${config.rule} ` +
       `Tombol WMS dan WFS adalah simulasi; belum ada layanan nyata yang terhubung.</div>` +
       `<section class="card"><div class="card-head"><div><h2>${config.noun.charAt(0).toUpperCase() + config.noun.slice(1)}</h2><p id="catalog-count"></p></div></div>` +
       `<div class="field catalog-search"><label for="catalog-search">PENCARIAN</label><input id="catalog-search" type="search" placeholder="Cari nama IGT..."></div>` +
-      `<div class="table-wrap"><table class="stack"><thead><tr><th>Nama IGT</th><th>Ditjen</th><th>Tanggal Update</th><th>Tampilkan WMS</th><th>Tampilkan WFS</th></tr></thead>` +
+      `<div class="table-wrap"><table class="stack"><thead><tr><th><button type="button" class="sort-header" data-sort="name">Nama IGT <span aria-hidden="true">↕</span></button></th><th><button type="button" class="sort-header" data-sort="ditjen">Ditjen <span aria-hidden="true">↕</span></button></th><th><button type="button" class="sort-header" data-sort="updated">Tanggal Update <span aria-hidden="true">↕</span></button></th><th><button type="button" class="sort-header" data-sort="wms">Tampilkan WMS <span aria-hidden="true">↕</span></button></th><th><button type="button" class="sort-header" data-sort="wfs">Tampilkan WFS <span aria-hidden="true">↕</span></button></th></tr></thead>` +
       `<tbody id="catalog-rows"></tbody></table></div>` +
       `<div class="empty-state" id="empty-state" hidden></div></section>`;
 
     function render() {
       const q = query.toLowerCase();
-      const shown = datasets.filter((d) => (d.name + ' ' + (d.source || '') + ' ' + d.id).toLowerCase().includes(q));
+      const shown = datasets.filter((d) => (d.name + ' ' + (d.ditjen || '') + ' ' + (d.source || '') + ' ' + d.id).toLowerCase().includes(q));
+      if (sortKey) {
+        const value = (d) => sortKey === 'name' ? d.name
+          : sortKey === 'ditjen' ? (d.ditjen || d.source || '')
+          : sortKey === 'updated' ? (d.updated || '')
+          : d.name;
+        shown.sort((a, b) => String(value(a)).localeCompare(String(value(b)), 'id', { numeric: true }) * sortDirection);
+      }
+      document.querySelectorAll('.sort-header').forEach((btn) => {
+        const active = btn.dataset.sort === sortKey;
+        btn.setAttribute('aria-sort', active ? (sortDirection === 1 ? 'ascending' : 'descending') : 'none');
+        btn.querySelector('span').textContent = active ? (sortDirection === 1 ? '↑' : '↓') : '↕';
+      });
       $('#catalog-rows').innerHTML = shown
         .map((d) => {
           const meta = d.source ? `${d.id} · ${d.source}` : d.id;
@@ -139,6 +153,13 @@ const IgtApp = (() => {
     $('#catalog-search').addEventListener('input', (event) => {
       query = event.target.value;
       render();
+    });
+    document.querySelectorAll('.sort-header').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        if (sortKey === btn.dataset.sort) sortDirection *= -1;
+        else { sortKey = btn.dataset.sort; sortDirection = 1; }
+        render();
+      });
     });
     document.addEventListener('click', (event) => {
       const target = event.target.closest('[data-action]');
