@@ -7,7 +7,7 @@
 </style></head><body data-page="layer-derivatif-detail"><div class="app" style="display:block;min-height:100vh"><div class="workspace">
 <header class="topbar"><div class="crumb">Geoportal IGT-PR　/　<a href="igt-derivatif.html">Layer Derivatif</a>　/　<strong>Detail</strong></div><div class="top-actions"><button class="icon-btn" aria-label="Notifikasi">♧</button><div class="user-chip"><div class="avatar">JH</div><span>Operator Pusat</span></div></div></header>
 <main class="main"><div class="page-head"><div><div class="eyebrow">Sistem Informasi Geospasial</div><h1 id="layer-name">Detail Layer Derivatif</h1><p>Informasi pengajuan, gaya tampilan, dan masa berlaku layer.</p></div></div>
-<div class="detail-actions"><a class="btn btn-soft" href="01-beranda-operator.html">← Kembali ke Beranda</a><a class="btn btn-soft" href="igt-derivatif.html">Kembali ke daftar Layer Derivatif</a><button class="btn btn-primary" id="show-canvas">▧ Tampilkan di Canvas</button></div>
+<div class="detail-actions"><a class="btn btn-soft" id="back-home" href="01-beranda-operator.html">← Kembali ke Beranda</a><a class="btn btn-soft" id="back-list" href="igt-derivatif.html">Kembali ke daftar Layer Derivatif</a><button class="btn btn-primary" id="show-canvas">▧ Tampilkan di Canvas</button></div>
 <section class="card detail-section"><div class="card-head"><div><h2>Informasi Pengajuan</h2><p>Identitas dan metadata layer derivatif.</p></div><span id="status-badge" class="status ok">Disetujui</span></div>
 <div class="detail-grid">
 <div class="detail-item"><div class="detail-label">ID Pengajuan</div><div class="detail-value" id="layer-id">DRV-2026-008</div></div>
@@ -20,7 +20,7 @@
 <div class="detail-item"><div class="detail-label">Kadaluwarsa dalam</div><div class="detail-value" id="layer-expiry">30 hari</div></div>
 <div class="detail-item" style="grid-column:1/-1"><div class="detail-label">Keterangan</div><div class="detail-value" id="layer-notes">Layer derivatif telah disetujui dan siap digunakan.</div></div>
 </div></section>
-
+<div class="detail-actions" id="superadmin-review" hidden style="margin-top:14px;justify-content:flex-end"><button class="btn btn-primary" id="detail-approve">✓ Setujui</button><button class="btn btn-soft" id="detail-reject">✕ Tolak</button></div>
 <div class="footer">Mockup UI plugin QGIS · data contoh</div></main></div></div>
 <script>
 const data={
@@ -29,7 +29,8 @@ const data={
 "2":{id:"DRV-2026-006",nama:"Derivatif Kawasan Lindung",jenis:"Berbasis Kawasan",tanggal:"14 Okt 2026",status:"Ditolak",sld:"derivatif-kawasan-lindung.sld",expired:"—",notes:"Pengajuan ditolak; periksa catatan evaluasi."},
 "3":{id:"DRV-2026-005",nama:"Derivatif Bidang Wilayah B",jenis:"Berbasis Bidang",tanggal:"12 Okt 2026",status:"Disetujui",sld:"derivatif-bidang-wilayah-b.sld",expired:"14 hari",notes:"Layer derivatif telah disetujui dan siap digunakan."}
 };
-const params=new URLSearchParams(location.search),d=data[params.get("id")]||data["0"];
+const params=new URLSearchParams(location.search),d=data[params.get("id")]||data["0"],isSuperadmin=params.get("role")==="superadmin";
+if(isSuperadmin){document.querySelector(".user-chip span").textContent="Superadmin";document.querySelector(".avatar").textContent="SA";document.getElementById("back-home").href="superadmin-beranda.html";document.getElementById("back-list").href="superadmin-igt-derivatif.html";document.querySelector(".crumb").innerHTML='Geoportal IGT-PR　/　<a href="superadmin-igt-derivatif.html">IGT Derivatif</a>　/　<strong>Detail</strong>';}
 document.title=d.nama+" · Detail Layer Derivatif";
 document.getElementById("layer-name").textContent=d.nama;
 document.getElementById("layer-name-meta").textContent=d.nama;
@@ -41,5 +42,8 @@ document.getElementById("layer-sld").textContent=d.sld;
 document.getElementById("layer-expiry").textContent=d.expired;
 document.getElementById("layer-notes").textContent=d.notes;
 const badge=document.getElementById("status-badge");badge.textContent=d.status;badge.className="status "+(d.status==="Disetujui"?"ok":d.status==="Ditolak"?"fix":"info");
+const review=document.getElementById("superadmin-review");review.hidden=!(isSuperadmin&&d.status==="Diajukan");
+function decide(approved){if(!confirm((approved?"Setujui":"Tolak")+" pengajuan "+d.id+"?"))return;d.status=approved?"Disetujui":"Ditolak";d.notes=approved?"Layer derivatif telah disetujui dan siap digunakan.":"Pengajuan ditolak oleh Superadmin.";d.expired=approved?"30 hari":"—";badge.textContent=d.status;badge.className="status "+(approved?"ok":"fix");document.getElementById("layer-status").textContent=d.status;document.getElementById("layer-notes").textContent=d.notes;document.getElementById("layer-expiry").textContent=d.expired;review.hidden=true;alert("Status pengajuan "+d.id+" diperbarui menjadi "+d.status+".");}
+document.getElementById("detail-approve").addEventListener("click",()=>decide(true));document.getElementById("detail-reject").addEventListener("click",()=>decide(false));
 document.getElementById("show-canvas").addEventListener("click",()=>alert("Simulasi plugin QGIS: layer "+d.id+" akan ditampilkan pada canvas peta."));
 </script></body></html>
