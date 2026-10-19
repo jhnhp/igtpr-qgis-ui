@@ -254,10 +254,14 @@ const IgtApp = (() => {
 
   // Submission management: summary, one tab per authorized category, upload controls and submission table.
   function upload(role) {
-    const categories = CATEGORY_ORDER.filter((key) => IgtData.canUpload(role, key));
+    const availableCategories = CATEGORY_ORDER.filter((key) => IgtData.canUpload(role, key));
+    const categories = [
+      ...(availableCategories.some((key) => key === 'pertanahan' || key === 'tata-ruang') ? ['igt-utama'] : []),
+      ...availableCategories.filter((key) => key !== 'pertanahan' && key !== 'tata-ruang'),
+    ];
     const records = IgtData.submissionsFor(role, IgtData.loadRecords());
     const requested = new URLSearchParams(location.search).get('tab');
-    let tab = categories.includes(requested) ? requested : categories[0];
+    let tab = categories.includes(requested) ? requested : (requested === 'pertanahan' || requested === 'tata-ruang') && categories.includes('igt-utama') ? 'igt-utama' : categories[0];
     let nextDerivative = 9;
 
     $('#view').innerHTML =
@@ -267,7 +271,7 @@ const IgtApp = (() => {
       statCard('Menunggu integrasi', '', 'Terkompilasi', '▤', '', 'count-waiting') +
       statCard('Perlu perhatian', '', 'Revisi, Ditolak, atau Kadaluwarsa', '!', 'red', 'count-attention') +
       `</div><section class="card"><div class="tabs" data-tabs>` +
-      categories.map((key) => `<button class="tab" data-tab="${key}">${CATEGORIES[key].label}</button>`).join('') +
+      categories.map((key) => `<button class="tab" data-tab="${key}">${key === 'igt-utama' ? 'IGT Utama' : CATEGORIES[key].label}</button>`).join('') +
       `</div><div class="card-head"><div><h2 id="tab-heading"></h2><p id="tab-description"></p></div></div>` +
       `<div id="upload-panel"></div>` +
       `<div class="card-head submissions-head"><div><h2>Pengajuan</h2><p id="submission-count"></p></div></div>` +
@@ -287,10 +291,11 @@ const IgtApp = (() => {
         t.classList.toggle('active', t.dataset.tab === tab);
         t.setAttribute('aria-selected', t.dataset.tab === tab);
       });
-      setText('tab-heading', CATEGORIES[tab].label);
-      setText('tab-description', UPLOAD_TEXT[tab]);
-      $('#upload-panel').innerHTML = uploadPanel(role, tab);
-      const own = records.filter((r) => r.category === tab);
+      const isMain = tab === 'igt-utama';
+      setText('tab-heading', isMain ? 'IGT Utama' : CATEGORIES[tab].label);
+      setText('tab-description', isMain ? 'Kelola pengajuan IGT Pertanahan dan IGT Tata Ruang dari satu tab.' : UPLOAD_TEXT[tab]);
+      $('#upload-panel').innerHTML = isMain ? uploadPanel(role, 'pertanahan') + uploadPanel(role, 'tata-ruang') : uploadPanel(role, tab);
+      const own = records.filter((r) => isMain ? (r.category === 'pertanahan' || r.category === 'tata-ruang') : r.category === tab);
       $('#submission-rows').innerHTML = own
         .map((r) => {
           const id = r.n === undefined || r.category === 'lainnya'
@@ -303,7 +308,7 @@ const IgtApp = (() => {
           );
         })
         .join('');
-      setText('submission-count', `${own.length} pengajuan pada ${CATEGORIES[tab].label}.`);
+      setText('submission-count', `${own.length} pengajuan pada ${isMain ? 'IGT Utama' : CATEGORIES[tab].label}.`);
       $('#empty-state').hidden = own.length > 0;
       renderCounts();
     }
@@ -326,7 +331,7 @@ const IgtApp = (() => {
       const { action, id } = target.dataset;
       const record = records.find((r) => r.id === id);
       if (action === 'load-baseline') alert('Simulasi: pilih layer baseline dari QGIS.');
-      else if (action === 'upload') alert('Simulasi: pilih file data untuk diunggah (' + CATEGORIES[tab].label + ').');
+      else if (action === 'upload') alert('Simulasi: pilih file data untuk diunggah (' + (tab === 'igt-utama' ? 'IGT Utama' : CATEGORIES[tab].label) + ').');
       else if (action === 'validate') alert('Parameter valid. Proses ini masih berupa prototipe UI.');
       else if (action === 'upload-lainnya') alert('Upload layer dan konfigurasi data dilakukan langsung melalui QGIS.');
       else if (action === 'revision') alert('Simulasi: buka formulir revisi untuk pengajuan ' + id + '.');
