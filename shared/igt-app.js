@@ -257,11 +257,13 @@ const IgtApp = (() => {
     const availableCategories = CATEGORY_ORDER.filter((key) => IgtData.canUpload(role, key));
     const categories = [
       ...(availableCategories.some((key) => key === 'pertanahan' || key === 'tata-ruang') ? ['igt-utama'] : []),
-      ...availableCategories.filter((key) => key !== 'pertanahan' && key !== 'tata-ruang'),
+      ...availableCategories.filter((key) => key !== 'pertanahan' && key !== 'tata-ruang' && !(role === 'superadmin' && key === 'lainnya')),
     ];
     const records = IgtData.submissionsFor(role, IgtData.loadRecords());
-    const requested = new URLSearchParams(location.search).get('tab');
+    const params = new URLSearchParams(location.search);
+    const requested = params.get('tab');
     let tab = categories.includes(requested) ? requested : (requested === 'pertanahan' || requested === 'tata-ruang') && categories.includes('igt-utama') ? 'igt-utama' : categories[0];
+    let statusTab = params.get('status') || 'Semua';
     let nextDerivative = 9;
 
     $('#view').innerHTML =
@@ -274,6 +276,7 @@ const IgtApp = (() => {
       categories.map((key) => `<button class="tab" data-tab="${key}">${key === 'igt-utama' ? 'IGT Utama' : CATEGORIES[key].label}</button>`).join('') +
       `</div><div class="card-head"><div><h2 id="tab-heading"></h2><p id="tab-description"></p></div></div>` +
       `<div id="upload-panel"></div>` +
+      `<div id="submission-status-tabs" class="tabs" data-status-tabs></div>` +
       `<div class="card-head submissions-head"><div><h2>Pengajuan</h2><p id="submission-count"></p></div></div>` +
       `<div class="table-wrap"><table class="stack"><thead><tr><th>ID Pengajuan</th><th>Layer Target</th><th>Tanggal Upload</th><th>Status</th><th>Aksi</th></tr></thead>` +
       `<tbody id="submission-rows"></tbody></table></div><div class="empty-state" id="empty-state" hidden>Belum ada pengajuan pada kategori ini.</div></section>`;
@@ -296,7 +299,35 @@ const IgtApp = (() => {
       setText('tab-description', isMain ? 'Kelola pengajuan IGT Pertanahan dan IGT Tata Ruang dari satu tab.' : UPLOAD_TEXT[tab]);
       $('#upload-panel').innerHTML = isMain ? uploadPanel(role, 'pertanahan') + uploadPanel(role, 'tata-ruang') : uploadPanel(role, tab);
       const own = records.filter((r) => isMain ? (r.category === 'pertanahan' || r.category === 'tata-ruang') : r.category === tab);
-      $('#submission-rows').innerHTML = own
+      const statusOptions = isMain
+        ? (role === 'operator'
+          ? ['Revisi', 'Diproses', 'Disetujui', 'Semua']
+          : ['Diproses', 'Disetujui', 'Revisi', 'Semua'])
+        : tab === 'derivatif'
+          ? (role === 'operator' || role === 'umum'
+            ? ['Semua', 'Diproses', 'Disetujui']
+            : ['Diproses', 'Disetujui', 'Semua'])
+          : [];
+      const showStatusTabs = statusOptions.length > 0;
+      const statusEl = $('#submission-status-tabs');
+      statusEl.innerHTML = showStatusTabs
+        ? statusOptions.map((s) => `<button class="tab" data-status-tab="${s}">${s}</button>`).join('')
+        : '';
+      statusEl.hidden = !showStatusTabs;
+      if (showStatusTabs && !statusOptions.includes(statusTab)) statusTab = statusOptions[0];
+      statusEl.querySelectorAll('[data-status-tab]').forEach((t) => {
+        t.classList.toggle('active', t.dataset.statusTab === statusTab);
+        t.setAttribute('aria-selected', t.dataset.statusTab === statusTab);
+      });
+      const statusMatches = (r) => {
+        if (!showStatusTabs || statusTab === 'Semua') return true;
+        if (statusTab === 'Revisi') return r.status === 'Revisi';
+        if (statusTab === 'Diproses') return ['Proses', 'Diajukan', 'Terkompilasi'].includes(r.status);
+        if (statusTab === 'Disetujui') return ['Disetujui', 'Terintegrasi', 'Tersedia'].includes(r.status);
+        return true;
+      };
+      const displayed = own.filter(statusMatches);
+      $('#submission-rows').innerHTML = displayed
         .map((r) => {
           const id = r.n === undefined || r.category === 'lainnya'
             ? r.id
@@ -308,14 +339,15 @@ const IgtApp = (() => {
           );
         })
         .join('');
-      setText('submission-count', `${own.length} pengajuan pada ${isMain ? 'IGT Utama' : CATEGORIES[tab].label}.`);
-      $('#empty-state').hidden = own.length > 0;
+      setText('submission-count', `${displayed.length} dari ${own.length} pengajuan pada ${isMain ? 'IGT Utama' : CATEGORIES[tab].label}.`);
+      $('#empty-state').hidden = displayed.length > 0;
       renderCounts();
     }
 
     document.querySelectorAll('[data-tab]').forEach((t) =>
       t.addEventListener('click', () => {
         tab = t.dataset.tab;
+        statusTab = 'Semua';
         try {
           history.replaceState(null, '', '?tab=' + tab);
         } catch (e) {
@@ -324,6 +356,12 @@ const IgtApp = (() => {
         render();
       }),
     );
+    $('#submission-status-tabs').addEventListener('click', (event) => {
+      const target = event.target.closest('[data-status-tab]');
+      if (!target) return;
+      statusTab = target.dataset.statusTab;
+      render();
+    });
 
     document.addEventListener('click', (event) => {
       const target = event.target.closest('[data-action]');
