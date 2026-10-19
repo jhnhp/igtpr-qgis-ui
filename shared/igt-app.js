@@ -221,7 +221,10 @@ const IgtApp = (() => {
       return toolbar(...extras);
     }
     if (kind === 'utama') {
-      if (reviewer && r.status === 'Terkompilasi') extras.push(button('btn-primary', 'topology', r.id, '⌁ Verifikasi Topologi'));
+      if (reviewer && r.status === 'Terkompilasi') {
+        extras.push(button('btn-primary', 'topology', r.id, '⌁ Verifikasi Topologi'));
+        if (role === 'superadmin') extras.push(button('btn-primary', 'approve-integration', r.id, '✓ Setujui Integrasi'));
+      }
       if (role === 'operator' && r.status === 'Revisi') extras.push(button('btn-soft', 'revision', r.id, '✎ Revisi'));
     } else if (reviewer && r.status === 'Diajukan') {
       extras.push(button('btn-primary', 'approve', r.id, '✓ Setujui'), button('btn-soft', 'reject', r.id, '✕ Tolak'));
@@ -401,6 +404,15 @@ const IgtApp = (() => {
       else if (action === 'topology') {
         alert('Simulasi verifikasi topologi untuk ' + id + '. Pada implementasi QGIS, aksi ini menjalankan pemeriksaan topologi pada layer terkait.');
         record.status = 'Terkompilasi';
+        render();
+      } else if (action === 'approve-integration') {
+        if (role !== 'superadmin' || !record || !['pertanahan', 'tata-ruang'].includes(record.category) || record.status !== 'Terkompilasi') {
+          alert('Aksi persetujuan integrasi hanya tersedia bagi Superadmin untuk IGT Utama berstatus Terkompilasi.');
+          return;
+        }
+        if (!confirm('Setujui integrasi IGT Utama ' + id + '?')) return;
+        record.status = 'Terintegrasi';
+        record.updated = '20 Okt 2026';
         render();
       } else if (action === 'approve' || action === 'reject') {
         if (!confirm((action === 'approve' ? 'Setujui' : 'Tolak') + ' pengajuan ' + id + '?')) return;
