@@ -9,7 +9,7 @@
 .topbar{height:46px;padding:0 12px}.detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .detail-item{padding:12px;border:1px solid var(--border,#e5e7eb);border-radius:10px;min-width:0}
 .detail-label{font-size:12px;color:var(--muted,#6b7280);margin-bottom:6px}.detail-value{font-size:14px;font-weight:600;overflow-wrap:anywhere}
-.detail-section{margin-top:14px}.detail-actions{display:flex;gap:8px;flex-wrap:wrap}
+.detail-section{margin-top:14px}.detail-actions{display:flex;gap:8px;flex-wrap:wrap}.history-list{display:grid;gap:10px}.history-item{border-left:3px solid #cbd5e1;padding:4px 0 5px 12px}.history-title{font-size:13px;font-weight:700}.history-meta{font-size:11px;color:var(--muted,#6b7280);margin-top:3px}.history-note{font-size:12px;margin-top:4px}
 @media(max-width:400px){.main{padding:10px}.detail-grid{grid-template-columns:1fr}}
 </style>
 </head>
@@ -27,28 +27,44 @@
 <div class="detail-item"><div class="detail-label">Jenis Data</div><div class="detail-value" id="igt-jenis">Berbasis Bidang</div></div>
 <div class="detail-item"><div class="detail-label">Tanggal Upload</div><div class="detail-value" id="igt-tanggal">18 Okt 2026</div></div>
 <div class="detail-item"><div class="detail-label">Status</div><div class="detail-value" id="igt-status">Terkompilasi</div></div>
-<div class="detail-item" style="grid-column:1/-1"><div class="detail-label">Keterangan</div><div class="detail-value" id="igt-keterangan">Data bidang telah dikompilasi.</div></div>
+<div class="detail-item" id="detail-extra-1"><div class="detail-label" id="extra-label-1">Wilayah</div><div class="detail-value" id="extra-value-1">Kabupaten Sleman</div></div><div class="detail-item" id="detail-extra-2"><div class="detail-label" id="extra-label-2">Jumlah fitur</div><div class="detail-value" id="extra-value-2">1.248 bidang</div></div><div class="detail-item" style="grid-column:1/-1"><div class="detail-label">Keterangan</div><div class="detail-value" id="igt-keterangan"></div></div>
 </div></section>
 <div class="footer">Mockup UI plugin QGIS · data contoh</div>
 </main></div></div>
 <script>
 const records={
-"0":{id:"IGT-2026-012",nama:"IGT Bidang Wilayah A",jenis:"Berbasis Bidang",tanggal:"18 Okt 2026",keterangan:"Data bidang telah dikompilasi.",status:"Proses"},
-"1":{id:"IGT-2026-011",nama:"IGT Kawasan Hutan",jenis:"Berbasis Kawasan",tanggal:"16 Okt 2026",keterangan:"Data kawasan telah terintegrasi.",status:"Terintegrasi"},
-"2":{id:"IGT-2026-010",nama:"IGT Bidang Wilayah B",jenis:"Berbasis Bidang",tanggal:"15 Okt 2026",keterangan:"Data bidang telah dikompilasi.",status:"Revisi"},
-"3":{id:"IGT-2026-009",nama:"IGT Kawasan Lindung",jenis:"Berbasis Kawasan",tanggal:"14 Okt 2026",keterangan:"Data kawasan telah terintegrasi.",status:"Terintegrasi"}
+"0":{id:"IGT-2026-012",nama:"IGT Bidang Wilayah A",direktorat:"Direktorat Survei dan Pemetaan Tematik",jenis:"Berbasis Bidang",tanggal:"18 Okt 2026",status:"Proses",wilayah:"Kabupaten Sleman, DI Yogyakarta",jumlah:"1.248 bidang",keterangan:"Data atribut telah diunggah dan menunggu pemeriksaan topologi.",extraTitle:"Rincian bidang",fields:[["Sumber geometri","Baseline bidang"],["Kunci relasi","ID_BIDANG"],["Atribut wajib","12 dari 12 kolom terisi"],["Hasil validasi atribut","Lolos pemeriksaan awal"]],history:[["Data diunggah","18 Okt 2026 · Operator Pusat","Berkas atribut diterima oleh sistem."],["Validasi awal","18 Okt 2026 · Sistem","Struktur tabel dan kolom wajib terdeteksi."],["Menunggu verifikasi topologi","18 Okt 2026 · Antrean","Belum ada hasil pemeriksaan topologi."]]},
+"1":{id:"IGT-2026-011",nama:"IGT Kawasan Hutan",direktorat:"Direktorat Survei dan Pemetaan Tematik",jenis:"Berbasis Kawasan",tanggal:"16 Okt 2026",status:"Terintegrasi",wilayah:"Kabupaten Kulon Progo, DI Yogyakarta",jumlah:"86 poligon kawasan",keterangan:"Data kawasan telah lolos pemeriksaan dan terintegrasi.",extraTitle:"Rincian kawasan",fields:[["Format geometri","Polygon / MultiPolygon"],["Luas terpetakan","42.680 ha"],["Sistem koordinat","EPSG:4326"],["Layer terintegrasi","igt_kawasan_hutan"]],history:[["Berkas kawasan diunggah","16 Okt 2026 · Operator Pusat","Geometri dan atribut kawasan diterima."],["Pemeriksaan data selesai","17 Okt 2026 · Admin","Tidak ada catatan yang menghalangi integrasi."],["Terintegrasi","17 Okt 2026 · Sistem","Layer tersedia untuk ditampilkan di QGIS."]]},
+"2":{id:"IGT-2026-010",nama:"IGT Bidang Wilayah B",direktorat:"Direktorat Survei dan Pemetaan Tematik",jenis:"Berbasis Bidang",tanggal:"15 Okt 2026",status:"Revisi",wilayah:"Kabupaten Bantul, DI Yogyakarta",jumlah:"936 bidang",keterangan:"Ditemukan ketidaksesuaian pada beberapa ID bidang dan atribut wajib perlu dilengkapi.",extraTitle:"Rincian revisi bidang",fields:[["Sumber geometri","Baseline bidang"],["Kunci relasi","ID_BIDANG"],["Atribut wajib","10 dari 12 kolom terisi"],["Temuan pemeriksaan","23 ID tidak cocok; 2 kolom kosong"]],history:[["Data diunggah","15 Okt 2026 · Operator Pusat","Berkas atribut diajukan untuk diperiksa."],["Pemeriksaan admin","16 Okt 2026 · Admin","Ditemukan ID bidang yang tidak cocok dengan baseline."],["Dikembalikan untuk revisi","16 Okt 2026 · Admin","Lengkapi dua kolom wajib dan perbaiki 23 ID bidang."]]},
+"3":{id:"IGT-2026-009",nama:"IGT Kawasan Lindung",direktorat:"Direktorat Survei dan Pemetaan Tematik",jenis:"Berbasis Kawasan",tanggal:"14 Okt 2026",status:"Terintegrasi",wilayah:"Kabupaten Gunungkidul, DI Yogyakarta",jumlah:"54 poligon kawasan",keterangan:"Data kawasan lindung telah terintegrasi; catatan metadata tersedia untuk ditinjau.",extraTitle:"Rincian kawasan lindung",fields:[["Format geometri","MultiPolygon"],["Luas terpetakan","18.420 ha"],["Sistem koordinat","EPSG:4326"],["Metadata sumber","Dokumen penetapan kawasan"],["Layer terintegrasi","igt_kawasan_lindung"]],history:[["Berkas diunggah","14 Okt 2026 · Operator Pusat","Data kawasan lindung diterima."],["Validasi geometri","15 Okt 2026 · Admin","Geometri dinyatakan valid."],["Terintegrasi","15 Okt 2026 · Sistem","Layer tersedia pada katalog internal."]]},
+"4":{id:"IGT-2026-008",nama:"IGT Bidang Infrastruktur",direktorat:"Direktorat Survei dan Pemetaan Tematik",jenis:"Berbasis Bidang",tanggal:"12 Okt 2026",status:"Proses",wilayah:"Kota Yogyakarta, DI Yogyakarta",jumlah:"412 bidang",keterangan:"Data bidang infrastruktur menunggu verifikasi topologi dan pemeriksaan konsistensi atribut.",extraTitle:"Rincian bidang infrastruktur",fields:[["Sumber geometri","Baseline bidang"],["Kunci relasi","ID_BIDANG"],["Atribut wajib","12 dari 12 kolom terisi"],["Pemeriksaan awal","Validasi atribut selesai"],["Status topologi","Belum diverifikasi"]],history:[["Data diunggah","12 Okt 2026 · Operator Pusat","Atribut bidang infrastruktur berhasil diterima."],["Validasi atribut","13 Okt 2026 · Sistem","Kolom wajib terisi lengkap."],["Menunggu verifikasi topologi","13 Okt 2026 · Antrean","Pemeriksaan topologi belum dijalankan."]]}
 };
-const params=new URLSearchParams(location.search),d=records[params.get("id")]||records["0"],isSuperadmin=params.get("role")==="superadmin";
+const params=new URLSearchParams(location.search),d=records[params.get("id")]||records["0"],role=params.get("role")||"operator",isSuperadmin=role==="superadmin",isAdmin=role==="admin";
 document.title=d.nama+" · Detail IGT-PR";
-document.querySelector(".crumb").innerHTML=isSuperadmin?'Geoportal IGT-PR　/　<a href="superadmin-igt-utama.html">IGT Utama</a>　/　<strong>Detail IGT</strong>':'Geoportal IGT-PR　/　<a href="igt-utama.html">IGT Utama</a>　/　<strong>Detail IGT</strong>';
-if(isSuperadmin){document.querySelector(".user-chip").innerHTML='<div class="avatar">SA</div><span>Superadmin</span>';document.querySelector(".detail-actions a[href=\"01-beranda-operator.html\"]").href="superadmin-beranda.html";document.querySelector(".detail-actions a[href=\"igt-utama.html\"]").href="superadmin-igt-utama.html";}
+document.querySelector(".crumb").innerHTML=(isSuperadmin?'Geoportal IGT-PR　/　<a href="superadmin-igt-utama.html">IGT Utama</a>':isAdmin?'Geoportal IGT-PR　/　<a href="08-verifikasi-data.html">Verifikasi Data</a>':'Geoportal IGT-PR　/　<a href="igt-utama.html">IGT Utama</a>')+'　/　<strong>Detail IGT</strong>';
+if(isSuperadmin||isAdmin){document.querySelector(".user-chip").innerHTML='<div class="avatar">'+(isSuperadmin?'SA':'AD')+'</div><span>'+(isSuperadmin?'Superadmin':'Admin')+'</span>';document.querySelector('.detail-actions a[href="01-beranda-operator.html"]').href=isSuperadmin?'superadmin-beranda.html':'08-verifikasi-data.html';document.querySelector('.detail-actions a[href="igt-utama.html"]').href=isSuperadmin?'superadmin-igt-utama.html':'08-verifikasi-data.html';}
 document.getElementById("igt-name").textContent=d.nama;
 document.getElementById("igt-name-meta").textContent=d.nama;
 document.getElementById("igt-id").textContent=d.id;
+document.getElementById("igt-direktorat").textContent=d.direktorat;
 document.getElementById("igt-jenis").textContent=d.jenis;
 document.getElementById("igt-tanggal").textContent=d.tanggal;
 document.getElementById("igt-status").textContent=d.status;
 document.getElementById("igt-keterangan").textContent=d.keterangan;
-const badge=document.getElementById("status-badge");badge.textContent=d.status;badge.className="status "+(d.status==="Terintegrasi"?"ok":d.status==="Revisi"?"warn":"info");const reviseButton=document.getElementById("revise-igt"),topologyButton=document.getElementById("verify-topology");reviseButton.hidden=d.status!=="Revisi";topologyButton.hidden=!(isSuperadmin&&d.status==="Proses");document.getElementById("show-canvas").addEventListener("click",()=>alert("Simulasi plugin QGIS: layer "+d.id+" akan ditampilkan pada kanvas peta QGIS."));topologyButton.addEventListener("click",()=>alert("Simulasi verifikasi topologi untuk "+d.id+". Pada implementasi QGIS, aksi ini menjalankan pemeriksaan topologi pada layer terkait."));reviseButton.addEventListener("click",()=>alert("Simulasi: buka formulir revisi untuk pengajuan "+d.id+"."));
-</script>
-</body></html>
+document.getElementById("extra-label-1").textContent=d.jenis==="Berbasis Bidang"?"Wilayah administrasi":"Wilayah kawasan";
+document.getElementById("extra-value-1").textContent=d.wilayah;
+document.getElementById("extra-label-2").textContent=d.jenis==="Berbasis Bidang"?"Jumlah bidang":"Jumlah poligon";
+document.getElementById("extra-value-2").textContent=d.jumlah;
+document.getElementById("specific-heading").textContent=d.extraTitle;
+document.getElementById("specific-description").textContent=d.jenis==="Berbasis Bidang"?"Informasi baseline, relasi atribut, dan hasil pemeriksaan bidang.":"Informasi geometri, cakupan, dan integrasi layer kawasan.";
+document.getElementById("specific-fields").innerHTML=d.fields.map(([label,value])=>'<div class="detail-item"><div class="detail-label">'+label+'</div><div class="detail-value">'+value+'</div></div>').join("");
+document.getElementById("history-list").innerHTML=d.history.map(([title,meta,note])=>'<div class="history-item"><div class="history-title">'+title+'</div><div class="history-meta">'+meta+'</div><div class="history-note">'+note+'</div></div>').join("");
+const badge=document.getElementById("status-badge");badge.textContent=d.status;badge.className="status "+(d.status==="Terintegrasi"?"ok":d.status==="Revisi"?"warn":"info");
+const reviseButton=document.getElementById("revise-igt"),topologyButton=document.getElementById("verify-topology");
+reviseButton.hidden=!(role==="operator"&&d.status==="Revisi");
+topologyButton.hidden=!(isSuperadmin&&d.status==="Proses");
+document.getElementById("show-canvas").addEventListener("click",()=>alert("Simulasi plugin QGIS: layer "+d.id+" akan ditampilkan pada kanvas peta QGIS."));
+topologyButton.addEventListener("click",()=>alert("Simulasi verifikasi topologi untuk "+d.id+". Pada implementasi QGIS, aksi ini menjalankan pemeriksaan topologi pada layer terkait."));
+reviseButton.addEventListener("click",()=>alert("Simulasi: buka formulir revisi untuk pengajuan "+d.id+"."));
+if(isAdmin){const b=document.getElementById("verify-topology");b.hidden=false;b.textContent="✓ Verifikasi Data";b.addEventListener("click",()=>alert("Simulasi pemeriksaan Admin untuk "+d.id+"."));}
+>
