@@ -7,7 +7,7 @@
 </style></head><body data-page="layer-derivatif-detail"><div class="app" style="display:block;min-height:100vh"><div class="workspace">
 <header class="topbar"><div class="crumb">Geoportal IGT-PR　/　<a href="igt-derivatif.html">Layer Derivatif</a>　/　<strong>Detail</strong></div><div class="top-actions"><button class="icon-btn" aria-label="Notifikasi">♧</button><div class="user-chip"><div class="avatar">JH</div><span>Operator Pusat</span></div></div></header>
 <main class="main"><div class="page-head"><div><div class="eyebrow">Sistem Informasi Geospasial</div><h1 id="layer-name">Detail Layer Derivatif</h1><p>Informasi pengajuan, gaya tampilan, dan masa berlaku layer.</p></div></div>
-<div class="detail-actions"><a class="btn btn-soft" href="01-beranda-operator.html">← Kembali ke Beranda</a><a class="btn btn-soft" href="igt-derivatif.html">Kembali ke daftar Layer Derivatif</a></div>
+<div class="detail-actions"><a class="btn btn-soft" href="01-beranda-operator.html">← Kembali ke Beranda</a><a class="btn btn-soft" href="igt-derivatif.html">Kembali ke daftar Layer Derivatif</a><button class="btn btn-primary" id="show-canvas">▧ Tampilkan di Canvas</button></div>
 <section class="card detail-section"><div class="card-head"><div><h2>Informasi Pengajuan</h2><p>Identitas dan metadata layer derivatif.</p></div><span id="status-badge" class="status ok">Disetujui</span></div>
 <div class="detail-grid">
 <div class="detail-item"><div class="detail-label">ID Pengajuan</div><div class="detail-value" id="layer-id">DRV-2026-008</div></div>
@@ -20,7 +20,7 @@
 <div class="detail-item"><div class="detail-label">Kadaluwarsa dalam</div><div class="detail-value" id="layer-expiry">30 hari</div></div>
 <div class="detail-item" style="grid-column:1/-1"><div class="detail-label">Keterangan</div><div class="detail-value" id="layer-notes">Layer derivatif telah disetujui dan siap digunakan.</div></div>
 </div></section>
-<section class="card detail-section"><div class="card-head"><div><h2>Pratinjau Layer</h2><p>Ringkasan pratinjau layer pada mockup plugin.</p></div><button class="btn btn-soft" id="show-layer">▧ Tampilkan di QGIS</button></div><div class="empty-state"><div class="empty-icon">▧</div><strong>Pratinjau peta belum tersedia</strong><p>Penayangan layer merupakan simulasi pada prototipe ini.</p></div></section>
+<section class="card detail-section"><div class="card-head"><div><h2>Pratinjau Layer</h2><p>Ringkasan pratinjau layer pada mockup plugin.</p></div></div><div class="empty-state"><div class="empty-icon">▧</div><strong>Pratinjau peta belum tersedia</strong><p>Penayangan layer merupakan simulasi pada prototipe ini.</p></div></section>
 <div class="footer">Mockup UI plugin QGIS · data contoh</div></main></div></div>
 <script>
 const data={
@@ -41,5 +41,5 @@ document.getElementById("layer-sld").textContent=d.sld;
 document.getElementById("layer-expiry").textContent=d.expired;
 document.getElementById("layer-notes").textContent=d.notes;
 const badge=document.getElementById("status-badge");badge.textContent=d.status;badge.className="status "+(d.status==="Disetujui"?"ok":d.status==="Ditolak"?"fix":"info");
-document.getElementById("show-layer").addEventListener("click",()=>alert("Simulasi plugin QGIS: layer "+d.id+" akan ditampilkan pada kanvas peta."));
+document.getElementById("show-canvas").addEventListener("click",()=>alert("Simulasi plugin QGIS: layer "+d.id+" akan ditampilkan pada canvas peta."));
 </script></body></html>
