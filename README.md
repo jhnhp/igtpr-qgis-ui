@@ -51,13 +51,13 @@ Columns: **Nama IGT**, **Tanggal Update**, **Tampilkan WMS**, **Tampilkan WFS**.
 | Step | What it does |
 | --- | --- |
 | 1 Pilih Sumber Bidang Tanah | Load Baseline (simulated), source status `Belum dimuat` / `Siap digunakan` |
-| 2 Pilih Bidang Tanah | Simulated QGIS Canvas: activate the select tool, choose one sample parcel, see its attributes |
-| 3 Atur Struktur Atribut | Dummy template (A/B) or manual fields (name + type text/integer/decimal/date, optional "wajib"); empty, malformed and duplicate names are rejected |
+| 2 Atur Struktur Atribut | Dummy template (A/B) or manual fields (name + type text/integer/decimal/date, optional "wajib"); empty, malformed and duplicate names are rejected |
+| 3 Pilih Bidang Tanah | Simulated QGIS Canvas: activate the select tool, choose one sample parcel, see its attributes |
 | 4 Isi Atribut | Form generated from the structure, ID Bidang shown prominently, per-type validation, values kept when going back and forth |
-| 5 Simpan File | Filename + GeoPackage (`.gpkg`, default) or JSON; summary; simulated save, then *Lanjut ke Integrasi* or *Selesai, integrasikan nanti* |
-| 6 Integrasikan Atribut | Pick a saved or sample attribute file, inspect it, join to the sample baseline by ID Bidang, review matched / unmatched IDs, *Tampilkan Hasil di QGIS* (simulated) |
+| 5 Simpan File | Filename + GeoPackage (`.gpkg`, default) or JSON; summary; simulated save, then *Lanjut ke Atribut Disetujui* or *Selesai, lanjutkan nanti* |
+| 6 Atribut Disetujui | Pick a saved or sample attribute file, inspect it, join to the sample baseline by ID Bidang, review matched / unmatched IDs, *Tampilkan Hasil di QGIS* (simulated) |
 
-Step 6 is always reachable from the stepper (or `?step=6`), so the integration can be done later. Saving is a simulation: no file is created. Only the list of "saved" files is mirrored to `sessionStorage` so step 6 can find them after leaving the page; everything else lives in the open page. The parcels, templates and sample attribute files are dummy data. Saving does not create a row in the submissions table, so the Derivatif approval lifecycle is untouched.
+Step 6 is always reachable from the stepper (or `?step=6`), so it can be done later. The structure is fixed before a parcel is chosen. The word "integrasi" is not used in this workflow (it belongs to the Pertanahan / Tata Ruang statuses). Saving is a simulation: no file is created. Only the list of "saved" files is mirrored to `sessionStorage` so step 6 can find them after leaving the page; everything else lives in the open page. The parcels, templates and sample attribute files are dummy data. Saving does not create a row in the submissions table, so the Derivatif approval lifecycle is untouched.
 
 ### Statuses and data model
 - One record in `shared/igt-data.js` is one dataset plus its latest submission, so counting records counts datasets. Re-submissions are not modelled.

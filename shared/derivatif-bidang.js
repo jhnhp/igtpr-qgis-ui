@@ -9,13 +9,13 @@ const DerivatifBidang = (() => {
 
   const STEPS = [
     { short: 'Sumber', title: 'Pilih Sumber Bidang Tanah', text: 'Muat layer baseline sebagai sumber geometri bidang.' },
-    { short: 'Bidang', title: 'Pilih Bidang Tanah', text: 'Pilih satu bidang pada QGIS Canvas.' },
     { short: 'Struktur', title: 'Atur Struktur Atribut', text: 'Gunakan template layer derivatif atau tambahkan kolom manual.' },
+    { short: 'Bidang', title: 'Pilih Bidang Tanah', text: 'Pilih satu bidang pada QGIS Canvas.' },
     { short: 'Atribut', title: 'Isi Atribut', text: 'Lengkapi nilai atribut untuk bidang terpilih.' },
     { short: 'Simpan', title: 'Simpan File', text: 'Simpan ID bidang dan atribut tambahan ke sebuah berkas.' },
-    { short: 'Integrasi', title: 'Integrasikan Atribut', text: 'Gabungkan atribut dari berkas tersimpan ke bidang sumber berdasarkan ID Bidang.' },
+    { short: 'Disetujui', title: 'Atribut Disetujui', text: 'Gabungkan atribut dari berkas yang disetujui ke bidang sumber berdasarkan ID Bidang.' },
   ];
-  const INTEGRATION = STEPS.length;
+  const APPROVED = STEPS.length;
 
   const FIELD_TYPES = { text: 'Teks', integer: 'Bilangan bulat', decimal: 'Desimal', date: 'Tanggal' };
   const FIELD_NAME = /^[A-Za-z][A-Za-z0-9_]{0,29}$/;
@@ -168,21 +168,22 @@ const DerivatifBidang = (() => {
     // Messages explaining why a step cannot be left yet. Empty = the step is complete.
     function blockers(step) {
       if (step === 1) return state.sourceLoaded ? [] : ['Muat baseline bidang tanah terlebih dahulu.'];
-      if (step === 2) return state.parcelId ? [] : [state.selectionActive ? 'Pilih satu bidang tanah.' : 'Aktifkan alat pilih, lalu pilih satu bidang tanah.'];
-      if (step === 3) {
+      if (step === 2) {
         if (state.mode === 'template') return state.templateId ? [] : ['Pilih satu template layer derivatif.'];
         return state.manualFields.length ? [] : ['Tambahkan minimal satu kolom atribut.'];
       }
+      if (step === 3) return state.parcelId ? [] : [state.selectionActive ? 'Pilih satu bidang tanah.' : 'Aktifkan alat pilih, lalu pilih satu bidang tanah.'];
       if (step === 4) {
+        if (blockers(2).length || blockers(3).length) return ['Tentukan struktur atribut dan pilih bidang terlebih dahulu.'];
         const bad = attributeErrors().length;
         return bad ? [`Lengkapi atau perbaiki ${bad} kolom atribut.`] : [];
       }
-      if (step === 5) return state.saveDone ? [] : ['Simpan file untuk melanjutkan ke integrasi (atau selesaikan dan kembali nanti).'];
+      if (step === 5) return state.saveDone ? [] : ['Simpan file untuk melanjutkan (atau selesaikan dan kembali nanti).'];
       return [];
     }
-    // A step can be opened when it is behind us, the integration step (independent of 1-5), or all steps before it are complete.
+    // A step can be opened when it is behind us, the last step (independent of 1-5), or all steps before it are complete.
     function canReach(target) {
-      if (target <= state.step || target === INTEGRATION) return true;
+      if (target <= state.step || target === APPROVED) return true;
       for (let s = state.step; s < target; s += 1) if (blockers(s).length) return false;
       return true;
     }
@@ -203,7 +204,7 @@ const DerivatifBidang = (() => {
         `<div class="detail-item"><div class="detail-label">Koneksi</div><div class="detail-value">Simulasi · tanpa WFS</div></div></div>` +
         `<div class="toolbar"><button type="button" class="btn btn-primary" data-act="load-baseline" id="load-baseline">▦ ${ready ? 'Muat Ulang Baseline' : 'Load Baseline'}</button></div>` +
         (state.notice ? `<div class="notice" role="status"><strong>Simulasi</strong>${esc(state.notice)}</div>` : '') +
-        `<p class="summary-note">Sudah punya berkas atribut? <button type="button" class="text-link" data-act="goto-integration">Langsung ke Integrasi Atribut</button></p>`
+        `<p class="summary-note">Sudah punya berkas atribut? <button type="button" class="text-link" data-act="goto-approved">Langsung ke Atribut Disetujui</button></p>`
       );
     }
 
@@ -317,7 +318,7 @@ const DerivatifBidang = (() => {
       const ext = FORMATS[state.format].ext;
       const saved = state.saveDone;
       return (
-        `<div class="notice"><strong>Simulasi penyimpanan</strong>Prototipe ini tidak membuat berkas sungguhan. Tombol simpan hanya mencatat berkas contoh agar dapat dipakai pada langkah Integrasi.</div>` +
+        `<div class="notice"><strong>Simulasi penyimpanan</strong>Prototipe ini tidak membuat berkas sungguhan. Tombol simpan hanya mencatat berkas contoh agar dapat dipakai pada langkah Disetujui.</div>` +
         `<div class="field"><label for="filename">NAMA BERKAS OUTPUT</label><div class="filename-row"><input id="filename" autocomplete="off" value="${esc(state.filename)}" aria-describedby="filename-error"><span class="ext" id="filename-ext">${ext}</span></div>` +
         `<div class="field-error" id="filename-error">${state.filenameEdited ? esc(err) : ''}</div></div>` +
         `<fieldset class="choice-list"><legend>Format output</legend>` +
@@ -328,8 +329,8 @@ const DerivatifBidang = (() => {
         `<div class="toolbar"><button type="button" class="btn btn-primary" data-act="save-file" id="save-file" ${err ? 'disabled' : ''}>💾 Simpan File (simulasi)</button></div>` +
         (saved
           ? `<div class="notice ok" role="status" id="save-success"><strong>Berkas tercatat (simulasi)</strong>${esc(state.filename.trim() + ext)} dicatat sebagai berkas contoh berisi ID Bidang, definisi kolom, nilai atribut dan format. Tidak ada berkas fisik yang dibuat.` +
-            `<div class="toolbar"><button type="button" class="btn btn-primary" data-act="next">Lanjut ke Integrasi Atribut →</button>` +
-            `<a class="btn btn-soft" href="../upload-data/index.html?tab=derivatif" id="finish-later">Selesai, integrasikan nanti</a></div></div>`
+            `<div class="toolbar"><button type="button" class="btn btn-primary" data-act="next">Lanjut ke Atribut Disetujui →</button>` +
+            `<a class="btn btn-soft" href="../upload-data/index.html?tab=derivatif" id="finish-later">Selesai, lanjutkan nanti</a></div></div>`
           : '')
       );
     }
@@ -372,10 +373,10 @@ const DerivatifBidang = (() => {
       );
     }
 
-    function renderIntegration() {
+    function renderApproved() {
       const file = state.loadedFile;
       return (
-        `<div class="notice"><strong>Simulasi integrasi</strong>Berkas dan baseline di bawah adalah data contoh; tidak ada layanan WFS atau QGIS yang terhubung. ` +
+        `<div class="notice"><strong>Simulasi penggabungan</strong>Berkas dan baseline di bawah adalah data contoh; tidak ada layanan WFS atau QGIS yang terhubung. ` +
         `Hanya baris dengan ID Bidang yang sama persis yang digabungkan; tidak ada penggabungan otomatis lainnya.</div>` +
         (state.sourceLoaded
           ? `<p class="summary-note" style="margin:0 0 10px">Sumber bidang: ${badge('ok', 'Baseline siap')} Baseline Bidang Tanah (contoh)</p>`
@@ -396,7 +397,7 @@ const DerivatifBidang = (() => {
 
     // ---------------------------------------------------------------- frame
 
-    const BODY = [renderSource, renderParcel, renderStructure, renderAttributes, renderSave, renderIntegration];
+    const BODY = [renderSource, renderStructure, renderParcel, renderAttributes, renderSave, renderApproved];
 
     function stepper() {
       return (
@@ -406,7 +407,7 @@ const DerivatifBidang = (() => {
           const cls = n === state.step ? ' active' : n < state.step && !blockers(n).length ? ' done' : '';
           return `<li class="step${cls}"><button type="button" class="step-btn" data-act="goto" data-step="${n}" ${canReach(n) ? '' : 'disabled'}${n === state.step ? ' aria-current="step"' : ''}>${s.short}</button></li>`;
         }).join('') +
-        `</ol><p class="summary-note part-note">Bagian 1: buat atribut (langkah 1–5) · Bagian 2: integrasikan atribut (langkah 6)</p>`
+        `</ol><p class="summary-note part-note">Bagian 1: buat atribut (langkah 1–5) · Bagian 2: atribut disetujui (langkah 6)</p>`
       );
     }
 
@@ -416,10 +417,10 @@ const DerivatifBidang = (() => {
       const back = s === 1
         ? `<a class="btn btn-soft" href="../upload-data/index.html?tab=derivatif" id="nav-back">← Kembali</a>`
         : `<button type="button" class="btn btn-soft" data-act="back" id="nav-back">← Kembali</button>`;
-      const next = s === INTEGRATION
+      const next = s === APPROVED
         ? ''
         : `<button type="button" class="btn btn-primary" data-act="next" id="nav-next" ${block ? 'disabled' : ''}>Lanjutkan →</button>`;
-      return `${back}${next}` + (block && s !== INTEGRATION ? `<p class="nav-hint" id="nav-hint" role="status">${esc(block)}</p>` : '');
+      return `${back}${next}` + (block && s !== APPROVED ? `<p class="nav-hint" id="nav-hint" role="status">${esc(block)}</p>` : '');
     }
 
     function render(focus) {
@@ -530,7 +531,7 @@ const DerivatifBidang = (() => {
       if (!target || target.disabled) return;
       const act = target.dataset.act;
       if (act === 'goto') go(Number(target.dataset.step));
-      else if (act === 'goto-integration') go(INTEGRATION);
+      else if (act === 'goto-approved') go(APPROVED);
       else if (act === 'next') go(state.step + 1);
       else if (act === 'back') go(state.step - 1, '#step-title');
       else if (act === 'load-baseline') {
@@ -552,7 +553,7 @@ const DerivatifBidang = (() => {
       else if (act === 'run-join') runJoin();
       else if (act === 'show-in-qgis') {
         const n = state.join.rows.filter((r) => r.parcel).length;
-        state.notice = `Simulasi: ${n} bidang dengan atribut tergabung akan ditampilkan sebagai layer sementara di QGIS. Integrasi QGIS belum aktif pada prototipe ini.`;
+        state.notice = `Simulasi: ${n} bidang dengan atribut tergabung akan ditampilkan sebagai layer sementara di QGIS. Koneksi QGIS belum aktif pada prototipe ini.`;
         render('#show-result');
       }
     });
@@ -608,9 +609,9 @@ const DerivatifBidang = (() => {
       }
     });
 
-    // The integration step can be opened directly with ?step=6 (e.g. to come back to it later).
+    // The last step can be opened directly with ?step=6 (e.g. to come back to it later).
     render();
-    if (new URLSearchParams(location.search).get('step') === String(INTEGRATION)) go(INTEGRATION);
+    if (new URLSearchParams(location.search).get('step') === String(APPROVED)) go(APPROVED);
   }
 
   return { init };
