@@ -3,6 +3,12 @@
 const IgtApp = (() => {
   const { CATEGORIES, CATEGORY_ORDER, ROLES } = IgtData;
   const $ = (selector) => document.querySelector(selector);
+  // Use the official ATR/BPN website favicon in the browser tab.
+  const favicon = document.createElement('link');
+  favicon.rel = 'icon';
+  favicon.type = 'image/x-icon';
+  favicon.href = 'https://www.atrbpn.go.id/favicon.ico';
+  document.head.appendChild(favicon);
 
   const STATUS_CLASS = {
     Proses: 'info',
