@@ -92,6 +92,8 @@ function toast(message) {
   if (!el) {
     el = document.createElement('div');
     el.id = 'toast';
+    el.setAttribute('role', 'status');
+    el.setAttribute('aria-live', 'polite');
     Object.assign(el.style, {
       position: 'fixed',
       bottom: '22px',
@@ -104,6 +106,7 @@ function toast(message) {
       boxShadow: '0 8px 28px #102b5930',
       fontSize: '12px',
       maxWidth: '340px',
+      transition: 'opacity .2s',
     });
     document.body.appendChild(el);
   }

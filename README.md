@@ -12,6 +12,8 @@ igtpr-qgis-ui/
 ├── styles.css                  # Shared design system
 ├── app.js                      # Shared interactions (tabs, filtering, file selection, simulated actions)
 ├── README.md
+├── tools/
+│   └── check_links.py          # Static check that every local link/iframe/script path resolves
 ├── roles/
 │   ├── superadmin/
 │   │   ├── beranda/index.html
@@ -58,7 +60,7 @@ igtpr-qgis-ui/
 `shared/model-builder/index.html` accepts `?role=superadmin|admin` so its back link returns to that role's Beranda (default: Operator).
 
 ### Legacy pages
-`legacy/` holds the original numbered pages (`02`–`08`) with the old sidebar layout. They are not part of the role navigation. Their sidebar links point to each other and to the Operator pages. Some Operator pages (IGT Utama Bidang/Kawasan sidebars and the derivative workflow shortcuts in Operator IGT Derivatif) still link into `legacy/` because the numbered pages were never replaced.
+`legacy/` holds the original numbered pages (`02`–`08`) with the old sidebar layout. They are not part of the role navigation. Their sidebar links point to each other and to the Operator pages. The only remaining links into `legacy/` are the two derivative workflow shortcuts (Derivative Kawasan / Bidang) in Operator IGT Derivatif, because those workflow pages were never replaced.
 
 ## Shared assets
 - `styles.css` and `app.js` live at the repository root; every page references them with a relative path from its own folder (e.g. `../../../styles.css`).
@@ -74,3 +76,9 @@ python3 -m http.server 8000
 ```
 
 Use the role drawer on the left to switch between Superadmin, Admin, Operator and Umum.
+
+## Checks
+```bash
+python3 tools/check_links.py
+```
+Exits non-zero if any local `href`, `src`, iframe or JS-built path points to a missing file.
