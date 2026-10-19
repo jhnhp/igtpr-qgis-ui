@@ -2,9 +2,9 @@
 <div class="page-head"><div><div class="eyebrow">Sistem Informasi Geospasial</div><h1>IGT Utama</h1><p>Daftar pengajuan IGT Utama yang pernah Anda unggah.</p></div></div>
 <div class="grid stats">
 <div class="card stat"><div><div class="label">Total data</div><div class="num">12</div><div class="hint">Bidang dan kawasan</div></div><div class="stat-icon">▦</div></div>
-<div class="card stat"><div><div class="label">Menunggu</div><div class="num">3</div><div class="hint">Menanti verifikasi</div></div><div class="stat-icon amber">◷</div></div>
-<div class="card stat"><div><div class="label">Disetujui</div><div class="num">7</div><div class="hint">Sudah diterima</div></div><div class="stat-icon green">✓</div></div>
-<div class="card stat"><div><div class="label">Perlu perbaikan</div><div class="num">2</div><div class="hint">Periksa catatan admin</div></div><div class="stat-icon red">!</div></div>
+<div class="card stat"><div><div class="label">Terkompilasi</div><div class="num">5</div><div class="hint">Data terkompilasi</div></div><div class="stat-icon amber">◷</div></div>
+<div class="card stat"><div><div class="label">Terintegrasi</div><div class="num">7</div><div class="hint">Data terintegrasi</div></div><div class="stat-icon green">✓</div></div>
+<div class="card stat"><div><div class="label">Belum terintegrasi</div><div class="num">5</div><div class="hint">Menunggu integrasi</div></div><div class="stat-icon red">!</div></div>
 </div>
 <section class="card">
 <div class="tabs" data-tabs>
@@ -13,13 +13,15 @@
 <button class="tab" data-tab="kawasan">Berbasis Kawasan</button>
 </div>
 <div class="card-head"><div><h2 id="tab-heading">Semua data IGT Utama</h2><p id="tab-description">Tampilkan seluruh pengajuan, baik berbasis bidang maupun kawasan.</p></div><div class="toolbar" id="tab-actions"><button class="btn btn-soft" data-action="load-baseline">▦ Load Baseline</button><button class="btn btn-primary" data-action="upload">↑ Upload Data</button></div></div>
-<div class="table-wrap"><table><thead><tr><th>ID pengajuan</th><th>Layer target</th><th>Tanggal upload</th><th>Status</th></tr></thead><tbody id="submission-rows">
-<tr data-kind="bidang"><td>IGT-2026-012</td><td>IGT Bidang Wilayah A</td><td>18 Okt 2026</td><td><span class="status info">Terkompilasi</span></td></tr>
-<tr data-kind="kawasan"><td>IGT-2026-011</td><td>IGT Kawasan Hutan</td><td>16 Okt 2026</td><td><span class="status ok">Terintegrasi</span></td></tr>
-<tr data-kind="bidang"><td>IGT-2026-010</td><td>IGT Bidang Wilayah B</td><td>15 Okt 2026</td><td><span class="status info">Terkompilasi</span></td></tr>
-<tr data-kind="kawasan"><td>IGT-2026-009</td><td>IGT Kawasan Lindung</td><td>14 Okt 2026</td><td><span class="status ok">Terintegrasi</span></td></tr>
+<div class="table-wrap"><table><thead><tr><th>ID pengajuan</th><th>Nama IGT</th><th>Tanggal upload</th><th>Status</th></tr></thead><tbody id="submission-rows">
+<tr data-kind="bidang"><td>IGT-2026-012</td><td><button class="text-link detail-open" data-detail="0">IGT Bidang Wilayah A</button></td><td>18 Okt 2026</td><td><span class="status info">Terkompilasi</span></td></tr>
+<tr data-kind="kawasan"><td>IGT-2026-011</td><td><button class="text-link detail-open" data-detail="1">IGT Kawasan Hutan</button></td><td>16 Okt 2026</td><td><span class="status ok">Terintegrasi</span></td></tr>
+<tr data-kind="bidang"><td>IGT-2026-010</td><td><button class="text-link detail-open" data-detail="2">IGT Bidang Wilayah B</button></td><td>15 Okt 2026</td><td><span class="status info">Terkompilasi</span></td></tr>
+<tr data-kind="kawasan"><td>IGT-2026-009</td><td><button class="text-link detail-open" data-detail="3">IGT Kawasan Lindung</button></td><td>14 Okt 2026</td><td><span class="status ok">Terintegrasi</span></td></tr>
 </tbody></table></div>
-</section><div class="footer">Mockup UI plugin QGIS · data contoh</div></main></div></div><script src="app.js"></script><script>
+</section>
+<section class="card" id="detail-panel" hidden style="margin-top:14px"><div class="card-head"><div><h2>Detail Pengajuan</h2><p>Informasi lengkap pengajuan IGT yang dipilih.</p></div><button class="btn" id="close-detail">Tutup</button></div><div class="table-wrap"><table><thead><tr><th>Nama Direktorat</th><th>Nama IGT</th><th>Jenis Data</th><th>Tanggal Upload</th><th>Keterangan</th><th>Status</th></tr></thead><tbody id="detail-row"></tbody></table></div></section>
+<div class="footer">Mockup UI plugin QGIS · data contoh</div></main></div></div><script src="app.js"></script><script>
 const tabs=[...document.querySelectorAll('[data-tab]')];
 function setTab(kind){
  tabs.forEach(t=>t.classList.toggle('active',t.dataset.tab===kind));
@@ -30,5 +32,12 @@ function setTab(kind){
  if(kind==='kawasan'){heading.textContent='IGT Utama Berbasis Kawasan';desc.textContent='Unggah data kawasan. Baseline tidak tersedia untuk jenis ini.';actions.innerHTML='<button class="btn btn-primary" data-action="upload">↑ Upload Data</button>';}
 }
 tabs.forEach(t=>t.addEventListener('click',()=>setTab(t.dataset.tab)));
+const details=[
+{direktorat:'Direktorat Survei dan Pemetaan Tematik',nama:'IGT Bidang Wilayah A',jenis:'Berbasis Bidang',tanggal:'18 Okt 2026',keterangan:'Data bidang telah dikompilasi.',status:'Terkompilasi'},
+{direktorat:'Direktorat Survei dan Pemetaan Tematik',nama:'IGT Kawasan Hutan',jenis:'Berbasis Kawasan',tanggal:'16 Okt 2026',keterangan:'Data kawasan telah terintegrasi.',status:'Terintegrasi'},
+{direktorat:'Direktorat Survei dan Pemetaan Tematik',nama:'IGT Bidang Wilayah B',jenis:'Berbasis Bidang',tanggal:'15 Okt 2026',keterangan:'Data bidang telah dikompilasi.',status:'Terkompilasi'},
+{direktorat:'Direktorat Survei dan Pemetaan Tematik',nama:'IGT Kawasan Lindung',jenis:'Berbasis Kawasan',tanggal:'14 Okt 2026',keterangan:'Data kawasan telah terintegrasi.',status:'Terintegrasi'}];
+document.querySelectorAll('.detail-open').forEach(b=>b.addEventListener('click',()=>{const d=details[Number(b.dataset.detail)];document.getElementById('detail-row').innerHTML='<tr><td>'+d.direktorat+'</td><td>'+d.nama+'</td><td>'+d.jenis+'</td><td>'+d.tanggal+'</td><td>'+d.keterangan+'</td><td>'+d.status+'</td></tr>';document.getElementById('detail-panel').hidden=false;document.getElementById('detail-panel').scrollIntoView({behavior:'smooth',block:'nearest'});}));
+document.getElementById('close-detail').addEventListener('click',()=>document.getElementById('detail-panel').hidden=true);
 document.addEventListener('click',e=>{const b=e.target.closest('[data-action]');if(!b)return;if(b.dataset.action==='load-baseline')alert('Simulasi: pilih layer baseline dari QGIS.');if(b.dataset.action==='upload')alert('Simulasi: pilih file data untuk diunggah.');});
 </script></body></html>
