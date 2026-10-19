@@ -278,7 +278,7 @@ const IgtApp = (() => {
       `<div id="upload-panel"></div>` +
       `<div id="igt-upload-modal" class="modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="igt-upload-modal-title" style="position:fixed;inset:0;z-index:1000;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;padding:20px;overflow:auto">` +
       `<section class="card" style="width:min(760px,100%);max-height:90vh;overflow:auto;margin:auto"><div class="card-head"><div><h2 id="igt-upload-modal-title">Upload IGT</h2><p id="igt-upload-modal-description"></p></div><button type="button" class="btn btn-soft" data-close-upload-modal>✕ Tutup</button></div><div id="igt-upload-modal-content"></div></section></div>` +
-      `<div id="submission-status-tabs" class="tabs" data-status-tabs></div>`
+      `<div id="submission-status-tabs" class="tabs" data-status-tabs></div>` +
       `<div class="card-head submissions-head"><div><h2>Pengajuan</h2><p id="submission-count"></p></div></div>` +
       `<div class="table-wrap"><table class="stack"><thead><tr><th>ID Pengajuan</th><th>Layer Target</th><th>Tanggal Upload</th><th>Status</th><th>Aksi</th></tr></thead>` +
       `<tbody id="submission-rows"></tbody></table></div><div class="empty-state" id="empty-state" hidden>Belum ada pengajuan pada kategori ini.</div></section>`;
@@ -382,7 +382,7 @@ const IgtApp = (() => {
         modal.style.display = 'flex';
         return;
       }
-      if (target.hasAttribute('data-close-upload-modal') || target.id === 'igt-upload-modal') {
+      if (target.hasAttribute('data-close-upload-modal') || (target.id === 'igt-upload-modal' && event.target === target)) {
         const modal = $('#igt-upload-modal');
         modal.hidden = true;
         modal.style.display = 'none';
