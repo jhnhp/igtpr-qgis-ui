@@ -24,18 +24,7 @@
 <div class="card stat"><div><div class="label">Sumber lainnya</div><div class="num" id="count-other">1</div><div class="hint">Portal atau lembaga lain</div></div><div class="stat-icon amber">◈</div></div>
 </div>
 <section class="card form-section">
-<div class="card-head"><div><h2>Tambah IGT eksternal</h2><p>Unggah layer baru agar langsung masuk ke katalog IGT Lainnya.</p></div></div>
-<div class="upload-grid">
-<div class="dropzone"><div class="big">⇧</div><strong>Pilih berkas layer</strong><p>Shapefile (.zip), GeoPackage (.gpkg), GeoJSON (.geojson), atau raster (.tif)</p><input id="file-input" type="file" hidden accept=".zip,.gpkg,.geojson,.json,.tif,.tiff"><button class="btn btn-primary" id="choose-file">Pilih berkas</button><div class="file-hint">Pastikan berkas memiliki sistem koordinat dan metadata yang sesuai.</div><div id="file-picked" class="file-picked"></div></div>
-<div class="upload-fields">
-<div class="field"><label for="layer-name">NAMA LAYER *</label><input id="layer-name" placeholder="Contoh: Peta Rencana Tata Ruang"></div>
-<div class="field"><label for="source">INSTANSI / SUMBER *</label><input id="source" placeholder="Contoh: Kementerian ATR/BPN"></div>
-<div class="field"><label for="theme">TEMA</label><select id="theme"><option>Administrasi</option><option>Lingkungan</option><option>Infrastruktur</option><option>Tata Ruang</option><option>Kebencanaan</option><option>Lainnya</option></select></div>
-<div class="field"><label for="description">KETERANGAN</label><textarea id="description" placeholder="Deskripsi singkat layer, tahun data, atau tautan sumber"></textarea></div>
-<button class="btn btn-primary" id="upload-layer">＋ Tambahkan ke katalog</button>
-<div class="file-hint">Mockup: berkas tidak dikirim ke server. Data contoh akan ditambahkan ke daftar selama halaman terbuka.</div>
-</div>
-</div>
+<div class="card-head"><div><h2>Tambah IGT eksternal</h2><p>Penambahan dan pengaturan layer dilakukan langsung melalui QGIS.</p></div><button class="btn btn-primary" id="upload-layer">＋ Upload layer</button></div>
 </section>
 <section class="card">
 <div class="card-head"><div><h2>Katalog IGT Lainnya</h2><p>Data eksternal yang dikelola Superadmin. Tidak menggunakan status persetujuan.</p></div><div class="toolbar"><span class="status ok">Langsung tersedia</span></div></div>
@@ -51,14 +40,10 @@
 <div class="footer">Mockup UI plugin QGIS · data contoh</div>
 </main></div></div>
 <script>
-let nextId=5;
-const fileInput=document.getElementById('file-input'),filePicked=document.getElementById('file-picked');
-document.getElementById('choose-file').addEventListener('click',()=>fileInput.click());
-fileInput.addEventListener('change',()=>{filePicked.textContent=fileInput.files[0]?'Berkas dipilih: '+fileInput.files[0].name:'';if(fileInput.files[0]&&!document.getElementById('layer-name').value){document.getElementById('layer-name').value=fileInput.files[0].name.replace(/\.[^.]+$/,'').replace(/[_-]+/g,' ');}});
+document.getElementById('upload-layer').addEventListener('click',()=>alert('Upload layer dan konfigurasi data dilakukan langsung melalui QGIS.'));
 function updateCounts(){const rows=[...document.querySelectorAll('#layer-rows tr')];document.getElementById('count-total').textContent=rows.length;document.getElementById('count-gov').textContent=rows.filter(r=>/Kementerian|Badan Informasi Geospasial|BNPB/i.test(r.cells[1].textContent)).length;document.getElementById('count-local').textContent=rows.filter(r=>/Dinas|Pemerintah Daerah/i.test(r.cells[1].textContent)).length;document.getElementById('count-other').textContent=Math.max(0,rows.length-Number(document.getElementById('count-gov').textContent)-Number(document.getElementById('count-local').textContent));}
 function filterRows(){const q=document.getElementById('search-layer').value.toLowerCase(),theme=document.getElementById('filter-theme').value;let shown=0;document.querySelectorAll('#layer-rows tr').forEach(r=>{const matchText=r.textContent.toLowerCase().includes(q),matchTheme=!theme||r.dataset.theme===theme;r.hidden=!(matchText&&matchTheme);if(!r.hidden)shown++;});document.getElementById('empty-state').hidden=shown!==0;}
 document.getElementById('search-layer').addEventListener('input',filterRows);document.getElementById('filter-theme').addEventListener('change',filterRows);
-document.getElementById('upload-layer').addEventListener('click',()=>{const name=document.getElementById('layer-name').value.trim(),source=document.getElementById('source').value.trim();if(!name||!source){alert('Isi Nama Layer dan Instansi/Sumber terlebih dahulu.');return;}if(!fileInput.files.length){alert('Pilih berkas layer terlebih dahulu.');return;}const theme=document.getElementById('theme').value,date=new Intl.DateTimeFormat('id-ID',{day:'2-digit',month:'short',year:'numeric'}).format(new Date()),id='IGT-EXT-'+String(nextId++).padStart(3,'0'),row=document.createElement('tr');row.dataset.theme=theme;const vals=[name,id,source,theme,date];row.innerHTML='<td><div class="primary-cell"></div><div class="secondary-cell"></div></td><td></td><td></td><td></td><td class="action-cell"><div class="toolbar"><button class="btn btn-soft qgis-action" data-action="map">▧ Tambahkan ke peta</button><button class="btn btn-danger qgis-action" data-action="delete">Hapus</button></div></td>';row.querySelector('.primary-cell').textContent=name;row.querySelector('.secondary-cell').textContent=id;row.cells[1].textContent=source;row.cells[2].textContent=theme;row.cells[3].textContent=date;row.querySelector('[data-action="map"]').dataset.id=id;row.querySelector('[data-action="delete"]').dataset.id=id;document.getElementById('layer-rows').prepend(row);document.getElementById('layer-name').value='';document.getElementById('source').value='';document.getElementById('description').value='';fileInput.value='';filePicked.textContent='';updateCounts();filterRows();alert('Layer '+id+' ditambahkan ke katalog dan langsung tersedia.');});
 document.addEventListener('click',e=>{const b=e.target.closest('[data-action]');if(!b)return;const row=b.closest('tr');if(b.dataset.action==='map'){alert('Simulasi plugin QGIS: layer '+b.dataset.id+' akan ditambahkan ke peta aktif.');return;}if(b.dataset.action==='delete'&&row){const id=b.dataset.id;if(!confirm('Hapus layer '+id+' dari katalog IGT Lainnya? Tindakan ini tidak dapat dibatalkan.'))return;row.remove();updateCounts();filterRows();alert('Layer '+id+' dihapus dari daftar mockup.');}});
 updateCounts();
 </script>
