@@ -171,10 +171,8 @@ const IgtApp = (() => {
   function uploadPanel(role, category) {
     if (category === 'pertanahan') {
       return (
-        `<div class="grid quick-grid"><div class="quick"><div class="q-icon">▦</div><b>Load Baseline</b><p>Muat layer bidang acuan dari layanan yang tersedia.</p>` +
-        `<button class="btn btn-primary" style="margin-top:12px" data-action="load-baseline">Muat baseline</button></div>` +
-        `<div class="quick"><div class="q-icon">↑</div><b>Upload Data</b><p>Unggah tabel atribut yang terhubung dengan ID bidang.</p>` +
-        `<button class="btn btn-primary" style="margin-top:12px" data-action="upload">Pilih file</button></div></div>` +
+        `<div class="dropzone"><div class="big">⇧</div><strong>Upload data atribut bidang</strong>` +
+        `<p>Unggah tabel atribut yang terhubung dengan ID bidang.</p><button class="btn btn-primary" data-action="upload">Pilih file</button></div>` +
         `<div class="notice"><strong>Catatan</strong>Geometri bidang berasal dari baseline. Pastikan ID bidang cocok sebelum mengirim atribut.</div>`
       );
     }
@@ -286,7 +284,7 @@ const IgtApp = (() => {
       setText('tab-heading', isMain ? 'IGT Utama' : CATEGORIES[tab].label);
       setText('tab-description', isMain ? 'Kelola pengajuan IGT Pertanahan dan IGT Tata Ruang dari satu tab.' : UPLOAD_TEXT[tab]);
       $('#upload-panel').innerHTML = isMain
-        ? `<div class="toolbar"><button class="btn btn-primary" data-open-upload-modal="pertanahan">↑ Upload IGT Pertanahan</button><button class="btn btn-primary" data-open-upload-modal="tata-ruang">↑ Upload IGT Tata Ruang</button></div>`
+        ? `<div class="toolbar"><button class="btn btn-primary" data-action="load-baseline">▦ Load Baseline</button><button class="btn btn-primary" data-open-upload-modal="pertanahan">↑ Upload Data Pertanahan</button><button class="btn btn-primary" data-open-upload-modal="tata-ruang">↑ Upload Data Tata Ruang</button></div>`
         : uploadPanel(role, tab);
       const own = records.filter((r) => isMain ? (r.category === 'pertanahan' || r.category === 'tata-ruang') : r.category === tab);
       const statusOptions = isMain
