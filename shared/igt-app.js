@@ -232,11 +232,17 @@ const IgtApp = (() => {
   // Submission management: summary, one tab per authorized category, upload controls and submission table.
   function upload(role) {
     const availableCategories = CATEGORY_ORDER.filter((key) => IgtData.canUpload(role, key));
-    const categories = [
-      ...(availableCategories.some((key) => key === 'pertanahan' || key === 'tata-ruang') ? ['igt-utama'] : []),
-      ...availableCategories.filter((key) => key !== 'pertanahan' && key !== 'tata-ruang'),
-    ];
-    const records = IgtData.submissionsFor(role, IgtData.loadRecords());
+    // Superadmin can review IGT Utama and load its baseline, but may only upload IGT Lainnya.
+    const categories = role === 'superadmin'
+      ? ['igt-utama', ...availableCategories.filter((key) => key === 'lainnya')]
+      : [
+          ...(availableCategories.some((key) => key === 'pertanahan' || key === 'tata-ruang') ? ['igt-utama'] : []),
+          ...availableCategories.filter((key) => key !== 'pertanahan' && key !== 'tata-ruang'),
+        ];
+    const allRecords = IgtData.loadRecords();
+    const records = role === 'superadmin'
+      ? allRecords.filter((r) => ['pertanahan', 'tata-ruang', 'lainnya'].includes(r.category))
+      : IgtData.submissionsFor(role, allRecords);
     const params = new URLSearchParams(location.search);
     const requested = params.get('tab');
     let tab = categories.includes(requested) ? requested : (requested === 'pertanahan' || requested === 'tata-ruang') && categories.includes('igt-utama') ? 'igt-utama' : categories[0];
@@ -279,7 +285,9 @@ const IgtApp = (() => {
       setText('tab-heading', isMain ? 'IGT Utama' : CATEGORIES[tab].label);
       setText('tab-description', isMain ? 'Kelola pengajuan IGT Pertanahan dan IGT Tata Ruang dari satu tab.' : UPLOAD_TEXT[tab]);
       $('#upload-panel').innerHTML = isMain
-        ? `<div class="toolbar"><button class="btn btn-primary" data-action="load-baseline">▦ Load Baseline</button><button class="btn btn-primary" data-open-upload-modal="pertanahan">↑ Upload Data Pertanahan</button><button class="btn btn-primary" data-open-upload-modal="tata-ruang">↑ Upload Data Tata Ruang</button></div>`
+        ? (role === 'superadmin'
+          ? `<div class="toolbar"><button class="btn btn-primary" data-action="load-baseline">▦ Load Baseline</button></div><div class="notice"><strong>Catatan</strong>Superadmin hanya memeriksa topologi dan menyetujui integrasi IGT Utama. Unggah data IGT Utama dilakukan oleh role yang berwenang.</div>`
+          : `<div class="toolbar"><button class="btn btn-primary" data-action="load-baseline">▦ Load Baseline</button><button class="btn btn-primary" data-open-upload-modal="pertanahan">↑ Upload Data Pertanahan</button><button class="btn btn-primary" data-open-upload-modal="tata-ruang">↑ Upload Data Tata Ruang</button></div>`)
         : uploadPanel(role, tab);
       const own = records.filter((r) => isMain ? (r.category === 'pertanahan' || r.category === 'tata-ruang') : r.category === tab);
       const statusOptions = isMain
@@ -354,6 +362,10 @@ const IgtApp = (() => {
       const record = records.find((r) => r.id === id);
       if (target.dataset.openUploadModal) {
         const category = target.dataset.openUploadModal;
+        if (role === 'superadmin' && (category === 'pertanahan' || category === 'tata-ruang')) {
+          alert('Superadmin tidak memiliki akses untuk mengunggah IGT Utama.');
+          return;
+        }
         const modal = $('#igt-upload-modal');
         $('#igt-upload-modal-title').textContent = category === 'pertanahan' ? 'Upload IGT Pertanahan' : 'Upload IGT Tata Ruang';
         $('#igt-upload-modal-description').textContent = category === 'pertanahan' ? 'Muat baseline atau unggah atribut bidang.' : 'Unggah geometri dan atribut kawasan.';
@@ -369,8 +381,20 @@ const IgtApp = (() => {
         return;
       }
       if (action === 'load-baseline') alert('Simulasi: pilih layer baseline dari QGIS.');
-      else if (action === 'upload') alert('Simulasi: pilih file data untuk diunggah (' + (tab === 'igt-utama' ? ($('#igt-upload-modal-title').textContent || 'IGT Utama') : CATEGORIES[tab].label) + ').');
-      else if (action === 'validate') alert('Parameter valid. Proses ini masih berupa prototipe UI.');
+      else if (action === 'upload') {
+        if (role === 'superadmin') {
+          alert('Superadmin tidak memiliki akses untuk mengunggah IGT Utama.');
+          return;
+        }
+        alert('Simulasi: pilih file data untuk diunggah (' + (tab === 'igt-utama' ? ($('#igt-upload-modal-title').textContent || 'IGT Utama') : CATEGORIES[tab].label) + ').');
+      }
+      else if (action === 'validate') {
+        if (role === 'superadmin') {
+          alert('Superadmin tidak memiliki akses untuk mengunggah IGT Utama.');
+          return;
+        }
+        alert('Parameter valid. Proses ini masih berupa prototipe UI.');
+      }
       else if (action === 'upload-lainnya') alert('Upload layer dan konfigurasi data dilakukan langsung melalui QGIS.');
       else if (action === 'revision') alert('Simulasi: buka formulir revisi untuk pengajuan ' + id + '.');
       else if (action === 'show-qgis') alert('Simulasi: layer ' + (record ? record.name : id) + ' akan ditampilkan di QGIS. Integrasi QGIS belum aktif pada prototipe ini.');
