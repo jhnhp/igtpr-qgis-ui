@@ -13,11 +13,23 @@ This repository contains HTML/CSS/JavaScript **UI mockups for a QGIS plugin**. I
 - Validate paths and navigation after moving files. Never claim a change or test succeeded unless it actually did.
 - Do not force-push. If remote changes or authentication block the push, explain the issue and leave user data safe.
 
+## Information architecture (current)
+
+Browsing integrated data is separate from managing submissions. Keep it that way.
+
+- Main menu (built by `shared/igt-app.js` from the permission table in `shared/igt-data.js`): Dashboard, IGT Pertanahan, IGT Tata Ruang, IGT Derivatif, IGT Lainnya, Upload Data.
+- Permissions: Superadmin sees all six. Admin and Operator do not get IGT Lainnya (Superadmin only). Admin has no Verifikasi Data menu. Umum stays an empty placeholder. Never expose a restricted menu by only hiding its label: leave the link out of the generated menu and guard the page.
+- Catalog pages (the four IGT menus) list only `Terintegrasi` records with columns Nama IGT, Tanggal Update, Tampilkan WMS, Tampilkan WFS. No upload, approval or rejection controls there. No real WMS/WFS URLs exist, so those buttons are labelled simulations; do not invent endpoints.
+- Upload Data holds all upload and submission management: submission dashboard, one tab per authorized category, upload controls (Load Baseline only under IGT Pertanahan), and the submission table with role-specific actions (Verifikasi Topologi, Revisi, Setujui/Tolak, Hapus, Detail). Admin derivative uploads enter `Disetujui` directly.
+- The Dashboard shows repository status (Terkompilasi / Terintegrasi counts computed from `shared/igt-data.js`), not submissions.
+- Records, statuses and permissions live only in `shared/igt-data.js`. Role pages are thin shells that call `IgtApp.dashboard`, `IgtApp.catalog` or `IgtApp.upload`. Detail pages are shared (`roles/operator/*-detail/`) and keep the role through `?role=`.
+- After changing pages or navigation, run `python3 tools/check_links.py` and open each role's pages: menu links are built in JavaScript and the script cannot see them.
+
 ## Folder-structure refactor task
 
 When asked to organize the repository, carry out the complete refactor below. Do not merely create empty folders or duplicate pages.
 
-### Target structure
+### Structure (originally the refactor target; updated for the current information architecture)
 
 ```text
 igtpr-qgis-ui/
@@ -25,26 +37,19 @@ igtpr-qgis-ui/
 ├── styles.css
 ├── app.js
 ├── README.md
+├── CLAUDE.md
+├── tools/check_links.py
 ├── roles/
-│   ├── superadmin/
-│   │   ├── beranda/index.html
-│   │   ├── igt-utama/index.html
-│   │   ├── igt-derivatif/index.html
-│   │   └── igt-lainnya/index.html
-│   ├── admin/
-│   │   ├── beranda/index.html
-│   │   ├── igt-utama/index.html
-│   │   └── igt-derivatif/index.html
+│   ├── superadmin/{beranda,igt-pertanahan,igt-tata-ruang,igt-derivatif,igt-lainnya,upload-data}/index.html
+│   ├── admin/{beranda,igt-pertanahan,igt-tata-ruang,igt-derivatif,upload-data}/index.html
 │   ├── operator/
-│   │   ├── beranda/index.html
-│   │   ├── igt-utama/index.html
-│   │   ├── igt-utama-bidang/index.html
-│   │   ├── igt-utama-kawasan/index.html
+│   │   ├── {beranda,igt-pertanahan,igt-tata-ruang,igt-derivatif,upload-data}/index.html
 │   │   ├── igt-utama-detail/index.html
-│   │   ├── igt-derivatif/index.html
 │   │   └── layer-derivatif-detail/index.html
 │   └── umum/
 ├── shared/
+│   ├── igt-data.js
+│   ├── igt-app.js
 │   └── model-builder/index.html
 └── legacy/
     ├── 02-beranda-superadmin.html

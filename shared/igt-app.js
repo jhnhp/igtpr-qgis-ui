@@ -1,0 +1,337 @@
+// Page logic for the role pages: navigation, dashboard, IGT catalogs and Upload Data.
+// Needs shared/igt-data.js. Every QGIS-related action is a simulation (alert/confirm), nothing is sent anywhere.
+const IgtApp = (() => {
+  const { CATEGORIES, CATEGORY_ORDER, ROLES } = IgtData;
+  const $ = (selector) => document.querySelector(selector);
+
+  const STATUS_CLASS = {
+    Proses: 'info',
+    Terkompilasi: 'info',
+    Terintegrasi: 'ok',
+    Revisi: 'warn',
+    Disetujui: 'ok',
+    Ditolak: 'fix',
+  };
+
+  const badge = (status) => `<span class="status ${STATUS_CLASS[status] || ''}">${status}</span>`;
+  const button = (cls, action, id, label, extra = '') =>
+    `<button class="btn ${cls} qgis-action" data-action="${action}" data-id="${id}"${extra}>${label}</button>`;
+  const link = (href, label) => `<a class="btn btn-soft qgis-action" href="${href}">${label}</a>`;
+  const toolbar = (...items) => `<div class="toolbar">${items.filter(Boolean).join('')}</div>`;
+  const setText = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  };
+  const statCard = (label, num, hint, icon, cls, id) =>
+    `<div class="card stat"><div><div class="label">${label}</div><div class="num" id="${id}">${num}</div>` +
+    `<div class="hint">${hint}</div></div><div class="stat-icon${cls ? ' ' + cls : ''}">${icon}</div></div>`;
+
+  const DETAIL_URL = {
+    utama: '../../operator/igt-utama-detail/index.html',
+    derivatif: '../../operator/layer-derivatif-detail/index.html',
+  };
+
+  // ---------------------------------------------------------------- navigation
+
+  // The menu is built from the role's permissions, so a role never receives a link it may not use.
+  function mountNav(role, activeKey) {
+    const items = IgtData.menuFor(role)
+      .map((item) => {
+        const active = item.key === activeKey;
+        return `<a href="../${item.slug}/index.html"${active ? ' class="active" aria-current="page"' : ''}>${item.label}</a>`;
+      })
+      .join('');
+    const nav = document.createElement('nav');
+    nav.className = 'panel-nav';
+    nav.setAttribute('aria-label', 'Menu utama ' + ROLES[role].label);
+    nav.innerHTML = items;
+    $('main.main').prepend(nav);
+  }
+
+  // ----------------------------------------------------------------- dashboard
+
+  // Repository overview: how many datasets are compiled and integrated. No upload controls here.
+  function dashboard(role) {
+    mountNav(role, 'beranda');
+    const records = IgtData.loadRecords().filter((r) => IgtData.can(role, r.category));
+    const compiled = IgtData.countByStatus(records, 'Terkompilasi');
+    const integrated = IgtData.countByStatus(records, 'Terintegrasi');
+
+    const rows = CATEGORY_ORDER.filter((key) => IgtData.can(role, key))
+      .map((key) => {
+        const own = records.filter((r) => r.category === key);
+        return (
+          `<tr><td data-label="Kategori"><a class="text-link" href="../${CATEGORIES[key].slug}/index.html">${CATEGORIES[key].label}</a></td>` +
+          `<td data-label="Terkompilasi">${IgtData.countByStatus(own, 'Terkompilasi')}</td>` +
+          `<td data-label="Terintegrasi">${IgtData.countByStatus(own, 'Terintegrasi')}</td></tr>`
+        );
+      })
+      .join('');
+
+    $('#view').innerHTML =
+      `<div class="grid stats">` +
+      statCard('Terkompilasi', compiled, 'Menunggu integrasi', '▤', 'amber', 'count-compiled') +
+      statCard('Terintegrasi', integrated, 'Siap diakses di katalog', '✓', 'green', 'count-integrated') +
+      `</div>` +
+      `<section class="card"><div class="card-head"><div><h2>Ringkasan per kategori</h2>` +
+      `<p>Jumlah dataset menurut status, dihitung dari data contoh. Satu catatan mewakili satu dataset.</p></div></div>` +
+      `<div class="table-wrap"><table class="compact"><thead><tr><th>Kategori</th><th>Terkompilasi</th><th>Terintegrasi</th></tr></thead>` +
+      `<tbody id="category-rows">${rows}</tbody></table></div></section>` +
+      `<section class="card"><div class="grid quick-grid"><a class="quick" href="../../../shared/model-builder/index.html?role=${role}">` +
+      `<div class="q-icon">⚙</div><b>Model Builder</b><p>Akses model dan alur pemrosesan spasial.</p></a></div></section>`;
+  }
+
+  // ------------------------------------------------------------------- catalog
+
+  const WMS_MESSAGE = (name) =>
+    `Simulasi WMS: layanan peta "${name}" akan ditambahkan sebagai layer WMS (gambar peta) di QGIS. ` +
+    'Belum terhubung ke layanan nyata.';
+  const WFS_MESSAGE = (name) =>
+    `Simulasi WFS: layanan fitur "${name}" akan dimuat sebagai layer vektor WFS di QGIS. ` +
+    'Belum terhubung ke layanan nyata.';
+
+  // Integrated datasets of one category. Only status Terintegrasi is listed; nothing can be edited here.
+  function catalog(role, category) {
+    mountNav(role, category);
+    const view = $('#view');
+    if (!IgtData.can(role, category)) {
+      view.innerHTML = `<div class="notice"><strong>Akses ditolak</strong>${CATEGORIES[category].label} tidak tersedia untuk role ini.</div>`;
+      return;
+    }
+    const datasets = IgtData.loadRecords().filter((r) => r.category === category && r.status === 'Terintegrasi');
+    let query = '';
+
+    view.innerHTML =
+      `<div class="notice"><strong>Katalog data terintegrasi</strong>Hanya dataset berstatus Terintegrasi yang tampil. ` +
+      `Tombol WMS dan WFS adalah simulasi; belum ada layanan nyata yang terhubung.</div>` +
+      `<section class="card"><div class="card-head"><div><h2>Dataset terintegrasi</h2><p id="catalog-count"></p></div></div>` +
+      `<div class="field catalog-search"><label for="catalog-search">PENCARIAN</label><input id="catalog-search" type="search" placeholder="Cari nama IGT..."></div>` +
+      `<div class="table-wrap"><table class="stack"><thead><tr><th>Nama IGT</th><th>Tanggal Update</th><th>Tampilkan WMS</th><th>Tampilkan WFS</th></tr></thead>` +
+      `<tbody id="catalog-rows"></tbody></table></div>` +
+      `<div class="empty-state" id="empty-state" hidden></div></section>`;
+
+    function render() {
+      const q = query.toLowerCase();
+      const shown = datasets.filter((d) => (d.name + ' ' + (d.source || '') + ' ' + d.id).toLowerCase().includes(q));
+      $('#catalog-rows').innerHTML = shown
+        .map((d) => {
+          const meta = d.source ? `${d.id} · ${d.source}` : d.id;
+          return (
+            `<tr><td data-label="Nama IGT"><div class="primary-cell">${d.name}</div><div class="secondary-cell">${meta}</div></td>` +
+            `<td data-label="Tanggal Update">${d.updated}</td>` +
+            `<td data-label="Tampilkan WMS">${button('btn-soft', 'wms', d.id, '▧ WMS', ` aria-label="Tampilkan WMS untuk ${d.name}"`)}</td>` +
+            `<td data-label="Tampilkan WFS">${button('btn-soft', 'wfs', d.id, '▤ WFS', ` aria-label="Tampilkan WFS untuk ${d.name}"`)}</td></tr>`
+          );
+        })
+        .join('');
+      setText('catalog-count', `${datasets.length} dataset terintegrasi di ${CATEGORIES[category].label}.`);
+      const empty = $('#empty-state');
+      empty.hidden = shown.length > 0;
+      empty.textContent = datasets.length === 0
+        ? `Belum ada dataset terintegrasi pada ${CATEGORIES[category].label}.`
+        : 'Tidak ada dataset yang cocok dengan pencarian.';
+    }
+
+    $('#catalog-search').addEventListener('input', (event) => {
+      query = event.target.value;
+      render();
+    });
+    document.addEventListener('click', (event) => {
+      const target = event.target.closest('[data-action]');
+      if (!target) return;
+      const dataset = datasets.find((d) => d.id === target.dataset.id);
+      if (target.dataset.action === 'wms') alert(WMS_MESSAGE(dataset.name));
+      else if (target.dataset.action === 'wfs') alert(WFS_MESSAGE(dataset.name));
+    });
+    render();
+  }
+
+  // --------------------------------------------------------------- upload data
+
+  const UPLOAD_TEXT = {
+    pertanahan: 'Muat baseline bidang atau unggah atribut baru, lalu pantau status pengajuan.',
+    'tata-ruang': 'Unggah geometri dan atribut kawasan, lalu pantau status verifikasinya.',
+    derivatif: 'Ajukan layer derivatif dan pantau keputusan persetujuannya.',
+    lainnya: 'Kelola layer IGT dari sumber eksternal. Data yang diunggah Superadmin langsung tersedia tanpa proses persetujuan.',
+  };
+
+  const LEGACY = '../../../legacy/';
+
+  // Upload controls differ per category and role. Baseline exists only for IGT Pertanahan.
+  function uploadPanel(role, category) {
+    if (category === 'pertanahan') {
+      return (
+        `<div class="grid quick-grid"><div class="quick"><div class="q-icon">▦</div><b>Load Baseline</b><p>Muat layer bidang acuan dari layanan yang tersedia.</p>` +
+        `<button class="btn btn-primary" style="margin-top:12px" data-action="load-baseline">Muat baseline</button></div>` +
+        `<div class="quick"><div class="q-icon">↑</div><b>Upload Data</b><p>Unggah tabel atribut yang terhubung dengan ID bidang.</p>` +
+        `<button class="btn btn-primary" style="margin-top:12px" data-action="upload">Pilih file</button></div></div>` +
+        `<div class="notice"><strong>Catatan</strong>Geometri bidang berasal dari baseline. Pastikan ID bidang cocok sebelum mengirim atribut.</div>`
+      );
+    }
+    if (category === 'tata-ruang') {
+      return (
+        `<div class="dropzone"><div class="big">⇧</div><strong>Tarik dan letakkan berkas di sini</strong>` +
+        `<p>Shapefile (.zip) atau GeoPackage (.gpkg), maksimal 500 MB</p><button class="btn btn-primary" data-action="upload">Pilih berkas</button></div>` +
+        `<div class="form-grid" style="margin-top:18px"><div class="field"><label for="f-tema">TEMA IGT</label><select id="f-tema"><option>Pilih tema...</option>` +
+        `<option>Lingkungan</option><option>Infrastruktur</option><option>Administrasi</option></select></div>` +
+        `<div class="field"><label for="f-nama">NAMA LAYER</label><input id="f-nama" placeholder="Masukkan nama layer"></div>` +
+        `<div class="field"><label for="f-wilayah">WILAYAH</label><input id="f-wilayah" placeholder="Provinsi / Kabupaten / Kota"></div>` +
+        `<div class="field"><label for="f-deskripsi">DESKRIPSI</label><input id="f-deskripsi" placeholder="Deskripsi singkat"></div></div>` +
+        `<div class="toolbar"><button class="btn btn-primary" data-action="validate">Validasi dan lanjutkan</button></div>`
+      );
+    }
+    if (category === 'derivatif') {
+      if (role === 'admin') {
+        return (
+          `<div class="toolbar"><button class="btn btn-primary" data-action="upload-derivatif">↑ Upload Derivatif</button></div>` +
+          `<div class="notice"><strong>Catatan</strong>Unggahan Admin langsung berstatus Disetujui. Pengajuan Operator berstatus Proses sampai diputuskan.</div>`
+        );
+      }
+      if (role === 'operator') {
+        return (
+          `<div class="toolbar"><a class="btn btn-primary" href="${LEGACY}06-derivative-kawasan.html">＋ Derivative Kawasan</a>` +
+          `<a class="btn btn-soft" href="${LEGACY}07-derivative-bidang.html">＋ Derivative Bidang</a></div>` +
+          `<div class="notice"><strong>Catatan</strong>Pengajuan berstatus Proses sampai disetujui atau ditolak oleh Admin atau Superadmin.</div>`
+        );
+      }
+      return `<div class="notice"><strong>Panel verifikasi</strong>Setujui atau tolak pengajuan yang berstatus Proses.</div>`;
+    }
+    return (
+      `<div class="toolbar"><button class="btn btn-primary" data-action="upload-lainnya">＋ Upload layer</button></div>` +
+      `<div class="notice"><strong>Catatan</strong>Penambahan dan pengaturan layer dilakukan langsung melalui QGIS. Layer eksternal tidak memakai status persetujuan.</div>`
+    );
+  }
+
+  // Row actions depend on category, status and role. Catalog actions (WMS/WFS) never appear here.
+  function rowActions(role, r) {
+    const reviewer = role === 'admin' || role === 'superadmin';
+    const kind = CATEGORIES[r.category].detail;
+    if (r.category === 'lainnya') {
+      return role === 'superadmin' ? toolbar(button('btn-danger', 'delete', r.id, 'Hapus')) : '';
+    }
+    const detail = r.n === undefined
+      ? button('btn-soft', 'detail-sim', r.id, 'Detail')
+      : link(`${DETAIL_URL[kind]}?id=${r.n}&role=${role}`, 'Detail');
+    const extras = [];
+    if (kind === 'utama') {
+      if (reviewer && r.status === 'Proses') extras.push(button('btn-primary', 'topology', r.id, '⌁ Verifikasi Topologi'));
+      if (role === 'operator' && r.status === 'Revisi') extras.push(button('btn-soft', 'revision', r.id, '✎ Revisi'));
+    } else if (reviewer && r.status === 'Proses') {
+      extras.push(button('btn-primary', 'approve', r.id, '✓ Setujui'), button('btn-soft', 'reject', r.id, '✕ Tolak'));
+    }
+    return toolbar(...extras, detail);
+  }
+
+  // Submission management: summary, one tab per authorized category, upload controls and submission table.
+  function upload(role) {
+    mountNav(role, 'upload');
+    const categories = CATEGORY_ORDER.filter((key) => IgtData.can(role, key));
+    const records = IgtData.loadRecords().filter((r) => IgtData.can(role, r.category));
+    const requested = new URLSearchParams(location.search).get('tab');
+    let tab = categories.includes(requested) ? requested : categories[0];
+    let nextDerivative = 9;
+
+    $('#view').innerHTML =
+      `<div class="grid stats">` +
+      statCard('Total pengajuan', '', 'Semua kategori', '▦', '', 'count-total') +
+      statCard('Proses', '', 'Menunggu pemeriksaan', '◷', 'amber', 'count-process') +
+      statCard('Menunggu integrasi', '', 'Terkompilasi atau Disetujui', '▤', '', 'count-waiting') +
+      statCard('Perlu perhatian', '', 'Revisi atau Ditolak', '!', 'red', 'count-attention') +
+      `</div><section class="card"><div class="tabs" data-tabs>` +
+      categories.map((key) => `<button class="tab" data-tab="${key}">${CATEGORIES[key].label}</button>`).join('') +
+      `</div><div class="card-head"><div><h2 id="tab-heading"></h2><p id="tab-description"></p></div></div>` +
+      `<div id="upload-panel"></div>` +
+      `<div class="card-head submissions-head"><div><h2>Pengajuan</h2><p id="submission-count"></p></div></div>` +
+      `<div class="table-wrap"><table class="stack"><thead><tr><th>ID Pengajuan</th><th>Layer Target</th><th>Tanggal Upload</th><th>Status</th><th>Aksi</th></tr></thead>` +
+      `<tbody id="submission-rows"></tbody></table></div><div class="empty-state" id="empty-state" hidden>Belum ada pengajuan pada kategori ini.</div></section>`;
+
+    function renderCounts() {
+      const count = (...statuses) => records.filter((r) => statuses.includes(r.status)).length;
+      setText('count-total', records.length);
+      setText('count-process', count('Proses'));
+      setText('count-waiting', count('Terkompilasi', 'Disetujui'));
+      setText('count-attention', count('Revisi', 'Ditolak'));
+    }
+
+    function render() {
+      document.querySelectorAll('[data-tab]').forEach((t) => {
+        t.classList.toggle('active', t.dataset.tab === tab);
+        t.setAttribute('aria-selected', t.dataset.tab === tab);
+      });
+      setText('tab-heading', CATEGORIES[tab].label);
+      setText('tab-description', UPLOAD_TEXT[tab]);
+      $('#upload-panel').innerHTML = uploadPanel(role, tab);
+      const own = records.filter((r) => r.category === tab);
+      $('#submission-rows').innerHTML = own
+        .map((r) => {
+          const id = r.n === undefined || r.category === 'lainnya'
+            ? r.id
+            : `<a class="text-link" href="${DETAIL_URL[CATEGORIES[r.category].detail]}?id=${r.n}&role=${role}">${r.id}</a>`;
+          return (
+            `<tr data-category="${r.category}"><td data-label="ID Pengajuan">${id}</td><td data-label="Layer Target">${r.name}</td>` +
+            `<td data-label="Tanggal Upload">${r.date}</td><td data-label="Status">${badge(r.status)}</td>` +
+            `<td data-label="Aksi" class="action-cell">${rowActions(role, r)}</td></tr>`
+          );
+        })
+        .join('');
+      setText('submission-count', `${own.length} pengajuan pada ${CATEGORIES[tab].label}.`);
+      $('#empty-state').hidden = own.length > 0;
+      renderCounts();
+    }
+
+    document.querySelectorAll('[data-tab]').forEach((t) =>
+      t.addEventListener('click', () => {
+        tab = t.dataset.tab;
+        try {
+          history.replaceState(null, '', '?tab=' + tab);
+        } catch (e) {
+          /* file:// previews may refuse; the tab still switches */
+        }
+        render();
+      }),
+    );
+
+    document.addEventListener('click', (event) => {
+      const target = event.target.closest('[data-action]');
+      if (!target) return;
+      const { action, id } = target.dataset;
+      const record = records.find((r) => r.id === id);
+      if (action === 'load-baseline') alert('Simulasi: pilih layer baseline dari QGIS.');
+      else if (action === 'upload') alert('Simulasi: pilih file data untuk diunggah (' + CATEGORIES[tab].label + ').');
+      else if (action === 'validate') alert('Parameter valid. Proses ini masih berupa prototipe UI.');
+      else if (action === 'upload-lainnya') alert('Upload layer dan konfigurasi data dilakukan langsung melalui QGIS.');
+      else if (action === 'revision') alert('Simulasi: buka formulir revisi untuk pengajuan ' + id + '.');
+      else if (action === 'detail-sim') alert('Simulasi: detail ' + id + ' tersedia setelah data tersambung.');
+      else if (action === 'topology') {
+        alert('Simulasi verifikasi topologi untuk ' + id + '. Pada implementasi QGIS, aksi ini menjalankan pemeriksaan topologi pada layer terkait.');
+        record.status = 'Terkompilasi';
+        render();
+      } else if (action === 'approve' || action === 'reject') {
+        if (!confirm((action === 'approve' ? 'Setujui' : 'Tolak') + ' pengajuan ' + id + '?')) return;
+        record.status = action === 'approve' ? 'Disetujui' : 'Ditolak';
+        render();
+      } else if (action === 'upload-derivatif') {
+        // Admin uploads skip review and are approved immediately.
+        if (!confirm('Simulasi: pilih berkas layer derivatif. Unggahan Admin langsung berstatus Disetujui. Lanjutkan?')) return;
+        records.unshift({
+          category: 'derivatif',
+          id: 'DRV-2026-' + String(nextDerivative).padStart(3, '0'),
+          name: 'Derivatif Unggahan Admin ' + nextDerivative,
+          date: '19 Okt 2026',
+          status: 'Disetujui',
+        });
+        nextDerivative += 1;
+        render();
+      } else if (action === 'delete') {
+        if (!confirm('Hapus layer ' + id + ' dari katalog IGT Lainnya? Tindakan ini tidak dapat dibatalkan.')) return;
+        records.splice(records.indexOf(record), 1);
+        render();
+        alert('Layer ' + id + ' dihapus dari daftar mockup.');
+      }
+    });
+
+    render();
+  }
+
+  return { dashboard, catalog, upload };
+})();

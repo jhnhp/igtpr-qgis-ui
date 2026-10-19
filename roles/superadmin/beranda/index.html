@@ -1,19 +1,11 @@
 <!doctype html>
-<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Beranda Superadmin · IGT-PR</title><link rel="stylesheet" href="../../../styles.css">
-<style>
-.quick{min-height:100px}
-</style></head><body class="panel panel-dash panel-home" data-page="superadmin"><div class="app"><div class="workspace">
-<header class="topbar"><div class="crumb">Geoportal IGT-PR　/　<strong>Beranda Superadmin</strong></div><div class="top-actions"><button class="icon-btn" aria-label="Notifikasi">♧</button><div class="user-chip"><div class="avatar">SA</div><span>Superadmin</span></div></div></header>
-<main class="main"><div class="page-head"><div><div class="eyebrow">Sistem Informasi Geospasial</div><h1>Beranda Superadmin</h1><p>Kelola pengajuan IGT dan proses verifikasi data geospasial.</p></div></div>
-<div class="grid stats">
-<div class="card stat"><div><div class="label">Total pengajuan</div><div class="num">24</div><div class="hint">Semua modul IGT</div></div><div class="stat-icon">▤</div></div>
-<div class="card stat"><div><div class="label">Menunggu keputusan</div><div class="num">5</div><div class="hint">Perlu ditinjau</div></div><div class="stat-icon amber">◷</div></div>
-<div class="card stat"><div><div class="label">Disetujui</div><div class="num">16</div><div class="hint">Pengajuan diterima</div></div><div class="stat-icon green">✓</div></div>
-<div class="card stat"><div><div class="label">Ditolak</div><div class="num">3</div><div class="hint">Pengajuan ditolak</div></div><div class="stat-icon red">!</div></div>
-</div>
-<section class="card"><div class="card-head"><div><h2>Menu Superadmin</h2><p>Pilih modul yang ingin dikelola.</p></div></div><div class="grid quick-grid">
-<a class="quick" href="../igt-utama/index.html"><div class="q-icon">▦</div><b>IGT Utama</b><p>Tinjau dan kelola pengajuan IGT Utama.</p></a>
-<a class="quick" href="../igt-derivatif/index.html"><div class="q-icon">▱</div><b>IGT Derivatif</b><p>Periksa, setujui, atau tolak pengajuan layer derivatif.</p></a>
-<a class="quick" href="../igt-lainnya/index.html"><div class="q-icon">▧</div><b>IGT Lainnya (Eksternal)</b><p>Kelola data IGT yang berasal dari sumber eksternal.</p></a>
-<a class="quick" href="../../../shared/model-builder/index.html?role=superadmin"><div class="q-icon">⚙</div><b>Model Builder</b><p>Akses model dan alur pemrosesan spasial.</p></a>
-</div></section><div class="footer">Mockup UI plugin QGIS · data contoh</div></main></div></div></body></html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dashboard · IGT-PR</title><link rel="stylesheet" href="../../../styles.css"></head>
+<body class="panel panel-dash panel-list panel-home" data-page="beranda"><div class="app"><div class="workspace">
+<header class="topbar"><div class="crumb">Geoportal IGT-PR　/　<strong>Dashboard</strong></div><div class="top-actions"><button class="icon-btn" aria-label="Notifikasi">♧</button><div class="user-chip"><div class="avatar">SA</div><span>Superadmin</span></div></div></header>
+<main class="main">
+<div class="page-head"><div><div class="eyebrow">Sistem Informasi Geospasial</div><h1>Dashboard</h1><p>Ringkasan status data IGT yang sudah dikompilasi dan diintegrasikan.</p></div></div>
+<div id="view"></div>
+<div class="footer">Mockup UI plugin QGIS · data contoh</div></main></div></div>
+<script src="../../../shared/igt-data.js"></script>
+<script src="../../../shared/igt-app.js"></script>
+<script>IgtApp.dashboard('superadmin');</script></body></html>

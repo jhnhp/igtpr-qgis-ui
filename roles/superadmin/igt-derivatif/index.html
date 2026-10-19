@@ -1,17 +1,11 @@
 <!doctype html>
-<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Superadmin · IGT Derivatif · IGT-PR</title><link rel="stylesheet" href="../../../styles.css">
-</head><body class="panel panel-dash panel-list" data-page="superadmin-igtderivative"><div class="app"><div class="workspace">
-<header class="topbar"><div class="crumb">Geoportal IGT-PR　/　<strong>Superadmin · IGT Derivatif</strong></div><div class="top-actions"><button class="icon-btn" aria-label="Notifikasi">♧</button><div class="user-chip"><div class="avatar">SA</div><span>Superadmin</span></div></div></header>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>IGT Derivatif · IGT-PR</title><link rel="stylesheet" href="../../../styles.css"></head>
+<body class="panel panel-dash panel-list panel-home" data-page="igt-derivatif"><div class="app"><div class="workspace">
+<header class="topbar"><div class="crumb">Geoportal IGT-PR　/　<strong>IGT Derivatif</strong></div><div class="top-actions"><button class="icon-btn" aria-label="Notifikasi">♧</button><div class="user-chip"><div class="avatar">SA</div><span>Superadmin</span></div></div></header>
 <main class="main">
-<div class="page-head"><div><div class="eyebrow">Sistem Informasi Geospasial</div><h1>IGT Derivatif</h1><p>Periksa, setujui, atau tolak pengajuan layer derivatif.</p></div><a class="btn btn-soft" href="../beranda/index.html">← Kembali ke Beranda</a></div>
-<div class="grid stats">
-<div class="card stat"><div><div class="label">Total pengajuan</div><div class="num" id="count-total">4</div><div class="hint">Semua layer derivatif</div></div><div class="stat-icon">▱</div></div><div class="card stat"><div><div class="label">Proses</div><div class="num" id="count-pending">1</div><div class="hint">Menunggu keputusan</div></div><div class="stat-icon amber">◷</div></div><div class="card stat"><div><div class="label">Disetujui</div><div class="num" id="count-approved">2</div><div class="hint">Layer disetujui</div></div><div class="stat-icon green">✓</div></div><div class="card stat"><div><div class="label">Ditolak</div><div class="num" id="count-rejected">1</div><div class="hint">Pengajuan ditolak</div></div><div class="stat-icon red">!</div></div>
-</div>
-<section class="card">
-<div class="tabs" data-tabs><button class="tab active" data-tab="proses">Proses</button><button class="tab" data-tab="disetujui">Disetujui</button></div>
-<div class="card-head"><div><h2 id="tab-heading"></h2><p id="tab-description"></p></div><div class="toolbar" id="tab-actions"></div></div>
-<div class="table-wrap"><table class="stack"><thead><tr><th>ID pengajuan</th><th>Nama Layer</th><th>Tanggal pengajuan</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="submission-rows"></tbody></table></div>
-</section>
+<div class="page-head"><div><div class="eyebrow">Sistem Informasi Geospasial</div><h1>IGT Derivatif</h1><p>Layer IGT Derivatif yang sudah terintegrasi dan siap diakses.</p></div></div>
+<div id="view"></div>
 <div class="footer">Mockup UI plugin QGIS · data contoh</div></main></div></div>
-<script src="../../../shared/igt-lists.js"></script>
-<script>IgtLists.derivatif('superadmin');</script></body></html>
+<script src="../../../shared/igt-data.js"></script>
+<script src="../../../shared/igt-app.js"></script>
+<script>IgtApp.catalog('superadmin','derivatif');</script></body></html>

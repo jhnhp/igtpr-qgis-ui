@@ -962,3 +962,80 @@ tbody tr:hover {
     display: none;
   }
 }
+
+/* ==========================================================================
+   Role navigation, catalog and Upload Data (shared/igt-app.js)
+   ========================================================================== */
+
+/* Main menu: chips that wrap instead of scrolling sideways */
+.panel-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.panel-nav a {
+  flex: 1 1 28%;
+  padding: 9px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: #526883;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+}
+
+.panel-nav a:hover {
+  border-color: #a8c7f6;
+  color: var(--blue);
+}
+
+.panel-nav a.active {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: #fff;
+}
+
+.catalog-search {
+  margin-bottom: 12px;
+  max-width: 320px;
+}
+
+.empty-state {
+  padding: 22px 12px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.submissions-head {
+  margin-top: 20px;
+}
+
+:where(.panel) .tabs {
+  flex-wrap: wrap;
+  row-gap: 0;
+}
+
+/* Dashboard summary table: a real table, tightened so three columns fit a narrow panel */
+:where(.panel) table.compact th,
+:where(.panel) table.compact td {
+  padding: 10px 8px;
+  white-space: normal;
+}
+
+:where(.panel) table.compact th:not(:first-child),
+:where(.panel) table.compact td:not(:first-child) {
+  text-align: center;
+}
+
+:where(.panel) section.card + section.card {
+  margin-top: 16px;
+}
+
+#upload-panel .toolbar {
+  margin-top: 12px;
+}

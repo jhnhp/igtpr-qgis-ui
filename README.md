@@ -2,7 +2,59 @@
 
 HTML/CSS/JavaScript **UI mockups** for the IGT-PR QGIS plugin. The root page previews each role inside a portrait 3:4 panel that imitates a QGIS plugin dock.
 
-> All QGIS actions (Load Baseline, Tampilkan di Canvas, Verifikasi Topologi, upload, run model, approve/reject, etc.) are **simulations**. There is no backend, authentication, database, or real QGIS integration. Example records and counts are illustrative.
+> All QGIS actions (WMS/WFS display, Load Baseline, Tampilkan di Canvas, Verifikasi Topologi, upload, run model, approve/reject, etc.) are **simulations**. There is no backend, authentication, database, WMS/WFS endpoint, or real QGIS integration. Example records and counts are illustrative.
+
+## Information architecture
+
+Browsing integrated data is separate from uploading and managing submissions.
+
+| Menu | Purpose |
+| --- | --- |
+| Dashboard | Repository overview: number of datasets that are **Terkompilasi** and **Terintegrasi** (total and per category). No upload controls. |
+| IGT Pertanahan | Catalog of integrated datasets (berbasis bidang) |
+| IGT Tata Ruang | Catalog of integrated datasets (berbasis kawasan) |
+| IGT Derivatif | Catalog of integrated derivative layers |
+| IGT Lainnya | Catalog of integrated external layers (Superadmin only) |
+| Upload Data | Submission dashboard, one tab per authorized category, upload controls and the submission table |
+
+### Permissions
+
+| Role | Menus |
+| --- | --- |
+| Superadmin | Dashboard, IGT Pertanahan, IGT Tata Ruang, IGT Derivatif, IGT Lainnya, Upload Data (+ Model Builder from the Dashboard) |
+| Admin | Dashboard, IGT Pertanahan, IGT Tata Ruang, IGT Derivatif, Upload Data (+ Model Builder). No IGT Lainnya, no Verifikasi Data menu |
+| Operator | Same as Admin |
+| Umum | Placeholder only |
+
+The menu is generated from the permission table in `shared/igt-data.js`, so a role is never given a link it may not use. Catalog pages and the Upload Data tabs also check the role (`?tab=lainnya` is ignored for Admin/Operator).
+
+### Catalog pages
+Columns: **Nama IGT**, **Tanggal Update**, **Tampilkan WMS**, **Tampilkan WFS**. They list only records with status `Terintegrasi` and contain no upload or approval controls. The WMS and WFS buttons are labelled simulations: they show a message saying which service type would be added to QGIS and that no real service is connected. No service URLs exist in this repository. An empty category shows an empty state; a search with no match shows a different one.
+
+### Upload Data page
+1. **Submission dashboard** (Total pengajuan, Proses, Menunggu integrasi, Perlu perhatian) for the categories the role may use.
+2. **Category tabs**: IGT Pertanahan, IGT Tata Ruang, IGT Derivatif, and IGT Lainnya (Superadmin only). The tab can be preselected with `?tab=pertanahan|tata-ruang|derivatif|lainnya`.
+3. **Upload controls and submission table** (ID Pengajuan, Layer Target, Tanggal Upload, Status, Aksi) for the selected tab:
+
+| Tab | Upload controls | Row actions |
+| --- | --- | --- |
+| IGT Pertanahan | Load Baseline (only here) and Upload Data | Detail; Verifikasi Topologi on `Proses` rows (Admin, Superadmin); Revisi on `Revisi` rows (Operator) |
+| IGT Tata Ruang | Upload form (dropzone, tema, nama layer, wilayah, deskripsi) | same as Pertanahan |
+| IGT Derivatif | Admin: Upload Derivatif (goes straight to `Disetujui`). Operator: Derivative Kawasan / Bidang workflows (`legacy/`). Superadmin: review only | Detail; Setujui and Tolak on `Proses` rows (Admin, Superadmin) |
+| IGT Lainnya | Upload layer (simulated; layers are added through QGIS) | Hapus |
+
+### Statuses and data model
+- One record in `shared/igt-data.js` is one dataset plus its latest submission, so counting records counts datasets. Re-submissions of an integrated dataset are not modelled.
+- IGT Pertanahan / Tata Ruang: `Proses` → `Terkompilasi` → `Terintegrasi`; `Revisi` = returned to the Operator. *Verifikasi Topologi* moves a row to `Terkompilasi`.
+- IGT Derivatif: `Proses` → `Disetujui` → `Terintegrasi`; `Ditolak` = rejected. Admin uploads start as `Disetujui`.
+- IGT Lainnya: external layers are available immediately (`Terintegrasi`).
+- Moving from `Terkompilasi`/`Disetujui` to `Terintegrasi` happens outside the mockup, so no button does it. Derivative layers that are only `Disetujui` count in neither Dashboard total.
+- State changes (topology, approve/reject, upload, delete) live only in the open page; reloading restores the sample data. The Dashboard and catalogs always show the sample data.
+
+### Detail pages are shared by query string
+`roles/operator/igt-utama-detail/` and `roles/operator/layer-derivatif-detail/` are the detail pages for all roles, opened from the Upload Data table. The role is chosen with `?id=<n>&role=<superadmin|admin|operator>` (an unknown role falls back to Operator). The role decides the header chip, breadcrumb, back links (to that role's Dashboard and Upload Data tab) and which actions are shown.
+
+`shared/model-builder/index.html` accepts `?role=superadmin|admin` so its back link returns to that role's Dashboard (default: Operator).
 
 ## Folder structure
 
@@ -10,70 +62,36 @@ HTML/CSS/JavaScript **UI mockups** for the IGT-PR QGIS plugin. The root page pre
 igtpr-qgis-ui/
 ├── index.html                  # Role preview (Superadmin / Admin / Operator / Umum), iframe in a 3:4 panel
 ├── styles.css                  # Shared design system
-├── app.js                      # Shared interactions (tabs, filtering, file selection, simulated actions)
+├── app.js                      # Shared interactions used by the legacy pages (tabs, filtering, simulated actions)
 ├── README.md
+├── CLAUDE.md
 ├── tools/
 │   └── check_links.py          # Static check that every local link/iframe/script path resolves
 ├── roles/
-│   ├── superadmin/
-│   │   ├── beranda/index.html
-│   │   ├── igt-utama/index.html
-│   │   ├── igt-derivatif/index.html
-│   │   └── igt-lainnya/index.html      # IGT Lainnya (Eksternal) — Superadmin only
-│   ├── admin/
-│   │   ├── beranda/index.html
-│   │   ├── igt-utama/index.html
-│   │   └── igt-derivatif/index.html
+│   ├── superadmin/{beranda,igt-pertanahan,igt-tata-ruang,igt-derivatif,igt-lainnya,upload-data}/index.html
+│   ├── admin/{beranda,igt-pertanahan,igt-tata-ruang,igt-derivatif,upload-data}/index.html
 │   ├── operator/
-│   │   ├── beranda/index.html
-│   │   ├── igt-utama/index.html
-│   │   ├── igt-utama-bidang/index.html
-│   │   ├── igt-utama-kawasan/index.html
-│   │   ├── igt-utama-detail/index.html
-│   │   ├── igt-derivatif/index.html
-│   │   └── layer-derivatif-detail/index.html
-│   └── umum/                           # Empty: no Umum page exists yet (placeholder in index.html)
+│   │   ├── {beranda,igt-pertanahan,igt-tata-ruang,igt-derivatif,upload-data}/index.html
+│   │   ├── igt-utama-detail/index.html          # Shared detail page (all roles, ?role=)
+│   │   └── layer-derivatif-detail/index.html    # Shared detail page (all roles, ?role=)
+│   └── umum/                   # Empty: no Umum page exists yet (placeholder in index.html)
 ├── shared/
-│   ├── igt-lists.js                    # List logic: IGT Utama (all roles), IGT Derivatif (Admin, Superadmin)
-│   └── model-builder/index.html        # Model Builder, used by Superadmin, Admin and Operator
-└── legacy/                             # Earlier pages kept for reference only
-    ├── 02-beranda-superadmin.html
-    ├── 03-katalog-data.html
-    ├── 04-pengolahan-data.html
-    ├── 05-tematik-derivative.html
-    ├── 06-derivative-kawasan.html
-    ├── 07-derivative-bidang.html
-    └── 08-verifikasi-data.html
+│   ├── igt-data.js             # Sample records, categories, role permissions
+│   ├── igt-app.js              # Navigation, Dashboard, catalog and Upload Data logic
+│   └── model-builder/index.html
+└── legacy/                     # Earlier pages kept for reference only
+    └── 02-beranda-superadmin.html … 08-verifikasi-data.html
 ```
 
-## Role pages
-
-| Role | Pages |
-| --- | --- |
-| Superadmin | Beranda, IGT Utama, IGT Derivatif, IGT Lainnya (Eksternal), Model Builder |
-| Admin | Beranda, IGT Utama, IGT Derivatif, Model Builder. No IGT Lainnya (Eksternal) and no Verifikasi Data menu |
-| Operator | Beranda, IGT Utama (+ Bidang / Kawasan), IGT Derivatif, Model Builder |
-| Umum | Placeholder only |
-
-### IGT Utama and IGT Derivatif workflow
-- **IGT Utama** (Superadmin, Admin, Operator): tabs *Semua*, *Berbasis Bidang*, *Berbasis Kawasan*. *Load Baseline* appears only on *Berbasis Bidang*; *Upload Data* appears on all three tabs. Columns: ID pengajuan, Layer target, Tanggal upload, Status, Aksi.
-- **Statuses:** `Proses` (uploaded, awaiting topology verification) → `Terkompilasi` (topology verified, waiting for integration) → `Terintegrasi`; `Revisi` means returned to the Operator. Superadmin and Admin run *Verifikasi Topologi* on `Proses` rows (the mockup then marks the row `Terkompilasi`); the Operator sees *Revisi* on returned rows.
-- **IGT Derivatif** (Superadmin, Admin): tabs *Proses* and *Disetujui*. `Proses` rows offer *Setujui*, *Tolak* and *Detail*; rejected rows stay in `Proses` with *Detail* only. Admin also has *Upload Derivatif*, and an Admin upload goes straight to `Disetujui`. Operator keeps its own Kawasan/Bidang list with the legacy upload workflows.
-- Row data and role differences live in `shared/igt-lists.js`; the role pages only provide the page shell and call `IgtLists.utama(role)` / `IgtLists.derivatif(role)`.
-
-### Detail pages are shared by query string
-`roles/operator/igt-utama-detail/` and `roles/operator/layer-derivatif-detail/` are the single detail pages for all roles. The role is chosen with `?id=<n>&role=<superadmin|admin>` (no `role` means Operator). The role decides the header chip, breadcrumb, back links (to that role's own Beranda/list) and which actions are shown. Example: `roles/operator/igt-utama-detail/index.html?id=0&role=admin`.
-
-`shared/model-builder/index.html` accepts `?role=superadmin|admin` so its back link returns to that role's Beranda (default: Operator).
+Each role page is a thin shell: it loads `shared/igt-data.js` and `shared/igt-app.js` and calls `IgtApp.dashboard(role)`, `IgtApp.catalog(role, category)` or `IgtApp.upload(role)`.
 
 ### Legacy pages
-`legacy/` holds the original numbered pages (`02`–`08`) with the old sidebar layout. They are not part of the role navigation. Their sidebar links point to each other and to the Operator pages. The only remaining links into `legacy/` are the two derivative workflow shortcuts (Derivative Kawasan / Bidang) in Operator IGT Derivatif, because those workflow pages were never replaced.
+`legacy/` holds the original numbered pages (`02`–`08`) with the old desktop sidebar. They are not part of the role navigation; their sidebar links now point to the matching Upload Data tab. The only link into `legacy/` from a role page is Operator → Upload Data → IGT Derivatif (Derivative Kawasan / Bidang workflows), because those workflow pages were never replaced.
 
-## Shared assets
-- `styles.css` and `app.js` live at the repository root; every page references them with a relative path from its own folder (e.g. `../../../styles.css`).
-- Tables marked `class="stack"` (with a `data-label` on each cell) turn into labelled blocks below 600px of panel width, so list pages do not scroll sideways in the portrait preview.
-- Pages shown inside the 3:4 panel opt in to the compact layout in `styles.css` with `<body class="panel ...">` (`panel-dash`, `panel-home`, `panel-list`, `panel-detail` add stat cards, Beranda, list and detail rules). Only page-specific rules stay in each page's own `<style>`.
-- Tables use `data-href` / plain links for list-to-detail navigation; `app.js` handles tabs (`data-tab`), search filtering (`data-filter`) and simulated actions (`data-action`).
+## Shared styling
+- Tables marked `class="stack"` (with a `data-label` on each cell) turn into labelled blocks below 600px of panel width, so lists do not scroll sideways in the portrait preview. `class="compact"` keeps a real table with tighter padding.
+- Pages shown inside the 3:4 panel opt in to the compact layout with `<body class="panel ...">` (`panel-dash`, `panel-home`, `panel-list`, `panel-detail`).
+- The main menu is the `.panel-nav` chip bar at the top of each page.
 
 ## Preview locally
 No build step. Open `index.html` directly in a browser, or serve the folder:
@@ -89,4 +107,4 @@ Use the role drawer on the left to switch between Superadmin, Admin, Operator an
 ```bash
 python3 tools/check_links.py
 ```
-Exits non-zero if any local `href`, `src`, iframe or JS-built path points to a missing file.
+Exits non-zero if any local `href`, `src`, iframe or JS-string path points to a missing file. Menu links are built in JavaScript from the role's permissions and are therefore not covered by this script; open each role's pages to verify them.

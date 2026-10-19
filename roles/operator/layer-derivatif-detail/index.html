@@ -1,9 +1,9 @@
 <!doctype html>
 <html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Detail Layer Derivatif · IGT-PR</title><link rel="stylesheet" href="../../../styles.css">
 </head><body class="panel panel-detail" data-page="layer-derivatif-detail"><div class="app"><div class="workspace">
-<header class="topbar"><div class="crumb">Geoportal IGT-PR　/　<a href="../igt-derivatif/index.html">Layer Derivatif</a>　/　<strong>Detail</strong></div><div class="top-actions"><button class="icon-btn" aria-label="Notifikasi">♧</button><div class="user-chip"><div class="avatar">JH</div><span>Operator Pusat</span></div></div></header>
+<header class="topbar"><div class="crumb">Geoportal IGT-PR　/　<a href="../upload-data/index.html?tab=derivatif">Upload Data</a>　/　<strong>Detail</strong></div><div class="top-actions"><button class="icon-btn" aria-label="Notifikasi">♧</button><div class="user-chip"><div class="avatar">JH</div><span>Operator Pusat</span></div></div></header>
 <main class="main"><div class="page-head"><div><div class="eyebrow">Sistem Informasi Geospasial</div><h1 id="layer-name">Detail Layer Derivatif</h1><p>Informasi pengajuan, gaya tampilan, dan masa berlaku layer.</p></div></div>
-<div class="detail-actions"><a class="btn btn-soft" id="back-home" href="../beranda/index.html">← Kembali ke Beranda</a><a class="btn btn-soft" id="back-list" href="../igt-derivatif/index.html">Kembali ke daftar Layer Derivatif</a><button class="btn btn-primary" id="show-canvas">▧ Tampilkan di Canvas</button></div>
+<div class="detail-actions"><a class="btn btn-soft" id="back-home" href="../beranda/index.html">← Kembali ke Dashboard</a><a class="btn btn-soft" id="back-list" href="../upload-data/index.html?tab=derivatif">Kembali ke Upload Data</a><button class="btn btn-primary" id="show-canvas">▧ Tampilkan di Canvas</button></div>
 <section class="card detail-section"><div class="card-head"><div><h2>Informasi Pengajuan</h2><p>Identitas dan metadata layer derivatif.</p></div><span id="status-badge" class="status ok">Disetujui</span></div>
 <div class="detail-grid">
 <div class="detail-item"><div class="detail-label">ID Pengajuan</div><div class="detail-value" id="layer-id">DRV-2026-008</div></div>
@@ -20,14 +20,16 @@
 <div class="footer">Mockup UI plugin QGIS · data contoh</div></main></div></div>
 <script>
 const data={
-"0":{id:"DRV-2026-008",nama:"Derivatif Kawasan Hutan",jenis:"Berbasis Kawasan",tanggal:"16 Okt 2026",status:"Disetujui",sld:"derivatif-kawasan-hutan.sld",expired:"30 hari",notes:"Layer derivatif telah disetujui dan siap digunakan."},
+"0":{id:"DRV-2026-008",nama:"Derivatif Kawasan Hutan",jenis:"Berbasis Kawasan",tanggal:"16 Okt 2026",status:"Terintegrasi",sld:"derivatif-kawasan-hutan.sld",expired:"30 hari",notes:"Layer derivatif telah disetujui, terintegrasi, dan siap digunakan."},
 "1":{id:"DRV-2026-007",nama:"Derivatif Bidang Wilayah A",jenis:"Berbasis Bidang",tanggal:"15 Okt 2026",status:"Proses",sld:"derivatif-bidang-wilayah-a.sld",expired:"—",notes:"Pengajuan dalam proses dan menunggu keputusan."},
 "2":{id:"DRV-2026-006",nama:"Derivatif Kawasan Lindung",jenis:"Berbasis Kawasan",tanggal:"14 Okt 2026",status:"Ditolak",sld:"derivatif-kawasan-lindung.sld",expired:"—",notes:"Pengajuan ditolak; periksa catatan evaluasi."},
 "3":{id:"DRV-2026-005",nama:"Derivatif Bidang Wilayah B",jenis:"Berbasis Bidang",tanggal:"12 Okt 2026",status:"Disetujui",sld:"derivatif-bidang-wilayah-b.sld",expired:"14 hari",notes:"Layer derivatif telah disetujui dan siap digunakan."}
 };
-const params=new URLSearchParams(location.search),d=data[params.get("id")]||data["0"],isSuperadmin=params.get("role")==="superadmin",isAdmin=params.get("role")==="admin";
-if(isAdmin){document.querySelector(".user-chip span").textContent="Admin";document.querySelector(".avatar").textContent="AD";document.getElementById("back-home").href="../../admin/beranda/index.html";document.getElementById("back-list").href="../../admin/igt-derivatif/index.html";document.querySelector(".crumb").innerHTML='Geoportal IGT-PR　/　<a href="../../admin/igt-derivatif/index.html">IGT Derivatif</a>　/　<strong>Detail</strong>';}
-if(isSuperadmin){document.querySelector(".user-chip span").textContent="Superadmin";document.querySelector(".avatar").textContent="SA";document.getElementById("back-home").href="../../superadmin/beranda/index.html";document.getElementById("back-list").href="../../superadmin/igt-derivatif/index.html";document.querySelector(".crumb").innerHTML='Geoportal IGT-PR　/　<a href="../../superadmin/igt-derivatif/index.html">IGT Derivatif</a>　/　<strong>Detail</strong>';}
+const params=new URLSearchParams(location.search),d=data[params.get("id")]||data["0"],role=["superadmin","admin"].includes(params.get("role"))?params.get("role"):"operator",isSuperadmin=role==="superadmin",isAdmin=role==="admin";
+const uploadUrl="../../"+role+"/upload-data/index.html?tab=derivatif";
+if(isAdmin||isSuperadmin){document.querySelector(".user-chip span").textContent=isAdmin?"Admin":"Superadmin";document.querySelector(".avatar").textContent=isAdmin?"AD":"SA";}
+document.getElementById("back-home").href="../../"+role+"/beranda/index.html";document.getElementById("back-list").href=uploadUrl;
+document.querySelector(".crumb").innerHTML='Geoportal IGT-PR　/　<a href="'+uploadUrl+'">Upload Data</a>　/　<strong>Detail</strong>';
 document.title=d.nama+" · Detail Layer Derivatif";
 document.getElementById("layer-name").textContent=d.nama;
 document.getElementById("layer-name-meta").textContent=d.nama;
@@ -38,7 +40,7 @@ document.getElementById("layer-status").textContent=d.status;
 document.getElementById("layer-sld").textContent=d.sld;
 document.getElementById("layer-expiry").textContent=d.expired;
 document.getElementById("layer-notes").textContent=d.notes;
-const badge=document.getElementById("status-badge");badge.textContent=d.status;badge.className="status "+(d.status==="Disetujui"?"ok":d.status==="Ditolak"?"fix":"info");
+const badge=document.getElementById("status-badge");badge.textContent=d.status;badge.className="status "+(d.status==="Disetujui"||d.status==="Terintegrasi"?"ok":d.status==="Ditolak"?"fix":"info");
 const review=document.getElementById("detail-review");review.hidden=!((isSuperadmin||isAdmin)&&d.status==="Proses");
 function decide(approved){if(!confirm((approved?"Setujui":"Tolak")+" pengajuan "+d.id+"?"))return;d.status=approved?"Disetujui":"Ditolak";d.notes=approved?"Layer derivatif telah disetujui dan siap digunakan.":"Pengajuan ditolak oleh "+(isAdmin?"Admin":"Superadmin")+".";d.expired=approved?"30 hari":"—";badge.textContent=d.status;badge.className="status "+(approved?"ok":"fix");document.getElementById("layer-status").textContent=d.status;document.getElementById("layer-notes").textContent=d.notes;document.getElementById("layer-expiry").textContent=d.expired;review.hidden=true;alert("Status pengajuan "+d.id+" diperbarui menjadi "+d.status+".");}
 document.getElementById("detail-approve").addEventListener("click",()=>decide(true));document.getElementById("detail-reject").addEventListener("click",()=>decide(false));
