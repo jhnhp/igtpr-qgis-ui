@@ -368,7 +368,7 @@ const IgtApp = (() => {
     });
 
     document.addEventListener('click', (event) => {
-      const target = event.target.closest('[data-action]');
+      const target = event.target.closest('[data-action], [data-open-upload-modal], [data-close-upload-modal], #igt-upload-modal');
       if (!target) return;
       const { action, id } = target.dataset;
       const record = records.find((r) => r.id === id);
