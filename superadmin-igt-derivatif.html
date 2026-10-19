@@ -10,10 +10,10 @@
 <main class="main">
 <div class="page-head"><div><div class="eyebrow">Sistem Informasi Geospasial</div><h1>IGT Derivatif</h1><p>Periksa, setujui, atau tolak pengajuan layer derivatif.</p></div><a class="btn btn-soft" href="index.html">← Kembali ke Role Preview</a></div>
 <div class="grid stats">
-<div class="card stat"><div><div class="label">Total pengajuan</div><div class="num">8</div><div class="hint">Semua layer derivatif</div></div><div class="stat-icon">▱</div></div>
-<div class="card stat"><div><div class="label">Diajukan</div><div class="num">3</div><div class="hint">Menunggu pemeriksaan</div></div><div class="stat-icon amber">◷</div></div>
-<div class="card stat"><div><div class="label">Disetujui</div><div class="num">4</div><div class="hint">Layer disetujui</div></div><div class="stat-icon green">✓</div></div>
-<div class="card stat"><div><div class="label">Ditolak</div><div class="num">1</div><div class="hint">Pengajuan ditolak</div></div><div class="stat-icon red">!</div></div>
+<div class="card stat"><div><div class="label">Total pengajuan</div><div class="num" id="count-total">4</div><div class="hint">Semua layer derivatif</div></div><div class="stat-icon">▱</div></div>
+<div class="card stat"><div><div class="label">Diajukan</div><div class="num" id="count-pending">1</div><div class="hint">Menunggu pemeriksaan</div></div><div class="stat-icon amber">◷</div></div>
+<div class="card stat"><div><div class="label">Disetujui</div><div class="num" id="count-approved">2</div><div class="hint">Layer disetujui</div></div><div class="stat-icon green">✓</div></div>
+<div class="card stat"><div><div class="label">Ditolak</div><div class="num" id="count-rejected">1</div><div class="hint">Pengajuan ditolak</div></div><div class="stat-icon red">!</div></div>
 </div>
 <section class="card">
 <div class="tabs" data-tabs><button class="tab active" data-tab="semua">Semua</button><button class="tab" data-tab="kawasan">Berbasis Kawasan</button><button class="tab" data-tab="bidang">Berbasis Bidang</button></div>
@@ -29,6 +29,9 @@
 const tabs=[...document.querySelectorAll('[data-tab]')];
 function setTab(kind){tabs.forEach(t=>t.classList.toggle('active',t.dataset.tab===kind));document.querySelectorAll('#submission-rows tr').forEach(row=>row.hidden=kind!=='semua'&&row.dataset.kind!==kind);const h=document.getElementById('tab-heading'),d=document.getElementById('tab-description');h.textContent=kind==='semua'?'Semua layer derivatif':kind==='bidang'?'Layer Derivatif Berbasis Bidang':'Layer Derivatif Berbasis Kawasan';d.textContent=kind==='semua'?'Tampilkan seluruh pengajuan layer derivatif.':kind==='bidang'?'Tampilkan layer derivatif yang berbasis bidang.':'Tampilkan layer derivatif yang berbasis kawasan.';}
 tabs.forEach(t=>t.addEventListener('click',()=>setTab(t.dataset.tab)));
-document.addEventListener('click',e=>{const b=e.target.closest('[data-action]');if(!b)return;const row=b.closest('tr');if(!row)return;const badge=row.querySelector('.status');if(!confirm((b.dataset.action==='approve'?'Setujui':'Tolak')+' pengajuan '+b.dataset.id+'?'))return;const approved=b.dataset.action==='approve';badge.textContent=approved?'Disetujui':'Ditolak';badge.className='status '+(approved?'ok':'fix');row.querySelector('.action-cell').innerHTML='<span class="secondary-cell">Sudah diputuskan</span>';});
-document.addEventListener('click',e=>{const b=e.target.closest('[data-action]');if(b&&b.dataset.action==='show-qgis')alert('Simulasi plugin QGIS: layer '+b.dataset.id+' akan ditampilkan pada kanvas peta QGIS.');});
+document.querySelectorAll('#submission-rows tr').forEach(row=>{const badge=row.querySelector('.status');if(badge)row.dataset.status=badge.textContent.trim();});
+function updateCounts(){const rows=[...document.querySelectorAll('#submission-rows tr')];document.getElementById('count-total').textContent=rows.length;document.getElementById('count-pending').textContent=rows.filter(r=>r.dataset.status==='Diajukan').length;document.getElementById('count-approved').textContent=rows.filter(r=>r.dataset.status==='Disetujui').length;document.getElementById('count-rejected').textContent=rows.filter(r=>r.dataset.status==='Ditolak').length;}
+updateCounts();
+document.addEventListener('click',e=>{const b=e.target.closest('[data-action]');if(!b)return;const row=b.closest('tr');if(!row)return;const badge=row.querySelector('.status');if(!confirm((b.dataset.action==='approve'?'Setujui':'Tolak')+' pengajuan '+b.dataset.id+'?'))return;const approved=b.dataset.action==='approve';badge.textContent=approved?'Disetujui':'Ditolak';badge.className='status '+(approved?'ok':'fix');row.dataset.status=badge.textContent;row.querySelector('.action-cell').innerHTML='<span class="secondary-cell">Sudah diputuskan</span>';updateCounts();});
+
 </script></body></html>
