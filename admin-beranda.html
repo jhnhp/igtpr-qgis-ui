@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Beranda Admin · IGT-PR</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+.app{display:block;min-height:100vh}.workspace{min-width:0}.main{max-width:100%;padding:16px}.topbar{height:46px;padding:0 12px}.page-head h1{font-size:21px}.stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.card{padding:12px}.stat .num{font-size:23px}.quick-grid{grid-template-columns:1fr}.quick{min-height:100px}.top-actions .user-chip span{display:none}
+@media(max-width:400px){.stats{grid-template-columns:1fr}.main{padding:10px}}
+</style>
+</head>
+<body data-page="admin">
+<div class="app"><div class="workspace">
+<header class="topbar"><div class="crumb">Geoportal IGT-PR　/　<strong>Beranda Admin</strong></div><div class="top-actions"><button class="icon-btn" aria-label="Notifikasi">♧</button><div class="user-chip"><div class="avatar">AD</div><span>Admin</span></div></div></header>
+<main class="main">
+<div class="page-head"><div><div class="eyebrow">Sistem Informasi Geospasial</div><h1>Beranda Admin</h1><p>Kelola dan verifikasi pengajuan IGT sesuai kewenangan Admin.</p></div></div>
+<div class="grid stats">
+<div class="card stat"><div><div class="label">Total pengajuan</div><div class="num">24</div><div class="hint">IGT Utama dan Derivatif</div></div><div class="stat-icon">▤</div></div>
+<div class="card stat"><div><div class="label">Menunggu verifikasi</div><div class="num">5</div><div class="hint">Perlu ditinjau</div></div><div class="stat-icon amber">◷</div></div>
+<div class="card stat"><div><div class="label">Disetujui</div><div class="num">16</div><div class="hint">Pengajuan diterima</div></div><div class="stat-icon green">✓</div></div>
+<div class="card stat"><div><div class="label">Perlu perbaikan</div><div class="num">3</div><div class="hint">Menunggu tindak lanjut</div></div><div class="stat-icon red">!</div></div>
+</div>
+<section class="card"><div class="card-head"><div><h2>Menu Admin</h2><p>Pilih modul yang ingin dikelola.</p></div></div><div class="grid quick-grid">
+<a class="quick" href="superadmin-igt-utama.html"><div class="q-icon">▦</div><b>IGT Utama</b><p>Tinjau data IGT Utama dan periksa kelengkapan pengajuan.</p></a>
+<a class="quick" href="superadmin-igt-derivatif.html"><div class="q-icon">▱</div><b>IGT Derivatif</b><p>Tinjau dan verifikasi pengajuan layer derivatif.</p></a>
+<a class="quick" href="model-builder.html"><div class="q-icon">⚙</div><b>Model Builder</b><p>Akses model dan alur pemrosesan spasial.</p></a>
+<a class="quick" href="08-verifikasi-data.html"><div class="q-icon">✓</div><b>Verifikasi Data</b><p>Buka antrean pemeriksaan dan tinjau detail pengajuan.</p></a>
+</div></section>
+<section class="card" style="margin-top:16px"><div class="card-head"><div><h2>Pengajuan terbaru</h2><p>Ringkasan aktivitas data yang perlu diperhatikan.</p></div><a class="text-link" href="08-verifikasi-data.html">Buka verifikasi →</a></div>
+<div class="table-wrap"><table><thead><tr><th>Nama pengajuan</th><th>ID pengajuan</th><th>Jenis</th><th>Diperbarui</th><th>Status</th></tr></thead><tbody>
+<tr><td><div class="primary-cell">Peta IGT Wilayah A</div><div class="secondary-cell">Operator Pusat</div></td><td><a class="text-link" href="igt-utama-detail.html?id=0&role=admin">IGT-2026-012</a></td><td>IGT Utama</td><td>18 Okt 2026</td><td><span class="status">Menunggu</span></td></tr>
+<tr><td><div class="primary-cell">Derivatif Kawasan Hutan</div><div class="secondary-cell">Operator Pusat</div></td><td><a class="text-link" href="layer-derivatif-detail.html?id=0">IGT-2026-011</a></td><td>IGT Derivatif</td><td>16 Okt 2026</td><td><span class="status ok">Disetujui</span></td></tr>
+<tr><td><div class="primary-cell">Peta IGT Wilayah B</div><div class="secondary-cell">Operator Pusat</div></td><td><a class="text-link" href="igt-utama-detail.html?id=2&role=admin">IGT-2026-010</a></td><td>IGT Utama</td><td>15 Okt 2026</td><td><span class="status fix">Perlu perbaikan</span></td></tr>
+</tbody></table></div></section>
+<div class="footer">Mockup UI plugin QGIS · data contoh</div>
+</main></div></div>
+</body></html>
