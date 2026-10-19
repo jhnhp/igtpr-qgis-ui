@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Detail IGT Utama · IGT-PR</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+.app{display:block;min-height:100vh}.workspace{min-width:0}.main{max-width:100%;padding:16px}
+.topbar{height:46px;padding:0 12px}.detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.detail-item{padding:12px;border:1px solid var(--border,#e5e7eb);border-radius:10px;min-width:0}
+.detail-label{font-size:12px;color:var(--muted,#6b7280);margin-bottom:6px}.detail-value{font-size:14px;font-weight:600;overflow-wrap:anywhere}
+.detail-section{margin-top:14px}.detail-actions{display:flex;gap:8px;flex-wrap:wrap}
+@media(max-width:400px){.main{padding:10px}.detail-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body data-page="utama-detail">
+<div class="app" style="display:block;min-height:100vh"><div class="workspace">
+<header class="topbar"><div class="crumb">Geoportal IGT-PR　/　<a href="igt-utama.html">IGT Utama</a>　/　<strong>Detail IGT</strong></div><div class="top-actions"><button class="icon-btn" aria-label="Notifikasi">♧</button><div class="user-chip"><div class="avatar">JH</div><span>Operator Pusat</span></div></div></header>
+<main class="main">
+<div class="page-head"><div><div class="eyebrow">Sistem Informasi Geospasial</div><h1 id="igt-name">Detail IGT Utama</h1><p>Informasi pengajuan dan status data IGT yang dipilih.</p></div></div>
+<div class="detail-actions"><a class="btn btn-soft" href="igt-utama.html">← Kembali ke daftar IGT Utama</a></div>
+<section class="card detail-section"><div class="card-head"><div><h2>Informasi Pengajuan</h2><p>Identitas dan metadata data IGT.</p></div><span id="status-badge" class="status info">Terkompilasi</span></div>
+<div class="detail-grid">
+<div class="detail-item"><div class="detail-label">ID Pengajuan</div><div class="detail-value" id="igt-id">IGT-2026-012</div></div>
+<div class="detail-item"><div class="detail-label">Nama Direktorat</div><div class="detail-value" id="igt-direktorat">Direktorat Survei dan Pemetaan Tematik</div></div>
+<div class="detail-item"><div class="detail-label">Nama IGT</div><div class="detail-value" id="igt-name-meta">IGT Bidang Wilayah A</div></div>
+<div class="detail-item"><div class="detail-label">Jenis Data</div><div class="detail-value" id="igt-jenis">Berbasis Bidang</div></div>
+<div class="detail-item"><div class="detail-label">Tanggal Upload</div><div class="detail-value" id="igt-tanggal">18 Okt 2026</div></div>
+<div class="detail-item"><div class="detail-label">Status</div><div class="detail-value" id="igt-status">Terkompilasi</div></div>
+<div class="detail-item" style="grid-column:1/-1"><div class="detail-label">Keterangan</div><div class="detail-value" id="igt-keterangan">Data bidang telah dikompilasi.</div></div>
+</div></section>
+<section class="card detail-section"><div class="card-head"><div><h2>Data dan Layer</h2><p>Area ringkasan untuk informasi layer pada mockup plugin.</p></div></div><div class="empty-state"><div class="empty-icon">▧</div><strong>Pratinjau layer belum tersedia</strong><p>Bagian ini merupakan simulasi tampilan detail pada plugin QGIS.</p></div></section>
+<div class="footer">Mockup UI plugin QGIS · data contoh</div>
+</main></div></div>
+<script>
+const records={
+"0":{id:"IGT-2026-012",nama:"IGT Bidang Wilayah A",jenis:"Berbasis Bidang",tanggal:"18 Okt 2026",keterangan:"Data bidang telah dikompilasi.",status:"Terkompilasi"},
+"1":{id:"IGT-2026-011",nama:"IGT Kawasan Hutan",jenis:"Berbasis Kawasan",tanggal:"16 Okt 2026",keterangan:"Data kawasan telah terintegrasi.",status:"Terintegrasi"},
+"2":{id:"IGT-2026-010",nama:"IGT Bidang Wilayah B",jenis:"Berbasis Bidang",tanggal:"15 Okt 2026",keterangan:"Data bidang telah dikompilasi.",status:"Terkompilasi"},
+"3":{id:"IGT-2026-009",nama:"IGT Kawasan Lindung",jenis:"Berbasis Kawasan",tanggal:"14 Okt 2026",keterangan:"Data kawasan telah terintegrasi.",status:"Terintegrasi"}
+};
+const params=new URLSearchParams(location.search),d=records[params.get("id")]||records["0"];
+document.title=d.nama+" · Detail IGT-PR";
+document.getElementById("igt-name").textContent=d.nama;
+document.getElementById("igt-name-meta").textContent=d.nama;
+document.getElementById("igt-id").textContent=d.id;
+document.getElementById("igt-jenis").textContent=d.jenis;
+document.getElementById("igt-tanggal").textContent=d.tanggal;
+document.getElementById("igt-status").textContent=d.status;
+document.getElementById("igt-keterangan").textContent=d.keterangan;
+const badge=document.getElementById("status-badge");badge.textContent=d.status;badge.className="status "+(d.status==="Terintegrasi"?"ok":"info");
+</script>
+</body></html>
