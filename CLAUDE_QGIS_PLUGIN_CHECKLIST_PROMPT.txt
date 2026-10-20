@@ -1,0 +1,34 @@
+TUGAS: BUAT CHECKLIST IMPLEMENTASI PLUGIN QGIS IGT-PR DALAM FORMAT .TXT
+
+Kamu bekerja di repository jhnhp/igtpr-qgis-ui. Repository ini saat ini berisi mockup UI HTML/CSS/JavaScript untuk plugin QGIS, bukan plugin QGIS yang sudah berfungsi.
+
+Tujuan:
+Buat checklist pekerjaan yang jelas dan praktis untuk mengubah mockup UI ini menjadi plugin QGIS yang benar-benar berfungsi. Simpan hasil akhirnya sebagai file teks biasa bernama QGIS_PLUGIN_CHECKLIST.txt. Gunakan plain text saja, bukan Markdown yang bergantung pada renderer. Simbol [ ] dan [x] boleh digunakan untuk checklist.
+
+Sebelum menulis checklist:
+1. Periksa struktur repository dan baca README.md, CLAUDE.md, serta file UI, data, dan alur kerja yang relevan.
+2. Bedakan dengan tegas fitur yang sudah ada sebagai mockup dari fitur yang sudah benar-benar terintegrasi dengan QGIS.
+3. Jangan menganggap aksi simulasi sebagai implementasi nyata. Saat ini tindakan seperti WMS/WFS, Load Baseline, Tampilkan di QGIS/Canvas, verifikasi topologi, upload, persetujuan, dan penyimpanan dapat berupa simulasi.
+4. Gunakan alur, nama halaman, kategori IGT, status, role, dan istilah yang benar-benar ada di repository. Jangan mengarang kebutuhan bisnis yang tidak didukung oleh kode atau dokumentasi. Jika suatu keputusan belum jelas, tandai sebagai “Perlu keputusan” alih-alih menebak.
+
+Isi checklist minimal mencakup:
+A. Inventaris UI mockup yang sudah tersedia.
+B. Fondasi plugin QGIS yang sebenarnya: struktur plugin, metadata.txt, __init__.py, classFactory, aktivasi plugin, serta UI Qt/PyQGIS.
+C. Migrasi UI dari HTML/CSS/JavaScript ke widget Qt atau penggunaan QWebEngineView bila memang cocok.
+D. Integrasi nyata dengan QGIS: project/layer, map canvas, WMS/WFS, baseline, validasi geometri/topologi, pemilihan fitur, baca/tulis/ekspor data, serta join atribut.
+E. Data dan backend: sumber data, skema, persistensi, API jika diperlukan, autentikasi/otorisasi, upload, status pengajuan, persetujuan, revisi, dan audit trail. Pisahkan fungsi yang memang membutuhkan backend dari fungsi yang dapat dijalankan secara lokal di QGIS.
+F. Konsistensi alur role Superadmin, Admin, Operator, dan Umum berdasarkan dokumentasi repository.
+G. Filter tahun: default 2026, pilihan tahun 2023–2025, serta Semua Tahun; filter tersedia di Dashboard dan setiap halaman katalog.
+H. Pengujian, penanganan error, keamanan, performa, kompatibilitas versi QGIS/Python, packaging, instalasi, dan distribusi.
+I. Tahapan implementasi yang masuk akal beserta dependensi/prasyarat antarpekerjaan.
+
+Format hasil:
+- File harus bernama QGIS_PLUGIN_CHECKLIST.txt.
+- Gunakan teks biasa yang mudah dibaca di terminal/editor teks.
+- Gunakan [ ] untuk belum selesai, [x] hanya untuk pekerjaan yang terbukti sudah selesai, dan [~] untuk sebagian selesai/perlu verifikasi.
+- Kelompokkan checklist berdasarkan tahap atau prioritas, dari fondasi plugin sampai rilis.
+- Beri label yang eksplisit untuk “Mockup sudah ada”, “Belum diimplementasikan”, “Perlu diverifikasi”, atau “Perlu keputusan”.
+- Jangan menandai fungsi sebagai selesai hanya karena ada tombol atau tampilan di mockup.
+- Sertakan kriteria selesai yang konkret untuk item penting agar checklist dapat dipakai melacak progres.
+- Jangan mengubah kode aplikasi atau membuat implementasi plugin dalam tugas ini. Fokus hanya pada pemeriksaan repository dan pembuatan file checklist .txt.
+- Setelah selesai, laporkan lokasi file dan ringkas kategori checklist yang dibuat.
