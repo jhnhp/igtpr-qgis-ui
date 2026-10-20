@@ -37,9 +37,6 @@ const IgtApp = (() => {
     return match ? match[1] : 'Tidak diketahui';
   };
   const yearOptions = (records) => [...new Set(records.map(yearOf))].filter((year) => year !== 'Tidak diketahui').sort().reverse();
-  const mapMarkup = (heading) => '<section class="card map-card"><div class="card-head"><div><h2>' + heading + '</h2><p id="igt-map-subtitle">Sebaran data IGT berdasarkan filter yang dipilih.</p></div><span class="map-chip">PETA IGT</span></div>' +
-    '<div class="map-viewport"><div class="map-watermark">INDONESIA</div><svg viewBox="0 0 900 360" role="img" aria-label="Visualisasi peta Indonesia dengan contoh sebaran IGT"><defs><pattern id="map-grid" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M28 0H0V28" fill="none" stroke="#dce8f4" stroke-width="1"/></pattern></defs><rect width="900" height="360" fill="url(#map-grid)"/><g class="map-islands"><path d="M80 100l28-10 28 14 20 27-8 22-20 7-13 22-18-7-8-28-18-15z"/><path d="M190 180l35-8 25 10 12 24-20 12-25-8-15 14-20-14z"/><path d="M270 95l22-8 12 10 4 24-13 15-16-9z"/><path d="M300 165l28-10 25 12 18 5 18-12 23 6 18 15-7 12-28-4-13 14-24-6-20 10-18-11-18 3-16-15z"/><path d="M430 205l22-8 19 7 8 18-13 13-24-6-12-12z"/><path d="M500 155l24-16 19 7 8 16-16 11-16-4z"/><path d="M565 185l14-20 12 9 2 18-12 14z"/><path d="M620 160l28-15 23 7 20-9 25 12 18-3 23 14-6 16-28 5-13 16-24-7-15 10-21-10-20 1-12-16z"/><path d="M745 240l26-8 23 12 6 18-18 11-28-9-10-12z"/><path d="M160 245l18-5 12 12-9 10-17-4z"/><path d="M350 255l20-6 15 10-9 13-20-3z"/></g><g class="map-markers"><circle cx="112" cy="130" r="7"/><circle cx="216" cy="195" r="7"/><circle cx="315" cy="181" r="7"/><circle cx="370" cy="188" r="7"/><circle cx="445" cy="220" r="7"/><circle cx="520" cy="160" r="7"/><circle cx="640" cy="166" r="7"/><circle cx="700" cy="174" r="7"/><circle cx="765" cy="252" r="7"/></g><g class="map-labels"><text x="90" y="78">Sumatra</text><text x="292" y="143">Kalimantan</text><text x="336" y="228">Jawa</text><text x="422" y="250">Bali–Nusa Tenggara</text><text x="488" y="132">Sulawesi</text><text x="654" y="135">Papua</text></g></svg><div class="map-scale">Visualisasi contoh · bukan geometri data asli</div></div><div class="map-legend"><span><i class="legend-dot"></i> Dataset IGT</span><span id="igt-map-count">0 dataset ditampilkan</span></div></section>';
-
   const statCard = (label, num, hint, icon, cls, id) =>
     `<div class="card stat"><div><div class="label">${label}</div><div class="num" id="${id}">${num}</div>` +
     `<div class="hint">${hint}</div></div><div class="stat-icon${cls ? ' ' + cls : ''}">${icon}</div></div>`;
@@ -63,7 +60,7 @@ const IgtApp = (() => {
       '<div class="grid stats">' +
       statCard('Terkompilasi', '0', 'Menunggu integrasi', '▤', 'amber', 'count-compiled') +
       statCard('Terintegrasi', '0', 'Pertanahan dan Tata Ruang', '✓', 'green', 'count-integrated') +
-      '</div>' + mapMarkup('Peta IGT Indonesia') +
+      '</div>' +
       '<section class="card"><div class="card-head"><div><h2>Katalog IGT</h2><p>Pilih kategori untuk melihat dataset.</p></div></div>' +
       '<div class="menu-buttons" id="catalog-buttons">' + catalogButtons + '</div>' +
       '<div class="card-head menu-upload-head"><div><h2>Kelola data</h2><p>Unggah data baru dan pantau status pengajuan.</p></div></div>' +
@@ -76,9 +73,6 @@ const IgtApp = (() => {
       const staged = IgtData.integrationRecords(visible);
       setText('count-compiled', IgtData.countByStatus(staged, 'Terkompilasi'));
       setText('count-integrated', IgtData.countByStatus(staged, 'Terintegrasi'));
-      setText('igt-map-subtitle', year === 'all' ? 'Semua tahun · seluruh dataset yang dapat diakses role Anda.' : 'Tahun ' + year + ' · dataset yang dapat diakses role Anda.');
-      setText('igt-map-count', visible.length + ' dataset ditampilkan');
-      $('.map-viewport').classList.toggle('map-filtered', year !== 'all');
     };
     $('#dashboard-year-filter').addEventListener('change', updateDashboard);
     updateDashboard();
@@ -110,7 +104,6 @@ const IgtApp = (() => {
       '<div class="catalog-controls"><div class="field catalog-search"><label for="catalog-search">PENCARIAN</label><input id="catalog-search" type="search" placeholder="Cari nama IGT..."></div>' +
       '<div class="field year-filter"><label for="catalog-year-filter">TAHUN</label><select id="catalog-year-filter"><option value="all">Semua tahun</option>' +
       yearOptions(datasets).map((year) => '<option value="' + year + '">' + year + '</option>').join('') + '</select></div></div>' +
-      mapMarkup('Peta IGT · ' + config.label) +
       '<section class="card"><div class="card-head"><div><h2>' + config.noun.charAt(0).toUpperCase() + config.noun.slice(1) + '</h2><p id="catalog-count"></p></div></div>' +
       '<div class="table-wrap"><table class="stack"><thead><tr><th><button type="button" class="sort-header" data-sort="name">Nama IGT <span aria-hidden="true">↕</span></button></th><th><button type="button" class="sort-header" data-sort="ditjen">Ditjen <span aria-hidden="true">↕</span></button></th><th><button type="button" class="sort-header" data-sort="updated">' +
       (config.integration ? 'Tanggal Terintegrasi' : category === 'derivatif' ? 'Tanggal Disetujui' : 'Tanggal Upload') +
@@ -134,9 +127,6 @@ const IgtApp = (() => {
         '<td data-label="Tampilkan WMS">' + button('btn-soft', 'wms', d.id, '▧ WMS') + '</td><td data-label="Tampilkan WFS">' + button('btn-soft', 'wfs', d.id, '▤ WFS') + '</td></tr>'
       ).join('');
       setText('catalog-count', shown.length + ' dari ' + datasets.length + ' dataset · ' + (year === 'all' ? 'semua tahun' : 'tahun ' + year));
-      setText('igt-map-subtitle', year === 'all' ? 'Semua tahun · ' + config.label + '.' : 'Tahun ' + year + ' · ' + config.label + '.');
-      setText('igt-map-count', filtered.length + ' dataset cocok dengan filter');
-      $('.map-viewport').classList.toggle('map-filtered', year !== 'all');
       const empty = $('#empty-state');
       empty.hidden = shown.length > 0;
       empty.textContent = datasets.length === 0 ? 'Belum ada ' + config.noun + ' pada ' + config.label + '.' : 'Tidak ada dataset yang cocok dengan filter tahun atau pencarian.';
