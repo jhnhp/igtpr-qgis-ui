@@ -208,7 +208,7 @@ const IgtApp = (() => {
       });
     });
     document.addEventListener('click', (event) => {
-      const target = event.target.closest('[data-action]');
+      const target = event.target.closest('[data-action], [data-close-igt-detail]');
       if (!target) return;
       const dataset = datasets.find((d) => d.id === target.dataset.id);
       if (target.dataset.action === 'igt-detail') {
