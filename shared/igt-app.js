@@ -36,7 +36,9 @@ const IgtApp = (() => {
     const match = String(record.updated || record.date || '').match(/(20[0-9]{2})/);
     return match ? match[1] : 'Tidak diketahui';
   };
-  const yearOptions = (records) => [...new Set(records.map(yearOf))].filter((year) => year !== 'Tidak diketahui').sort().reverse();
+  // Keep future catalog years selectable even before datasets for those years are added.
+  const yearOptions = (records) => [...new Set([...records.map(yearOf).filter((year) => year !== 'Tidak diketahui'), '2026', '2025', '2024', '2023'])].sort().reverse();
+  const yearFilterOptions = (records) => '<option value="2026" selected>2026</option>' + yearOptions(records).filter((year) => year !== '2026').map((year) => '<option value="' + year + '">' + year + '</option>').join('') + '<option value="all">Semua tahun</option>';
   const statCard = (label, num, hint, icon, cls, id) =>
     `<div class="card stat"><div><div class="label">${label}</div><div class="num" id="${id}">${num}</div>` +
     `<div class="hint">${hint}</div></div><div class="stat-icon${cls ? ' ' + cls : ''}">${icon}</div></div>`;
@@ -55,8 +57,7 @@ const IgtApp = (() => {
     const categories = CATEGORY_ORDER.filter((key) => IgtData.canView(role, key));
     const catalogButtons = categories.map((key) => '<a class="btn btn-soft menu-btn" href="../' + CATEGORIES[key].slug + '/index.html">▧ ' + CATEGORIES[key].label + '</a>').join('');
     $('#view').innerHTML =
-      '<div class="field year-filter-wrap"><label for="dashboard-year-filter">FILTER TAHUN</label><select id="dashboard-year-filter"><option value="all">Semua tahun</option>' +
-      yearOptions(records).map((year) => '<option value="' + year + '">' + year + '</option>').join('') + '</select></div>' +
+      '<div class="field year-filter-wrap"><label for="dashboard-year-filter">FILTER TAHUN</label><select id="dashboard-year-filter">' + yearFilterOptions(records) + '</select></div>' +
       '<div class="grid stats">' +
       statCard('Terkompilasi', '0', 'Menunggu integrasi', '▤', 'amber', 'count-compiled') +
       statCard('Terintegrasi', '0', 'Pertanahan dan Tata Ruang', '✓', 'green', 'count-integrated') +
@@ -102,8 +103,7 @@ const IgtApp = (() => {
     view.innerHTML =
       '<div class="notice"><strong>Isi katalog</strong>' + config.rule + ' Tombol WMS dan WFS adalah simulasi; belum ada layanan nyata yang terhubung.</div>' +
       '<div class="catalog-controls"><div class="field catalog-search"><label for="catalog-search">PENCARIAN</label><input id="catalog-search" type="search" placeholder="Cari nama IGT..."></div>' +
-      '<div class="field year-filter"><label for="catalog-year-filter">TAHUN</label><select id="catalog-year-filter"><option value="all">Semua tahun</option>' +
-      yearOptions(datasets).map((year) => '<option value="' + year + '">' + year + '</option>').join('') + '</select></div></div>' +
+      '<div class="field year-filter"><label for="catalog-year-filter">TAHUN</label><select id="catalog-year-filter">' + yearFilterOptions(datasets) + '</select></div></div>' +
       '<section class="card"><div class="card-head"><div><h2>' + config.noun.charAt(0).toUpperCase() + config.noun.slice(1) + '</h2><p id="catalog-count"></p></div></div>' +
       '<div class="table-wrap"><table class="stack"><thead><tr><th><button type="button" class="sort-header" data-sort="name">Nama IGT <span aria-hidden="true">↕</span></button></th><th><button type="button" class="sort-header" data-sort="ditjen">Ditjen <span aria-hidden="true">↕</span></button></th><th><button type="button" class="sort-header" data-sort="updated">' +
       (config.integration ? 'Tanggal Terintegrasi' : category === 'derivatif' ? 'Tanggal Disetujui' : 'Tanggal Upload') +
