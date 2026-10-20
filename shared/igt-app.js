@@ -33,7 +33,7 @@ const IgtApp = (() => {
   };
 
   const yearOf = (record) => {
-    const match = String(record.updated || record.date || '').match(/\\b(20\\d{2})\\b/);
+    const match = String(record.updated || record.date || '').match(/(20[0-9]{2})/);
     return match ? match[1] : 'Tidak diketahui';
   };
   const yearOptions = (records) => [...new Set(records.map(yearOf))].filter((year) => year !== 'Tidak diketahui').sort().reverse();
