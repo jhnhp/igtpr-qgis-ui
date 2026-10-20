@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Detail IGT · IGT-PR</title>
+<link rel="stylesheet" href="../../styles.css">
+<style>
+.igt-detail-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:16px 0}
+.igt-detail-search{max-width:360px}
+.igt-detail-table{min-width:900px}
+.igt-detail-table th{white-space:nowrap}
+.igt-detail-table td{white-space:nowrap}
+.detail-meta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.detail-meta-card{border:1px solid var(--border,#e5e7eb);border-radius:10px;padding:12px}
+.detail-meta-label{font-size:11px;color:var(--muted,#6b7280);text-transform:uppercase;letter-spacing:.04em}
+.detail-meta-value{font-size:14px;font-weight:650;margin-top:5px;overflow-wrap:anywhere}
+</style>
+</head>
+<body class="panel panel-detail" data-page="igt-detail">
+<div class="app"><div class="workspace">
+<header class="topbar">
+  <div class="crumb">Geoportal IGT-PR　/　<strong>Detail Data IGT</strong></div>
+  <div class="top-actions"><div class="user-chip"><div class="avatar" id="role-avatar">OP</div><span id="role-label">Operator Pusat</span></div></div>
+</header>
+<main class="main">
+  <div class="page-head">
+    <div><div class="eyebrow">KATALOG DATA GEOSPASIAL</div><h1 id="page-title">Detail IGT</h1><p>Informasi dataset dan tabel atribut yang tersedia untuk pengguna.</p></div>
+  </div>
+  <div class="detail-actions">
+    <a class="btn btn-soft" id="back-catalog" href="#">← Kembali ke katalog</a>
+    <button class="btn btn-primary" id="show-map" type="button">▧ Tampilkan di peta</button>
+  </div>
+  <section class="card detail-section">
+    <div class="card-head"><div><h2>Informasi IGT</h2><p>Identitas dataset yang dipilih dari katalog.</p></div><span id="status-badge" class="status ok">Terintegrasi</span></div>
+    <div class="detail-meta-grid" id="metadata-grid"></div>
+  </section>
+  <section class="card detail-section">
+    <div class="card-head"><div><h2>Data atribut</h2><p id="attribute-description">Daftar atribut yang tersedia pada dataset.</p></div></div>
+    <div class="igt-detail-toolbar">
+      <div class="field igt-detail-search"><label for="attribute-search">CARI ATRIBUT</label><input id="attribute-search" type="search" placeholder="Cari nilai atau kata kunci..."></div>
+      <span class="hint" id="attribute-count"></span>
+    </div>
+    <div class="table-wrap" style="overflow:auto;max-height:60vh">
+      <table class="stack igt-detail-table"><thead id="attribute-head"></thead><tbody id="attribute-body"></tbody></table>
+    </div>
+    <div class="empty-state" id="attribute-empty" hidden>Tidak ada baris yang cocok dengan pencarian.</div>
+    <p class="hint" style="margin-top:12px">Catatan prototipe: tabel ini menggunakan data contoh. Data atribut aktual dan pemuatan seluruh field akan mengikuti layanan Geoportal setelah integrasi backend tersedia.</p>
+  </section>
+  <div class="footer">Mockup UI plugin QGIS · data contoh</div>
+</main>
+</div></div>
+<script>
+(() => {
+  const params = new URLSearchParams(location.search);
+  const category = params.get('category') || 'pertanahan';
+  const id = params.get('id') || 'IGT-PR-001';
+  const name = params.get('name') || 'Detail IGT';
+  const status = params.get('status') || (category === 'derivatif' ? 'Disetujui' : category === 'lainnya' ? 'Tersedia' : 'Terintegrasi');
+  const updated = params.get('updated') || '—';
+  const ditjen = params.get('ditjen') || '—';
+  const roleCandidate = params.get('role') || 'operator';
+  const roles = {
+    superadmin: { label: 'Superadmin', avatar: 'SA' },
+    admin: { label: 'Admin', avatar: 'AD' },
+    operator: { label: 'Operator Pusat', avatar: 'OP' },
+    umum: { label: 'Umum', avatar: 'UM' }
+  };
+  const role = roles[roleCandidate] ? roleCandidate : 'operator';
+  const categories = {
+    pertanahan: { label: 'IGT Pertanahan', slug: 'igt-pertanahan', fields: [
+      ['ID_OBJEK','ID objek'],['NAMA_IGT','Nama IGT'],['PROVINSI','Provinsi'],['KABUPATEN_KOTA','Kabupaten/kota'],['KECAMATAN','Kecamatan'],['DESA_KELURAHAN','Desa/kelurahan'],['JENIS_HAK','Jenis hak'],['LUAS_M2','Luas (m²)'],['STATUS_DATA','Status data'],['SUMBER_DATA','Sumber data'],['TANGGAL_UPDATE','Tanggal pembaruan'],['ID_INTEGRASI','ID integrasi']
+    ]},
+    'tata-ruang': { label: 'IGT Tata Ruang', slug: 'igt-tata-ruang', fields: [
+      ['ID_OBJEK','ID objek'],['NAMA_IGT','Nama IGT'],['JENIS_RENCANA','Jenis rencana'],['PROVINSI','Provinsi'],['KABUPATEN_KOTA','Kabupaten/kota'],['NOMOR_PERATURAN','Nomor peraturan'],['TAHUN_PENETAPAN','Tahun penetapan'],['LUAS_HA','Luas (ha)'],['STATUS_DATA','Status data'],['SUMBER_DATA','Sumber data'],['TANGGAL_UPDATE','Tanggal pembaruan'],['ID_INTEGRASI','ID integrasi']
+    ]},
+    derivatif: { label: 'IGT Derivatif', slug: 'igt-derivatif', fields: [
+      ['ID_DERIVATIF','ID derivatif'],['NAMA_IGT','Nama layer'],['JENIS_DERIVATIF','Jenis derivatif'],['ID_DATA_INDUK','ID data induk'],['WILAYAH','Wilayah'],['JUMLAH_FITUR','Jumlah fitur'],['STATUS_PERSETUJUAN','Status persetujuan'],['TANGGAL_DISETUJUI','Tanggal disetujui'],['BERLAKU_SAMPAI','Berlaku sampai'],['SUMBER_DATA','Sumber data'],['TANGGAL_UPDATE','Tanggal pembaruan'],['ID_INTEGRASI','ID integrasi']
+    ]},
+    lainnya: { label: 'IGT Lainnya', slug: 'igt-lainnya', fields: [
+      ['ID_IGT','ID IGT'],['NAMA_IGT','Nama layer'],['SUMBER_INSTANSI','Instansi sumber'],['JENIS_DATA','Jenis data'],['WILAYAH','Wilayah'],['FORMAT_DATA','Format data'],['SISTEM_KOORDINAT','Sistem koordinat'],['JUMLAH_FITUR','Jumlah fitur'],['STATUS_DATA','Status data'],['TANGGAL_UPDATE','Tanggal pembaruan'],['SUMBER_DATA','Referensi sumber'],['ID_INTEGRASI','ID integrasi']
+    ]}
+  };
+  const cfg = categories[category] || categories.pertanahan;
+  const esc = value => String(value ?? '—').replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+  document.title = name + ' · Detail IGT';
+  document.getElementById('page-title').textContent = name;
+  document.getElementById('role-avatar').textContent = roles[role].avatar;
+  document.getElementById('role-label').textContent = roles[role].label;
+  document.getElementById('back-catalog').href = '../../roles/' + role + '/' + cfg.slug + '/index.html';
+  const badge = document.getElementById('status-badge');
+  badge.textContent = status;
+  badge.className = 'status ' + (['Terintegrasi','Disetujui','Tersedia'].includes(status) ? 'ok' : ['Revisi','Kadaluwarsa'].includes(status) ? 'warn' : status === 'Ditolak' ? 'fix' : 'info');
+  const meta = [
+    ['ID IGT', id], ['Kategori', cfg.label], ['Status', status],
+    ['Tanggal pembaruan', updated], ['Instansi/Ditjen', ditjen]
+  ];
+  document.getElementById('metadata-grid').innerHTML = meta.map(([label,value]) =>
+    '<div class="detail-meta-card"><div class="detail-meta-label">' + esc(label) + '</div><div class="detail-meta-value">' + esc(value) + '</div></div>'
+  ).join('');
+  const baseValues = {
+    pertanahan: [id, name, 'DI Yogyakarta', 'Sleman', 'Depok', 'Caturtunggal', 'Hak Milik', '642.50', status, ditjen, updated, id],
+    'tata-ruang': [id, name, 'RTRW Kabupaten', 'DI Yogyakarta', 'Sleman', 'Perda RTRW yang berlaku', '2024', '125.75', status, ditjen, updated, id],
+    derivatif: [id, name, 'Kawasan', 'IGT-PR-017', 'Sleman, DI Yogyakarta', '86', status, updated, '17 Nov 2026', ditjen, updated, id],
+    lainnya: [id, name, ditjen, 'Vektor', 'DI Yogyakarta', 'GeoPackage / layanan geospasial', 'EPSG:4326', '124', status, updated, ditjen, id]
+  };
+  const values = baseValues[category] || baseValues.pertanahan;
+  const rows = [0,1,2].map(i => values.map((value,j) => {
+    if (i === 0) return value;
+    if (j === 0) return String(value) + '-' + (i + 1);
+    if (j === 1) return String(value) + ' ' + (i + 1);
+    return value;
+  }));
+  const head = document.getElementById('attribute-head');
+  const body = document.getElementById('attribute-body');
+  head.innerHTML = '<tr>' + cfg.fields.map(([field,label]) => '<th title="' + esc(label) + '">' + esc(field) + '</th>').join('') + '</tr>';
+  const search = document.getElementById('attribute-search');
+  function renderRows() {
+    const q = search.value.trim().toLowerCase();
+    const shown = rows.filter(row => row.some(value => String(value).toLowerCase().includes(q)));
+    body.innerHTML = shown.map(row => '<tr>' + row.map(value => '<td>' + esc(value) + '</td>').join('') + '</tr>').join('');
+    document.getElementById('attribute-count').textContent = shown.length + ' dari ' + rows.length + ' fitur contoh · ' + cfg.fields.length + ' field';
+    document.getElementById('attribute-empty').hidden = shown.length > 0;
+  }
+  search.addEventListener('input', renderRows);
+  renderRows();
+  document.getElementById('show-map').addEventListener('click', () => alert('Simulasi QGIS: layer "' + name + '" akan ditampilkan pada map canvas. Integrasi peta nyata belum aktif.'));
+})();
+</script>
+</body>
+</html>
