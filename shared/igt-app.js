@@ -237,14 +237,14 @@ const IgtApp = (() => {
     const availableCategories = CATEGORY_ORDER.filter((key) => IgtData.canUpload(role, key));
     // Superadmin can review IGT Utama and load its baseline, but may only upload IGT Lainnya.
     const categories = role === 'superadmin'
-      ? ['igt-utama', ...availableCategories.filter((key) => key === 'lainnya')]
+      ? ['igt-utama', 'derivatif', ...availableCategories.filter((key) => key === 'lainnya')]
       : [
           ...(availableCategories.some((key) => key === 'pertanahan' || key === 'tata-ruang') ? ['igt-utama'] : []),
           ...availableCategories.filter((key) => key !== 'pertanahan' && key !== 'tata-ruang'),
         ];
     const allRecords = IgtData.loadRecords();
     const records = role === 'superadmin'
-      ? allRecords.filter((r) => ['pertanahan', 'tata-ruang', 'lainnya'].includes(r.category))
+      ? allRecords.filter((r) => ['pertanahan', 'tata-ruang', 'derivatif', 'lainnya'].includes(r.category))
       : IgtData.submissionsFor(role, allRecords);
     const params = new URLSearchParams(location.search);
     const requested = params.get('tab');
