@@ -1,111 +1,38 @@
-TUGAS: BUAT CHECKLIST IMPLEMENTASI PLUGIN QGIS IGT-PR BERDASARKAN SETIAP HALAMAN UI
+TUGAS: BUAT CHECKLIST IMPLEMENTASI PLUGIN QGIS IGT-PR DALAM FILE TXT
 
-Repository: jhnhp/igtpr-qgis-ui
+Buat file teks biasa bernama QGIS_PLUGIN_CHECKLIST.txt di repository ini.
 
-KONTEKS
-Repository saat ini adalah mockup UI HTML/CSS/JavaScript untuk calon plugin QGIS. Tugas ini HANYA membuat checklist pelacakan implementasi dalam file teks biasa bernama QGIS_PLUGIN_CHECKLIST.txt. Jangan mengimplementasikan plugin atau mengubah kode aplikasi.
+Tujuan file:
+Checklist untuk melacak progres pembuatan plugin QGIS berdasarkan halaman-halaman UI yang sudah ada di mockup HTML. Checklist akan saya periksa dan perbarui sendiri. Kamu tidak perlu melakukan audit, verifikasi, atau pengecekan repository secara menyeluruh.
 
-STRUKTUR CHECKLIST YANG DIINGINKAN
-Checklist harus dibagi berdasarkan HALAMAN/PAGE, dengan nomor bagian yang konsisten. Setiap halaman memiliki poin-poin fitur atau perilaku yang perlu diimplementasikan di plugin QGIS. Pengguna ingin dapat melihat dengan jelas, per halaman:
-- Fitur apa yang sudah ada di mockup.
-- Fitur mana yang sudah benar-benar diimplementasikan di plugin QGIS.
-- Fitur mana yang belum dikerjakan.
-- Fitur mana yang masih perlu diverifikasi atau menunggu keputusan.
+Format yang saya inginkan:
+- Bagi checklist berdasarkan nomor halaman, misalnya:
+  01. Beranda / Dashboard
+  02. Katalog IGT Pertanahan
+  03. Katalog IGT Tata Ruang
+  04. Katalog IGT Derivatif
+  05. Katalog IGT Lainnya
+  06. Upload Data
+  07. Upload IGT Pertanahan
+  08. Upload IGT Tata Ruang
+  09. Upload IGT Derivatif
+  10. Upload IGT Lainnya
+  11. Workflow Upload Derivatif Bidang
+  12. Workflow Upload Derivatif Kawasan
+  13. Halaman Detail (jika relevan)
+  14. Model Builder
+  15. Fondasi dan integrasi lintas-halaman
+  16. Pengujian dan packaging
+- Di bawah setiap halaman, tuliskan poin-poin fitur UI dan fungsi yang perlu diimplementasikan pada plugin QGIS. Buat cukup rinci agar setiap poin bisa dicentang secara terpisah.
+- Setiap poin memakai checkbox teks biasa: [ ].
+- Pisahkan subbagian “UI/komponen” dan “Fungsi/integrasi QGIS” jika relevan.
+- Checklist berisi target pekerjaan yang perlu dikerjakan, bukan hasil audit status saat ini.
+- Jangan tandai item [x] atau menyatakan sesuatu sudah selesai. Saya sendiri yang akan mengecek dan mencentang progresnya.
+- Gunakan teks biasa, jangan Markdown yang bergantung pada renderer.
+- Pertahankan nama halaman, kategori, dan role yang sudah digunakan di proyek sejauh diketahui. Tidak perlu memeriksa seluruh repository untuk memastikan setiap detail.
+- Sertakan kebutuhan umum seperti struktur plugin QGIS, PyQGIS/Qt, pemuatan layer, WMS/WFS, sumber data, validasi, hak akses role, penyimpanan, error handling, pengujian, dan packaging di bagian yang sesuai.
+- Untuk filter tahun di Dashboard dan halaman katalog, masukkan default 2026, opsi 2023–2025, dan Semua Tahun.
+- Jangan mengimplementasikan plugin atau mengubah kode aplikasi.
+- Jangan melakukan audit, pengujian, validasi link, atau pengecekan mendalam terhadap repository. Cukup susun checklist yang masuk akal dari struktur halaman yang diketahui dan simpan sebagai QGIS_PLUGIN_CHECKLIST.txt.
 
-Jangan hanya membuat satu daftar teknis global. Jadikan halaman UI sebagai struktur utama checklist, lalu tambahkan bagian lintas-halaman untuk fondasi plugin, layanan/data bersama, pengujian, dan distribusi.
-
-LANGKAH SEBELUM MENULIS
-1. Periksa repository dan baca README.md, CLAUDE.md, seluruh halaman role yang relevan, shared/igt-app.js, shared/igt-data.js, shared/derivatif-bidang.js, Model Builder, serta workflow/halaman lain yang dirujuk.
-2. Gunakan nama halaman, fitur, status, dan alur yang benar-benar ada di repository.
-3. Bedakan elemen yang baru berupa mockup dengan fungsi nyata PyQGIS. Tombol yang tampil bukan bukti bahwa fungsi sudah terintegrasi.
-4. Jika ada ketidaksesuaian antara UI, kode, dan dokumentasi, catat sebagai “Perlu diverifikasi”; jangan diam-diam menebak.
-5. Periksa keberadaan plugin QGIS yang nyata sebelum menentukan status. Jangan menyatakan implementasi plugin sudah ada jika repository hanya berisi HTML/CSS/JavaScript.
-
-FORMAT FILE
-- Nama file output wajib: QGIS_PLUGIN_CHECKLIST.txt
-- Teks biasa (plain text), cocok dibaca di terminal atau editor teks.
-- Gunakan [x] hanya jika implementasi nyata terbukti sudah selesai dan bisa diverifikasi.
-- Gunakan [~] untuk sebagian selesai/perlu verifikasi.
-- Gunakan [ ] untuk belum selesai.
-- Setiap poin harus menyebut fitur yang spesifik dan, jika relevan, kriteria selesai yang bisa diuji.
-- Bila bermanfaat, beri label status pada judul item: MOCKUP ADA, BELUM DIIMPLEMENTASIKAN, PERLU VERIFIKASI, atau PERLU KEPUTUSAN.
-- UI mockup yang sudah ada boleh dicatat sebagai “Mockup: [x]”, tetapi status implementasi plugin harus dilacak terpisah sebagai “Plugin QGIS: [ ]”. Jangan menyamakan keduanya.
-
-STRUKTUR MINIMUM YANG HARUS DIBUAT
-
-BAGIAN 00 — Petunjuk checklist dan ringkasan status
-Jelaskan arti [x], [~], dan [ ]. Berikan ringkasan bahwa UI HTML saat ini adalah mockup, kecuali ada bukti konkret tentang implementasi plugin QGIS.
-
-BAGIAN 01 — Beranda / Dashboard
-Buat checklist per perilaku yang ada di Dashboard: ringkasan jumlah Terkompilasi dan Terintegrasi, filter tahun, navigasi ke empat katalog, tombol Upload Data, Model Builder jika role berhak, dan perilaku berbeda sesuai role.
-Filter tahun harus mencakup default 2026, opsi 2023–2025, dan Semua Tahun.
-Untuk setiap item, catat status mockup dan status implementasi plugin secara terpisah.
-
-BAGIAN 02 — Katalog IGT Pertanahan
-Checklist daftar dataset, pencarian, pengurutan, filter tahun, tanggal update, tampilan status/kondisi kosong, aksi WMS/WFS, dan perilaku membuka/menampilkan layer nyata pada QGIS jika memang dibutuhkan desain. Periksa aturan status katalog dari repository.
-
-BAGIAN 03 — Katalog IGT Tata Ruang
-Gunakan struktur yang sama, disesuaikan dengan perilaku nyata halaman ini.
-
-BAGIAN 04 — Katalog IGT Derivatif
-Checklist katalog layer derivatif, status yang masuk katalog, pencarian/pengurutan/filter tahun, WMS/WFS, kondisi kosong, dan integrasi layer nyata.
-
-BAGIAN 05 — Katalog IGT Lainnya
-Checklist katalog layer eksternal, filter/pencarian/pengurutan jika tersedia, WMS/WFS, dan perbedaan hak lihat katalog versus hak mengelola data. Jangan menambahkan kontrol yang tidak ada di UI.
-
-BAGIAN 06 — Upload Data: kerangka umum
-Checklist ringkasan pengajuan, tab kategori sesuai role, daftar pengajuan, status, tanggal, navigasi, loading/kosong/error, dan aturan role. Gunakan matriks izin dari dokumentasi dan kode aktual.
-
-BAGIAN 07 — Upload IGT Pertanahan
-Checklist Load Baseline, upload atribut, validasi ID bidang, alur status, tindakan yang tersedia menurut role, penyimpanan nyata, dan umpan balik error/sukses. Bedakan simulasi dengan fungsi nyata.
-
-BAGIAN 08 — Upload IGT Tata Ruang
-Checklist unggah berkas, tipe/ukuran file, tema, nama layer, wilayah, deskripsi, validasi, pemuatan geometri dan atribut, status pengajuan, dan penanganan error.
-
-BAGIAN 09 — Upload IGT Derivatif
-Checklist perilaku per role yang memang ada: upload oleh Admin, pengajuan Operator, pengajuan Umum, persetujuan/penolakan, status, dan workflow kawasan/bidang. Jangan meratakan perbedaan status antar kategori.
-
-BAGIAN 10 — Upload IGT Lainnya
-Checklist tindakan Superadmin, upload/penambahan layer, hapus, validasi, dan ketersediaan data. Pertahankan perbedaan izin antara melihat katalog dan mengelola layer.
-
-BAGIAN 11 — Workflow Upload Derivatif Bidang (Operator)
-Bagi berdasarkan enam langkah aktual:
-1. Pilih Sumber Bidang Tanah
-2. Atur Struktur Atribut
-3. Pilih Bidang Tanah
-4. Isi Atribut
-5. Simpan File
-6. Atribut Disetujui
-Pada setiap langkah, tuliskan kontrol UI, validasi, perpindahan antar langkah, dan integrasi QGIS/file yang diperlukan. Tandai simulasi yang ada saat ini, termasuk penyimpanan jika belum menghasilkan file nyata.
-
-BAGIAN 12 — Workflow Upload Derivatif Kawasan
-Periksa halaman legacy/06-derivative-kawasan.html dan link yang membukanya. Dokumentasikan alur yang benar-benar ada dan daftar pekerjaan untuk memindahkan/mengintegrasikannya ke plugin. Jika alurnya tidak jelas atau sebagian tidak digunakan, tandai Perlu Verifikasi.
-
-BAGIAN 13 — Detail IGT Utama dan Detail Layer Derivatif
-Periksa apakah halaman detail saat ini masih terhubung/diakses dari UI aktif. Jangan mengasumsikan halaman aktif hanya karena filenya ada. Jika tidak ada akses dari alur utama, tandai statusnya dan minta keputusan apakah perlu dipertahankan, diperbarui, atau dihapus.
-
-BAGIAN 14 — Model Builder
-Checklist UI dan perilaku Model Builder yang benar-benar ada, akses role, penyusunan model, eksekusi model QGIS yang nyata, validasi input/output, dan penanganan error. Pisahkan mockup dari fungsi yang terbukti berjalan.
-
-BAGIAN 15 — Fondasi dan layanan lintas-halaman
-Checklist struktur plugin valid (metadata.txt, __init__.py, classFactory), lifecycle plugin, QDockWidget/QDialog atau QWebEngineView, penggunaan API PyQGIS/Qt yang sesuai versi, konfigurasi, ikon/aset, logging, penyimpanan konfigurasi, serta pemisahan logic UI dan layanan.
-
-BAGIAN 16 — Data, sumber layanan, keamanan, dan persistensi
-Checklist sumber data, skema, baseline, URL WMS/WFS resmi (jangan mengarang URL), penyimpanan lokal/server sesuai keputusan arsitektur, backend/API jika memang diperlukan, autentikasi, otorisasi, audit trail, upload, transisi status, dan perlindungan data. Tandai kebutuhan backend sebagai Perlu Keputusan bila arsitektur belum ditetapkan.
-
-BAGIAN 17 — Pengujian per halaman dan per role
-Buat checklist pengujian untuk setiap halaman dan empat role. Uji navigasi, hak akses, filter tahun, dataset kosong, error, data besar, koneksi layanan, serta alur sukses/gagal. Pastikan checklist memungkinkan item per halaman ditandai satu per satu.
-
-BAGIAN 18 — Packaging dan rilis
-Checklist kompatibilitas QGIS/Python, struktur paket plugin, instalasi di QGIS, uji penerimaan, dokumentasi pengguna, dan distribusi.
-
-PERSYARATAN KUALITAS
-- Checklist per halaman adalah bagian utama dan harus rinci; jangan menggantinya dengan daftar teknis generik.
-- Jangan menandai semua item UI sebagai selesai hanya karena mockup-nya tersedia.
-- Untuk setiap halaman, pisahkan minimal “Mockup HTML” dan “Implementasi Plugin QGIS”.
-- Pertahankan istilah dan aturan aktual di repository. Khusus status: hanya IGT Pertanahan/Tata Ruang menggunakan Terkompilasi/Terintegrasi; IGT Derivatif menggunakan Diajukan/Disetujui/Ditolak/Kadaluwarsa; IGT Lainnya memakai Tersedia sesuai data/dokumentasi yang berlaku.
-- Pertahankan aturan role aktual dan tandai perbedaan antara hak melihat katalog dan hak mengunggah/mengelola.
-- Filter tahun: default 2026, opsi 2025, 2024, 2023, dan Semua Tahun, tersedia pada Dashboard serta tiap halaman katalog.
-- Jangan mengarang URL layanan, API, server, database, atau sumber baseline.
-- Jangan mengubah file kode atau membangun plugin pada tugas ini. Fokus hanya meneliti repository dan membuat QGIS_PLUGIN_CHECKLIST.txt.
-- Setelah selesai, laporkan file yang dibuat, bagian halaman yang tercakup, serta hasil pemeriksaan yang benar-benar dilakukan.
+Setelah file dibuat, cukup laporkan nama file dan link-nya.
