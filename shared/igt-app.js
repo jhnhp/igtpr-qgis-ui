@@ -31,6 +31,15 @@ const IgtApp = (() => {
     const el = document.getElementById(id);
     if (el) el.textContent = value;
   };
+
+  const yearOf = (record) => {
+    const match = String(record.updated || record.date || '').match(/\\b(20\\d{2})\\b/);
+    return match ? match[1] : 'Tidak diketahui';
+  };
+  const yearOptions = (records) => [...new Set(records.map(yearOf))].filter((year) => year !== 'Tidak diketahui').sort().reverse();
+  const mapMarkup = (heading) => '<section class="card map-card"><div class="card-head"><div><h2>' + heading + '</h2><p id="igt-map-subtitle">Sebaran data IGT berdasarkan filter yang dipilih.</p></div><span class="map-chip">PETA IGT</span></div>' +
+    '<div class="map-viewport"><div class="map-watermark">INDONESIA</div><svg viewBox="0 0 900 360" role="img" aria-label="Visualisasi peta Indonesia dengan contoh sebaran IGT"><defs><pattern id="map-grid" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M28 0H0V28" fill="none" stroke="#dce8f4" stroke-width="1"/></pattern></defs><rect width="900" height="360" fill="url(#map-grid)"/><g class="map-islands"><path d="M80 100l28-10 28 14 20 27-8 22-20 7-13 22-18-7-8-28-18-15z"/><path d="M190 180l35-8 25 10 12 24-20 12-25-8-15 14-20-14z"/><path d="M270 95l22-8 12 10 4 24-13 15-16-9z"/><path d="M300 165l28-10 25 12 18 5 18-12 23 6 18 15-7 12-28-4-13 14-24-6-20 10-18-11-18 3-16-15z"/><path d="M430 205l22-8 19 7 8 18-13 13-24-6-12-12z"/><path d="M500 155l24-16 19 7 8 16-16 11-16-4z"/><path d="M565 185l14-20 12 9 2 18-12 14z"/><path d="M620 160l28-15 23 7 20-9 25 12 18-3 23 14-6 16-28 5-13 16-24-7-15 10-21-10-20 1-12-16z"/><path d="M745 240l26-8 23 12 6 18-18 11-28-9-10-12z"/><path d="M160 245l18-5 12 12-9 10-17-4z"/><path d="M350 255l20-6 15 10-9 13-20-3z"/></g><g class="map-markers"><circle cx="112" cy="130" r="7"/><circle cx="216" cy="195" r="7"/><circle cx="315" cy="181" r="7"/><circle cx="370" cy="188" r="7"/><circle cx="445" cy="220" r="7"/><circle cx="520" cy="160" r="7"/><circle cx="640" cy="166" r="7"/><circle cx="700" cy="174" r="7"/><circle cx="765" cy="252" r="7"/></g><g class="map-labels"><text x="90" y="78">Sumatra</text><text x="292" y="143">Kalimantan</text><text x="336" y="228">Jawa</text><text x="422" y="250">Bali–Nusa Tenggara</text><text x="488" y="132">Sulawesi</text><text x="654" y="135">Papua</text></g></svg><div class="map-scale">Visualisasi contoh · bukan geometri data asli</div></div><div class="map-legend"><span><i class="legend-dot"></i> Dataset IGT</span><span id="igt-map-count">0 dataset ditampilkan</span></div></section>';
+
   const statCard = (label, num, hint, icon, cls, id) =>
     `<div class="card stat"><div><div class="label">${label}</div><div class="num" id="${id}">${num}</div>` +
     `<div class="hint">${hint}</div></div><div class="stat-icon${cls ? ' ' + cls : ''}">${icon}</div></div>`;
@@ -45,30 +54,34 @@ const IgtApp = (() => {
 
   // Repository overview: how many datasets are compiled and integrated. No upload controls here.
   function dashboard(role) {
-    // Dashboard overview with summary cards and navigation; the category summary table is intentionally omitted.
     const records = IgtData.loadRecords().filter((r) => IgtData.canView(role, r.category));
-    const staged = IgtData.integrationRecords(records);
-    const compiled = IgtData.countByStatus(staged, 'Terkompilasi');
-    const integrated = IgtData.countByStatus(staged, 'Terintegrasi');
     const categories = CATEGORY_ORDER.filter((key) => IgtData.canView(role, key));
-
-    const catalogButtons = categories
-      .map((key) => `<a class="btn btn-soft menu-btn" href="../${CATEGORIES[key].slug}/index.html">▧ ${CATEGORIES[key].label}</a>`)
-      .join('');
-
+    const catalogButtons = categories.map((key) => '<a class="btn btn-soft menu-btn" href="../' + CATEGORIES[key].slug + '/index.html">▧ ' + CATEGORIES[key].label + '</a>').join('');
     $('#view').innerHTML =
-      `<div class="grid stats">` +
-      statCard('Terkompilasi', compiled, 'Menunggu integrasi', '▤', 'amber', 'count-compiled') +
-      statCard('Terintegrasi', integrated, 'Pertanahan dan Tata Ruang', '✓', 'green', 'count-integrated') +
-      `</div>` +
-      `<section class="card"><div class="card-head"><div><h2>Lihat peta IGT</h2><p>Buka katalog dataset yang sudah tersedia.</p></div></div>` +
-      `<div class="menu-buttons" id="catalog-buttons">${catalogButtons}</div>` +
-      `<div class="card-head menu-upload-head"><div><h2>Kelola data</h2><p>Unggah data baru dan pantau status pengajuan.</p></div></div>` +
-      `<div class="menu-buttons"><a class="btn btn-primary menu-btn" id="upload-button" href="../upload-data/index.html">▦ Manajemen Data</a></div>` +
-      (ROLES[role].modelBuilder === false
-        ? ''
-        : `<div class="menu-buttons model-builder-buttons"><a class="btn btn-primary menu-btn" id="model-builder-button" href="../../../shared/model-builder/index.html?role=${role}">⚙ Model Builder</a></div>`) +
-      `</section>`;
+      '<div class="field year-filter-wrap"><label for="dashboard-year-filter">FILTER TAHUN</label><select id="dashboard-year-filter"><option value="all">Semua tahun</option>' +
+      yearOptions(records).map((year) => '<option value="' + year + '">' + year + '</option>').join('') + '</select></div>' +
+      '<div class="grid stats">' +
+      statCard('Terkompilasi', '0', 'Menunggu integrasi', '▤', 'amber', 'count-compiled') +
+      statCard('Terintegrasi', '0', 'Pertanahan dan Tata Ruang', '✓', 'green', 'count-integrated') +
+      '</div>' + mapMarkup('Peta IGT Indonesia') +
+      '<section class="card"><div class="card-head"><div><h2>Katalog IGT</h2><p>Pilih kategori untuk melihat dataset.</p></div></div>' +
+      '<div class="menu-buttons" id="catalog-buttons">' + catalogButtons + '</div>' +
+      '<div class="card-head menu-upload-head"><div><h2>Kelola data</h2><p>Unggah data baru dan pantau status pengajuan.</p></div></div>' +
+      '<div class="menu-buttons"><a class="btn btn-primary menu-btn" id="upload-button" href="../upload-data/index.html">▦ Manajemen Data</a></div>' +
+      (ROLES[role].modelBuilder === false ? '' : '<div class="menu-buttons model-builder-buttons"><a class="btn btn-primary menu-btn" id="model-builder-button" href="../../../shared/model-builder/index.html?role=' + role + '">⚙ Model Builder</a></div>') +
+      '</section>';
+    const updateDashboard = () => {
+      const year = $('#dashboard-year-filter').value;
+      const visible = records.filter((record) => year === 'all' || yearOf(record) === year);
+      const staged = IgtData.integrationRecords(visible);
+      setText('count-compiled', IgtData.countByStatus(staged, 'Terkompilasi'));
+      setText('count-integrated', IgtData.countByStatus(staged, 'Terintegrasi'));
+      setText('igt-map-subtitle', year === 'all' ? 'Semua tahun · seluruh dataset yang dapat diakses role Anda.' : 'Tahun ' + year + ' · dataset yang dapat diakses role Anda.');
+      setText('igt-map-count', visible.length + ' dataset ditampilkan');
+      $('.map-viewport').classList.toggle('map-filtered', year !== 'all');
+    };
+    $('#dashboard-year-filter').addEventListener('change', updateDashboard);
+    updateDashboard();
   }
 
   // ------------------------------------------------------------------- catalog
@@ -84,7 +97,7 @@ const IgtApp = (() => {
   function catalog(role, category) {
     const view = $('#view');
     if (!IgtData.canView(role, category)) {
-      view.innerHTML = `<div class="notice"><strong>Akses ditolak</strong>${CATEGORIES[category].label} tidak tersedia untuk role ini.</div>`;
+      view.innerHTML = '<div class="notice"><strong>Akses ditolak</strong>' + CATEGORIES[category].label + ' tidak tersedia untuk role ini.</div>';
       return;
     }
     const config = CATEGORIES[category];
@@ -92,24 +105,23 @@ const IgtApp = (() => {
     let query = '';
     let sortKey = '';
     let sortDirection = 1;
-
     view.innerHTML =
-      `<div class="notice"><strong>Isi katalog</strong>${config.rule} ` +
-      `Tombol WMS dan WFS adalah simulasi; belum ada layanan nyata yang terhubung.</div>` +
-      `<section class="card"><div class="card-head"><div><h2>${config.noun.charAt(0).toUpperCase() + config.noun.slice(1)}</h2><p id="catalog-count"></p></div></div>` +
-      `<div class="field catalog-search"><label for="catalog-search">PENCARIAN</label><input id="catalog-search" type="search" placeholder="Cari nama IGT..."></div>` +
-      `<div class="table-wrap"><table class="stack"><thead><tr><th><button type="button" class="sort-header" data-sort="name">Nama IGT <span aria-hidden="true">↕</span></button></th><th><button type="button" class="sort-header" data-sort="ditjen">Ditjen <span aria-hidden="true">↕</span></button></th><th><button type="button" class="sort-header" data-sort="updated">${config.integration ? "Tanggal Terintegrasi" : category === "derivatif" ? "Tanggal Disetujui" : "Tanggal Upload"} <span aria-hidden="true">↕</span></button></th><th>Tampilkan WMS</th><th>Tampilkan WFS</th></tr></thead>` +
-      `<tbody id="catalog-rows"></tbody></table></div>` +
-      `<div class="empty-state" id="empty-state" hidden></div></section>`;
-
+      '<div class="notice"><strong>Isi katalog</strong>' + config.rule + ' Tombol WMS dan WFS adalah simulasi; belum ada layanan nyata yang terhubung.</div>' +
+      '<div class="catalog-controls"><div class="field catalog-search"><label for="catalog-search">PENCARIAN</label><input id="catalog-search" type="search" placeholder="Cari nama IGT..."></div>' +
+      '<div class="field year-filter"><label for="catalog-year-filter">TAHUN</label><select id="catalog-year-filter"><option value="all">Semua tahun</option>' +
+      yearOptions(datasets).map((year) => '<option value="' + year + '">' + year + '</option>').join('') + '</select></div></div>' +
+      mapMarkup('Peta IGT · ' + config.label) +
+      '<section class="card"><div class="card-head"><div><h2>' + config.noun.charAt(0).toUpperCase() + config.noun.slice(1) + '</h2><p id="catalog-count"></p></div></div>' +
+      '<div class="table-wrap"><table class="stack"><thead><tr><th><button type="button" class="sort-header" data-sort="name">Nama IGT <span aria-hidden="true">↕</span></button></th><th><button type="button" class="sort-header" data-sort="ditjen">Ditjen <span aria-hidden="true">↕</span></button></th><th><button type="button" class="sort-header" data-sort="updated">' +
+      (config.integration ? 'Tanggal Terintegrasi' : category === 'derivatif' ? 'Tanggal Disetujui' : 'Tanggal Upload') +
+      ' <span aria-hidden="true">↕</span></button></th><th>Tampilkan WMS</th><th>Tampilkan WFS</th></tr></thead><tbody id="catalog-rows"></tbody></table></div><div class="empty-state" id="empty-state" hidden></div></section>';
     function render() {
       const q = query.toLowerCase();
-      const shown = datasets.filter((d) => (d.name + ' ' + (d.ditjen || '') + ' ' + d.id).toLowerCase().includes(q));
+      const year = $('#catalog-year-filter').value;
+      const filtered = datasets.filter((d) => (year === 'all' || yearOf(d) === year) && (d.name + ' ' + (d.ditjen || d.source || '') + ' ' + d.id).toLowerCase().includes(q));
+      const shown = [...filtered];
       if (sortKey) {
-        const value = (d) => sortKey === 'name' ? d.name
-          : sortKey === 'ditjen' ? (d.ditjen || d.source || '')
-          : sortKey === 'updated' ? (d.updated || '')
-          : d.name;
+        const value = (d) => sortKey === 'name' ? d.name : sortKey === 'ditjen' ? (d.ditjen || d.source || '') : sortKey === 'updated' ? (d.updated || d.date || '') : d.name;
         shown.sort((a, b) => String(value(a)).localeCompare(String(value(b)), 'id', { numeric: true }) * sortDirection);
       }
       document.querySelectorAll('.sort-header').forEach((btn) => {
@@ -117,36 +129,25 @@ const IgtApp = (() => {
         btn.setAttribute('aria-sort', active ? (sortDirection === 1 ? 'ascending' : 'descending') : 'none');
         btn.querySelector('span').textContent = active ? (sortDirection === 1 ? '↑' : '↓') : '↕';
       });
-      $('#catalog-rows').innerHTML = shown
-        .map((d) => {
-          return (
-            `<tr><td data-label="Nama IGT">${d.name}</td>` +
-            `<td data-label="Ditjen">${d.ditjen || "—"}</td>` +
-            `<td data-label="${config.integration ? "Tanggal Terintegrasi" : category === "derivatif" ? "Tanggal Disetujui" : "Tanggal Upload"}">${d.updated || d.date || "—"}</td>` +
-            `<td data-label="Tampilkan WMS">${button('btn-soft', 'wms', d.id, '▧ WMS', ` aria-label="Tampilkan WMS untuk ${d.name}"`)}</td>` +
-            `<td data-label="Tampilkan WFS">${button('btn-soft', 'wfs', d.id, '▤ WFS', ` aria-label="Tampilkan WFS untuk ${d.name}"`)}</td></tr>`
-          );
-        })
-        .join('');
-      setText('catalog-count', `${datasets.length} ${config.noun} di ${config.label}.`);
+      $('#catalog-rows').innerHTML = shown.map((d) =>
+        '<tr><td data-label="Nama IGT">' + d.name + '</td><td data-label="Ditjen">' + (d.ditjen || d.source || '—') + '</td><td data-label="Tanggal">' + (d.updated || d.date || '—') + '</td>' +
+        '<td data-label="Tampilkan WMS">' + button('btn-soft', 'wms', d.id, '▧ WMS') + '</td><td data-label="Tampilkan WFS">' + button('btn-soft', 'wfs', d.id, '▤ WFS') + '</td></tr>'
+      ).join('');
+      setText('catalog-count', shown.length + ' dari ' + datasets.length + ' dataset · ' + (year === 'all' ? 'semua tahun' : 'tahun ' + year));
+      setText('igt-map-subtitle', year === 'all' ? 'Semua tahun · ' + config.label + '.' : 'Tahun ' + year + ' · ' + config.label + '.');
+      setText('igt-map-count', filtered.length + ' dataset cocok dengan filter');
+      $('.map-viewport').classList.toggle('map-filtered', year !== 'all');
       const empty = $('#empty-state');
       empty.hidden = shown.length > 0;
-      empty.textContent = datasets.length === 0
-        ? `Belum ada ${config.noun} pada ${config.label}.`
-        : 'Tidak ada dataset yang cocok dengan pencarian.';
+      empty.textContent = datasets.length === 0 ? 'Belum ada ' + config.noun + ' pada ' + config.label + '.' : 'Tidak ada dataset yang cocok dengan filter tahun atau pencarian.';
     }
-
-    $('#catalog-search').addEventListener('input', (event) => {
-      query = event.target.value;
+    $('#catalog-search').addEventListener('input', (event) => { query = event.target.value; render(); });
+    $('#catalog-year-filter').addEventListener('change', render);
+    document.querySelectorAll('.sort-header').forEach((btn) => btn.addEventListener('click', () => {
+      if (sortKey === btn.dataset.sort) sortDirection *= -1;
+      else { sortKey = btn.dataset.sort; sortDirection = 1; }
       render();
-    });
-    document.querySelectorAll('.sort-header').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        if (sortKey === btn.dataset.sort) sortDirection *= -1;
-        else { sortKey = btn.dataset.sort; sortDirection = 1; }
-        render();
-      });
-    });
+    }));
     document.addEventListener('click', (event) => {
       const target = event.target.closest('[data-action]');
       if (!target) return;
