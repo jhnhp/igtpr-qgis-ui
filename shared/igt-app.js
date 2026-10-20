@@ -102,19 +102,6 @@ const IgtApp = (() => {
       `<tbody id="catalog-rows"></tbody></table></div>` +
       `<div class="empty-state" id="empty-state" hidden></div></section>`;
 
-    function openIgtDetail(dataset) {
-      const params = new URLSearchParams({
-        category,
-        id: dataset.id,
-        name: dataset.name,
-        status: dataset.status || '',
-        updated: dataset.updated || dataset.date || '',
-        ditjen: dataset.ditjen || dataset.source || '',
-        role,
-      });
-      window.location.href = `../../../shared/igt-detail/index.html?${params.toString()}`;
-    }
-
     function render() {
       const q = query.toLowerCase();
       const shown = datasets.filter((d) => (d.name + ' ' + (d.ditjen || '') + ' ' + d.id).toLowerCase().includes(q));
@@ -133,7 +120,7 @@ const IgtApp = (() => {
       $('#catalog-rows').innerHTML = shown
         .map((d) => {
           return (
-            `<tr><td data-label="Nama IGT"><button type="button" class="igt-name-link" data-action="igt-detail" data-id="${d.id}" style="border:0;background:none;padding:0;color:var(--link,#2563eb);font:inherit;font-weight:650;text-align:left;text-decoration:underline;cursor:pointer">${d.name}</button></td>` +
+            `<tr><td data-label="Nama IGT">${d.name}</td>` +
             `<td data-label="Ditjen">${d.ditjen || "—"}</td>` +
             `<td data-label="${config.integration ? "Tanggal Terintegrasi" : category === "derivatif" ? "Tanggal Disetujui" : "Tanggal Upload"}">${d.updated || d.date || "—"}</td>` +
             `<td data-label="Tampilkan WMS">${button('btn-soft', 'wms', d.id, '▧ WMS', ` aria-label="Tampilkan WMS untuk ${d.name}"`)}</td>` +
@@ -164,9 +151,8 @@ const IgtApp = (() => {
       const target = event.target.closest('[data-action]');
       if (!target) return;
       const dataset = datasets.find((d) => d.id === target.dataset.id);
-      if (target.dataset.action === 'igt-detail') {
-        if (dataset) openIgtDetail(dataset);
-      } else if (target.dataset.action === 'wms') alert(WMS_MESSAGE(dataset.name));
+      if (!dataset) return;
+      if (target.dataset.action === 'wms') alert(WMS_MESSAGE(dataset.name));
       else if (target.dataset.action === 'wfs') alert(WFS_MESSAGE(dataset.name));
     });
     render();
