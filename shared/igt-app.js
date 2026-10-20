@@ -100,66 +100,19 @@ const IgtApp = (() => {
       `<div class="field catalog-search"><label for="catalog-search">PENCARIAN</label><input id="catalog-search" type="search" placeholder="Cari nama IGT..."></div>` +
       `<div class="table-wrap"><table class="stack"><thead><tr><th><button type="button" class="sort-header" data-sort="name">Nama IGT <span aria-hidden="true">↕</span></button></th><th><button type="button" class="sort-header" data-sort="ditjen">Ditjen <span aria-hidden="true">↕</span></button></th><th><button type="button" class="sort-header" data-sort="updated">${config.integration ? "Tanggal Terintegrasi" : category === "derivatif" ? "Tanggal Disetujui" : "Tanggal Upload"} <span aria-hidden="true">↕</span></button></th><th>Tampilkan WMS</th><th>Tampilkan WFS</th></tr></thead>` +
       `<tbody id="catalog-rows"></tbody></table></div>` +
-      `<div class="empty-state" id="empty-state" hidden></div></section>` +`<div class="igt-detail-backdrop" id="igt-detail-modal" hidden role="dialog" aria-modal="true" aria-labelledby="igt-detail-title" style="position:fixed;inset:0;z-index:1100;background:rgba(15,23,42,.58);padding:18px;overflow:auto;align-items:center;justify-content:center">` +`<section class="card" style="width:min(1100px,100%);max-height:calc(100vh - 36px);overflow:auto;margin:auto">` +`<div class="card-head"><div><div class="eyebrow">DATA IGT TERINTEGRASI</div><h2 id="igt-detail-title">Detail IGT</h2><p id="igt-detail-subtitle">Atribut yang tersedia untuk role Anda.</p></div><button type="button" class="btn btn-soft" data-close-igt-detail>✕ Tutup</button></div>` +`<div class="detail-grid" id="igt-detail-metadata" style="margin-bottom:18px"></div>` +`<div class="card-head"><div><h3>Data atribut</h3><p id="igt-detail-field-count"></p></div></div>` +`<div class="table-wrap" style="max-height:45vh;overflow:auto"><table class="stack"><thead id="igt-detail-fields-head"></thead><tbody id="igt-detail-fields-body"></tbody></table></div>` +`<div class="toolbar" style="justify-content:flex-end;margin-top:16px"><button type="button" class="btn btn-primary" data-action="detail-show-map">▧ Tampilkan di peta</button></div>` +`<p class="hint">Data atribut pada tampilan ini merupakan contoh UI. Integrasi ke layanan dan data geospasial sebenarnya belum aktif.</p></section></div>`;
+      `<div class="empty-state" id="empty-state" hidden></div></section>`;
 
     function openIgtDetail(dataset) {
-      const modal = $('#igt-detail-modal');
-      const esc = (value) => String(value ?? '—').replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
-      const fieldSets = {
-        pertanahan: [
-          ['ID_OBJEK', 'Kode identitas objek pertanahan'], ['NAMA_IGT', 'Nama dataset IGT'],
-          ['PROVINSI', 'Provinsi'], ['KABUPATEN_KOTA', 'Kabupaten/kota'],
-          ['KECAMATAN', 'Kecamatan'], ['DESA_KELURAHAN', 'Desa/kelurahan'],
-          ['JENIS_HAK', 'Jenis hak atau kategori objek'], ['LUAS_M2', 'Luas dalam meter persegi'],
-          ['STATUS_DATA', 'Status data'], ['SUMBER_DATA', 'Sumber data'],
-          ['TANGGAL_UPDATE', 'Tanggal pembaruan'], ['ID_INTEGRASI', 'ID integrasi']
-        ],
-        'tata-ruang': [
-          ['ID_OBJEK', 'Kode identitas objek tata ruang'], ['NAMA_IGT', 'Nama dataset IGT'],
-          ['JENIS_RENCANA', 'Jenis rencana tata ruang'], ['PROVINSI', 'Provinsi'],
-          ['KABUPATEN_KOTA', 'Kabupaten/kota'], ['NOMOR_PERATURAN', 'Nomor peraturan'],
-          ['TAHUN_PENETAPAN', 'Tahun penetapan'], ['LUAS_HA', 'Luas dalam hektare'],
-          ['STATUS_DATA', 'Status data'], ['SUMBER_DATA', 'Sumber data'],
-          ['TANGGAL_UPDATE', 'Tanggal pembaruan'], ['ID_INTEGRASI', 'ID integrasi']
-        ],
-        derivatif: [
-          ['ID_DERIVATIF', 'Kode identitas layer derivatif'], ['NAMA_IGT', 'Nama layer'],
-          ['JENIS_DERIVATIF', 'Jenis derivatif'], ['ID_DATA_INDUK', 'ID data induk'],
-          ['WILAYAH', 'Wilayah cakupan'], ['JUMLAH_FITUR', 'Jumlah fitur'],
-          ['STATUS_PERSETUJUAN', 'Status persetujuan'], ['TANGGAL_DISETUJUI', 'Tanggal persetujuan'],
-          ['BERLAKU_SAMPAI', 'Tanggal akhir masa berlaku'], ['SUMBER_DATA', 'Sumber data'],
-          ['TANGGAL_UPDATE', 'Tanggal pembaruan'], ['ID_INTEGRASI', 'ID integrasi']
-        ],
-        lainnya: [
-          ['ID_IGT', 'Kode identitas IGT'], ['NAMA_IGT', 'Nama layer'],
-          ['SUMBER_INSTANSI', 'Instansi/sumber data'], ['JENIS_DATA', 'Jenis data'],
-          ['WILAYAH', 'Wilayah cakupan'], ['FORMAT_DATA', 'Format data'],
-          ['SISTEM_KOORDINAT', 'Sistem koordinat'], ['JUMLAH_FITUR', 'Jumlah fitur'],
-          ['STATUS_DATA', 'Status ketersediaan'], ['TANGGAL_UPDATE', 'Tanggal pembaruan'],
-          ['SUMBER_DATA', 'Referensi sumber data'], ['ID_INTEGRASI', 'ID integrasi']
-        ]
-      };
-      const fields = fieldSets[category] || fieldSets.lainnya;
-      const sampleValues = {
-        pertanahan: ['BDG-0001842', dataset.name, 'DI Yogyakarta', 'Sleman', 'Depok', 'Caturtunggal', 'Hak Milik', '642.50', 'Terintegrasi', 'Geoportal IGT-PR', dataset.updated || dataset.date || '20 Okt 2026', dataset.id],
-        'tata-ruang': ['TR-000284', dataset.name, 'RTRW Kabupaten', 'DI Yogyakarta', 'Sleman', 'Perda RTRW yang berlaku', '2024', '125.75', 'Terintegrasi', 'Geoportal IGT-PR', dataset.updated || dataset.date || '20 Okt 2026', dataset.id],
-        derivatif: [dataset.id, dataset.name, 'Kawasan', 'IGT-PR-017', 'Sleman, DI Yogyakarta', '86', 'Disetujui', dataset.updated || dataset.date || '17 Okt 2026', '17 Nov 2026', 'Geoportal IGT-PR', dataset.updated || dataset.date || '17 Okt 2026', dataset.id],
-        lainnya: [dataset.id, dataset.name, dataset.ditjen || dataset.source || 'Instansi penyedia', 'Vektor', 'DI Yogyakarta', 'GeoPackage / layanan geospasial', 'EPSG:4326', '124', 'Tersedia', dataset.updated || dataset.date || '20 Okt 2026', dataset.ditjen || dataset.source || 'Sumber eksternal', dataset.id]
-      };
-      const values = sampleValues[category] || sampleValues.lainnya;
-      const rows = [0, 1, 2].map((i) => values.map((v, j) => j === 0 ? (i === 0 ? v : String(v).replace(/(\d+)$/, (m) => String(Number(m) + i))) : v));
-      $('#igt-detail-title').textContent = dataset.name;
-      $('#igt-detail-subtitle').textContent = `${config.label} · Seluruh ${fields.length} field contoh yang tersedia untuk role Anda`;
-      modal.dataset.activeId = dataset.id;
-      $('#igt-detail-metadata').innerHTML = [
-        ['ID IGT', dataset.id], ['Kategori', config.label], ['Status', dataset.status],
-        ['Tanggal pembaruan', dataset.updated || dataset.date || '—']
-      ].map(([label, value]) => `<div class="detail-item"><div class="detail-label">${esc(label)}</div><div class="detail-value">${esc(value)}</div></div>`).join('');
-      $('#igt-detail-field-count').textContent = `${fields.length} field · contoh 3 fitur · gunakan scroll horizontal untuk melihat semua kolom`;
-      $('#igt-detail-fields-head').innerHTML = `<tr>${fields.map(([name, description]) => `<th title="${esc(description)}">${esc(name)}</th>`).join('')}</tr>`;
-      $('#igt-detail-fields-body').innerHTML = rows.map((row) => `<tr>${row.map((value) => `<td>${esc(value)}</td>`).join('')}</tr>`).join('');
-      modal.hidden = false;
-      modal.style.display = 'flex';
+      const params = new URLSearchParams({
+        category,
+        id: dataset.id,
+        name: dataset.name,
+        status: dataset.status || '',
+        updated: dataset.updated || dataset.date || '',
+        ditjen: dataset.ditjen || dataset.source || '',
+        role,
+      });
+      window.location.href = `../../../shared/igt-detail/index.html?${params.toString()}`;
     }
 
     function render() {
@@ -208,20 +161,11 @@ const IgtApp = (() => {
       });
     });
     document.addEventListener('click', (event) => {
-      const target = event.target.closest('[data-action], [data-close-igt-detail]');
+      const target = event.target.closest('[data-action]');
       if (!target) return;
       const dataset = datasets.find((d) => d.id === target.dataset.id);
       if (target.dataset.action === 'igt-detail') {
         if (dataset) openIgtDetail(dataset);
-      } else if (target.hasAttribute('data-close-igt-detail')) {
-        const modal = $('#igt-detail-modal');
-        modal.hidden = true;
-        modal.style.display = 'none';
-      } else if (target.dataset.action === 'detail-show-map') {
-        const modal = $('#igt-detail-modal');
-        const activeId = modal.dataset.activeId;
-        const activeDataset = datasets.find((d) => d.id === activeId);
-        if (activeDataset) alert(`Simulasi QGIS: fitur pada IGT "${activeDataset.name}" akan ditampilkan pada peta. Integrasi peta nyata belum aktif.`);
       } else if (target.dataset.action === 'wms') alert(WMS_MESSAGE(dataset.name));
       else if (target.dataset.action === 'wfs') alert(WFS_MESSAGE(dataset.name));
     });
