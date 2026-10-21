@@ -38,7 +38,7 @@ const IgtApp = (() => {
   };
   // Keep future catalog years selectable even before datasets for those years are added.
   const yearOptions = (records) => [...new Set([...records.map(yearOf).filter((year) => year !== 'Tidak diketahui'), '2026', '2025', '2024', '2023'])].sort().reverse();
-  const yearFilterOptions = (records) => '<option value="2026" selected>2026</option>' + yearOptions(records).filter((year) => year !== '2026').map((year) => '<option value="' + year + '">' + year + '</option>').join('') + '<option value="all">Semua tahun</option>';
+  const yearFilterOptions = (records) => '<option value="all" selected>Semua tahun</option>' + yearOptions(records).map((year) => '<option value="' + year + '">' + year + '</option>').join('');
   const statCard = (label, num, hint, icon, cls, id) =>
     `<div class="card stat"><div><div class="label">${label}</div><div class="num" id="${id}">${num}</div>` +
     `<div class="hint">${hint}</div></div><div class="stat-icon${cls ? ' ' + cls : ''}">${icon}</div></div>`;
