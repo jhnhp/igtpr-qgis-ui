@@ -52,7 +52,7 @@ QLabel#sectionTitle {{ color: {NAVY}; font-size: 19px; font-weight: bold; }}
 QLabel#featureTitle {{ color: {NAVY}; font-size: 13px; font-weight: bold; }}
 QLabel#featureText {{ color: #5b6f8a; font-size: 12px; }}
 QLabel#hint {{ color: #6b7f9a; font-size: 11px; }}
-QLabel#copyright {{ color: #4b5f7c; font-size: 13px; }}
+QLabel#copyright {{ color: #4b5f7c; font-size: 12px; }}
 QPushButton#loginButton {{
     color: white;
     font-size: 20px;
@@ -350,7 +350,7 @@ class LoginPage(QWidget):
         globe.setPixmap(svg_pixmap(ICONS['globe'].format(color=NAVY), QSize(22, 22)))
         globe.setAlignment(Qt.AlignmentFlag.AlignTop)
         copyright_label = QLabel(
-            'Copyright © 2026 Kementerian Agraria dan\nTata Ruang / Badan Pertanahan Nasional',
+            'Copyright © 2026 Kementerian Agraria\ndan Tata Ruang / Badan Pertanahan Nasional',
             copyright_container,
         )
         copyright_label.setObjectName('copyright')
@@ -536,4 +536,4 @@ class LoginDockWidget(QDockWidget):
         scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         scroll.setWidget(self.page)
         self.setWidget(scroll)
-        self.setMinimumWidth(300)
+        self.setMinimumWidth(330)
