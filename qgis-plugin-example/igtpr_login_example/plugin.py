@@ -20,8 +20,15 @@ class IgtprLoginExample:
         self.action = None
         self.dock = None
 
+    def _asset_path(self, filename):
+        examples_path = os.path.abspath(os.path.join(PLUGIN_DIR, '..', '..', 'Examples', filename))
+        if os.path.isfile(examples_path):
+            return examples_path
+        return os.path.join(PLUGIN_DIR, filename)
+
     def initGui(self):  # pylint: disable=invalid-name
-        icon = QIcon(svg_pixmap(Q_ICON.format(color='#1f6fd6'), QSize(24, 24)))
+        icon_path = self._asset_path('icon.png')
+        icon = QIcon(icon_path) if os.path.isfile(icon_path) else QIcon(svg_pixmap(Q_ICON.format(color='#1f6fd6'), QSize(24, 24)))
         self.action = QAction(icon, 'Login IGT-PR (contoh)', self.iface.mainWindow())
         self.action.setCheckable(True)
         self.action.toggled.connect(self.toggle_dock)
@@ -39,14 +46,10 @@ class IgtprLoginExample:
     def toggle_dock(self, visible):
         if self.dock is None:
             # Gunakan logo dari Examples saat dijalankan dari repository; fallback ke aset di folder plugin.
-            examples_dir = os.path.abspath(os.path.join(PLUGIN_DIR, '..', '..', 'Examples'))
-            bpn_logo = os.path.join(examples_dir, 'logo-bpn.png')
-            igtpr_logo = os.path.join(examples_dir, 'logo-igtpr.png')
-            if not os.path.isfile(bpn_logo):
-                bpn_logo = os.path.join(PLUGIN_DIR, 'logo-bpn.png')
-            if not os.path.isfile(igtpr_logo):
-                igtpr_logo = os.path.join(PLUGIN_DIR, 'logo-igtpr.png')
-            self.dock = LoginDockWidget(bpn_logo, igtpr_logo, self.iface.mainWindow())
+            bpn_logo = self._asset_path('logo-bpn.png')
+            igtpr_logo = self._asset_path('logo-igtpr.png')
+            qgis_icon = self._asset_path('icon.png')
+            self.dock = LoginDockWidget(bpn_logo, igtpr_logo, qgis_icon, self.iface.mainWindow())
             self.dock.page.loginRequested.connect(self.on_login)
             self.dock.page.adminLoginRequested.connect(self.on_admin_login)
             self.dock.page.guideRequested.connect(self.on_guide)
