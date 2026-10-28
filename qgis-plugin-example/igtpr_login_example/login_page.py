@@ -13,7 +13,7 @@ import os
 
 from qgis.PyQt.QtCore import QByteArray, QPointF, QRectF, QSize, Qt, pyqtSignal
 from qgis.PyQt.QtGui import (
-    QBrush, QColor, QLinearGradient, QPainter, QPainterPath, QPen, QPixmap, QRadialGradient,
+    QBrush, QColor, QIcon, QLinearGradient, QPainter, QPainterPath, QPen, QPixmap, QRadialGradient,
 )
 from qgis.PyQt.QtSvg import QSvgRenderer
 from qgis.PyQt.QtWidgets import (
@@ -21,7 +21,7 @@ from qgis.PyQt.QtWidgets import (
     QScrollArea, QSizePolicy, QVBoxLayout, QWidget,
 )
 
-from .assets import CONTOUR_SVG, ICONS, ILLUSTRATION_SVG
+from .assets import CONTOUR_SVG, ICONS, ILLUSTRATION_SVG, Q_ICON
 
 NAVY = '#123a86'
 PIXEL_RATIO = 2  # pixmap dirender 2x supaya tetap tajam di layar HiDPI
@@ -202,30 +202,26 @@ class FeatureItem(QWidget):
 
 
 class BrandHeader(QWidget):
-    """Header kiri atas dengan logo BPN, IGT-PR, QGIS, dan pola garis diagonal halus."""
+    """Header kiri atas dengan logo BPN dan IGT-PR serta pola garis diagonal halus."""
 
-    def __init__(self, bpn_logo_path=None, igtpr_logo_path=None, qgis_icon_path=None, parent=None):
+    def __init__(self, bpn_logo_path=None, igtpr_logo_path=None, parent=None):
         super().__init__(parent)
         self.bpn_logo_path = bpn_logo_path
         self.igtpr_logo_path = igtpr_logo_path
-        self.qgis_icon_path = qgis_icon_path
         self.setMinimumHeight(76)
         self.setMaximumHeight(112)
         self._bpn = QLabel(self)
         self._igtpr = QLabel(self)
-        self._qgis = QLabel(self)
         self._brand_title = QLabel('GEOPORTAL IGT-PR', self)
         self._brand_title.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
         self._brand_title.setWordWrap(True)
         self._bpn.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._igtpr.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self._qgis.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._layout = QHBoxLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(10)
         self._layout.addWidget(self._bpn, 0, Qt.AlignmentFlag.AlignVCenter)
         self._layout.addWidget(self._igtpr, 0, Qt.AlignmentFlag.AlignVCenter)
-        self._layout.addWidget(self._qgis, 0, Qt.AlignmentFlag.AlignVCenter)
         self._layout.addWidget(self._brand_title, 1)
         self._refresh_logos()
 
@@ -252,10 +248,8 @@ class BrandHeader(QWidget):
         height = max(32, min(44 if compact else 68, self.height() - 12))
         self._bpn.setPixmap(self._load_logo(self.bpn_logo_path, QSize(height, height)))
         self._igtpr.setPixmap(self._load_logo(self.igtpr_logo_path, QSize(height, height)))
-        self._qgis.setPixmap(self._load_logo(self.qgis_icon_path, QSize(height, height)))
         self._bpn.setFixedSize(height, height)
         self._igtpr.setFixedSize(height, height)
-        self._qgis.setFixedSize(height, height)
         self._brand_title.setStyleSheet(
             'color: #080b12; font-family: "Segoe UI", Arial, sans-serif; '
             'font-size: %dpx; font-weight: 500; background: transparent;' % (16 if compact else 26))
@@ -297,7 +291,7 @@ class LoginPage(QWidget):
         root.setSpacing(0)
 
         # Header branding: logo BPN, logo IGT-PR, dan judul seperti contoh visual.
-        root.addWidget(BrandHeader(logo_path, igtpr_logo_path, self.qgis_icon_path, self))
+        root.addWidget(BrandHeader(logo_path, igtpr_logo_path, self))
 
         root.addSpacing(22)
         root.addWidget(AccentBar(self))
@@ -367,8 +361,10 @@ class LoginPage(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(10)
         layout.addStretch()
-        button = QPushButton('LOGIN    →', box)
+        button = QPushButton('  LOGIN    →', box)
         button.setObjectName('loginButton')
+        button.setIcon(QIcon(self.qgis_icon_path) if self.qgis_icon_path and os.path.isfile(self.qgis_icon_path) else QIcon(svg_pixmap(Q_ICON.format(color='white'), QSize(30, 30))))
+        button.setIconSize(QSize(30, 30))
         button.setCursor(Qt.CursorShape.PointingHandCursor)
         button.setMinimumHeight(64)
         shadow = QGraphicsDropShadowEffect(button)
