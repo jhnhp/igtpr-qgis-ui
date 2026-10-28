@@ -365,10 +365,7 @@ class LoginPage(QWidget):
             return
         self._layout_mode = mode
 
-        # Judul lebih kecil di dock sempit; property selector QSS perlu di-polish ulang.
-        self._title.setProperty('compact', mode != 'wide')
-        self._title.style().unpolish(self._title)
-        self._title.style().polish(self._title)
+        # Ukuran judul branding ditangani responsif oleh BrandHeader.
 
         # Hero: berdampingan bila lebar, tombol LOGIN di atas ilustrasi bila sempit.
         for widget in (self._illustration, self._login_box):
