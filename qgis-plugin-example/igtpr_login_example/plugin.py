@@ -38,8 +38,15 @@ class IgtprLoginExample:
 
     def toggle_dock(self, visible):
         if self.dock is None:
-            # Letakkan logo-bpn.png dari plugin IGT-PR di folder ini untuk mengganti lambang placeholder.
-            self.dock = LoginDockWidget(os.path.join(PLUGIN_DIR, 'logo-bpn.png'), self.iface.mainWindow())
+            # Gunakan logo dari Examples saat dijalankan dari repository; fallback ke aset di folder plugin.
+            examples_dir = os.path.abspath(os.path.join(PLUGIN_DIR, '..', '..', 'Examples'))
+            bpn_logo = os.path.join(examples_dir, 'logo-bpn.png')
+            igtpr_logo = os.path.join(examples_dir, 'logo-igtpr.png')
+            if not os.path.isfile(bpn_logo):
+                bpn_logo = os.path.join(PLUGIN_DIR, 'logo-bpn.png')
+            if not os.path.isfile(igtpr_logo):
+                igtpr_logo = os.path.join(PLUGIN_DIR, 'logo-igtpr.png')
+            self.dock = LoginDockWidget(bpn_logo, igtpr_logo, self.iface.mainWindow())
             self.dock.page.loginRequested.connect(self.on_login)
             self.dock.visibilityChanged.connect(self.action.setChecked)
             self.iface.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.dock)
