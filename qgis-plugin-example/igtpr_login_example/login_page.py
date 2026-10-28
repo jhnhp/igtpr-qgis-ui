@@ -340,7 +340,7 @@ class LoginPage(QWidget):
 
         copyright_row = QHBoxLayout()
         copyright_row.setContentsMargins(0, 0, 0, 0)
-        copyright_row.setSpacing(8)
+        copyright_row.setSpacing(0)
         globe = QLabel(self)
         globe.setPixmap(svg_pixmap(ICONS['globe'].format(color=NAVY), QSize(20, 20)))
         globe.setAlignment(Qt.AlignmentFlag.AlignTop)
