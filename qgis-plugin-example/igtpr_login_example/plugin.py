@@ -48,6 +48,8 @@ class IgtprLoginExample:
                 igtpr_logo = os.path.join(PLUGIN_DIR, 'logo-igtpr.png')
             self.dock = LoginDockWidget(bpn_logo, igtpr_logo, self.iface.mainWindow())
             self.dock.page.loginRequested.connect(self.on_login)
+            self.dock.page.adminLoginRequested.connect(self.on_admin_login)
+            self.dock.page.guideRequested.connect(self.on_guide)
             self.dock.visibilityChanged.connect(self.action.setChecked)
             self.iface.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.dock)
         self.dock.setVisible(visible)
@@ -56,3 +58,11 @@ class IgtprLoginExample:
         # Di plugin IGT-PR, sambungkan ke alur SSO yang sudah ada (PluginIGRPR.login_sso_keycloak).
         self.iface.messageBar().pushInfo(
             'IGT-PR', 'Contoh: tombol LOGIN belum terhubung ke SSO. Sambungkan sinyal loginRequested ke alur login.')
+
+    def on_admin_login(self):
+        self.iface.messageBar().pushInfo(
+            'IGT-PR', 'Login administrator belum dikonfigurasi pada plugin contoh.')
+
+    def on_guide(self):
+        self.iface.messageBar().pushInfo(
+            'IGT-PR', 'Panduan penggunaan belum dikonfigurasi. Tambahkan URL atau dokumen panduan panduan untuk mengaktifkan tombol ini.')
