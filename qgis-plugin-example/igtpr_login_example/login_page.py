@@ -52,7 +52,7 @@ QLabel#sectionTitle {{ color: {NAVY}; font-size: 19px; font-weight: bold; }}
 QLabel#featureTitle {{ color: {NAVY}; font-size: 13px; font-weight: bold; }}
 QLabel#featureText {{ color: #5b6f8a; font-size: 12px; }}
 QLabel#hint {{ color: #6b7f9a; font-size: 11px; }}
-QLabel#copyright {{ color: #4b5f7c; font-size: 11px; }}
+QLabel#copyright {{ color: #4b5f7c; font-size: 13px; }}
 QPushButton#loginButton {{
     color: white;
     font-size: 20px;
@@ -75,9 +75,9 @@ QPushButton#adminLoginButton {{
 }}
 QPushButton#adminLoginButton:hover {{ background: #eaf3ff; border-color: #7da8df; }}
 QPushButton#guideButton {{
-    color: #174a91; font-size: 11px; font-weight: 600;
+    color: #174a91; font-size: 13px; font-weight: 600;
     border: 1px solid #b8cce7; border-radius: 8px;
-    padding: 7px 12px; background: rgba(255, 255, 255, 225);
+    padding: 9px 14px; background: rgba(255, 255, 255, 225);
 }}
 QPushButton#guideButton:hover {{ background: #eaf3ff; border-color: #7da8df; }}
 """
@@ -347,7 +347,7 @@ class LoginPage(QWidget):
         copyright_row.setSpacing(0)
 
         globe = QLabel(copyright_container)
-        globe.setPixmap(svg_pixmap(ICONS['globe'].format(color=NAVY), QSize(20, 20)))
+        globe.setPixmap(svg_pixmap(ICONS['globe'].format(color=NAVY), QSize(22, 22)))
         globe.setAlignment(Qt.AlignmentFlag.AlignTop)
         copyright_label = QLabel(
             'Copyright © 2026 Kementerian Agraria dan Tata Ruang /\nBadan Pertanahan Nasional',
@@ -355,7 +355,7 @@ class LoginPage(QWidget):
         )
         copyright_label.setObjectName('copyright')
         copyright_label.setWordWrap(True)
-        copyright_label.setMaximumWidth(320)
+        copyright_label.setMaximumWidth(360)
         copyright_label.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
         copyright_row.addWidget(globe, 0, Qt.AlignmentFlag.AlignTop)
         copyright_row.addWidget(copyright_label, 0, Qt.AlignmentFlag.AlignTop)
