@@ -259,16 +259,9 @@ class BrandHeader(QWidget):
         super().resizeEvent(event)
 
     def paintEvent(self, event):
+        """Latar putih bersih; tanpa pola rapat agar header tidak tampak bertekstur."""
         painter = QPainter(self)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         painter.fillRect(self.rect(), QColor('#ffffff'))
-        painter.setPen(QPen(QColor(80, 135, 205, 24), 3))
-        for offset in range(-self.height(), self.width() + self.height(), 17):
-            path = QPainterPath(QPointF(offset, 0))
-            path.cubicTo(QPointF(offset + self.height() * 0.18, self.height() * 0.34),
-                         QPointF(offset + self.height() * 0.82, self.height() * 0.66),
-                         QPointF(offset + self.height(), self.height()))
-            painter.drawPath(path)
 
 
 class LoginPage(QWidget):
