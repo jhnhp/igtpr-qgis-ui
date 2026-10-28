@@ -386,11 +386,18 @@ class LoginPage(QWidget):
         button.setGraphicsEffect(shadow)
         button.clicked.connect(self.loginRequested)
         self.login_button = button
+        layout.addWidget(button)
+
+        # Hint SSO dan tombol administrator ditempatkan berdampingan dalam satu baris.
+        secondary_row = QHBoxLayout()
+        secondary_row.setContentsMargins(0, 0, 0, 0)
+        secondary_row.setSpacing(8)
+
         hint = QLabel('Masuk dengan SSO', box)
         hint.setObjectName('hint')
-        hint.setAlignment(Qt.AlignmentFlag.AlignRight)
+        hint.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         hint.setWordWrap(True)
-        layout.addWidget(button)
+        secondary_row.addWidget(hint, 1)
 
         admin_button = QPushButton('Administator', box)
         admin_button.setObjectName('adminLoginButton')
@@ -398,9 +405,9 @@ class LoginPage(QWidget):
         admin_button.setToolTip('Login khusus administrator')
         admin_button.clicked.connect(self.adminLoginRequested)
         self.admin_login_button = admin_button
-        layout.addWidget(admin_button, 0, Qt.AlignmentFlag.AlignRight)
+        secondary_row.addWidget(admin_button, 0, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
 
-        layout.addWidget(hint)
+        layout.addLayout(secondary_row)
         layout.addStretch()
         return box
 
