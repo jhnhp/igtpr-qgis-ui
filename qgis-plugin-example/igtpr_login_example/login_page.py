@@ -329,8 +329,9 @@ class LoginPage(QWidget):
         copyright_label.setObjectName('copyright')
         copyright_label.setWordWrap(True)
         copyright_label.setMaximumWidth(320)
+        copyright_label.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
         footer.addWidget(globe, 0, Qt.AlignmentFlag.AlignTop)
-        footer.addWidget(copyright_label, 1, Qt.AlignmentFlag.AlignTop)
+        footer.addWidget(copyright_label, 0, Qt.AlignmentFlag.AlignTop)
 
         guide_button = QPushButton('Panduan', self)
         guide_button.setObjectName('guideButton')
