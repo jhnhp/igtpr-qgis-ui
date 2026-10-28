@@ -27,6 +27,7 @@ class IgtprLoginExample:
         return os.path.join(PLUGIN_DIR, filename)
 
     def initGui(self):  # pylint: disable=invalid-name
+        # Ikon toolbar menggunakan aset IGT-PR; ikon QGIS tersendiri dipakai pada tombol LOGIN.
         icon_path = self._asset_path('icon.png')
         icon = QIcon(icon_path) if os.path.isfile(icon_path) else QIcon(svg_pixmap(Q_ICON.format(color='#1f6fd6'), QSize(24, 24)))
         self.action = QAction(icon, 'Login IGT-PR (contoh)', self.iface.mainWindow())
@@ -45,10 +46,10 @@ class IgtprLoginExample:
 
     def toggle_dock(self, visible):
         if self.dock is None:
-            # Gunakan logo dari Examples saat dijalankan dari repository; fallback ke aset di folder plugin.
+            # Logo BPN/IGT-PR diambil dari Examples; fallback aset di folder plugin.
             bpn_logo = self._asset_path('logo-bpn.png')
             igtpr_logo = self._asset_path('logo-igtpr.png')
-            qgis_icon = self._asset_path('icon.png')
+            qgis_icon = self._asset_path('qgis_icon.svg')
             self.dock = LoginDockWidget(bpn_logo, igtpr_logo, qgis_icon, self.iface.mainWindow())
             self.dock.page.loginRequested.connect(self.on_login)
             self.dock.page.adminLoginRequested.connect(self.on_admin_login)
