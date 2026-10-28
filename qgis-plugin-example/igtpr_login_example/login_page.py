@@ -188,12 +188,72 @@ class FeatureItem(QWidget):
         layout.addStretch()
 
 
+
+class BrandHeader(QWidget):
+    """Header branding dengan dua logo dan pola garis diagonal halus."""
+
+    def __init__(self, bpn_logo_path=None, igtpr_logo_path=None, parent=None):
+        super().__init__(parent)
+        self.bpn_logo_path = bpn_logo_path
+        self.igtpr_logo_path = igtpr_logo_path
+        self.setMinimumHeight(76)
+        self.setMaximumHeight(112)
+        self._bpn = QLabel(self)
+        self._igtpr = QLabel(self)
+        self._brand_title = QLabel('GEOPORTAL IGT-PR', self)
+        self._brand_title.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
+        self._bpn.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._igtpr.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._layout = QHBoxLayout(self)
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setSpacing(10)
+        self._layout.addWidget(self._bpn, 0, Qt.AlignmentFlag.AlignVCenter)
+        self._layout.addWidget(self._igtpr, 0, Qt.AlignmentFlag.AlignVCenter)
+        self._layout.addWidget(self._brand_title, 1)
+        self._refresh_logos()
+
+    def _load_logo(self, path, max_size):
+        if path and os.path.isfile(path):
+            pixmap = QPixmap(path)
+            if not pixmap.isNull():
+                return pixmap.scaled(max_size, Qt.AspectRatioMode.KeepAspectRatio,
+                                     Qt.TransformationMode.SmoothTransformation)
+        return QPixmap()
+
+    def _refresh_logos(self):
+        height = max(40, min(68, self.height() - 12))
+        self._bpn.setPixmap(self._load_logo(self.bpn_logo_path, QSize(height, height)))
+        self._igtpr.setPixmap(self._load_logo(self.igtpr_logo_path, QSize(height, height)))
+        self._bpn.setFixedSize(height, height)
+        self._igtpr.setFixedSize(height, height)
+        compact = self.width() < 470
+        self._brand_title.setStyleSheet(
+            'color: #080b12; font-family: "Segoe UI", Arial, sans-serif; '
+            'font-size: %dpx; font-weight: 500; background: transparent;' % (19 if compact else 26))
+
+    def resizeEvent(self, event):
+        self._refresh_logos()
+        super().resizeEvent(event)
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        painter.fillRect(self.rect(), QColor('#ffffff'))
+        painter.setPen(QPen(QColor(80, 135, 205, 24), 3))
+        for offset in range(-self.height(), self.width() + self.height(), 17):
+            path = QPainterPath(QPointF(offset, 0))
+            path.cubicTo(QPointF(offset + self.height() * 0.18, self.height() * 0.34),
+                         QPointF(offset + self.height() * 0.82, self.height() * 0.66),
+                         QPointF(offset + self.height(), self.height()))
+            painter.drawPath(path)
+
+
 class LoginPage(QWidget):
     """Halaman pertama plugin sebelum pengguna masuk."""
 
     loginRequested = pyqtSignal()
 
-    def __init__(self, logo_path=None, parent=None):
+    def __init__(self, logo_path=None, igtpr_logo_path=None, parent=None):
         super().__init__(parent)
         self.setObjectName('loginPage')
         self.setStyleSheet(LOGIN_QSS)
@@ -204,19 +264,8 @@ class LoginPage(QWidget):
         root.setContentsMargins(24, 26, 24, 0)
         root.setSpacing(0)
 
-        # Kepala: logo + judul
-        header = QHBoxLayout()
-        header.setSpacing(14)
-        emblem = QLabel(self)
-        emblem.setPixmap(emblem_pixmap(62, logo_path))
-        emblem.setAlignment(Qt.AlignmentFlag.AlignTop)
-        title = QLabel('Integrasi Plugin QGIS<br>Geoportal IGT Pertanahan dan Ruang', self)
-        title.setObjectName('title')
-        self._title = title
-        title.setWordWrap(True)
-        header.addWidget(emblem, 0, Qt.AlignmentFlag.AlignVCenter)
-        header.addWidget(title, 1)
-        root.addLayout(header)
+        # Header branding: logo BPN, logo IGT-PR, dan judul seperti contoh visual.
+        root.addWidget(BrandHeader(logo_path, igtpr_logo_path, self))
 
         root.addSpacing(22)
         root.addWidget(AccentBar(self))
@@ -418,10 +467,10 @@ class LoginPage(QWidget):
 class LoginDockWidget(QDockWidget):
     """Dock plugin yang berisi LoginPage di dalam area gulir."""
 
-    def __init__(self, logo_path=None, parent=None):
+    def __init__(self, logo_path=None, igtpr_logo_path=None, parent=None):
         super().__init__('IGT-PR', parent)
         self.setObjectName('IgtprLoginExampleDock')
-        self.page = LoginPage(logo_path)
+        self.page = LoginPage(logo_path, igtpr_logo_path)
         scroll = QScrollArea(self)
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QFrame.Shape.NoFrame)
