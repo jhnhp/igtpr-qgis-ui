@@ -182,20 +182,28 @@ const IgtApp = (() => {
       );
     }
     if (category === 'derivatif') {
-      const uploadButtons = role === 'superadmin'
-        ? ''
-        : [
-            ['operator', 'admin', 'umum'].includes(role) ? `<a class="btn btn-primary" href="${LEGACY}06-derivative-kawasan.html">↑ Upload Derivatif Kawasan</a>` : '',
-            `<a class="btn btn-primary" href="${BIDANG_WORKFLOW_URL}">↑ Upload Derivatif Bidang</a>`,
-          ].join('');
-      const note = role === 'admin'
-        ? 'Unggahan Admin langsung berstatus Disetujui. Pengajuan Operator dan Umum berstatus Diajukan sampai diputuskan.'
-        : role === 'umum'
-          ? 'Pengajuan Umum berstatus Diajukan sampai disetujui atau ditolak oleh Admin atau Superadmin. Anda hanya melihat pengajuan Anda sendiri.'
-          : role === 'superadmin'
-            ? 'Superadmin tidak mengunggah derivatif. Gunakan panel ini untuk menyetujui atau menolak pengajuan.'
-            : 'Pengajuan berstatus Diajukan sampai disetujui atau ditolak oleh Admin atau Superadmin.';
-      return `<div class="toolbar">${uploadButtons}</div><div class="notice"><strong>Catatan</strong>${note}</div>`;
+      if (role === 'admin') {
+        return (
+          `<div class="toolbar"><button class="btn btn-primary" data-action="upload-derivatif">↑ Upload Derivatif</button></div>` +
+          `<div class="notice"><strong>Catatan</strong>Unggahan Admin langsung berstatus Disetujui. Pengajuan Operator dan Umum berstatus Diajukan sampai diputuskan.</div>`
+        );
+      }
+      if (role === 'umum') {
+        return (
+          `<div class="toolbar"><button class="btn btn-primary" data-action="upload-derivatif">↑ Upload Derivatif</button></div>` +
+          `<div class="notice"><strong>Catatan</strong>Pengajuan Umum berstatus Diajukan sampai disetujui atau ditolak oleh Admin atau Superadmin. Anda hanya melihat pengajuan Anda sendiri.</div>`
+        );
+      }
+      if (role === 'operator') {
+        return (
+          `<div class="toolbar"><a class="btn btn-primary" href="${LEGACY}06-derivative-kawasan.html">↑ Upload Derivatif Kawasan</a>` +
+          `<a class="btn btn-primary" href="${BIDANG_WORKFLOW_URL}">↑ Upload Derivatif Bidang</a></div>` +
+          `<div class="notice"><strong>Catatan</strong>Pengajuan berstatus Diajukan sampai disetujui atau ditolak oleh Admin atau Superadmin.</div>`
+        );
+      }
+      return (
+        `<div class="notice"><strong>Catatan</strong>Superadmin tidak mengunggah derivatif. Gunakan panel ini untuk menyetujui atau menolak pengajuan.</div>`
+      );
     }
     return (
       `<div class="toolbar"><button class="btn btn-primary" data-action="upload-lainnya">＋ Upload layer</button></div>` +

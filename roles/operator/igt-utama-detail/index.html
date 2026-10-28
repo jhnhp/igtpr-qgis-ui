@@ -18,7 +18,7 @@
 <header class="topbar"><div class="crumb">Geoportal IGT-PR　/　<a href="../upload-data/index.html">Upload Data</a>　/　<strong>Detail IGT</strong></div><div class="top-actions"><button class="icon-btn" aria-label="Notifikasi">♧</button><div class="user-chip"><div class="avatar">JH</div><span>Operator Pusat</span></div></div></header>
 <main class="main">
 <div class="page-head"><div><div class="eyebrow">Sistem Informasi Geospasial</div><h1 id="igt-name">Detail IGT Utama</h1><p>Informasi pengajuan dan status data IGT yang dipilih.</p></div></div>
-<div class="detail-actions"><a class="btn btn-soft" id="back-home" href="../beranda/index.html">← Kembali ke Dashboard</a><a class="btn btn-soft" id="back-list" href="../upload-data/index.html">Kembali ke Upload Data</a><button class="btn btn-primary" id="show-canvas">▧ Tampilkan di Canvas</button><button class="btn btn-soft" id="verify-topology" hidden>⌁ Verifikasi Topologi</button><button class="btn btn-soft" id="revise-igt" hidden>✎ Revisi</button></div>
+<div class="detail-actions"><a class="btn btn-soft" id="back-home" href="../beranda/index.html">← Kembali ke Dashboard</a><a class="btn btn-soft" id="back-list" href="../upload-data/index.html">Kembali ke Upload Data</a><button class="btn btn-primary" id="show-canvas">▧ Tampilkan di Canvas</button><button class="btn btn-soft" id="verify-topology" hidden>⌁ Verifikasi Topologi</button><button class="btn btn-primary" id="approve-integration" hidden>✓ Setujui Integrasi</button><button class="btn btn-soft" id="revise-igt" hidden>✎ Revisi</button></div>
 <section class="card detail-section"><div class="card-head"><div><h2>Informasi Pengajuan</h2><p>Identitas dan metadata data IGT.</p></div><span id="status-badge" class="status info">Terkompilasi</span></div>
 <div class="detail-grid">
 <div class="detail-item"><div class="detail-label">ID Pengajuan</div><div class="detail-value" id="igt-id">IGT-2026-012</div></div>
@@ -46,7 +46,7 @@ const records={
 };
 const params=new URLSearchParams(location.search),d=records[params.get("id")]||records["0"],role=["superadmin","admin","umum"].includes(params.get("role"))?params.get("role"):"operator",isSuperadmin=role==="superadmin",isAdmin=role==="admin";
 document.title=d.nama+" · Detail IGT-PR";
-const uploadUrl="../../"+role+"/upload-data/index.html?tab="+(d.jenis==="Berbasis Bidang"?"pertanahan":"tata-ruang");
+const uploadUrl="../../"+role+"/upload-data/index.html?tab=igt-utama";
 document.querySelector(".crumb").innerHTML='Geoportal IGT-PR　/　<a href="'+uploadUrl+'">Upload Data</a>　/　<strong>Detail IGT</strong>';
 if(role!=="operator"){const who={superadmin:['SA','Superadmin'],admin:['AD','Admin'],umum:['UM','Umum']}[role];document.querySelector(".user-chip").innerHTML='<div class="avatar">'+who[0]+'</div><span>'+who[1]+'</span>';}
 document.getElementById("back-home").href="../../"+role+"/beranda/index.html";document.getElementById("back-list").href=uploadUrl;
@@ -67,9 +67,22 @@ document.getElementById("specific-description").textContent=d.jenis==="Berbasis 
 document.getElementById("specific-fields").innerHTML=d.fields.map(([label,value])=>'<div class="detail-item"><div class="detail-label">'+label+'</div><div class="detail-value">'+value+'</div></div>').join("");
 document.getElementById("history-list").innerHTML=d.history.map(([title,meta,note])=>'<div class="history-item"><div class="history-title">'+title+'</div><div class="history-meta">'+meta+'</div><div class="history-note">'+note+'</div></div>').join("");
 const badge=document.getElementById("status-badge");badge.textContent=d.status;badge.className="status "+(d.status==="Terintegrasi"?"ok":d.status==="Revisi"?"warn":"info");
-const reviseButton=document.getElementById("revise-igt"),topologyButton=document.getElementById("verify-topology");
+const reviseButton=document.getElementById("revise-igt"),topologyButton=document.getElementById("verify-topology"),approveIntButton=document.getElementById("approve-integration");
 reviseButton.hidden=!(role==="operator"&&d.status==="Revisi");
 topologyButton.hidden=!((isSuperadmin||isAdmin)&&d.status==="Terkompilasi");
+if(approveIntButton){
+  approveIntButton.hidden=!(isSuperadmin&&d.status==="Terkompilasi");
+  approveIntButton.addEventListener("click",()=>{
+    if(!confirm("Setujui integrasi IGT Utama "+d.id+"?"))return;
+    d.status="Terintegrasi";
+    document.getElementById("igt-status").textContent=d.status;
+    badge.textContent=d.status;
+    badge.className="status ok";
+    topologyButton.hidden=true;
+    approveIntButton.hidden=true;
+    alert("Integrasi IGT Utama "+d.id+" telah disetujui.");
+  });
+}
 document.getElementById("show-canvas").addEventListener("click",()=>alert("Simulasi plugin QGIS: layer "+d.id+" akan ditampilkan pada kanvas peta QGIS."));
 topologyButton.addEventListener("click",()=>alert("Simulasi verifikasi topologi untuk "+d.id+". Pada implementasi QGIS, aksi ini menjalankan pemeriksaan topologi pada layer terkait."));
 reviseButton.addEventListener("click",()=>alert("Simulasi: buka formulir revisi untuk pengajuan "+d.id+"."));
