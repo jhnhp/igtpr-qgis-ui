@@ -71,13 +71,16 @@ Step 6 is always reachable from the stepper (or `?step=6`), so it can be done la
 ### Detail pages are shared by query string
 `roles/operator/igt-utama-detail/` and `roles/operator/layer-derivatif-detail/` are the detail pages for all roles, opened from the Upload Data table. The role is chosen with `?id=<n>&role=<superadmin|admin|operator>` (an unknown role falls back to Operator). The role decides the header chip, breadcrumb, back links (to that role's Dashboard and Upload Data tab) and which actions are shown.
 
+### Login page
+`shared/login/index.html` is the plugin's first screen before signing in, modelled on the IGT-PR plugin poster: title, short description, a QGIS/layer-stack illustration, a **LOGIN** button and the *Fitur Utama* list. It sits next to the roles in the preview drawer and is the same for every role. The LOGIN button is a simulation (it only shows a message); there is no authentication, so roles are still chosen in the drawer. The emblem in the header is a generic placeholder, not the official logo. A Qt version of this page, packaged as an example QGIS plugin, is in `qgis-plugin-example/`.
+
 `shared/model-builder/index.html` accepts `?role=superadmin|admin` so its back link returns to that role's Dashboard (default: Operator).
 
 ## Folder structure
 
 ```text
 igtpr-qgis-ui/
-├── index.html                  # Role preview (Superadmin / Admin / Operator / Umum), iframe in a 3:4 panel
+├── index.html                  # Preview (Login / Superadmin / Admin / Operator / Umum), iframe in a 3:4 panel
 ├── styles.css                  # Shared design system
 ├── app.js                      # Shared interactions used by the legacy pages (tabs, filtering, simulated actions)
 ├── README.md
@@ -96,7 +99,9 @@ igtpr-qgis-ui/
 │   ├── igt-data.js             # Sample records, categories, role permissions
 │   ├── igt-app.js              # Navigation, Dashboard, catalog and Upload Data logic
 │   ├── derivatif-bidang.js     # Six-step Upload Derivatif Bidang workflow
+│   ├── login/index.html        # Login landing page (same for every role, simulated)
 │   └── model-builder/index.html
+├── qgis-plugin-example/        # Qt implementation of the login page as a small QGIS plugin (see its README)
 └── legacy/                     # Earlier pages kept for reference only
     └── 02-beranda-superadmin.html … 08-verifikasi-data.html
 ```
@@ -119,7 +124,7 @@ python3 -m http.server 8000
 # then open http://localhost:8000/
 ```
 
-Use the role drawer on the left to switch between Superadmin, Admin, Operator and Umum.
+Use the drawer on the left to switch between Login, Superadmin, Admin, Operator and Umum. Login is selected first.
 
 ## Checks
 ```bash

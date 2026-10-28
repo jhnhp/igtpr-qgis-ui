@@ -25,6 +25,7 @@ Browsing integrated data is separate from managing submissions. Keep it that way
 - The Dashboard shows repository status (Terkompilasi / Terintegrasi counts over Pertanahan and Tata Ruang only, computed from `shared/igt-data.js`), not submissions. Below the overview are one button per catalog (4, the same for every role) plus one Upload Data button. Model Builder is a small link under them.
 - Records, statuses and permissions live only in `shared/igt-data.js`. Role pages are thin shells that call `IgtApp.dashboard`, `IgtApp.catalog` or `IgtApp.upload`. Detail pages are shared (`roles/operator/*-detail/`) and keep the role through `?role=`.
 - Operator only: Upload Derivatif Bidang is a dedicated six-step workflow page (`roles/operator/derivatif-bidang/`, logic in `shared/derivatif-bidang.js`, guarded by `derivatifWorkflow` in `shared/igt-data.js`); Upload Derivatif Kawasan still links to `legacy/06`. Everything in it is simulated and it creates no submission row.
+- The preview drawer in root `index.html` has a Login entry next to the four roles (selected first). `shared/login/index.html` is the same for every role; its LOGIN button is simulated (no authentication). `qgis-plugin-example/` holds a standalone Qt version of that page as an example QGIS plugin, built at the user's request; it is not part of the HTML mockup navigation.
 - After changing pages or navigation, run `python3 tools/check_links.py` and open each role's pages: the Dashboard buttons are built in JavaScript and the script cannot see them.
 
 ## Folder-structure refactor task
@@ -53,7 +54,9 @@ igtpr-qgis-ui/
 │   ├── igt-data.js
 │   ├── igt-app.js
 │   ├── derivatif-bidang.js
+│   ├── login/index.html
 │   └── model-builder/index.html
+├── qgis-plugin-example/igtpr_login_example/
 └── legacy/
     ├── 02-beranda-superadmin.html
     ├── 03-katalog-data.html

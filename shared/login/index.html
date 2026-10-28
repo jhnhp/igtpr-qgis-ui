@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Login · IGT-PR</title>
+<link rel="stylesheet" href="../../styles.css">
+<style>
+body{background:#f4f8fd;overflow-x:hidden}
+.login{position:relative;min-height:100vh;display:flex;flex-direction:column;overflow:hidden;padding:42px 46px 0;background:radial-gradient(ellipse 70% 40% at 0% 45%,#dcecfb 0,transparent 70%),radial-gradient(ellipse 60% 35% at 100% 60%,#e2eefb 0,transparent 70%),linear-gradient(180deg,#f7fbff,#eef5fc 55%,#f6faff)}
+.login>*{position:relative;z-index:1}
+.deco{position:absolute;inset:0;z-index:0;pointer-events:none}
+.deco .blob{position:absolute;border-radius:50%}
+.deco .b1{width:170px;height:170px;right:70px;top:-80px;background:#9fd59a;opacity:.55}
+.deco .b2{width:230px;height:230px;right:-90px;top:-70px;background:#bfdcf7;opacity:.6}
+.deco .ring{width:200px;height:200px;right:-110px;top:40%;border:34px solid #a9d1f2;opacity:.45}
+.deco .contour{position:absolute;right:-40px;top:-30px;width:70%;height:560px;opacity:.3}
+.head{display:flex;align-items:center;gap:18px}
+.emblem{flex:none;width:76px;height:76px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle,#fff 52%,#f2c14e 53%,#e39a1f 70%,#fff 71%);box-shadow:0 4px 14px #10295614}
+.emblem svg{width:42px;height:42px}
+.head h1{margin:0;color:#123a86;font-size:clamp(20px,3.6vw,31px);line-height:1.18;font-weight:800;letter-spacing:-.4px}
+.accent{display:block;width:90px;height:4px;border-radius:3px;background:linear-gradient(90deg,#4cb860 0 50%,#1f6fd6 50% 100%);margin:28px 0 18px}
+.intro{margin:0;max-width:640px;color:#3f5675;font-size:clamp(12px,1.9vw,16px);line-height:1.65}
+.hero{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);align-items:center;gap:20px;margin:26px 0 18px}
+.hero svg{display:block;width:100%;height:auto}
+.login-side{display:flex;flex-direction:column;align-items:stretch;gap:12px}
+.login-btn{display:flex;align-items:center;justify-content:center;gap:16px;width:100%;border:0;border-radius:16px;padding:18px 22px;background:linear-gradient(180deg,#1f6fd6,#0f58c4);color:#fff;font-size:clamp(17px,2.6vw,24px);font-weight:800;letter-spacing:.8px;box-shadow:0 10px 26px #0f58c440;transition:.18s}
+.login-btn:hover{background:linear-gradient(180deg,#1a63c7,#0b4cad);transform:translateY(-1px)}
+.login-btn:focus-visible{outline:3px solid #9cc6ff;outline-offset:3px}
+.login-btn .q{width:34px;height:34px;flex:none}
+.login-btn .arrow{font-size:1.1em;font-weight:400}
+.login-hint{margin:0;text-align:center;color:#6b7f9a;font-size:11px;line-height:1.5}
+.features h2{margin:0 0 22px;color:#123a86;font-size:clamp(18px,2.8vw,25px);font-weight:800}
+.features .accent{margin:14px 0 16px}
+.feature-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:26px 22px}
+.feature .ico{width:60px;height:60px;border-radius:50%;display:grid;place-items:center;margin-bottom:12px}
+.feature .ico svg{width:30px;height:30px;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.feature h3{margin:0 0 7px;color:#123a86;font-size:clamp(12px,1.8vw,15px);font-weight:800}
+.feature p{margin:0;color:#5b6f8a;font-size:clamp(11px,1.6vw,13px);line-height:1.55}
+.i-blue{background:#e2eefc}.i-blue svg{stroke:#1f6fd6}
+.i-green{background:#e3f4e6}.i-green svg{stroke:#24914a}
+.i-purple{background:#eee6fb}.i-purple svg{stroke:#7a46cf}
+.i-teal{background:#e0f3f3}.i-teal svg{stroke:#18888c}
+.i-navy{background:#e4edfa}.i-navy svg{stroke:#1c5fc0}
+.foot{position:relative;margin:auto -46px 0;min-height:150px;display:flex;align-items:flex-start;padding:38px 46px 0}
+.foot .copy{display:flex;align-items:flex-start;gap:10px;max-width:330px;color:#4b5f7c;font-size:11px;line-height:1.5;padding:6px 0 96px;position:relative;z-index:1}
+.foot .copy svg{flex:none;width:22px;height:22px;stroke:#123a86;fill:none;stroke-width:1.6}
+.foot .scene{position:absolute;left:0;right:0;bottom:0;width:100%;height:150px}
+@media(max-width:620px){
+ .login{padding:26px 18px 0}
+ .emblem{width:58px;height:58px}.emblem svg{width:32px;height:32px}
+ .hero{grid-template-columns:1fr;gap:6px}
+ .login-side{order:-1;margin-bottom:6px}
+ .feature-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 14px}
+ .foot{margin:auto -18px 0;padding:28px 18px 0;min-height:130px}
+}
+@media(max-width:380px){.feature-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body class="panel" data-page="login">
+<main class="login">
+ <div class="deco" aria-hidden="true">
+  <span class="blob b2"></span><span class="blob b1"></span><span class="blob ring"></span>
+  <svg class="contour" viewBox="0 0 400 300" preserveAspectRatio="none" fill="none" stroke="#9db8d6" stroke-width=".8">
+   <path d="M60 300C80 210 150 170 230 160S390 110 400 40"/><path d="M90 300C110 225 170 192 240 182S395 140 400 75"/>
+   <path d="M120 300C140 240 190 214 252 205S398 170 400 110"/><path d="M150 300C170 255 212 236 265 228S400 200 400 145"/>
+   <path d="M180 300C198 270 234 258 278 251S400 230 400 180"/><path d="M30 300C50 195 128 148 218 138S385 80 392 0"/>
+   <path d="M0 290C20 180 105 125 205 115S370 50 370 0"/><path d="M0 250C10 160 85 105 190 92S345 30 340 0"/>
+  </svg>
+ </div>
+
+ <header class="head">
+  <div class="emblem" role="img" aria-label="Logo instansi (placeholder)">
+   <svg viewBox="0 0 48 48" fill="none" stroke="#123a86" stroke-width="2.4"><circle cx="24" cy="24" r="19"/><ellipse cx="24" cy="24" rx="8" ry="19"/><path d="M5 24h38M8 14h32M8 34h32"/></svg>
+  </div>
+  <h1>Integrasi Plugin QGIS<br>Geoportal IGT Pertanahan dan Ruang</h1>
+ </header>
+
+ <span class="accent"></span>
+ <p class="intro">Integrasi Plugin QGIS dengan Geoportal IGT-PR memudahkan pengguna mengakses, memvisualisasikan, dan mengelola data Informasi Geospasial Tematik Pertanahan dan Ruang secara langsung melalui QGIS.</p>
+
+ <section class="hero">
+  <svg viewBox="0 0 520 470" role="img" aria-label="Ilustrasi jendela QGIS dengan tumpukan layer IGT">
+   <defs>
+    <filter id="soft" x="-10%" y="-10%" width="120%" height="140%"><feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#1f4f8f" flood-opacity=".18"/></filter>
+    <g id="parcels" fill="none" stroke="#fff" stroke-width="2" stroke-opacity=".85">
+     <path d="M0 40h400M0 95h400M0 150h400M0 190h400M55 0v220M120 0v220M170 0v220M240 0v220M300 0v220M350 0v220"/>
+     <path d="M20 0l30 220M200 0l-25 220M280 0l40 220M0 120l400-30" stroke-width="1.2"/>
+    </g>
+   </defs>
+   <g filter="url(#soft)">
+    <g transform="matrix(1,.07,.42,.24,20,402)"><rect width="400" height="220" rx="10" fill="#2f9e44"/><rect x="40" y="30" width="120" height="70" fill="#6cc46a"/><rect x="230" y="120" width="150" height="80" fill="#1f7a34"/><use href="#parcels" stroke-opacity=".4"/></g>
+    <g transform="matrix(1,.07,.42,.24,20,362)"><rect width="400" height="220" rx="10" fill="#d4d8de"/><path d="M0 60C80 80 140 30 220 70S360 120 400 90M60 0l40 220M260 0l-30 220" fill="none" stroke="#7d8794" stroke-width="2.5" stroke-dasharray="7 6"/></g>
+    <g transform="matrix(1,.07,.42,.24,20,322)"><rect width="400" height="220" rx="10" fill="#b57de8"/><rect x="0" y="0" width="170" height="95" fill="#9b5fdb"/><rect x="240" y="150" width="160" height="70" fill="#d3a8f3"/><use href="#parcels"/></g>
+    <g transform="matrix(1,.07,.42,.24,20,282)"><rect width="400" height="220" rx="10" fill="#4f9be8"/><rect x="120" y="40" width="120" height="110" fill="#7fbaf5"/><rect x="300" y="0" width="100" height="95" fill="#2f7fd6"/><use href="#parcels"/></g>
+    <g transform="matrix(1,.07,.42,.24,20,242)"><rect width="400" height="220" rx="10" fill="#f5b82e"/><rect x="55" y="95" width="115" height="95" fill="#f7cf63"/><rect x="240" y="40" width="110" height="110" fill="#ec9f1c"/><use href="#parcels"/></g>
+   </g>
+   <g filter="url(#soft)">
+    <rect x="58" y="14" width="440" height="262" rx="8" fill="#fff" stroke="#c9d6e6"/>
+    <rect x="58" y="14" width="440" height="20" rx="8" fill="#3f86de"/><rect x="58" y="26" width="440" height="8" fill="#3f86de"/>
+    <text x="70" y="28" fill="#fff" font-size="10" font-weight="700">QGIS</text>
+    <rect x="58" y="34" width="440" height="24" fill="#f1f4f8"/>
+    <g fill="#9fb0c5"><rect x="66" y="40" width="10" height="10" rx="2"/><rect x="80" y="40" width="10" height="10" rx="2"/><rect x="94" y="40" width="10" height="10" rx="2"/><rect x="112" y="40" width="10" height="10" rx="2" fill="#f2b84b"/><rect x="126" y="40" width="10" height="10" rx="2" fill="#6bb36f"/><rect x="140" y="40" width="10" height="10" rx="2"/><rect x="160" y="40" width="10" height="10" rx="2"/><rect x="174" y="40" width="10" height="10" rx="2" fill="#5d9be2"/><rect x="188" y="40" width="10" height="10" rx="2"/></g>
+    <g fill="#c5d0dd"><rect x="64" y="66" width="8" height="8" rx="2"/><rect x="64" y="82" width="8" height="8" rx="2"/><rect x="64" y="98" width="8" height="8" rx="2"/><rect x="64" y="114" width="8" height="8" rx="2"/><rect x="64" y="130" width="8" height="8" rx="2"/></g>
+    <clipPath id="mapclip"><rect x="80" y="62" width="250" height="196"/></clipPath>
+    <g clip-path="url(#mapclip)">
+     <rect x="80" y="62" width="250" height="196" fill="#8fd17a"/>
+     <path d="M80 62h150l-30 90-120 20z" fill="#f6c440"/><path d="M200 62h130v80l-70 10z" fill="#f2e38f"/>
+     <path d="M150 140l90-10 40 128H150z" fill="#f8e6a6"/><path d="M250 150l80-20v128h-40z" fill="#9cc3f2"/>
+     <path d="M80 200l70-20 10 78H80z" fill="#59b458"/><path d="M285 205l45-5v58h-35z" fill="#b28be6"/>
+     <path d="M255 62C250 120 280 160 300 200S320 240 330 258" fill="none" stroke="#3d8ee6" stroke-width="9"/>
+     <path d="M130 62C140 130 160 190 150 258" fill="none" stroke="#1f6b43" stroke-width="3"/>
+     <g stroke="#fff" stroke-width="1" opacity=".7"><path d="M80 90h250M80 118h250M80 146h250M80 174h250M80 202h250M80 230h250M105 62v196M130 62v196M155 62v196M180 62v196M205 62v196M230 62v196M280 62v196M305 62v196"/></g>
+    </g>
+    <rect x="336" y="62" width="156" height="196" fill="#fff" stroke="#e1e8f1"/>
+    <g font-size="11" fill="#22344f">
+     <rect x="348" y="80" width="13" height="13" rx="2" fill="#f5b82e"/><text x="370" y="91">Bidang Tanah</text>
+     <rect x="348" y="112" width="13" height="13" rx="2" fill="#7fbaf5"/><text x="370" y="123">Rencana Tata Ruang</text>
+     <rect x="348" y="144" width="13" height="13" rx="2" fill="#b57de8"/><text x="370" y="155">Zona Nilai Tanah</text>
+     <rect x="348" y="176" width="13" height="13" rx="2" fill="#c5cad1"/><text x="370" y="187">Batas Administrasi</text>
+     <rect x="348" y="208" width="13" height="13" rx="2" fill="#2f9e44"/><text x="370" y="219">Kawasan Hutan</text>
+    </g>
+    <rect x="58" y="258" width="440" height="18" fill="#f1f4f8"/>
+    <g fill="#c5d0dd"><rect x="120" y="264" width="40" height="6" rx="3"/><rect x="200" y="264" width="30" height="6" rx="3"/><rect x="300" y="264" width="50" height="6" rx="3"/><rect x="420" y="264" width="40" height="6" rx="3"/></g>
+   </g>
+  </svg>
+
+  <div class="login-side">
+   <button class="login-btn" id="loginBtn" type="button">
+    <svg class="q" viewBox="0 0 40 40" aria-hidden="true"><circle cx="18" cy="18" r="13" fill="none" stroke="#fff" stroke-width="6"/><path d="M24 24l10 10" stroke="#fff" stroke-width="7" stroke-linecap="round"/></svg>
+    <span>LOGIN</span><span class="arrow" aria-hidden="true">→</span>
+   </button>
+   <p class="login-hint">Masuk dengan akun Geoportal IGT-PR (simulasi).</p>
+  </div>
+ </section>
+
+ <section class="features">
+  <span class="accent"></span>
+  <h2>Fitur Utama</h2>
+  <div class="feature-grid">
+   <div class="feature"><div class="ico i-blue"><svg viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 12.5l9 5 9-5"/><path d="M3 16.5l9 5 9-5"/></svg></div><h3>Akses Data Terintegrasi</h3><p>Mengakses data IGT-PR secara langsung di lingkungan QGIS.</p></div>
+   <div class="feature"><div class="ico i-green"><svg viewBox="0 0 24 24"><path d="M12 22s7-6.5 7-12a7 7 0 0 0-14 0c0 5.5 7 12 7 12z"/><circle cx="12" cy="10" r="2.6"/></svg></div><h3>Visualisasi Tematik</h3><p>Menampilkan data tematik dalam bentuk peta yang interaktif dan informatif.</p></div>
+   <div class="feature"><div class="ico i-purple"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div><h3>Mendukung Analisis Spasial</h3><p>Mempermudah analisis dan pengolahan data spasial untuk pengambilan keputusan.</p></div>
+   <div class="feature"><div class="ico i-teal"><svg viewBox="0 0 24 24"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg></div><h3>Integrasi Langsung</h3><p>Terhubung dengan Geoportal IGT-PR secara aman dan efisien.</p></div>
+   <div class="feature"><div class="ico i-navy"><svg viewBox="0 0 24 24"><path d="M12 2.5l8 3v6c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10v-6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg></div><h3>Mudah Digunakan</h3><p>Antarmuka sederhana dan intuitif untuk mendukung produktivitas pengguna.</p></div>
+  </div>
+ </section>
+
+ <footer class="foot">
+  <svg class="scene" viewBox="0 0 900 150" preserveAspectRatio="none" aria-hidden="true">
+   <g fill="#cfe2f4"><rect x="560" y="40" width="22" height="70"/><rect x="588" y="58" width="16" height="52"/><rect x="610" y="30" width="18" height="80"/><rect x="634" y="52" width="24" height="58"/><rect x="664" y="44" width="16" height="66"/><rect x="686" y="60" width="22" height="50"/></g>
+   <path d="M420 150C520 80 640 70 900 60V150z" fill="#d8ecd9"/>
+   <path d="M500 150C600 100 720 95 900 92V150z" fill="#bfe0c4"/>
+   <path d="M620 150C690 125 760 112 900 108V150z" fill="#a8d2f0"/>
+   <path d="M0 150V95C120 120 220 140 360 150z" fill="#1f6fd6"/>
+   <path d="M0 150V120C90 135 170 145 250 150z" fill="#6cc46a"/>
+   <path d="M820 42a16 16 0 0 1 16 16c0 12-16 28-16 28s-16-16-16-28a16 16 0 0 1 16-16z" fill="#4f9be8"/><circle cx="820" cy="58" r="5" fill="#fff"/>
+  </svg>
+  <div class="copy"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18M5 7.5h14M5 16.5h14"/></svg><span>Copyright © 2026 Kementerian Agraria dan Tata Ruang / Badan Pertanahan Nasional</span></div>
+ </footer>
+</main>
+<script src="../../app.js"></script>
+<script>
+// Login is simulated: there is no authentication. Roles are chosen in the preview drawer.
+$('#loginBtn').addEventListener('click', () => {
+  toast('Simulasi login: belum ada autentikasi. Pilih role di panel "Pilih Role" untuk melihat tampilan setelah masuk.');
+});
+</script>
+</body>
+</html>

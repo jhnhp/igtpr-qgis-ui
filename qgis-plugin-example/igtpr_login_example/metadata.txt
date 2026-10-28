@@ -1,0 +1,14 @@
+[general]
+name=IGT-PR Login (Contoh)
+qgisMinimumVersion=3.16
+supportsQt6=True
+description=Contoh halaman login IGT-PR sebagai dock widget Qt
+version=0.1
+author=Kementerian ATR/BPN
+email=studio.exium@gmail.com
+about=Contoh implementasi halaman login mockup IGT-PR (shared/login/index.html) dengan widget Qt, QSS, QSvgRenderer dan QPainter. Tombol LOGIN hanya memancarkan sinyal; tidak ada autentikasi.
+repository=https://github.com/jhnhp/igtpr-qgis-ui
+experimental=True
+deprecated=False
+category=Plugins
+server=False
