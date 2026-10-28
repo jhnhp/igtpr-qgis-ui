@@ -350,7 +350,7 @@ class LoginPage(QWidget):
         globe.setPixmap(svg_pixmap(ICONS['globe'].format(color=NAVY), QSize(22, 22)))
         globe.setAlignment(Qt.AlignmentFlag.AlignTop)
         copyright_label = QLabel(
-            'Copyright © 2026 Kementerian Agraria dan Tata Ruang /\nBadan Pertanahan Nasional',
+            'Copyright © 2026 Kementerian Agraria dan\nTata Ruang / Badan Pertanahan Nasional',
             copyright_container,
         )
         copyright_label.setObjectName('copyright')
