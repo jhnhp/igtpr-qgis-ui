@@ -323,12 +323,24 @@ class LoginPage(QWidget):
         self._features = [FeatureItem(*feature, parent=self) for feature in FEATURES]
         root.addLayout(self._features_grid)
 
-        # Footer; ruang bawah disisakan untuk pemandangan yang digambar di paintEvent
+        # Footer; tombol Panduan diletakkan di atas informasi copyright.
         root.addStretch(1)
         root.addSpacing(30)
-        footer = QHBoxLayout()
+        footer = QVBoxLayout()
         footer.setContentsMargins(0, 0, 0, 112)
-        footer.setSpacing(8)
+        footer.setSpacing(6)
+
+        guide_button = QPushButton('Panduan', self)
+        guide_button.setObjectName('guideButton')
+        guide_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        guide_button.setToolTip('Buka panduan penggunaan Geoportal IGT-PR')
+        guide_button.clicked.connect(self.guideRequested)
+        self.guide_button = guide_button
+        footer.addWidget(guide_button, 0, Qt.AlignmentFlag.AlignLeft)
+
+        copyright_row = QHBoxLayout()
+        copyright_row.setContentsMargins(0, 0, 0, 0)
+        copyright_row.setSpacing(8)
         globe = QLabel(self)
         globe.setPixmap(svg_pixmap(ICONS['globe'].format(color=NAVY), QSize(20, 20)))
         globe.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -337,16 +349,9 @@ class LoginPage(QWidget):
         copyright_label.setWordWrap(True)
         copyright_label.setMaximumWidth(320)
         copyright_label.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
-        footer.addWidget(globe, 0, Qt.AlignmentFlag.AlignTop)
-        footer.addWidget(copyright_label, 0, Qt.AlignmentFlag.AlignTop)
-
-        guide_button = QPushButton('Panduan', self)
-        guide_button.setObjectName('guideButton')
-        guide_button.setCursor(Qt.CursorShape.PointingHandCursor)
-        guide_button.setToolTip('Buka panduan penggunaan Geoportal IGT-PR')
-        guide_button.clicked.connect(self.guideRequested)
-        self.guide_button = guide_button
-        footer.addWidget(guide_button, 0, Qt.AlignmentFlag.AlignTop)
+        copyright_row.addWidget(globe, 0, Qt.AlignmentFlag.AlignTop)
+        copyright_row.addWidget(copyright_label, 0, Qt.AlignmentFlag.AlignTop)
+        footer.addLayout(copyright_row)
         root.addLayout(footer)
 
         self._relayout(self.width())
