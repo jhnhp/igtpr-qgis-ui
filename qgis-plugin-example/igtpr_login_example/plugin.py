@@ -65,4 +65,4 @@ class IgtprLoginExample:
 
     def on_guide(self):
         self.iface.messageBar().pushInfo(
-            'IGT-PR', 'Panduan penggunaan belum dikonfigurasi. Tambahkan URL atau dokumen panduan panduan untuk mengaktifkan tombol ini.')
+            'IGT-PR', 'Panduan penggunaan belum dikonfigurasi. Tambahkan URL atau dokumen panduan untuk mengaktifkan tombol ini.')
