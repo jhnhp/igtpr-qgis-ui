@@ -351,7 +351,7 @@ class LoginPage(QWidget):
         layout.addStretch()
         button = QPushButton('  LOGIN    →', box)
         button.setObjectName('loginButton')
-        button.setIcon(QIcon(qgis_icon_path) if qgis_icon_path and os.path.isfile(qgis_icon_path) else QIcon(svg_pixmap(Q_ICON.format(color='white'), QSize(30, 30))))
+        button.setIcon(QIcon(self.qgis_icon_path) if self.qgis_icon_path and os.path.isfile(self.qgis_icon_path) else QIcon(svg_pixmap(Q_ICON.format(color='white'), QSize(30, 30))))
         button.setIconSize(QSize(30, 30))
         button.setCursor(Qt.CursorShape.PointingHandCursor)
         button.setMinimumHeight(64)
