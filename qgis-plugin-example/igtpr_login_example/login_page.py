@@ -208,6 +208,9 @@ class BrandHeader(QWidget):
         super().__init__(parent)
         self.bpn_logo_path = bpn_logo_path
         self.igtpr_logo_path = igtpr_logo_path
+        # Header harus tembus pandang agar dekorasi background LoginPage tetap terlihat.
+        self.setAttribute(Qt.WidgetAttribute.WA_NoSystemBackground, True)
+        self.setAutoFillBackground(False)
         self.setMinimumHeight(76)
         self.setMaximumHeight(112)
         self._bpn = QLabel(self)
@@ -259,9 +262,9 @@ class BrandHeader(QWidget):
         super().resizeEvent(event)
 
     def paintEvent(self, event):
-        """Latar putih bersih; tanpa pola rapat agar header tidak tampak bertekstur."""
-        painter = QPainter(self)
-        painter.fillRect(self.rect(), QColor('#ffffff'))
+        """Tidak mengecat bidang latar; tampilkan background induk melalui header."""
+        # Sengaja kosong agar background induk terlihat di belakang logo.
+        return
 
 
 class LoginPage(QWidget):
