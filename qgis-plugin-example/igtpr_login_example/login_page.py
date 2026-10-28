@@ -68,6 +68,18 @@ QPushButton#loginButton:hover {{
 }}
 QPushButton#loginButton:pressed {{ background: #0b4cad; }}
 QPushButton#loginButton:focus {{ border: 3px solid #9cc6ff; }}
+QPushButton#adminLoginButton {{
+    color: #174a91; font-size: 11px; font-weight: 600;
+    border: 1px solid #b8cce7; border-radius: 8px;
+    padding: 7px 12px; background: rgba(255, 255, 255, 220);
+}}
+QPushButton#adminLoginButton:hover {{ background: #eaf3ff; border-color: #7da8df; }}
+QPushButton#guideButton {{
+    color: #174a91; font-size: 11px; font-weight: 600;
+    border: 1px solid #b8cce7; border-radius: 8px;
+    padding: 7px 12px; background: rgba(255, 255, 255, 225);
+}}
+QPushButton#guideButton:hover {{ background: #eaf3ff; border-color: #7da8df; }}
 """
 
 
@@ -252,6 +264,8 @@ class LoginPage(QWidget):
     """Halaman pertama plugin sebelum pengguna masuk."""
 
     loginRequested = pyqtSignal()
+    adminLoginRequested = pyqtSignal()
+    guideRequested = pyqtSignal()
 
     def __init__(self, logo_path=None, igtpr_logo_path=None, parent=None):
         super().__init__(parent)
@@ -316,7 +330,14 @@ class LoginPage(QWidget):
         copyright_label.setMaximumWidth(320)
         footer.addWidget(globe, 0, Qt.AlignmentFlag.AlignTop)
         footer.addWidget(copyright_label, 1, Qt.AlignmentFlag.AlignTop)
-        footer.addStretch()
+
+        guide_button = QPushButton('Panduan', self)
+        guide_button.setObjectName('guideButton')
+        guide_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        guide_button.setToolTip('Buka panduan penggunaan Geoportal IGT-PR')
+        guide_button.clicked.connect(self.guideRequested)
+        self.guide_button = guide_button
+        footer.addWidget(guide_button, 0, Qt.AlignmentFlag.AlignTop)
         root.addLayout(footer)
 
         self._relayout(self.width())
@@ -345,6 +366,15 @@ class LoginPage(QWidget):
         hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
         hint.setWordWrap(True)
         layout.addWidget(button)
+
+        admin_button = QPushButton('Administator', box)
+        admin_button.setObjectName('adminLoginButton')
+        admin_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        admin_button.setToolTip('Login khusus administrator')
+        admin_button.clicked.connect(self.adminLoginRequested)
+        self.admin_login_button = admin_button
+        layout.addWidget(admin_button, 0, Qt.AlignmentFlag.AlignRight)
+
         layout.addWidget(hint)
         layout.addStretch()
         return box
