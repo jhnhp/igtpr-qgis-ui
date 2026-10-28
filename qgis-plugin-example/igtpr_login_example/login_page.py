@@ -267,8 +267,9 @@ class LoginPage(QWidget):
     adminLoginRequested = pyqtSignal()
     guideRequested = pyqtSignal()
 
-    def __init__(self, logo_path=None, igtpr_logo_path=None, parent=None):
+    def __init__(self, logo_path=None, igtpr_logo_path=None, qgis_icon_path=None, parent=None):
         super().__init__(parent)
+        self.qgis_icon_path = qgis_icon_path
         self.setObjectName('loginPage')
         self.setStyleSheet(LOGIN_QSS)
         self._layout_mode = None
@@ -350,7 +351,7 @@ class LoginPage(QWidget):
         layout.addStretch()
         button = QPushButton('  LOGIN    →', box)
         button.setObjectName('loginButton')
-        button.setIcon(QIcon(svg_pixmap(Q_ICON.format(color='white'), QSize(30, 30))))
+        button.setIcon(QIcon(qgis_icon_path) if qgis_icon_path and os.path.isfile(qgis_icon_path) else QIcon(svg_pixmap(Q_ICON.format(color='white'), QSize(30, 30))))
         button.setIconSize(QSize(30, 30))
         button.setCursor(Qt.CursorShape.PointingHandCursor)
         button.setMinimumHeight(64)
@@ -494,10 +495,10 @@ class LoginPage(QWidget):
 class LoginDockWidget(QDockWidget):
     """Dock plugin yang berisi LoginPage di dalam area gulir."""
 
-    def __init__(self, logo_path=None, igtpr_logo_path=None, parent=None):
+    def __init__(self, logo_path=None, igtpr_logo_path=None, qgis_icon_path=None, parent=None):
         super().__init__('IGT-PR', parent)
         self.setObjectName('IgtprLoginExampleDock')
-        self.page = LoginPage(logo_path, igtpr_logo_path)
+        self.page = LoginPage(logo_path, igtpr_logo_path, qgis_icon_path)
         scroll = QScrollArea(self)
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QFrame.Shape.NoFrame)
