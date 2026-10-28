@@ -28,7 +28,11 @@ body{background:#f4f8fd;overflow-x:hidden}
 .login-btn:focus-visible{outline:3px solid #9cc6ff;outline-offset:3px}
 .login-btn .q{width:34px;height:34px;flex:none}
 .login-btn .arrow{font-size:1.1em;font-weight:400}
-.login-hint{margin:0;text-align:center;color:#6b7f9a;font-size:11px;line-height:1.5}
+.login-secondary-row{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
+.login-hint{margin:0;flex:1;min-width:0;text-align:left;color:#6b7f9a;font-size:11px;line-height:1.5}
+.admin-login-btn{flex:none;border:1px solid #b8cce7;border-radius:8px;padding:7px 12px;background:rgba(255,255,255,.86);color:#174a91;font:600 11px "Segoe UI",Arial,sans-serif;cursor:pointer}
+.admin-login-btn:hover{background:#eaf3ff;border-color:#7da8df}
+.admin-login-btn:focus-visible{outline:2px solid #9cc6ff;outline-offset:2px}
 .features h2{margin:0 0 22px;color:#123a86;font-size:clamp(18px,2.8vw,25px);font-weight:800}
 .features .accent{margin:14px 0 16px}
 .feature-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:26px 22px}
@@ -129,7 +133,10 @@ body{background:#f4f8fd;overflow-x:hidden}
     <svg class="q" viewBox="0 0 40 40" aria-hidden="true"><circle cx="18" cy="18" r="13" fill="none" stroke="#fff" stroke-width="6"/><path d="M24 24l10 10" stroke="#fff" stroke-width="7" stroke-linecap="round"/></svg>
     <span>LOGIN</span><span class="arrow" aria-hidden="true">→</span>
    </button>
-   <p class="login-hint">Masuk dengan akun Geoportal IGT-PR (simulasi).</p>
+   <div class="login-secondary-row">
+    <p class="login-hint">Masuk dengan SSO</p>
+    <button class="admin-login-btn" id="adminLoginBtn" type="button">Administator</button>
+   </div>
   </div>
  </section>
 
@@ -162,7 +169,10 @@ body{background:#f4f8fd;overflow-x:hidden}
 <script>
 // Login is simulated: there is no authentication. Roles are chosen in the preview drawer.
 $('#loginBtn').addEventListener('click', () => {
-  toast('Simulasi login: belum ada autentikasi. Pilih role di panel "Pilih Role" untuk melihat tampilan setelah masuk.');
+  toast('Simulasi login SSO: belum ada autentikasi. Pilih role di panel "Pilih Role" untuk melihat tampilan setelah masuk.');
+});
+$('#adminLoginBtn').addEventListener('click', () => {
+  toast('Simulasi login administrator: autentikasi administrator belum dikonfigurasi.');
 });
 </script>
 </body>
