@@ -348,7 +348,7 @@ class LoginPage(QWidget):
         copyright_label.setObjectName('copyright')
         copyright_label.setWordWrap(True)
         copyright_label.setMaximumWidth(320)
-        copyright_label.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
+        copyright_label.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
         copyright_row.addWidget(globe, 0, Qt.AlignmentFlag.AlignTop)
         copyright_row.addWidget(copyright_label, 0, Qt.AlignmentFlag.AlignTop)
         footer.addLayout(copyright_row)
