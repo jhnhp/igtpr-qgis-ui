@@ -386,9 +386,9 @@ class LoginPage(QWidget):
         button.setGraphicsEffect(shadow)
         button.clicked.connect(self.loginRequested)
         self.login_button = button
-        hint = QLabel('Masuk dengan akun Geoportal IGT-PR.', box)
+        hint = QLabel('Masuk dengan SSO', box)
         hint.setObjectName('hint')
-        hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        hint.setAlignment(Qt.AlignmentFlag.AlignRight)
         hint.setWordWrap(True)
         layout.addWidget(button)
 
