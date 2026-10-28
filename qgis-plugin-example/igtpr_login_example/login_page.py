@@ -21,7 +21,7 @@ from qgis.PyQt.QtWidgets import (
     QScrollArea, QSizePolicy, QVBoxLayout, QWidget,
 )
 
-from .assets import CONTOUR_SVG, ICONS, ILLUSTRATION_SVG, Q_ICON
+from .assets import CONTOUR_SVG, ICONS, ILLUSTRATION_SVG
 
 NAVY = '#123a86'
 PIXEL_RATIO = 2  # pixmap dirender 2x supaya tetap tajam di layar HiDPI
@@ -216,6 +216,7 @@ class BrandHeader(QWidget):
         self._qgis = QLabel(self)
         self._brand_title = QLabel('GEOPORTAL IGT-PR', self)
         self._brand_title.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
+        self._brand_title.setWordWrap(True)
         self._bpn.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._igtpr.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._qgis.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -247,17 +248,17 @@ class BrandHeader(QWidget):
         return QPixmap()
 
     def _refresh_logos(self):
-        height = max(40, min(68, self.height() - 12))
+        compact = self.width() < 470
+        height = max(32, min(44 if compact else 68, self.height() - 12))
         self._bpn.setPixmap(self._load_logo(self.bpn_logo_path, QSize(height, height)))
         self._igtpr.setPixmap(self._load_logo(self.igtpr_logo_path, QSize(height, height)))
         self._qgis.setPixmap(self._load_logo(self.qgis_icon_path, QSize(height, height)))
         self._bpn.setFixedSize(height, height)
         self._igtpr.setFixedSize(height, height)
         self._qgis.setFixedSize(height, height)
-        compact = self.width() < 470
         self._brand_title.setStyleSheet(
             'color: #080b12; font-family: "Segoe UI", Arial, sans-serif; '
-            'font-size: %dpx; font-weight: 500; background: transparent;' % (19 if compact else 26))
+            'font-size: %dpx; font-weight: 500; background: transparent;' % (16 if compact else 26))
 
     def resizeEvent(self, event):
         self._refresh_logos()
