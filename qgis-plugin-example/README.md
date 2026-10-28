@@ -23,7 +23,7 @@ ln -s "$PWD/igtpr_login_example" ~/.local/share/QGIS/QGIS3/profiles/default/pyth
 
 Tombol toolbar *Login IGT-PR (contoh)* membuka dan menutup dock.
 
-Lambang di kiri atas adalah placeholder. Untuk memakai logo asli, salin `logo-bpn.png` dari plugin IGT-PR ke folder `igtpr_login_example/`; file itu dipakai otomatis bila ada.
+Header login menggunakan `Examples/logo-bpn.png` dan `Examples/logo-igtpr.png` dengan judul **GEOPORTAL IGT-PR** dan pola garis latar mengikuti referensi visual. Saat dijalankan dari repository, plugin membaca kedua logo langsung dari folder `Examples/`. Untuk distribusi ZIP mandiri, salin kedua PNG itu ke folder `igtpr_login_example/` agar logo tersedia setelah plugin dipasang. Catatan: aset yang ada di `Examples/` saat ini berupa PNG, bukan SVG.
 
 ## Dari HTML ke Qt
 
