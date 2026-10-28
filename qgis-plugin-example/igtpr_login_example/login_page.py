@@ -338,20 +338,31 @@ class LoginPage(QWidget):
         self.guide_button = guide_button
         footer.addWidget(guide_button, 0, Qt.AlignmentFlag.AlignLeft)
 
-        copyright_row = QHBoxLayout()
+        # Bungkus ikon dan teks dalam widget mandiri yang ukurannya mengikuti konten.
+        # Widget ini diratakan ke kiri agar layout footer tidak mendorong copyright ke kanan.
+        copyright_container = QWidget(self)
+        copyright_container.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
+        copyright_row = QHBoxLayout(copyright_container)
         copyright_row.setContentsMargins(0, 0, 0, 0)
         copyright_row.setSpacing(0)
-        globe = QLabel(self)
+
+        globe = QLabel(copyright_container)
         globe.setPixmap(svg_pixmap(ICONS['globe'].format(color=NAVY), QSize(20, 20)))
         globe.setAlignment(Qt.AlignmentFlag.AlignTop)
-        copyright_label = QLabel('Copyright © 2026 Kementerian Agraria dan Tata Ruang / Badan Pertanahan Nasional', self)
+        copyright_label = QLabel(
+            'Copyright © 2026 Kementerian Agraria dan Tata Ruang / Badan Pertanahan Nasional',
+            copyright_container,
+        )
         copyright_label.setObjectName('copyright')
         copyright_label.setWordWrap(True)
         copyright_label.setMaximumWidth(320)
         copyright_label.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
         copyright_row.addWidget(globe, 0, Qt.AlignmentFlag.AlignTop)
         copyright_row.addWidget(copyright_label, 0, Qt.AlignmentFlag.AlignTop)
-        footer.addLayout(copyright_row)
+        footer.addWidget(
+            copyright_container, 0,
+            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop,
+        )
         root.addLayout(footer)
 
         self._relayout(self.width())
