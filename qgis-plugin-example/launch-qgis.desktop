@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Buka QGIS (Geoportal IGT-PR)
+Comment=Jalankan QGIS dengan plugin Geoportal IGT-PR aktif
+Exec=/bin/bash -c "cd /home/jhn/projects/SPPR/Mitraeka/igtpr-qgis-ui/qgis-plugin-example && ./launch_qgis.sh"
+Icon=qgis
+Terminal=false
+Categories=GIS;Science;Geography;

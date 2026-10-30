@@ -51,15 +51,32 @@ igtpr_login_example/
 7. **Model Builder Spasial**:
    - Daftar model analisis spasial (Analisis Kesesuaian Lahan, Buffer Kawasan Lindung, Overlay RTRW vs Bidang, dsb.) yang dapat dieksekusi langsung ke kanvas peta.
 
-## Memasang di QGIS
+## Menjalankan & Mencoba Plugin
 
-Salin atau symlink folder `igtpr_login_example` ke folder plugin profil QGIS Anda, atau pasang dari file ZIP `igtpr_login_example.zip` melalui menu *Plugins → Install from ZIP*:
+Tersedia beberapa cara praktis dan shortcut di dalam folder `qgis-plugin-example/`:
 
+### 1. Preview Cepat Mandiri (Tanpa Membuka QGIS Lengkap)
+Anda dapat langsung melihat dan berinteraksi dengan plugin lengkap (termasuk kanvas peta QGIS interaktif):
 ```bash
-# Linux
-ln -s "$PWD/igtpr_login_example" ~/.local/share/QGIS/QGIS3/profiles/default/python/plugins/
-# Windows
-# %APPDATA%\QGIS\QGIS3\profiles\default\python\plugins\
+cd qgis-plugin-example
+./preview.sh
+# atau: python3 preview.py
+```
+> Atau klik dua kali shortcut **`igtpr-preview.desktop`** di file manager.
+
+### 2. Jalankan Langsung di Aplikasi QGIS
+Script ini akan memastikan plugin terhubung (symlink) ke profil QGIS Anda, lalu membuka QGIS:
+```bash
+cd qgis-plugin-example
+./launch_qgis.sh
+```
+> Atau klik dua kali shortcut **`launch-qgis.desktop`** di file manager.
+
+### 3. Pasang Manual / Symlink ke Profil QGIS
+Untuk menghubungkan repositori plugin ke QGIS agar perubahan kode langsung aktif:
+```bash
+cd qgis-plugin-example
+./install_to_qgis.sh
 ```
 
-Aktifkan **Geoportal IGT-PR (Mockup V2)** di *Plugins → Manage and Install Plugins*. Klik tombol toolbar IGT-PR untuk membuka panel dock.
+Aktifkan **Geoportal IGT-PR (Mockup V2)** di menu QGIS: *Plugins → Manage and Install Plugins*. Klik tombol toolbar IGT-PR untuk membuka panel dock.

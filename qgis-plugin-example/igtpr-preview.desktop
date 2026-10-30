@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Preview Geoportal IGT-PR (V2)
+Comment=Preview mandiri plugin Geoportal IGT-PR dengan kanvas QGIS
+Exec=/bin/bash -c "cd /home/jhn/projects/SPPR/Mitraeka/igtpr-qgis-ui/qgis-plugin-example && ./preview.sh"
+Icon=/home/jhn/projects/SPPR/Mitraeka/igtpr-qgis-ui/qgis-plugin-example/igtpr_login_example/icon.png
+Terminal=false
+Categories=GIS;Science;Geography;
