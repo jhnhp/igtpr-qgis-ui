@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="../../styles.css">
 <style>
 body{background:#f4f8fd;overflow-x:hidden}
-.login{position:relative;width:100%;max-width:420px;min-height:100vh;margin:0 auto;container-type:inline-size;container-name:login;display:flex;flex-direction:column;overflow:hidden;padding:26px 24px 0;font-family:"Segoe UI",Arial,sans-serif;background:linear-gradient(180deg,#f7fbff,#eef5fc 55%,#f6faff)}
+.login{position:relative;width:100%;max-width:760px;min-height:100vh;margin:0 auto;container-type:inline-size;container-name:login;display:flex;flex-direction:column;overflow:hidden;padding:26px 24px 0;font-family:"Segoe UI",Arial,sans-serif;background:linear-gradient(180deg,#f7fbff,#eef5fc 55%,#f6faff)}
 .login>*{position:relative;z-index:1}
 .deco{position:absolute;inset:0;z-index:0;pointer-events:none}
 .deco:before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 70% 45% at 0% 35%,rgba(220,236,251,.78) 0,transparent 70%)}
@@ -18,13 +18,14 @@ body{background:#f4f8fd;overflow-x:hidden}
 .head{display:flex;align-items:center;gap:10px;min-height:76px;max-height:112px}
 .head .brand-logo{display:block;flex:none;width:68px;height:68px;object-fit:contain}
 .head h1{margin:0;color:#080b12;font-size:26px;line-height:1.18;font-weight:500;letter-spacing:0;overflow-wrap:anywhere}
-.accent{display:block;width:90px;height:4px;border-radius:3px;background:linear-gradient(90deg,#4cb860 0 50%,#1f6fd6 50% 100%);margin:22px 0 14px}
+.accent{display:block;width:90px;height:4px;border-radius:2px;background:linear-gradient(90deg,#4cb860 0 50%,#1f6fd6 50% 100%);margin:22px 0 14px}
 .intro{margin:0;max-width:640px;color:#3f5675;font-size:13px;line-height:1.65}
 .hero{display:grid;grid-template-columns:minmax(0,1fr);align-items:center;gap:10px;margin:18px 0}
-.hero>svg{display:block;width:100%;height:auto;grid-row:2}
+.hero-art{display:block;width:100%;height:auto;grid-row:2}
 .login-side{display:flex;flex-direction:column;align-items:stretch;gap:10px;order:-1}
-.login-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:64px;border:0;border-radius:14px;padding:16px 20px;background:linear-gradient(180deg,#1f6fd6,#0f58c4);color:#fff;font-size:20px;font-weight:800;letter-spacing:1px;box-shadow:0 10px 26px #0f58c440;transition:.18s}
-.login-btn:hover{background:linear-gradient(180deg,#1a63c7,#0b4cad);transform:translateY(-1px)}
+.login-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:64px;border:0;border-radius:14px;padding:16px 20px;background:linear-gradient(180deg,#1f6fd6 0%,#0f58c4 100%);color:#fff;font-size:20px;font-weight:800;letter-spacing:1px;box-shadow:0 10px 24px rgba(15,88,196,.35);transition:.18s;cursor:pointer}
+.login-btn:hover{background:linear-gradient(180deg,#1a63c7 0%,#0b4cad 100%);box-shadow:0 12px 28px rgba(15,88,196,.45);transform:translateY(-1px)}
+.login-btn:active{transform:translateY(0);box-shadow:0 6px 16px rgba(15,88,196,.3)}
 .login-btn:focus-visible{outline:3px solid #9cc6ff;outline-offset:3px}
 .login-btn .q{width:30px;height:30px;flex:none;object-fit:contain}
 .login-btn .arrow{font-size:1.1em;font-weight:400}
@@ -47,13 +48,27 @@ body{background:#f4f8fd;overflow-x:hidden}
 .i-navy{background:#e4edfa}.i-navy svg{stroke:#1c5fc0}
 .foot{position:relative;margin:auto -24px 0;min-height:150px;display:flex;align-items:flex-start;padding:28px 24px 0}
 .foot-content{display:flex;flex-direction:column;align-items:flex-start;gap:6px;position:relative;z-index:1;width:100%}
-.foot .guide-btn{border:1px solid #b8cce7;border-radius:8px;padding:9px 14px;background:rgba(255,255,255,.88);color:#174a91;font:600 13px "Segoe UI",Arial,sans-serif;cursor:pointer}
+.foot .guide-btn{border:1px solid #b8cce7;border-radius:8px;padding:9px 14px;background:rgba(255,255,255,.88);color:#174a91;font:600 13px "Segoe UI",Arial,sans-serif;cursor:pointer;display:inline-flex;align-items:center;text-decoration:none}
 .foot .guide-btn:hover{background:#eaf3ff;border-color:#7da8df}
 .foot .guide-btn:focus-visible{outline:2px solid #9cc6ff;outline-offset:2px}
 .foot .copy{display:flex;align-items:flex-start;gap:0;width:100%;max-width:none;color:#4b5f7c;font-size:12px;line-height:1.5;padding:0 0 96px;position:relative;z-index:1}
 .foot .copy span{display:block;flex:1;min-width:0}
 .foot .copy svg{flex:none;width:22px;height:22px;stroke:#123a86;fill:none;stroke-width:1.6}
 .foot .scene{position:absolute;left:0;right:0;bottom:0;width:100%;height:150px}
+.role-modal-backdrop{position:fixed;inset:0;z-index:1000;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:18px}
+.role-modal-card{width:min(380px,100%);background:#fff;border:1px solid #d5e2f2;border-radius:14px;box-shadow:0 16px 40px rgba(15,23,42,.22);padding:16px;font-family:"Segoe UI",Arial,sans-serif}
+.role-modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.role-modal-head h3{margin:0;font-size:15px;font-weight:800;color:#123a86}
+.role-modal-close{border:1px solid #d5e2f2;background:#f5f9ff;color:#174a91;border-radius:7px;width:28px;height:28px;font-weight:700;cursor:pointer}
+.role-modal-list{display:grid;gap:8px}
+.role-modal-btn{display:flex;align-items:center;justify-content:space-between;width:100%;padding:11px 13px;border-radius:10px;border:1px solid #d5e2f2;background:#f8fbff;color:#123a86;font:700 13px "Segoe UI",Arial,sans-serif;cursor:pointer;text-align:left}
+.role-modal-btn:hover{background:#eaf3ff;border-color:#7da8df}
+@container login (min-width: 560px){
+ .hero{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:20px}
+ .hero-art{grid-row:1}
+ .login-side{order:0}
+ .feature-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
 @container login (max-width: 470px){
  .head .brand-logo{width:44px;height:44px}
  .head h1{font-size:16px}
@@ -85,50 +100,7 @@ body{background:#f4f8fd;overflow-x:hidden}
  <p class="intro">Integrasi Plugin QGIS dengan Geoportal IGT-PR memudahkan pengguna mengakses, memvisualisasikan, dan mengelola data Informasi Geospasial Tematik Pertanahan dan Ruang secara langsung melalui QGIS.</p>
 
  <section class="hero">
-  <svg viewBox="0 0 520 470" role="img" aria-label="Ilustrasi jendela QGIS dengan tumpukan layer IGT">
-   <defs>
-    <filter id="soft" x="-10%" y="-10%" width="120%" height="140%"><feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#1f4f8f" flood-opacity=".18"/></filter>
-    <g id="parcels" fill="none" stroke="#fff" stroke-width="2" stroke-opacity=".85">
-     <path d="M0 40h400M0 95h400M0 150h400M0 190h400M55 0v220M120 0v220M170 0v220M240 0v220M300 0v220M350 0v220"/>
-     <path d="M20 0l30 220M200 0l-25 220M280 0l40 220M0 120l400-30" stroke-width="1.2"/>
-    </g>
-   </defs>
-   <g filter="url(#soft)">
-    <g transform="matrix(1,.07,.42,.24,20,402)"><rect width="400" height="220" rx="10" fill="#2f9e44"/><rect x="40" y="30" width="120" height="70" fill="#6cc46a"/><rect x="230" y="120" width="150" height="80" fill="#1f7a34"/><use href="#parcels" stroke-opacity=".4"/></g>
-    <g transform="matrix(1,.07,.42,.24,20,362)"><rect width="400" height="220" rx="10" fill="#d4d8de"/><path d="M0 60C80 80 140 30 220 70S360 120 400 90M60 0l40 220M260 0l-30 220" fill="none" stroke="#7d8794" stroke-width="2.5" stroke-dasharray="7 6"/></g>
-    <g transform="matrix(1,.07,.42,.24,20,322)"><rect width="400" height="220" rx="10" fill="#b57de8"/><rect x="0" y="0" width="170" height="95" fill="#9b5fdb"/><rect x="240" y="150" width="160" height="70" fill="#d3a8f3"/><use href="#parcels"/></g>
-    <g transform="matrix(1,.07,.42,.24,20,282)"><rect width="400" height="220" rx="10" fill="#4f9be8"/><rect x="120" y="40" width="120" height="110" fill="#7fbaf5"/><rect x="300" y="0" width="100" height="95" fill="#2f7fd6"/><use href="#parcels"/></g>
-    <g transform="matrix(1,.07,.42,.24,20,242)"><rect width="400" height="220" rx="10" fill="#f5b82e"/><rect x="55" y="95" width="115" height="95" fill="#f7cf63"/><rect x="240" y="40" width="110" height="110" fill="#ec9f1c"/><use href="#parcels"/></g>
-   </g>
-   <g filter="url(#soft)">
-    <rect x="58" y="14" width="440" height="262" rx="8" fill="#fff" stroke="#c9d6e6"/>
-    <rect x="58" y="14" width="440" height="20" rx="8" fill="#3f86de"/><rect x="58" y="26" width="440" height="8" fill="#3f86de"/>
-    <text x="70" y="28" fill="#fff" font-size="10" font-weight="700">QGIS</text>
-    <rect x="58" y="34" width="440" height="24" fill="#f1f4f8"/>
-    <g fill="#9fb0c5"><rect x="66" y="40" width="10" height="10" rx="2"/><rect x="80" y="40" width="10" height="10" rx="2"/><rect x="94" y="40" width="10" height="10" rx="2"/><rect x="112" y="40" width="10" height="10" rx="2" fill="#f2b84b"/><rect x="126" y="40" width="10" height="10" rx="2" fill="#6bb36f"/><rect x="140" y="40" width="10" height="10" rx="2"/><rect x="160" y="40" width="10" height="10" rx="2"/><rect x="174" y="40" width="10" height="10" rx="2" fill="#5d9be2"/><rect x="188" y="40" width="10" height="10" rx="2"/></g>
-    <g fill="#c5d0dd"><rect x="64" y="66" width="8" height="8" rx="2"/><rect x="64" y="82" width="8" height="8" rx="2"/><rect x="64" y="98" width="8" height="8" rx="2"/><rect x="64" y="114" width="8" height="8" rx="2"/><rect x="64" y="130" width="8" height="8" rx="2"/></g>
-    <clipPath id="mapclip"><rect x="80" y="62" width="250" height="196"/></clipPath>
-    <g clip-path="url(#mapclip)">
-     <rect x="80" y="62" width="250" height="196" fill="#8fd17a"/>
-     <path d="M80 62h150l-30 90-120 20z" fill="#f6c440"/><path d="M200 62h130v80l-70 10z" fill="#f2e38f"/>
-     <path d="M150 140l90-10 40 128H150z" fill="#f8e6a6"/><path d="M250 150l80-20v128h-40z" fill="#9cc3f2"/>
-     <path d="M80 200l70-20 10 78H80z" fill="#59b458"/><path d="M285 205l45-5v58h-35z" fill="#b28be6"/>
-     <path d="M255 62C250 120 280 160 300 200S320 240 330 258" fill="none" stroke="#3d8ee6" stroke-width="9"/>
-     <path d="M130 62C140 130 160 190 150 258" fill="none" stroke="#1f6b43" stroke-width="3"/>
-     <g stroke="#fff" stroke-width="1" opacity=".7"><path d="M80 90h250M80 118h250M80 146h250M80 174h250M80 202h250M80 230h250M105 62v196M130 62v196M155 62v196M180 62v196M205 62v196M230 62v196M280 62v196M305 62v196"/></g>
-    </g>
-    <rect x="336" y="62" width="156" height="196" fill="#fff" stroke="#e1e8f1"/>
-    <g font-size="11" fill="#22344f">
-     <rect x="348" y="80" width="13" height="13" rx="2" fill="#f5b82e"/><text x="370" y="91">Bidang Tanah</text>
-     <rect x="348" y="112" width="13" height="13" rx="2" fill="#7fbaf5"/><text x="370" y="123">Rencana Tata Ruang</text>
-     <rect x="348" y="144" width="13" height="13" rx="2" fill="#b57de8"/><text x="370" y="155">Zona Nilai Tanah</text>
-     <rect x="348" y="176" width="13" height="13" rx="2" fill="#c5cad1"/><text x="370" y="187">Batas Administrasi</text>
-     <rect x="348" y="208" width="13" height="13" rx="2" fill="#2f9e44"/><text x="370" y="219">Kawasan Hutan</text>
-    </g>
-    <rect x="58" y="258" width="440" height="18" fill="#f1f4f8"/>
-    <g fill="#c5d0dd"><rect x="120" y="264" width="40" height="6" rx="3"/><rect x="200" y="264" width="30" height="6" rx="3"/><rect x="300" y="264" width="50" height="6" rx="3"/><rect x="420" y="264" width="40" height="6" rx="3"/></g>
-   </g>
-  </svg>
+  <img class="hero-art" src="illustration.png" width="883" height="829" alt="Ilustrasi jendela QGIS di atas tumpukan layer IGT">
 
   <div class="login-side">
    <button class="login-btn" id="loginBtn" type="button">
@@ -137,7 +109,7 @@ body{background:#f4f8fd;overflow-x:hidden}
    </button>
    <div class="login-secondary-row">
     <p class="login-hint">Masuk dengan SSO</p>
-    <button class="admin-login-btn" id="adminLoginBtn" type="button">Administator</button>
+    <button class="admin-login-btn" id="adminLoginBtn" type="button">Administrator</button>
    </div>
   </div>
  </section>
@@ -164,20 +136,49 @@ body{background:#f4f8fd;overflow-x:hidden}
    <path d="M0 150V120C90 135 170 145 250 150z" fill="#6cc46a"/>
    <path d="M820 42a16 16 0 0 1 16 16c0 12-16 28-16 28s-16-16-16-28a16 16 0 0 1 16-16z" fill="#4f9be8"/><circle cx="820" cy="58" r="5" fill="#fff"/>
   </svg>
-  <div class="foot-content"><button class="guide-btn" id="guideBtn" type="button">Panduan</button><div class="copy"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18M5 7.5h14M5 16.5h14"/></svg><span>Copyright © 2026 Kementerian Agraria<br>dan Tata Ruang / Badan Pertanahan Nasional</span></div></div>
+  <div class="foot-content"><a class="guide-btn" id="guideBtn" href="https://igtpr.atrbpn.go.id/" target="_blank" rel="noopener noreferrer">Panduan</a><div class="copy"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18M5 7.5h14M5 16.5h14"/></svg><span>Copyright © 2026 Kementerian Agraria<br>dan Tata Ruang / Badan Pertanahan Nasional</span></div></div>
  </footer>
+ <div class="role-modal-backdrop" id="roleModal" hidden role="dialog" aria-modal="true" aria-labelledby="roleModalTitle">
+  <div class="role-modal-card">
+   <div class="role-modal-head">
+    <h3 id="roleModalTitle">Pilih Role Masuk</h3>
+    <button type="button" class="role-modal-close" id="closeRoleModal" aria-label="Tutup">✕</button>
+   </div>
+   <div class="role-modal-list">
+    <button type="button" class="role-modal-btn" data-login-role="superadmin"><span>Superadmin</span><span>→</span></button>
+    <button type="button" class="role-modal-btn" data-login-role="admin"><span>Admin</span><span>→</span></button>
+    <button type="button" class="role-modal-btn" data-login-role="operator"><span>Operator Pusat</span><span>→</span></button>
+    <button type="button" class="role-modal-btn" data-login-role="umum"><span>Umum</span><span>→</span></button>
+   </div>
+  </div>
+ </div>
 </main>
 <script src="../../app.js"></script>
 <script>
-// Login is simulated: there is no authentication. Roles are chosen in the preview drawer.
+const roleModal = document.getElementById('roleModal');
+function enterRole(baseRole) {
+  roleModal.hidden = true;
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'igtpr-switch-role', role: baseRole }, '*');
+  } else {
+    const roleDir = baseRole + '2';
+    window.location.href = '../../roles/' + roleDir + '/beranda/index.html';
+  }
+}
 $('#loginBtn').addEventListener('click', () => {
-  toast('Simulasi login SSO: belum ada autentikasi. Pilih role di panel "Pilih Role" untuk melihat tampilan setelah masuk.');
+  roleModal.hidden = false;
+});
+$('#closeRoleModal').addEventListener('click', () => {
+  roleModal.hidden = true;
+});
+roleModal.addEventListener('click', (e) => {
+  if (e.target === roleModal) roleModal.hidden = true;
+});
+document.querySelectorAll('[data-login-role]').forEach((btn) => {
+  btn.addEventListener('click', () => enterRole(btn.dataset.loginRole));
 });
 $('#adminLoginBtn').addEventListener('click', () => {
-  toast('Simulasi login administrator: autentikasi administrator belum dikonfigurasi.');
-});
-$('#guideBtn').addEventListener('click', () => {
-  toast('Panduan penggunaan belum dikonfigurasi.');
+  enterRole('superadmin');
 });
 </script>
 </body>

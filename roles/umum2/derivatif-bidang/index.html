@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Kustom Tematik Derivatif · IGT-PR</title><link rel="icon" type="image/x-icon" href="https://www.atrbpn.go.id/favicon.ico"><link rel="stylesheet" href="../../../styles.css">
+<style>
+
+</style>
+</head>
+<body class="panel panel-dash panel-list panel-home panel-detail v2-page v2-theme-upload" data-page="derivatif-bidang"><div class="app"><div class="workspace">
+<header class="topbar"><div class="crumb">Geoportal IGT-PR　/　<a href="../beranda/index.html">Unggah Data</a>　/　<strong id="crumb-title">Kustom Tematik Derivatif</strong></div><div class="top-actions"><button class="icon-btn" aria-label="Notifikasi"><svg class="ri-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 17h2v2H2v-2h2v-7a8 8 0 1 1 16 0v7zm-2 0v-7a6 6 0 1 0-12 0v7h12zm-9 4h6v2H9v-2z"/></svg></button><div class="user-chip"><div class="avatar">UM</div><span>Umum</span></div></div></header>
+<main class="main">
+<div class="page-head"><div><div class="eyebrow">Unggah Data Geospasial</div><h1 id="page-title">Kustom Tematik Derivatif</h1><p id="page-desc">Buat layer tematik derivatif berbasis bidang tanah dan atur struktur atributnya.</p></div><a class="btn btn-soft" href="../beranda/index.html">← Kembali ke Dashboard</a></div>
+<div id="view"></div>
+<div class="footer">Mockup UI plugin QGIS · data contoh</div></main></div></div>
+<script src="../../../shared/igt-data.js"></script>
+<script src="../../../shared/derivatif-bidang.js"></script>
+<script>
+if (new URLSearchParams(location.search).get('step') === '6') {
+  document.title = 'Muat Kustom Tematik Derivatif · IGT-PR';
+  document.getElementById('crumb-title').textContent = 'Muat Kustom Tematik Derivatif';
+  document.getElementById('page-title').textContent = 'Muat Kustom Tematik Derivatif';
+  document.getElementById('page-desc').textContent = 'Muat berkas atribut kustom tematik derivatif yang telah disetujui dan gabungkan ke bidang sumber.';
+}
+DerivatifBidang.init('umum2');
+</script></body></html>

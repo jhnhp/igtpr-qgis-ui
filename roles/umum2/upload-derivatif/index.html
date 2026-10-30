@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Unggah IGT Derivatif Multiguna · IGT-PR</title>
+<link rel="icon" type="image/x-icon" href="https://www.atrbpn.go.id/favicon.ico">
+<link rel="stylesheet" href="../../../styles.css">
+<style>
+
+</style>
+</head>
+<body class="panel panel-dash panel-list panel-home v2-page v2-theme-upload" data-page="upload-derivatif">
+<div class="app"><div class="workspace">
+<header class="topbar">
+  <div class="crumb">Geoportal IGT-PR　/　<a href="../beranda/index.html">Unggah Data</a>　/　<strong>Unggah IGT Derivatif Multiguna</strong></div>
+  <div class="top-actions">
+    <button class="icon-btn" aria-label="Notifikasi">
+      <svg class="ri-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 17h2v2H2v-2h2v-7a8 8 0 1 1 16 0v7zm-2 0v-7a6 6 0 1 0-12 0v7h12zm-9 4h6v2H9v-2z"/></svg>
+    </button>
+    <div class="user-chip"><div class="avatar">UM</div><span>Umum</span></div>
+  </div>
+</header>
+<main class="main">
+  <div class="page-head">
+    <div>
+      <div class="eyebrow">Unggah Data Geospasial</div>
+      <h1>Unggah IGT Derivatif Multiguna</h1>
+      <p>Unggah berkas spasial tematik derivatif multiguna berbasis kawasan, atur simbolisasi SLD, dan kirim pengajuan.</p>
+    </div>
+    <a class="btn btn-soft" href="../beranda/index.html">← Kembali ke Dashboard</a>
+  </div>
+
+  <section class="card">
+    <div class="card-head"><div><h2>Formulir Pengajuan Layer Derivatif Multiguna</h2><p>Unggah berkas spasial kawasan, validasi geometri, dan atur gaya tampilan SLD.</p></div></div>
+    <div class="stepper">
+      <div class="step active">1 · Unggah Data</div>
+      <div class="step">2 · Validasi Geometri</div>
+      <div class="step">3 · Informasi &amp; SLD</div>
+      <div class="step">4 · Kirim</div>
+    </div>
+
+    <div class="dropzone">
+      <div class="big"><svg class="ri-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 12.586l4.243 4.242-1.415 1.415L13 16.415V22h-2v-5.587l-1.828 1.83-1.415-1.415L12 12.586zM12 2a7.001 7.001 0 0 1 6.954 6.194 5.5 5.5 0 0 1-.953 10.784v-2.014a3.5 3.5 0 1 0-1.112-6.91 5 5 0 1 0-9.777 0 3.5 3.5 0 0 0-1.292 6.88l.18.03v2.014a5.5 5.5 0 0 1-.954-10.784A7 7 0 0 1 12 2z"/></svg></div>
+      <strong>Tarik dan letakkan berkas layer derivatif di sini</strong>
+      <p>Shapefile (.zip) atau GeoPackage (.gpkg), maksimal 500 MB</p>
+      <input id="drv-file" type="file" hidden accept=".zip,.gpkg">
+      <button type="button" class="btn btn-primary" id="pick-drv-file">Pilih Berkas Spasial</button>
+      <div id="drv-file-name" class="secondary-cell" style="margin-top:8px"></div>
+    </div>
+
+    <div class="form-grid" style="margin-top:18px">
+      <div class="field">
+        <label for="drv-tema">TEMA DERIVATIF</label>
+        <select id="drv-tema">
+          <option>Pilih tema...</option>
+          <option>Kawasan Hutan &amp; Lingkungan</option>
+          <option>Kawasan Permukiman &amp; Infrastruktur</option>
+          <option>Kesesuaian &amp; Neraca Penatagunaan Tanah</option>
+          <option>Administrasi &amp; Tematik Khusus</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="drv-nama">NAMA LAYER DERIVATIF</label>
+        <input id="drv-nama" placeholder="Contoh: Derivatif Kawasan Lindung">
+      </div>
+      <div class="field">
+        <label for="drv-sld">BERKAS GAYA TAMPILAN (.SLD)</label>
+        <input id="drv-sld" placeholder="Contoh: derivatif-kawasan-lindung.sld">
+      </div>
+      <div class="field">
+        <label for="drv-masa">MASA BERLAKU LAYER</label>
+        <select id="drv-masa">
+          <option>30 Hari</option>
+          <option>90 Hari</option>
+          <option>180 Hari</option>
+          <option>1 Tahun</option>
+        </select>
+      </div>
+      <div class="field" style="grid-column:1/-1">
+        <label for="drv-desc">DESKRIPSI &amp; SUMBER DATA</label>
+        <textarea id="drv-desc" placeholder="Jelaskan metode pengolahan, layer sumber yang dipakai, dan tujuan pemetaan derivatif"></textarea>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <a class="btn btn-soft" href="../beranda/index.html">Batal</a>
+      <button type="button" class="btn btn-primary" id="submit-drv">Validasi dan Kirim Pengajuan →</button>
+      <a class="btn btn-soft" href="../upload-data/index.html?tab=derivatif">Lihat Status di Manajemen Data →</a>
+    </div>
+  </section>
+
+  <div class="footer">Mockup UI plugin QGIS · data contoh</div>
+</main>
+</div></div>
+<script>
+const fileInput = document.getElementById('drv-file');
+document.getElementById('pick-drv-file').addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', () => {
+  const f = fileInput.files && fileInput.files[0];
+  document.getElementById('drv-file-name').textContent = f ? 'Berkas dipilih: ' + f.name : '';
+});
+document.getElementById('submit-drv').addEventListener('click', () => {
+  const nama = document.getElementById('drv-nama').value.trim() || 'Layer Tematik Derivatif Baru';
+  alert('Simulasi: "' + nama + '" telah divalidasi dan ditambahkan ke daftar Manajemen Data.');
+});
+</script>
+</body>
+</html>

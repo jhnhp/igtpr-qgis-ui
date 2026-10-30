@@ -1,55 +1,10 @@
 # -*- coding: utf-8 -*-
-"""Gambar vektor untuk halaman login.
+"""Gambar vektor untuk halaman login (ikon dan garis kontur).
 
-Semua SVG di sini sengaja ditulis dalam subset yang didukung QtSvg (SVG Tiny 1.2):
-tanpa <filter>, <use>, <clipPath> atau CSS. Bayangan dibuat dengan bentuk transparan.
+Semua SVG di sini sengaja ditulis dalam subset yang didukung QtSvg (SVG Tiny 1.2): tanpa <filter>,
+<use>, <clipPath> atau CSS. Ilustrasi jendela QGIS dan tumpukan layer berupa PNG (illustration.png),
+karena perspektif, tekstur peta dan bayangannya tidak bisa dibuat dengan SVG Tiny.
 """
-
-# Garis batas bidang yang ditumpuk di atas setiap lapisan (pengganti <use> di versi HTML).
-_PARCELS = """
-<g fill="none" stroke="#ffffff" stroke-width="2" stroke-opacity="{op}">
- <path d="M0 40h400M0 95h400M0 150h400M0 190h400M55 0v220M120 0v220M170 0v220M240 0v220M300 0v220M350 0v220"/>
- <path d="M20 0l30 220M200 0l-25 220M280 0l40 220M0 120l400-30" stroke-width="1.2"/>
-</g>"""
-
-_SLAB_SHADOW = '<rect y="26" width="400" height="220" rx="10" fill="#1f4f8f" fill-opacity="0.10"/>'
-
-ILLUSTRATION_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 470" width="520" height="470">
- <g transform="matrix(1,.07,.42,.24,20,402)">{SHADOW}<rect width="400" height="220" rx="10" fill="#2f9e44"/><rect x="40" y="30" width="120" height="70" fill="#6cc46a"/><rect x="230" y="120" width="150" height="80" fill="#1f7a34"/>{PARCELS_FAINT}</g>
- <g transform="matrix(1,.07,.42,.24,20,362)">{SHADOW}<rect width="400" height="220" rx="10" fill="#d4d8de"/><path d="M0 60C80 80 140 30 220 70S360 120 400 90M60 0l40 220M260 0l-30 220" fill="none" stroke="#7d8794" stroke-width="2.5" stroke-dasharray="7,6"/></g>
- <g transform="matrix(1,.07,.42,.24,20,322)">{SHADOW}<rect width="400" height="220" rx="10" fill="#b57de8"/><rect width="170" height="95" fill="#9b5fdb"/><rect x="240" y="150" width="160" height="70" fill="#d3a8f3"/>{PARCELS}</g>
- <g transform="matrix(1,.07,.42,.24,20,282)">{SHADOW}<rect width="400" height="220" rx="10" fill="#4f9be8"/><rect x="120" y="40" width="120" height="110" fill="#7fbaf5"/><rect x="300" width="100" height="95" fill="#2f7fd6"/>{PARCELS}</g>
- <g transform="matrix(1,.07,.42,.24,20,242)">{SHADOW}<rect width="400" height="220" rx="10" fill="#f5b82e"/><rect x="55" y="95" width="115" height="95" fill="#f7cf63"/><rect x="240" y="40" width="110" height="110" fill="#ec9f1c"/>{PARCELS}</g>
-
- <rect x="63" y="22" width="440" height="262" rx="9" fill="#1f4f8f" fill-opacity="0.12"/>
- <rect x="58" y="14" width="440" height="262" rx="8" fill="#ffffff" stroke="#c9d6e6"/>
- <rect x="80" y="62" width="250" height="196" fill="#8fd17a"/>
- <path d="M80 62h150l-30 90-120 20z" fill="#f6c440"/><path d="M200 62h130v80l-70 10z" fill="#f2e38f"/>
- <path d="M150 140l90-10 40 128H150z" fill="#f8e6a6"/><path d="M250 150l80-20v128h-40z" fill="#9cc3f2"/>
- <path d="M80 200l70-20 10 78H80z" fill="#59b458"/><path d="M285 205l45-5v58h-35z" fill="#b28be6"/>
- <path d="M255 66C250 120 280 160 300 200S320 240 326 254" fill="none" stroke="#3d8ee6" stroke-width="9"/>
- <path d="M130 62C140 130 160 190 150 258" fill="none" stroke="#1f6b43" stroke-width="3"/>
- <path d="M80 90h250M80 118h250M80 146h250M80 174h250M80 202h250M80 230h250M105 62v196M130 62v196M155 62v196M180 62v196M205 62v196M230 62v196M280 62v196M305 62v196" stroke="#ffffff" stroke-width="1" stroke-opacity="0.7"/>
- <rect x="58" y="14" width="440" height="20" rx="8" fill="#3f86de"/><rect x="58" y="26" width="440" height="8" fill="#3f86de"/>
- <text x="70" y="28" fill="#ffffff" font-family="Arial" font-size="10" font-weight="bold">QGIS</text>
- <rect x="58" y="34" width="440" height="24" fill="#f1f4f8"/>
- <g fill="#9fb0c5"><rect x="66" y="40" width="10" height="10" rx="2"/><rect x="80" y="40" width="10" height="10" rx="2"/><rect x="94" y="40" width="10" height="10" rx="2"/><rect x="140" y="40" width="10" height="10" rx="2"/><rect x="160" y="40" width="10" height="10" rx="2"/><rect x="188" y="40" width="10" height="10" rx="2"/></g>
- <rect x="112" y="40" width="10" height="10" rx="2" fill="#f2b84b"/><rect x="126" y="40" width="10" height="10" rx="2" fill="#6bb36f"/><rect x="174" y="40" width="10" height="10" rx="2" fill="#5d9be2"/>
- <rect x="58" y="58" width="22" height="200" fill="#ffffff"/>
- <g fill="#c5d0dd"><rect x="64" y="66" width="8" height="8" rx="2"/><rect x="64" y="82" width="8" height="8" rx="2"/><rect x="64" y="98" width="8" height="8" rx="2"/><rect x="64" y="114" width="8" height="8" rx="2"/><rect x="64" y="130" width="8" height="8" rx="2"/></g>
- <rect x="336" y="62" width="156" height="196" fill="#ffffff" stroke="#e1e8f1"/>
- <g font-family="Arial" font-size="11" fill="#22344f">
-  <rect x="348" y="80" width="13" height="13" rx="2" fill="#f5b82e"/><text x="370" y="91">Bidang Tanah</text>
-  <rect x="348" y="112" width="13" height="13" rx="2" fill="#7fbaf5"/><text x="370" y="123">Rencana Tata Ruang</text>
-  <rect x="348" y="144" width="13" height="13" rx="2" fill="#b57de8"/><text x="370" y="155">Zona Nilai Tanah</text>
-  <rect x="348" y="176" width="13" height="13" rx="2" fill="#c5cad1"/><text x="370" y="187">Batas Administrasi</text>
-  <rect x="348" y="208" width="13" height="13" rx="2" fill="#2f9e44"/><text x="370" y="219">Kawasan Hutan</text>
- </g>
- <rect x="58" y="258" width="440" height="18" fill="#f1f4f8"/>
- <g fill="#c5d0dd"><rect x="120" y="264" width="40" height="6" rx="3"/><rect x="200" y="264" width="30" height="6" rx="3"/><rect x="300" y="264" width="50" height="6" rx="3"/><rect x="420" y="264" width="40" height="6" rx="3"/></g>
-</svg>""".replace('{SHADOW}', _SLAB_SHADOW) \
-    .replace('{PARCELS_FAINT}', _PARCELS.format(op='0.4')) \
-    .replace('{PARCELS}', _PARCELS.format(op='0.85'))
 
 # Ikon garis 24x24; {color} diganti warna goresan.
 _ICON = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" '
@@ -69,6 +24,22 @@ ICONS = {
     'link': _ICON % '<path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/>',
     'shield': _ICON % '<path d="M12 2.5l8 3v6c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10v-6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/>',
     'globe': _ICON % '<circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18M5 7.5h14M5 16.5h14"/>',
+    'upload': _ICON % '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>',
+    'database': _ICON % '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>',
+    'map': _ICON % '<polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/>',
+    'arrow-left': _ICON % '<line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>',
+    'node-tree': _ICON % '<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="9" y1="6" x2="18" y2="6"/><line x1="6" y1="9" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/>',
+    'check': _ICON % '<polyline points="20 6 9 17 4 12"/>',
+    'search': _ICON % '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+    'logout': _ICON % '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>',
+    'chevron-down': _ICON % '<polyline points="6 9 12 15 18 9"/>',
+    'chevron-right': _ICON % '<polyline points="9 18 15 12 9 6"/>',
+    'user': _ICON % '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+    'time': _ICON % '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+    'folder': _ICON % '<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>',
+    'file': _ICON % '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>',
+    'eye': _ICON % '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
+    'alert': _ICON % '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
 }
 
 # Ikon "Q" pada tombol LOGIN.

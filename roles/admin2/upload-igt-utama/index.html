@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Unggah IGT Utama · IGT-PR</title>
+<link rel="icon" type="image/x-icon" href="https://www.atrbpn.go.id/favicon.ico">
+<link rel="stylesheet" href="../../../styles.css">
+<style>
+
+.cat-pane[hidden] {
+  display: none !important;
+}
+</style>
+</head>
+<body class="panel panel-dash panel-list panel-home v2-page v2-theme-upload" data-page="upload-igt-utama">
+<div class="app"><div class="workspace">
+<header class="topbar">
+  <div class="crumb">Geoportal IGT-PR　/　<a href="../beranda/index.html">Unggah Data</a>　/　<strong>Unggah IGT Utama</strong></div>
+  <div class="top-actions">
+    <button class="icon-btn" aria-label="Notifikasi">
+      <svg class="ri-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 17h2v2H2v-2h2v-7a8 8 0 1 1 16 0v7zm-2 0v-7a6 6 0 1 0-12 0v7h12zm-9 4h6v2H9v-2z"/></svg>
+    </button>
+    <div class="user-chip"><div class="avatar">AD</div><span>Admin</span></div>
+  </div>
+</header>
+<main class="main">
+  <div class="page-head">
+    <div>
+      <div class="eyebrow">Unggah Data Geospasial</div>
+      <h1>Unggah IGT Utama</h1>
+      <p>Unggah data atribut bidang IGT Pertanahan atau geometri kawasan IGT Tata Ruang.</p>
+    </div>
+    <a class="btn btn-soft" href="../beranda/index.html">← Kembali ke Dashboard</a>
+  </div>
+
+  <section class="card">
+    <div class="card-head"><div><h2>Formulir Unggah Data IGT Utama</h2><p>Pilih kategori IGT Utama yang akan diunggah dan divalidasi ke dalam sistem.</p></div></div>
+    <div class="tabs" id="utama-type-tabs" role="tablist">
+      <button type="button" class="tab active" data-type-tab="pertanahan" role="tab" aria-selected="true">IGT Pertanahan (Bidang)</button>
+      <button type="button" class="tab" data-type-tab="tata-ruang" role="tab" aria-selected="false">IGT Tata Ruang (Kawasan)</button>
+    </div>
+
+    <!-- Pane 1: IGT Pertanahan -->
+    <div class="cat-pane" data-pane="pertanahan">
+      <div class="card-head">
+        <div>
+          <h2>Unggah Data IGT Pertanahan</h2>
+          <p>Unggah tabel atribut bidang yang terhubung dengan ID Bidang dari baseline pertanahan.</p>
+        </div>
+      </div>
+      <div class="dropzone">
+        <div class="big"><svg class="ri-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 12.586l4.243 4.242-1.415 1.415L13 16.415V22h-2v-5.587l-1.828 1.83-1.415-1.415L12 12.586zM12 2a7.001 7.001 0 0 1 6.954 6.194 5.5 5.5 0 0 1-.953 10.784v-2.014a3.5 3.5 0 1 0-1.112-6.91 5 5 0 1 0-9.777 0 3.5 3.5 0 0 0-1.292 6.88l.18.03v2.014a5.5 5.5 0 0 1-.954-10.784A7 7 0 0 1 12 2z"/></svg></div>
+        <strong>Unggah data atribut bidang</strong>
+        <p>Format GeoPackage (.gpkg), CSV (.csv), atau Shapefile (.zip) yang memuat kolom ID_BIDANG</p>
+        <input id="file-pertanahan" type="file" hidden accept=".gpkg,.csv,.zip">
+        <button type="button" class="btn btn-primary" data-pick="file-pertanahan">Pilih Berkas Atribut</button>
+        <div id="name-pertanahan" class="secondary-cell" style="margin-top:8px"></div>
+      </div>
+      <div class="form-grid" style="margin-top:16px">
+        <div class="field">
+          <label for="p-ditjen">SATUAN KERJA (SATKER)</label>
+          <select id="p-ditjen">
+            <option>Ditjen Survei dan Pemetaan Pertanahan dan Ruang</option>
+            <option>Ditjen Penataan Agraria</option>
+            <option>Ditjen Penetapan Hak dan Pendaftaran Tanah</option>
+            <option>Ditjen Pengadaan Tanah dan Pengembangan Pertanahan</option>
+            <option>Ditjen Pengendalian dan Penertiban Tanah dan Ruang</option>
+            <option>Ditjen Penanganan Sengketa dan Konflik Pertanahan</option>
+            <option>Ditjen Tata Ruang</option>
+            <option>Kanwil BPN D.I. Yogyakarta</option>
+            <option>Kantah Kab. Sleman</option>
+            <option>Kantah Kab. Bantul</option>
+            <option>Kantah Kab. Kulon Progo</option>
+            <option>Kantah Kab. Gunungkidul</option>
+            <option>Kantah Kota Yogyakarta</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="p-dataset">DATASET TARGET</label>
+          <select id="p-dataset">
+            <option>IGT Bidang Tanah</option>
+            <option>IGT Penguasaan Tanah</option>
+            <option>IGT Pemilikan Tanah</option>
+            <option>IGT Penggunaan Tanah</option>
+            <option>IGT Pemanfaatan Tanah</option>
+            <option>IGT Hak Atas Tanah</option>
+            <option>IGT Nilai Bidang Tanah</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="p-wilayah">WILAYAH ADMINISTRASI</label>
+          <input id="p-wilayah" placeholder="Contoh: Kabupaten Sleman, DI Yogyakarta">
+        </div>
+        <div class="field">
+          <label for="p-catatan">KETERANGAN PENGUNGGAHAN</label>
+          <input id="p-catatan" placeholder="Catatan pembaruan data bidang">
+        </div>
+      </div>
+      <div class="notice" style="margin-top:14px">
+        <strong>Catatan</strong>Geometri bidang berasal dari baseline. Sistem akan memvalidasi kecocokan ID Bidang sebelum masuk ke tahap kompilasi.
+      </div>
+      <div class="toolbar">
+        <button type="button" class="btn btn-primary" data-submit="IGT Pertanahan">Unggah &amp; Validasi Atribut</button>
+        <a class="btn btn-soft" href="../upload-data/index.html?tab=igt-utama">Lihat Status di Manajemen Data →</a>
+      </div>
+    </div>
+
+    <!-- Pane 2: IGT Tata Ruang -->
+    <div class="cat-pane" data-pane="tata-ruang" hidden>
+      <div class="card-head">
+        <div>
+          <h2>Unggah Data IGT Tata Ruang</h2>
+          <p>Unggah geometri dan atribut kawasan untuk diverifikasi topologi dan diintegrasikan.</p>
+        </div>
+      </div>
+      <div class="dropzone">
+        <div class="big"><svg class="ri-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 12.586l4.243 4.242-1.415 1.415L13 16.415V22h-2v-5.587l-1.828 1.83-1.415-1.415L12 12.586zM12 2a7.001 7.001 0 0 1 6.954 6.194 5.5 5.5 0 0 1-.953 10.784v-2.014a3.5 3.5 0 1 0-1.112-6.91 5 5 0 1 0-9.777 0 3.5 3.5 0 0 0-1.292 6.88l.18.03v2.014a5.5 5.5 0 0 1-.954-10.784A7 7 0 0 1 12 2z"/></svg></div>
+        <strong>Tarik dan letakkan berkas kawasan di sini</strong>
+        <p>Shapefile (.zip) atau GeoPackage (.gpkg), maksimal 500 MB</p>
+        <input id="file-tataruang" type="file" hidden accept=".zip,.gpkg">
+        <button type="button" class="btn btn-primary" data-pick="file-tataruang">Pilih Berkas Spasial</button>
+        <div id="name-tataruang" class="secondary-cell" style="margin-top:8px"></div>
+      </div>
+      <div class="form-grid" style="margin-top:16px">
+        <div class="field">
+          <label for="tr-tema">TEMA IGT TATA RUANG</label>
+          <select id="tr-tema">
+            <option>RTRW Provinsi / Kabupaten / Kota</option>
+            <option>RDTR Kabupaten/Kota</option>
+            <option>RTR Kawasan Strategis Nasional</option>
+            <option>KKPR / Kesesuaian Kegiatan Pemanfaatan Ruang</option>
+            <option>Lahan Baku Sawah / LSD</option>
+            <option>Zona Nilai Tanah</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="tr-nama">NAMA LAYER</label>
+          <input id="tr-nama" placeholder="Masukkan nama layer kawasan">
+        </div>
+        <div class="field">
+          <label for="tr-wilayah">CAKUPAN WILAYAH</label>
+          <input id="tr-wilayah" placeholder="Provinsi / Kabupaten / Kota">
+        </div>
+        <div class="field">
+          <label for="tr-deskripsi">DESKRIPSI SINGKAT</label>
+          <input id="tr-deskripsi" placeholder="Sumber penetapan dan tahun data">
+        </div>
+      </div>
+      <div class="toolbar">
+        <button type="button" class="btn btn-primary" data-submit="IGT Tata Ruang">Validasi &amp; Kirim Pengajuan</button>
+        <a class="btn btn-soft" href="../upload-data/index.html?tab=igt-utama">Lihat Status di Manajemen Data →</a>
+      </div>
+    </div>
+
+    <!-- Pane 3: IGT Lainnya -->
+    <div class="cat-pane" data-pane="lainnya" hidden>
+      <div class="card-head">
+        <div>
+          <h2>Upload Layer IGT Lainnya (Eksternal)</h2>
+          <p>Tambahkan layer referensi dari instansi eksternal. Data yang diunggah Superadmin langsung berstatus Tersedia.</p>
+        </div>
+      </div>
+      <div class="dropzone">
+        <div class="big"><svg class="ri-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 12.586l4.243 4.242-1.415 1.415L13 16.415V22h-2v-5.587l-1.828 1.83-1.415-1.415L12 12.586zM12 2a7.001 7.001 0 0 1 6.954 6.194 5.5 5.5 0 0 1-.953 10.784v-2.014a3.5 3.5 0 1 0-1.112-6.91 5 5 0 1 0-9.777 0 3.5 3.5 0 0 0-1.292 6.88l.18.03v2.014a5.5 5.5 0 0 1-.954-10.784A7 7 0 0 1 12 2z"/></svg></div>
+        <strong>Unggah layer eksternal atau koneksikan layanan melalui QGIS</strong>
+        <p>GeoPackage (.gpkg), Shapefile (.zip), atau koneksi layanan WMS/WFS eksternal</p>
+        <input id="file-lainnya" type="file" hidden accept=".zip,.gpkg">
+        <button type="button" class="btn btn-primary" data-pick="file-lainnya">Pilih Berkas Layer</button>
+        <div id="name-lainnya" class="secondary-cell" style="margin-top:8px"></div>
+      </div>
+      <div class="form-grid" style="margin-top:16px">
+        <div class="field">
+          <label for="ln-nama">NAMA LAYER EKSTERNAL</label>
+          <input id="ln-nama" placeholder="Contoh: Batas Kawasan Hutan KLHK">
+        </div>
+        <div class="field">
+          <label for="ln-sumber">INSTANSI / SUMBER DATA</label>
+          <input id="ln-sumber" placeholder="Contoh: BIG / KLHK / BNPB">
+        </div>
+      </div>
+      <div class="toolbar">
+        <button type="button" class="btn btn-primary" data-submit="IGT Lainnya">Simpan &amp; Publikasikan Layer</button>
+        <a class="btn btn-soft" href="../upload-data/index.html?tab=lainnya">Kelola di Manajemen Data →</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="footer">Mockup UI plugin QGIS · data contoh</div>
+</main>
+</div></div>
+<script>
+const tabs = [...document.querySelectorAll('[data-type-tab]')];
+const panes = [...document.querySelectorAll('[data-pane]')];
+tabs.forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const key = btn.dataset.typeTab;
+    tabs.forEach((t) => {
+      const on = t.dataset.typeTab === key;
+      t.classList.toggle('active', on);
+      t.setAttribute('aria-selected', on);
+    });
+    panes.forEach((p) => { p.hidden = p.dataset.pane !== key; });
+  });
+});
+document.querySelectorAll('[data-pick]').forEach((btn) => {
+  const input = document.getElementById(btn.dataset.pick);
+  const labelId = btn.dataset.pick.replace('file-', 'name-');
+  btn.addEventListener('click', () => input.click());
+  input.addEventListener('change', () => {
+    const f = input.files && input.files[0];
+    document.getElementById(labelId).textContent = f ? 'Berkas dipilih: ' + f.name : '';
+  });
+});
+document.querySelectorAll('[data-submit]').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    alert('Simulasi: pengajuan unggah ' + btn.dataset.submit + ' telah divalidasi dan dicatat ke dalam antrean Manajemen Data.');
+  });
+});
+</script>
+</body>
+</html>

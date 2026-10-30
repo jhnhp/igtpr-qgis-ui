@@ -27,18 +27,56 @@
 .run-btn{background:#3e5f9d;color:#fff;border:0;border-radius:3px;padding:4px 6px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap}
 .empty-row{text-align:center!important;color:#75859a;padding:20px!important}
 .back-row{text-align:center;margin-top:12px}.back-row a{font-size:10px;color:#203f6d;text-decoration:none}
+.v2-mb-head{display:none}
+body.v2-page.v2-theme-model .app{background:#f4f7fb;padding:0}
+body.v2-page.v2-theme-model .topbar{height:46px;padding:0 12px;background:#ffffff;border-bottom:1px solid #dbe5f1;box-shadow:0 2px 10px rgba(15,41,77,.03); display:flex;align-items:center;justify-content:space-between}
+body.v2-page.v2-theme-model .topbar .crumb{font-size:12px}
+body.v2-page.v2-theme-model .top-actions{display:flex}
+body.v2-page.v2-theme-model .main{background:transparent;border:0;border-radius:0;padding:16px;min-height:auto}
+body.v2-page.v2-theme-model .v2-mb-head{display:flex}
+body.v2-page.v2-theme-model .brand-row{display:none}
+body.v2-page.v2-theme-model .back-row{display:none}
+body.v2-page.v2-theme-model .mb-controls-card{background:#ffffff;border:1.5px solid #ddd6fe;border-radius:15px;padding:12px 14px;margin-bottom:14px;box-shadow:0 4px 14px rgba(109,40,217,.04)}
+body.v2-page.v2-theme-model .search-row{margin-bottom:0;gap:10px}
+body.v2-page.v2-theme-model .search-row input{border:1.5px solid #ddd6fe;border-radius:10px;background:#faf5ff;padding:9px 12px;font-size:12px;color:#1e1b4b}
+body.v2-page.v2-theme-model .search-row input:focus{background:#ffffff;border-color:#7c3aed;box-shadow:0 0 0 3px #f3e8ff}
+body.v2-page.v2-theme-model .search-row button{background:#f3e8ff;border:1px solid #ddd6fe;color:#6d28d9;font-weight:700;border-radius:9px;padding:8px 12px}
+body.v2-page.v2-theme-model .search-row button:hover{background:#ede9fe}
+body.v2-page.v2-theme-model .model-card-wrap{background:#ffffff;border:1.5px solid #ddd6fe;border-radius:16px;overflow:hidden;box-shadow:0 6px 20px rgba(109,40,217,.05)}
+body.v2-page.v2-theme-model .model-card-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:linear-gradient(90deg,#f3e8ff 0%,#faf5ff 100%);border-bottom:1px solid #ddd6fe}
+body.v2-page.v2-theme-model .model-card-head h2{margin:0;font-size:15px;font-weight:800;color:#2e1065}
+body.v2-page.v2-theme-model .model-card-head p{margin:3px 0 0;font-size:11.5px;color:#6b21a8}
+body.v2-page.v2-theme-model .model-table-wrap{height:auto;min-height:220px;border:0;border-radius:0;padding:0}
+body.v2-page.v2-theme-model .model-table th{background:#faf5ff;color:#4c1d95;font-size:11px;text-transform:uppercase;letter-spacing:.4px;padding:12px 14px;border-bottom:1px solid #ede9fe}
+body.v2-page.v2-theme-model .model-table td{padding:12px 14px;border-bottom:1px solid #f3e8ff;font-size:12px;color:#1e293b;vertical-align:middle}
+body.v2-page.v2-theme-model .model-table th:last-child,body.v2-page.v2-theme-model .model-table td:last-child{width:110px}
+body.v2-page.v2-theme-model .run-btn{background:linear-gradient(135deg,#6d28d9 0%,#7c3aed 100%);color:#ffffff;border-radius:8px;padding:7px 11px;font-size:11px;font-weight:700;box-shadow:0 3px 10px rgba(109,40,217,.2)}
+body.v2-page.v2-theme-model .run-btn:hover{background:#5b21b6}
 @media(max-width:400px){.main{padding:10px 8px}.brand-logo{width:44px;height:44px}.model-table{font-size:12px}.model-table th{font-size:12px}.run-btn{font-size:9px;padding:4px}.model-table-wrap{height:calc(100vh - 240px)}}
 </style></head>
-<body data-page="model-builder"><div class="app"><div class="workspace">
-<header class="topbar"><div class="crumb"><strong>IGT-PR</strong>　/　Model Builder Geoportal</div></header>
+<body class="panel" data-page="model-builder"><div class="app"><div class="workspace">
+<header class="topbar"><div class="crumb" id="mb-crumb"><strong>IGT-PR</strong>　/　Model Builder Geoportal</div><div class="top-actions"><button class="icon-btn" aria-label="Notifikasi"><svg class="ri-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 17h2v2H2v-2h2v-7a8 8 0 1 1 16 0v7zm-2 0v-7a6 6 0 1 0-12 0v7h12zm-9 4h6v2H9v-2z"/></svg></button><div class="user-chip"><div class="avatar" id="mb-avatar">SA</div><span id="mb-role-label">Superadmin</span></div></div></header>
 <main class="main">
+<div class="page-head v2-mb-head">
+  <div>
+    <div class="eyebrow">Analisis &amp; Pemodelan Spasial</div>
+    <h1>Model Builder Geoportal</h1>
+    <p>Bangun, telusuri, dan jalankan alur model pengolahan data geospasial pada kanvas QGIS.</p>
+  </div>
+  <a class="btn btn-soft" id="v2-back-home" href="../../roles/superadmin2/beranda/index.html">← Kembali ke Dashboard</a>
+</div>
+<div class="mb-controls-card">
 <div class="text-tools"><span>⌕ Ukuran Teks:</span><div class="font-buttons"><button id="font-down" aria-label="Perkecil teks">A-</button><button id="zoom-reset">90%</button><button id="font-up" aria-label="Perbesar teks">A+</button></div></div>
 <div class="brand-row"><div class="brand-logo" aria-label="Logo ATR/BPN">🌐</div><div class="brand-title">MODEL BUILDER GEOPORTAL</div><div class="brand-logo" aria-label="Logo Geoportal">◉</div></div>
 <div class="search-row"><input id="model-search" type="search" placeholder="⌕ Cari model analisis..." aria-label="Cari model analisis"><button id="refresh-models">↻ Refresh</button></div>
+</div>
+<div class="model-card-wrap">
+<div class="model-card-head v2-mb-head"><div><h2>Daftar Model Analisis Tersedia</h2><p>Pilih model geospasial untuk dijalankan langsung pada layer QGIS.</p></div></div>
 <div class="model-table-wrap"><table class="model-table"><thead><tr><th>Nama Model</th><th>Keterangan</th><th>Aksi</th></tr></thead><tbody id="model-rows">
-<tr data-name="Intersect dan Join"><td>Intersect dan Join</td><td>Intersect dan Join</td><td><button class="run-btn" data-model="Intersect dan Join">▸ Jalankan</button></td></tr>
-<tr data-name="Test Builder Lutfi"><td>Test Builder Lutfi</td><td>test</td><td><button class="run-btn" data-model="Test Builder Lutfi">▸ Jalankan</button></td></tr>
+<tr data-name="Intersect dan Join"><td><strong>Intersect dan Join</strong></td><td>Penggabungan tumpang susun geometri dan atribut bidang/kawasan</td><td><button class="run-btn" data-model="Intersect dan Join">▸ Jalankan</button></td></tr>
+<tr data-name="Test Builder Lutfi"><td><strong>Test Builder Lutfi</strong></td><td>Model uji coba pemrosesan spasial tematik</td><td><button class="run-btn" data-model="Test Builder Lutfi">▸ Jalankan</button></td></tr>
 </tbody></table></div>
+</div>
 <div class="back-row"><a href="../../roles/operator/beranda/index.html">← Kembali ke Dashboard</a></div>
 </main></div></div>
 <script>
@@ -50,5 +88,20 @@ let fontSize=13;function applyFont(){document.querySelector('.model-table').styl
 document.getElementById('font-down').addEventListener('click',()=>{fontSize=Math.max(10,fontSize-1);applyFont();});
 document.getElementById('font-up').addEventListener('click',()=>{fontSize=Math.min(20,fontSize+1);applyFont();});
 document.getElementById('zoom-reset').addEventListener('click',()=>{fontSize=13;applyFont();});
-const backRole=new URLSearchParams(location.search).get("role");if(["superadmin","superadmin2","admin","operator","umum"].includes(backRole))document.querySelector(".back-row a").href="../../roles/"+backRole+"/beranda/index.html";
+const backRole=new URLSearchParams(location.search).get("role");
+if(["superadmin","superadmin2","admin","admin2","operator","operator2","umum","umum2"].includes(backRole)){
+  const dashUrl="../../roles/"+backRole+"/beranda/index.html";
+  document.querySelector(".back-row a").href=dashUrl;
+  const v2Back=document.getElementById("v2-back-home");
+  if(v2Back)v2Back.href=dashUrl;
+  if(backRole.endsWith("2")){
+    document.body.classList.add("v2-page","v2-theme-model");
+    const who={superadmin2:["SA","Superadmin"],admin2:["AD","Admin"],operator2:["JH","Operator Pusat"],umum2:["UM","Umum"]}[backRole];
+    if(who){
+      document.getElementById("mb-avatar").textContent=who[0];
+      document.getElementById("mb-role-label").textContent=who[1];
+    }
+    document.getElementById("mb-crumb").innerHTML='Geoportal IGT-PR　/　<a href="'+dashUrl+'">Dashboard</a>　/　<strong>Model Builder</strong>';
+  }
+}
 </script></body></html>

@@ -12,7 +12,7 @@ const DerivatifBidang = (() => {
     { short: 'Struktur', title: 'Atur Struktur Atribut', text: 'Gunakan template layer derivatif atau tambahkan kolom manual.' },
     { short: 'Bidang', title: 'Pilih Bidang Tanah', text: 'Pilih satu bidang pada QGIS Canvas.' },
     { short: 'Atribut', title: 'Isi Atribut', text: 'Lengkapi nilai atribut untuk bidang terpilih.' },
-    { short: 'Simpan', title: 'Simpan File', text: 'Simpan ID bidang dan atribut tambahan ke sebuah berkas.' },
+    { short: 'Simpan', title: 'Simpan Berkas', text: 'Simpan ID bidang dan atribut tambahan ke sebuah berkas.' },
     { short: 'Disetujui', title: 'Atribut Disetujui', text: 'Gabungkan atribut dari berkas yang disetujui ke bidang sumber berdasarkan ID Bidang.' },
   ];
   const APPROVED = STEPS.length;
@@ -115,8 +115,12 @@ const DerivatifBidang = (() => {
       view.innerHTML = '<div class="notice"><strong>Akses ditolak</strong>Upload Derivatif Bidang tidak tersedia untuk role ini.</div>';
       return;
     }
-    const backUrl = role === 'superadmin2' ? '../beranda/index.html' : '../upload-data/index.html?tab=derivatif';
-    const finishLabel = role === 'superadmin2' ? 'Selesai · Kembali ke Dashboard' : 'Selesai · Kembali ke IGT Derivatif';
+    const isV2 = Boolean(IgtData.ROLES[role].v2);
+    if (isV2) {
+      document.body.classList.add('v2-page', 'v2-theme-upload');
+    }
+    const backUrl = isV2 ? '../beranda/index.html' : '../upload-data/index.html?tab=derivatif';
+    const finishLabel = isV2 ? 'Selesai · Kembali ke Dashboard' : 'Selesai · Kembali ke IGT Derivatif';
 
     const state = {
       step: 1,
@@ -444,9 +448,10 @@ const DerivatifBidang = (() => {
 
     function render(focus) {
       const s = STEPS[state.step - 1];
+      const headHtml = `<div class="card-head"><div><h2 id="step-title" tabindex="-1">Langkah ${state.step} dari ${STEPS.length} · ${s.title}</h2><p>${s.text}</p></div></div>`;
       view.innerHTML =
-        `<section class="card wizard">${stepper()}` +
-        `<div class="card-head"><div><h2 id="step-title" tabindex="-1">Langkah ${state.step} dari ${STEPS.length} · ${s.title}</h2><p>${s.text}</p></div></div>` +
+        `<section class="card wizard">` +
+        (isV2 ? `${headHtml}${stepper()}` : `${stepper()}${headHtml}`) +
         `<div id="step-body">${BODY[state.step - 1]()}</div>` +
         `<div class="wizard-nav" id="wizard-nav">${navHtml()}</div></section>`;
       if (state.step === 4) refreshAttributeErrors();

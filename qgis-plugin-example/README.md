@@ -1,54 +1,65 @@
-# Contoh plugin QGIS: halaman login IGT-PR
+# Plugin QGIS: Geoportal IGT-PR (Mockup V2)
 
-Implementasi Qt dari mockup `shared/login/index.html` sebagai plugin QGIS kecil yang berdiri sendiri. Plugin ini hanya contoh tampilan: tombol **LOGIN** memancarkan sinyal `loginRequested` dan menampilkan pesan di message bar. Tidak ada autentikasi.
+Implementasi native Qt dari **Mockup V2 (Feature-Based Card UI & Hierarchical Tree Table)** sebagai plugin QGIS terpadu yang siap dijalankan langsung di QGIS 3.x (Qt5/Qt6).
 
 ```text
 igtpr_login_example/
-├── __init__.py      # classFactory
-├── metadata.txt
-├── plugin.py        # tombol toolbar/menu, membuka dock di sisi kanan
-├── login_page.py    # LoginPage (QWidget) dan LoginDockWidget
-└── assets.py        # SVG: ilustrasi, ikon fitur, ikon Q, garis kontur
+├── __init__.py           # classFactory QGIS
+├── metadata.txt          # Metadata plugin v2.0
+├── plugin.py             # Controller utama, IgtprDockWidget, integrasi layer QGIS (WMS/WFS)
+├── topbar.py             # Header topbar persisten (breadcrumb, status QGIS, role chip, logout)
+├── role_dialog.py        # Dialog modal pemilihan peran (Superadmin, Admin, Operator, Umum)
+├── login_page.py         # Halaman login dengan hero card, SSO, dan Fitur Utama
+├── dashboard_page.py     # Dashboard / Beranda V2 (Hero card, stat cards, katalog hub, alur kerja)
+├── catalog_page.py       # Katalog Data V2 (Opsi 2 Accordion tree table, multi-layer chip, WMS/WFS)
+├── management_page.py    # Manajemen Data V2 (Tab status, kompilasi, verifikasi topologi, persetujuan)
+├── upload_dialog.py      # Formulir unggah data geospasial (file picker, kategori, satker)
+├── model_builder_page.py # Model Builder spasial V2 (katalog model analisis & eksekusi di QGIS)
+├── data.py               # Dataset referensi IGT ATR/BPN, sub-layer multi-year/skala, & pengajuan
+├── assets.py             # SVG Tiny 1.2 vector icons & contour
+└── illustration.png      # Ilustrasi antarmuka QGIS untuk halaman login
 ```
 
-## Memasang
+## Fitur Mockup V2
 
-Salin atau symlink folder `igtpr_login_example` ke folder plugin profil QGIS, lalu aktifkan **IGT-PR Login (Contoh)** di *Plugins → Manage and Install Plugins* (centang *Show also experimental plugins*).
+1. **Halaman Login & Autentikasi Peran**:
+   - Header logo ganda (BPN & IGT-PR), bilah aksen 90×4 px, kartu hero 2 kolom, dan 5 ikon fitur melingkar.
+   - Dialog pemilihan peran interaktif: **Superadmin (SA)**, **Admin (AD)**, **Operator Pusat (JH)**, dan **Pengguna Umum (UM)**.
+2. **Topbar Persisten**:
+   - Breadcrumb navigation (`Geoportal IGT-PR / Katalog IGT / IGT Pertanahan`) dengan tautan kembali.
+   - Status koneksi QGIS aktif (`● QGIS Aktif`).
+   - Chip profil peran dengan menu ganti peran dan tombol keluar (logout).
+3. **Dashboard / Beranda (Card UI)**:
+   - Kartu hero gradien biru tua ATR/BPN dengan filter tahun dinamis (`Semua tahun`, `2026`, `2025`, `2024`, `2023`).
+   - Kartu statistik berstatus: *Terkompilasi* (Amber) dan *Terintegrasi* (Emerald).
+   - Kartu Hub Katalog IGT (Pertanahan, Tata Ruang, Derivatif Multiguna, Lainnya).
+   - Kartu Hub Alur Kerja (Unggah Data, Manajemen Data, Model Builder).
+4. **Katalog Data (Opsi 2 - Hierarchical Tree Table & Multi-Layer Chip)**:
+   - Navigasi subnav 4 kategori IGT.
+   - Kolom tabel disesuaikan: `Nama IGT`, `Direktorat` (atau `Instansi` untuk IGT Lainnya), `Tanggal Pembaruan`, `WMS`, `WFS`. Kolom status, ID, dan ruang lingkup disederhanakan sesuai kebutuhan.
+   - **Chip Multi-Layer**:
+     - *Multi-Year* (Mint `#ecfdf5` / `#047857`): Lahan Baku Sawah, ZNT, Tanah Terindikasi Telantar.
+     - *Multi-Skala* (Blue `#eff6ff` / `#1d4ed8`): RDTR Kab/Kota, RTRW Kabupaten.
+   - Klik chip atau tombol toggle untuk membuka/menutup sub-layer berjenjang dengan indentasi `└─` dan tombol WMS/WFS mandiri.
+   - **Integrasi Kanvas QGIS**: Klik WMS atau WFS memuat layer memory geospasial nyata ke dalam proyek QGIS (`QgsProject.instance().addMapLayer`) dan menampilkan notifikasi sukses di `iface.messageBar()`.
+5. **Manajemen Data**:
+   - Tab status: `Revisi`, `Diajukan`, `Terkompilasi`, `Terintegrasi`, `Semua`.
+   - Tombol alur persetujuan: *Kompilasi*, *Verifikasi Topologi*, *Setujui Integrasi* (Superadmin), *Perbaiki Revisi*, dan *Tampilkan di QGIS*.
+6. **Formulir Unggah Data**:
+   - Dropzone berkas (.gpkg, .zip, .csv), pemilihan kategori, dataset target, dan satker.
+   - Data otomatis masuk ke antrean pengajuan Manajemen Data.
+7. **Model Builder Spasial**:
+   - Daftar model analisis spasial (Analisis Kesesuaian Lahan, Buffer Kawasan Lindung, Overlay RTRW vs Bidang, dsb.) yang dapat dieksekusi langsung ke kanvas peta.
+
+## Memasang di QGIS
+
+Salin atau symlink folder `igtpr_login_example` ke folder plugin profil QGIS Anda, atau pasang dari file ZIP `igtpr_login_example.zip` melalui menu *Plugins → Install from ZIP*:
 
 ```bash
 # Linux
 ln -s "$PWD/igtpr_login_example" ~/.local/share/QGIS/QGIS3/profiles/default/python/plugins/
-# Windows: %APPDATA%\QGIS\QGIS3\profiles\default\python\plugins\
+# Windows
+# %APPDATA%\QGIS\QGIS3\profiles\default\python\plugins\
 ```
 
-Tombol toolbar *Login IGT-PR (contoh)* membuka dan menutup dock.
-
-Header login menggunakan `Examples/logo-bpn.png` dan `Examples/logo-igtpr.png` dengan judul **GEOPORTAL IGT-PR** dan pola garis latar mengikuti referensi visual. Saat dijalankan dari repository, plugin membaca kedua logo langsung dari folder `Examples/`. Untuk distribusi ZIP mandiri, salin kedua PNG itu ke folder `igtpr_login_example/` agar logo tersedia setelah plugin dipasang. Catatan: aset yang ada di `Examples/` saat ini berupa PNG, bukan SVG.
-
-## Dari HTML ke Qt
-
-| Mockup HTML | Implementasi Qt |
-| --- | --- |
-| CSS warna, font, sudut bulat, gradien tombol | Qt Style Sheet (`LOGIN_QSS`) |
-| `box-shadow` tombol | `QGraphicsDropShadowEffect` |
-| Ilustrasi QGIS dan tumpukan layer, ikon | SVG dirender `QSvgRenderer`. SVG ditulis ulang tanpa `filter`, `use` dan `clipPath` karena QtSvg hanya mendukung SVG Tiny 1.2 |
-| Lingkaran, kontur, bukit dan pin di latar | Digambar `QPainter` di `LoginPage.paintEvent` |
-| Media query | `LoginPage._relayout()` dari `resizeEvent`: ≥ 560 px berdampingan dan 3 kolom fitur, 360–559 px tombol di atas ilustrasi dan 2 kolom, < 360 px 1 kolom |
-| `clamp()` ukuran font | Ukuran tetap; judul mengecil di dock sempit lewat property `compact` |
-
-Enum Qt ditulis lengkap (`Qt.AlignmentFlag.AlignTop`, dst.) agar jalan di QGIS berbasis Qt5 maupun Qt6 (`supportsQt6=True`).
-
-## Menyambungkan ke plugin IGT-PR
-
-Plugin IGT-PR sudah punya alur SSO (`PluginIGRPR.login_sso_keycloak`, PKCE lewat `sso_auth.py`). Untuk memakai halaman ini di sana, tambahkan `LoginPage` sebagai halaman login di `stackedWidget` dock, lalu sambungkan sinyalnya:
-
-```python
-from .login_page import LoginPage
-
-self.login_page = LoginPage(os.path.join(self.plugin_dir, 'logo-bpn.png'))
-self.login_page.loginRequested.connect(self.login_sso_keycloak)
-```
-
-## Diuji
-
-Dengan QGIS 3.44 / Qt 5.15 (offscreen): widget dirender di lebar dock 340, 420 dan 760 px, dan siklus plugin (initGui, buka dock, klik LOGIN, tutup, unload) dijalankan dengan `iface` tiruan. Belum diuji di QGIS berbasis Qt6 maupun di jendela QGIS sungguhan.
+Aktifkan **Geoportal IGT-PR (Mockup V2)** di *Plugins → Manage and Install Plugins*. Klik tombol toolbar IGT-PR untuk membuka panel dock.

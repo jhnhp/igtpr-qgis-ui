@@ -1,0 +1,748 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Login · Geoportal IGT-PR</title>
+<link rel="icon" type="image/x-icon" href="https://www.atrbpn.go.id/favicon.ico">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+body.v2-login-page {
+  background: #f4f7fb;
+  color: #0f294d;
+  font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+.v2-login-page .app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.v2-login-page .workspace {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.v2-login-page .main {
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 18px 16px 36px;
+  box-sizing: border-box;
+}
+
+/* Status Pill in Topbar */
+.v2-login-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: #eef6ff;
+  border: 1px solid #bfdbfe;
+  color: #1858b8;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+}
+.v2-login-status .v2-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
+  animation: pulse-dot 2s infinite ease-in-out;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(0.85); }
+}
+
+/* Single Unified Card Canvas */
+.v2-login-card {
+  position: relative;
+  background: linear-gradient(180deg, #f7fbff 0%, #eef5fc 55%, #f6faff 100%);
+  border: 1.5px solid #dbe7f6;
+  border-radius: 18px;
+  box-shadow: 0 10px 32px rgba(16, 43, 89, 0.05);
+  padding: 26px 28px 0;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+/* Decorative background elements */
+.v2-deco {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.v2-deco:before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 70% 45% at 0% 35%, rgba(220, 236, 251, 0.78) 0, transparent 70%);
+}
+.v2-deco .blob {
+  position: absolute;
+  border-radius: 50%;
+}
+.v2-deco .b1 {
+  width: 170px;
+  height: 170px;
+  right: 70px;
+  top: -80px;
+  background: #9fd59a;
+  opacity: 0.55;
+  filter: blur(8px);
+}
+.v2-deco .b2 {
+  width: 230px;
+  height: 230px;
+  right: -90px;
+  top: -70px;
+  background: #bfdcf7;
+  opacity: 0.6;
+  filter: blur(10px);
+}
+.v2-deco .ring {
+  width: 170px;
+  height: 170px;
+  right: -75px;
+  top: calc(45% - 85px);
+  border: 30px solid #a9d1f2;
+  border-radius: 50%;
+  opacity: 0.43;
+}
+.v2-deco .contour {
+  position: absolute;
+  right: -40px;
+  top: -30px;
+  width: 80%;
+  height: 560px;
+  opacity: 0.35;
+}
+
+.v2-card-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* Brand Header */
+.v2-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+}
+.v2-brand-logos {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+}
+.v2-brand-logos img {
+  width: 58px;
+  height: 58px;
+  object-fit: contain;
+  display: block;
+}
+.v2-brand-title {
+  margin: 0;
+  color: #080b12;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: 26px;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+.v2-accent-bar {
+  display: block;
+  width: 90px;
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #4cb860 0 50%, #1f6fd6 50% 100%);
+  margin: 20px 0 14px;
+}
+.v2-intro-text {
+  margin: 0 0 18px;
+  color: #3f5675;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+/* Hero Section: QGIS Illustration + Login CTA */
+.v2-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: center;
+  margin: 18px 0 26px;
+}
+.v2-hero-art-wrap {
+  width: 100%;
+}
+.v2-hero-art {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.v2-login-cta-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
+}
+.v2-login-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 62px;
+  border: 0;
+  border-radius: 14px;
+  padding: 16px 20px;
+  background: linear-gradient(180deg, #1f6fd6 0%, #0f58c4 100%);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  box-shadow: 0 8px 24px rgba(15, 88, 196, 0.35);
+  transition: all 0.18s ease;
+  cursor: pointer;
+}
+.v2-login-btn:hover {
+  background: linear-gradient(180deg, #1a63c7 0%, #0b4cad 100%);
+  box-shadow: 0 12px 28px rgba(15, 88, 196, 0.45);
+  transform: translateY(-2px);
+}
+.v2-login-btn:active {
+  transform: translateY(0);
+  background: #0b4cad;
+  box-shadow: 0 6px 16px rgba(15, 88, 196, 0.3);
+}
+.v2-login-btn:focus-visible {
+  outline: 3px solid #9cc6ff;
+  outline-offset: 3px;
+}
+.v2-login-btn .q {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  object-fit: contain;
+}
+.v2-login-btn .arrow {
+  font-size: 1.25em;
+  font-weight: 400;
+  margin-left: 2px;
+}
+
+.v2-login-secondary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 2px 2px 0;
+}
+.v2-login-hint {
+  margin: 0;
+  color: #6b7f9a;
+  font-size: 11px;
+  font-weight: 600;
+}
+.v2-admin-btn {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #b8cce7;
+  border-radius: 8px;
+  padding: 7px 12px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #174a91;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.v2-admin-btn:hover {
+  background: #eaf3ff;
+  border-color: #7da8df;
+  transform: translateY(-1px);
+}
+.v2-admin-btn:focus-visible {
+  outline: 2px solid #9cc6ff;
+  outline-offset: 2px;
+}
+
+/* Fitur Utama Section */
+.v2-section-title {
+  margin: 0 0 18px;
+  color: #123a86;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+}
+.v2-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px 18px;
+  margin-bottom: 24px;
+}
+.v2-feature-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+.v2-feature-item .ico {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  margin-bottom: 10px;
+  flex: none;
+}
+.v2-feature-item .ico svg {
+  width: 27px;
+  height: 27px;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.v2-feature-item h3 {
+  margin: 0 0 6px;
+  color: #123a86;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+.v2-feature-item p {
+  margin: 0;
+  color: #5b6f8a;
+  font-size: 12px;
+  line-height: 1.55;
+}
+.i-blue { background: #e2eefc; } .i-blue svg { stroke: #1f6fd6; }
+.i-green { background: #e3f4e6; } .i-green svg { stroke: #24914a; }
+.i-purple { background: #eee6fb; } .i-purple svg { stroke: #7a46cf; }
+.i-teal { background: #e0f3f3; } .i-teal svg { stroke: #18888c; }
+.i-navy { background: #e4edfa; } .i-navy svg { stroke: #1c5fc0; }
+
+/* Footer Scene & Links */
+.v2-footer-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 0 110px;
+}
+.v2-guide-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #b8cce7;
+  border-radius: 8px;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #174a91;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(18, 58, 134, 0.06);
+  transition: all 0.15s ease;
+}
+.v2-guide-btn:hover {
+  background: #eaf3ff;
+  border-color: #7da8df;
+  transform: translateY(-1px);
+}
+.v2-guide-btn svg {
+  width: 16px;
+  height: 16px;
+}
+.v2-guide-btn .ext-arrow {
+  font-size: 12px;
+  color: #1f6fd6;
+}
+.v2-copy {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: #4b5f7c;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.v2-copy svg {
+  width: 22px;
+  height: 22px;
+  stroke: #123a86;
+  fill: none;
+  stroke-width: 1.6;
+  flex: none;
+}
+.v2-footer-scene {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 140px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Modal Styling */
+.v2-role-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(8, 23, 44, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  backdrop-filter: blur(2px);
+}
+.v2-role-modal-backdrop[hidden] {
+  display: none !important;
+}
+.v2-role-modal-card {
+  width: 100%;
+  max-width: 380px;
+  background: #ffffff;
+  border: 1.5px solid #d5e2f2;
+  border-radius: 16px;
+  box-shadow: 0 16px 40px rgba(15, 35, 65, 0.22);
+  padding: 20px;
+  box-sizing: border-box;
+  animation: modal-pop 0.18s ease-out;
+}
+@keyframes modal-pop {
+  from { opacity: 0; transform: scale(0.96) translateY(6px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.v2-role-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.v2-role-modal-head h3 {
+  margin: 0;
+  color: #0f294d;
+  font-size: 16px;
+  font-weight: 800;
+}
+.v2-role-modal-close {
+  border: 1px solid #dbe7f6;
+  background: #f1f6fd;
+  color: #1a4f94;
+  border-radius: 8px;
+  width: 28px;
+  height: 28px;
+  font-weight: 700;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: all 0.15s ease;
+}
+.v2-role-modal-close:hover {
+  background: #e6f0fd;
+  color: #0b4cad;
+}
+.v2-role-modal-list {
+  display: grid;
+  gap: 9px;
+}
+.v2-role-modal-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 12px;
+  border: 1px solid #dbe7f6;
+  background: #f8fbff;
+  color: #123a86;
+  font: 700 13px inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+.v2-role-modal-btn:hover {
+  background: #edf5fe;
+  border-color: #93c5fd;
+  transform: translateY(-1px);
+}
+.v2-role-modal-role-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.v2-role-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 800;
+}
+.v2-role-avatar.sa { background: #dbeafe; color: #1e40af; }
+.v2-role-avatar.ad { background: #ede9fe; color: #6b21a8; }
+.v2-role-avatar.op { background: #dcfce7; color: #166534; }
+.v2-role-avatar.um { background: #f1f5f9; color: #334155; }
+
+/* Responsive adjustments */
+@media (max-width: 580px) {
+  .v2-hero-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .v2-login-cta-box {
+    order: -1;
+  }
+  .v2-feature-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 480px) {
+  .v2-login-card {
+    padding: 18px 16px 0;
+  }
+  .v2-brand-logos img {
+    width: 44px;
+    height: 44px;
+  }
+  .v2-brand-title {
+    font-size: 18px;
+  }
+  .v2-feature-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+<body class="panel panel-home v2-page v2-theme-manage v2-login-page" data-page="login">
+<div class="app">
+ <div class="workspace">
+
+  <!-- V2 Topbar -->
+  <header class="topbar">
+   <div class="crumb">Geoportal IGT-PR　/　<strong>Login</strong></div>
+   <div class="top-actions">
+    <div class="v2-login-status">
+     <span class="v2-dot"></span>
+     <span>Plugin QGIS Aktif</span>
+    </div>
+   </div>
+  </header>
+
+  <main class="main">
+
+   <!-- Single Unified Login Card Canvas -->
+   <section class="v2-login-card">
+    <div class="v2-deco" aria-hidden="true">
+     <span class="blob b2"></span><span class="blob b1"></span><span class="blob ring"></span>
+     <svg class="contour" viewBox="0 0 400 300" preserveAspectRatio="none" fill="none" stroke="#9db8d6" stroke-width=".8">
+      <path d="M60 300C80 210 150 170 230 160S390 110 400 40"/><path d="M90 300C110 225 170 192 240 182S395 140 400 75"/>
+      <path d="M120 300C140 240 190 214 252 205S398 170 400 110"/><path d="M150 300C170 255 212 236 265 228S400 200 400 145"/>
+      <path d="M180 300C198 270 234 258 278 251S400 230 400 180"/><path d="M30 300C50 195 128 148 218 138S385 80 392 0"/>
+      <path d="M0 290C20 180 105 125 205 115S370 50 370 0"/><path d="M0 250C10 160 85 105 190 92S345 30 340 0"/>
+     </svg>
+    </div>
+
+    <div class="v2-card-content">
+     <!-- Brand Header -->
+     <div class="v2-brand-row">
+      <div class="v2-brand-logos">
+       <img src="../../qgis-plugin-example/igtpr_login_example/logo-bpn.png" alt="Logo Badan Pertanahan Nasional">
+       <img src="../../qgis-plugin-example/igtpr_login_example/logo-igtpr.png" alt="Logo IGT-PR">
+      </div>
+      <h1 class="v2-brand-title">GEOPORTAL IGT-PR</h1>
+     </div>
+
+     <span class="v2-accent-bar" aria-hidden="true"></span>
+     <p class="v2-intro-text">Integrasi Plugin QGIS dengan Geoportal IGT-PR memudahkan pengguna mengakses, memvisualisasikan, dan mengelola data Informasi Geospasial Tematik Pertanahan dan Ruang secara langsung melalui QGIS.</p>
+
+     <!-- Hero: Illustration + Login CTA -->
+     <div class="v2-hero-grid">
+      <div class="v2-hero-art-wrap">
+       <img class="v2-hero-art" src="illustration.png" width="883" height="829" alt="Ilustrasi jendela QGIS di atas tumpukan layer IGT">
+      </div>
+
+      <div class="v2-login-cta-box">
+       <button class="v2-login-btn" id="loginBtn" type="button">
+        <img class="q" src="../../qgis-plugin-example/igtpr_login_example/qgis_icon.svg" alt="" aria-hidden="true">
+        <span>LOGIN</span>
+        <span class="arrow" aria-hidden="true">→</span>
+       </button>
+       <div class="v2-login-secondary-row">
+        <p class="v2-login-hint">Masuk dengan SSO</p>
+        <button class="v2-admin-btn" id="adminLoginBtn" type="button">Administrator</button>
+       </div>
+      </div>
+     </div>
+
+     <!-- Fitur Utama -->
+     <span class="v2-accent-bar" aria-hidden="true"></span>
+     <h2 class="v2-section-title">Fitur Utama</h2>
+
+     <div class="v2-feature-grid">
+      <div class="v2-feature-item">
+       <div class="ico i-blue" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 12.5l9 5 9-5"/><path d="M3 16.5l9 5 9-5"/></svg>
+       </div>
+       <h3>Akses Data Terintegrasi</h3>
+       <p>Mengakses data IGT-PR secara langsung di lingkungan QGIS.</p>
+      </div>
+
+      <div class="v2-feature-item">
+       <div class="ico i-green" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M12 22s7-6.5 7-12a7 7 0 0 0-14 0c0 5.5 7 12 7 12z"/><circle cx="12" cy="10" r="2.6"/></svg>
+       </div>
+       <h3>Visualisasi Tematik</h3>
+       <p>Menampilkan data tematik dalam bentuk peta yang interaktif dan informatif.</p>
+      </div>
+
+      <div class="v2-feature-item">
+       <div class="ico i-purple" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+       </div>
+       <h3>Mendukung Analisis Spasial</h3>
+       <p>Mempermudah analisis dan pengolahan data spasial untuk pengambilan keputusan.</p>
+      </div>
+
+      <div class="v2-feature-item">
+       <div class="ico i-teal" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>
+       </div>
+       <h3>Integrasi Langsung</h3>
+       <p>Terhubung dengan Geoportal IGT-PR secara aman dan efisien.</p>
+      </div>
+
+      <div class="v2-feature-item">
+       <div class="ico i-navy" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M12 2.5l8 3v6c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10v-6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg>
+       </div>
+       <h3>Mudah Digunakan</h3>
+       <p>Antarmuka sederhana dan intuitif untuk mendukung produktivitas pengguna.</p>
+      </div>
+     </div>
+
+     <!-- Footer -->
+     <div class="v2-footer-content">
+      <a class="v2-guide-btn" id="guideBtn" href="https://igtpr.atrbpn.go.id/" target="_blank" rel="noopener noreferrer">
+       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+       <span>Panduan</span>
+       <span class="ext-arrow" aria-hidden="true">↗</span>
+      </a>
+      <div class="v2-copy">
+       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18M5 7.5h14M5 16.5h14"/></svg>
+       <span>Copyright © 2026 Kementerian Agraria<br>dan Tata Ruang / Badan Pertanahan Nasional</span>
+      </div>
+     </div>
+
+     <!-- Landscape Vector Scene from qgis-plugin-example -->
+     <svg class="v2-footer-scene" viewBox="0 0 900 150" preserveAspectRatio="none" aria-hidden="true">
+      <g fill="#cfe2f4">
+       <rect x="560" y="40" width="22" height="70"/><rect x="588" y="58" width="16" height="52"/><rect x="610" y="30" width="18" height="80"/><rect x="634" y="52" width="24" height="58"/><rect x="664" y="44" width="16" height="66"/><rect x="686" y="60" width="22" height="50"/>
+      </g>
+      <path d="M420 150C520 80 640 70 900 60V150z" fill="#d8ecd9"/>
+      <path d="M500 150C600 100 720 95 900 92V150z" fill="#bfe0c4"/>
+      <path d="M620 150C690 125 760 112 900 108V150z" fill="#a8d2f0"/>
+      <path d="M0 150V95C120 120 220 140 360 150z" fill="#1f6fd6"/>
+      <path d="M0 150V120C90 135 170 145 250 150z" fill="#6cc46a"/>
+      <path d="M820 42a16 16 0 0 1 16 16c0 12-16 28-16 28s-16-16-16-28a16 16 0 0 1 16-16z" fill="#4f9be8"/>
+      <circle cx="820" cy="58" r="5" fill="#fff"/>
+     </svg>
+    </div>
+   </section>
+
+  </main>
+
+  <!-- Role Selection Modal -->
+  <div class="v2-role-modal-backdrop" id="roleModal" hidden role="dialog" aria-modal="true" aria-labelledby="roleModalTitle">
+   <div class="v2-role-modal-card">
+    <div class="v2-role-modal-head">
+     <h3 id="roleModalTitle">Pilih Role Masuk</h3>
+     <button type="button" class="v2-role-modal-close" id="closeRoleModal" aria-label="Tutup">✕</button>
+    </div>
+    <div class="v2-role-modal-list">
+     <button type="button" class="v2-role-modal-btn" data-login-role="superadmin">
+      <div class="v2-role-modal-role-info">
+       <span class="v2-role-avatar sa">SA</span>
+       <span>Superadmin</span>
+      </div>
+      <span aria-hidden="true">→</span>
+     </button>
+     <button type="button" class="v2-role-modal-btn" data-login-role="admin">
+      <div class="v2-role-modal-role-info">
+       <span class="v2-role-avatar ad">AD</span>
+       <span>Admin</span>
+      </div>
+      <span aria-hidden="true">→</span>
+     </button>
+     <button type="button" class="v2-role-modal-btn" data-login-role="operator">
+      <div class="v2-role-modal-role-info">
+       <span class="v2-role-avatar op">JH</span>
+       <span>Operator Pusat</span>
+      </div>
+      <span aria-hidden="true">→</span>
+     </button>
+     <button type="button" class="v2-role-modal-btn" data-login-role="umum">
+      <div class="v2-role-modal-role-info">
+       <span class="v2-role-avatar um">UM</span>
+       <span>Umum</span>
+      </div>
+      <span aria-hidden="true">→</span>
+     </button>
+    </div>
+   </div>
+  </div>
+
+ </div>
+</div>
+
+<script src="../../app.js"></script>
+<script>
+const roleModal = document.getElementById('roleModal');
+function enterRole(baseRole) {
+  roleModal.hidden = true;
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'igtpr-switch-role', role: baseRole, version: 'v2' }, '*');
+  } else {
+    const roleDir = baseRole + '2';
+    window.location.href = '../../roles/' + roleDir + '/beranda/index.html';
+  }
+}
+$('#loginBtn').addEventListener('click', () => {
+  roleModal.hidden = false;
+});
+$('#closeRoleModal').addEventListener('click', () => {
+  roleModal.hidden = true;
+});
+roleModal.addEventListener('click', (e) => {
+  if (e.target === roleModal) roleModal.hidden = true;
+});
+document.querySelectorAll('[data-login-role]').forEach((btn) => {
+  btn.addEventListener('click', () => enterRole(btn.dataset.loginRole));
+});
+$('#adminLoginBtn').addEventListener('click', () => {
+  enterRole('superadmin');
+});
+</script>
+</body>
+</html>

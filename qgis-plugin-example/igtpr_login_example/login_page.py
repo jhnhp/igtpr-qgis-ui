@@ -4,7 +4,8 @@
 Pemetaan dari HTML ke Qt:
 - CSS                -> Qt Style Sheet (QSS) di LOGIN_QSS
 - box-shadow         -> QGraphicsDropShadowEffect
-- ilustrasi & ikon   -> SVG yang dirender QSvgRenderer (lihat assets.py)
+- ilustrasi          -> PNG illustration.png (dibuat tools/make_login_illustration.py)
+- ikon               -> SVG yang dirender QSvgRenderer (lihat assets.py)
 - dekorasi latar     -> digambar QPainter di LoginPage.paintEvent
 - media query        -> LoginPage._relayout() dipanggil dari resizeEvent
 """
@@ -21,9 +22,10 @@ from qgis.PyQt.QtWidgets import (
     QScrollArea, QSizePolicy, QVBoxLayout, QWidget,
 )
 
-from .assets import CONTOUR_SVG, ICONS, ILLUSTRATION_SVG, Q_ICON
+from .assets import CONTOUR_SVG, ICONS, Q_ICON
 
 NAVY = '#123a86'
+ILLUSTRATION_PATH = os.path.join(os.path.dirname(__file__), 'illustration.png')
 PIXEL_RATIO = 2  # pixmap dirender 2x supaya tetap tajam di layar HiDPI
 
 # Batas lebar (px) untuk tata letak responsif, setara media query di versi HTML.
@@ -143,14 +145,15 @@ def emblem_pixmap(diameter, logo_path=None):
     return pixmap
 
 
-class SvgView(QWidget):
-    """Menampilkan SVG selebar widget dengan rasio aspek tetap."""
+class ImageView(QWidget):
+    """Menampilkan gambar selebar widget dengan rasio aspek tetap; widget kosong bila file tidak ada."""
 
-    def __init__(self, svg, parent=None):
+    def __init__(self, path, parent=None):
         super().__init__(parent)
-        self._renderer = QSvgRenderer(QByteArray(svg.encode('utf-8')), self)
-        size = self._renderer.defaultSize()
-        self._ratio = size.height() / size.width()
+        self._pixmap = QPixmap(path)
+        self._ratio = 0 if self._pixmap.isNull() else self._pixmap.height() / self._pixmap.width()
+        self._scaled = QPixmap()
+        self._scaled_for = None
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.setMinimumWidth(200)
 
@@ -159,9 +162,18 @@ class SvgView(QWidget):
         super().resizeEvent(event)
 
     def paintEvent(self, event):
+        if self._pixmap.isNull():
+            return
+        ratio = self.devicePixelRatioF()
+        size = self.size() * ratio
+        if self._scaled_for != (size.width(), size.height()):
+            # Diskalakan halus sekali per ukuran; menskalakan gambar besar di setiap paint terlalu berat.
+            self._scaled_for = (size.width(), size.height())
+            self._scaled = self._pixmap.scaled(size, Qt.AspectRatioMode.KeepAspectRatio,
+                                               Qt.TransformationMode.SmoothTransformation)
+            self._scaled.setDevicePixelRatio(ratio)
         painter = QPainter(self)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        self._renderer.render(painter, QRectF(self.rect()))
+        painter.drawPixmap(0, 0, self._scaled)
 
 
 class AccentBar(QWidget):
@@ -305,7 +317,7 @@ class LoginPage(QWidget):
         self._hero = QGridLayout()
         self._hero.setHorizontalSpacing(18)
         self._hero.setVerticalSpacing(10)
-        self._illustration = SvgView(ILLUSTRATION_SVG, self)
+        self._illustration = ImageView(ILLUSTRATION_PATH, self)
         self._login_box = self._build_login_box()
         root.addLayout(self._hero)
 
@@ -437,8 +449,8 @@ class LoginPage(QWidget):
         if mode == 'wide':
             self._hero.addWidget(self._illustration, 0, 0)
             self._hero.addWidget(self._login_box, 0, 1)
-            self._hero.setColumnStretch(0, 5)
-            self._hero.setColumnStretch(1, 4)
+            self._hero.setColumnStretch(0, 3)
+            self._hero.setColumnStretch(1, 2)
         else:
             self._hero.addWidget(self._login_box, 0, 0)
             self._hero.addWidget(self._illustration, 1, 0)
