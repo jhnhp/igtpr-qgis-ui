@@ -467,7 +467,7 @@ class CatalogPage(QWidget):
                 for sub in d['subLayers']:
                     child_item = QTreeWidgetItem(item)
 
-                    # Col 0: Branch line └─ and Sublayer title + badge
+                    # Col 0: Branch line └─ and Sublayer title
                     sub_widget = QWidget()
                     sub_layout = QHBoxLayout(sub_widget)
                     sub_layout.setContentsMargins(18, 2, 6, 2)
@@ -480,22 +480,6 @@ class CatalogPage(QWidget):
                     sub_title = QLabel(sub['name'], sub_widget)
                     sub_title.setStyleSheet("color: #1e293b; font-size: 11.5px; font-weight: 600;")
                     sub_layout.addWidget(sub_title)
-
-                    # Badge
-                    badge_lbl = QLabel(sub.get('label') or sub.get('year') or sub.get('skala') or '', sub_widget)
-                    is_year = (d.get('multiType') == 'multi-year')
-                    badge_lbl.setStyleSheet(f"""
-                        QLabel {{
-                            background-color: {'#ecfdf5' if is_year else '#eff6ff'};
-                            border: 1px solid {'#a7f3d0' if is_year else '#bfdbfe'};
-                            border-radius: 4px;
-                            color: {'#047857' if is_year else '#1d4ed8'};
-                            font-size: 9.5px;
-                            font-weight: 700;
-                            padding: 1px 5px;
-                        }}
-                    """)
-                    sub_layout.addWidget(badge_lbl)
                     sub_layout.addStretch()
                     self.tree.setItemWidget(child_item, 0, sub_widget)
 

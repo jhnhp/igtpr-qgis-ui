@@ -310,7 +310,6 @@ const IgtApp = (() => {
             '<span class="igt-tree-branch-line" aria-hidden="true">└─</span>' +
             '<div class="igt-sublayer-content">' +
             '<span class="igt-sublayer-title">' + sub.name + '</span>' +
-            '<span class="igt-sublayer-badge ' + (d.multiType === 'multi-year' ? 'badge-year' : 'badge-scale') + '">' + (sub.label || sub.year || sub.skala || '') + '</span>' +
             '</div></div></td>' +
             '<td data-label="' + orgLabel + '"><span class="igt-sublayer-meta">' + (sub.scope || d.direktorat || '—') + '</span></td>' +
             '<td data-label="Tanggal"><span class="igt-sublayer-date">' + (sub.updated || sub.date || d.updated || '—') + '</span></td>' +
