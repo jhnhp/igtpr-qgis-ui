@@ -15,10 +15,10 @@
 </head>
 <body class="panel panel-detail" data-page="utama-detail">
 <div class="app"><div class="workspace">
-<header class="topbar"><div class="crumb">Geoportal IGT-PR　/　<a href="../upload-data/index.html">Upload Data</a>　/　<strong>Detail IGT</strong></div><div class="top-actions"><button class="icon-btn" aria-label="Notifikasi">♧</button><div class="user-chip"><div class="avatar">JH</div><span>Operator Pusat</span></div></div></header>
+<header class="topbar"><div class="crumb">Geoportal IGT-PR　/　<a href="../upload-data/index.html?tab=igt-utama">IGT Utama</a>　/　<strong>Detail IGT</strong></div><div class="top-actions"><button class="icon-btn" aria-label="Notifikasi">♧</button><div class="user-chip"><div class="avatar">JH</div><span>Operator Pusat</span></div></div></header>
 <main class="main">
 <div class="page-head"><div><div class="eyebrow">Sistem Informasi Geospasial</div><h1 id="igt-name">Detail IGT Utama</h1><p>Informasi pengajuan dan status data IGT yang dipilih.</p></div></div>
-<div class="detail-actions"><a class="btn btn-soft" id="back-home" href="../beranda/index.html">← Kembali ke Dashboard</a><a class="btn btn-soft" id="back-list" href="../upload-data/index.html">Kembali ke Upload Data</a><button class="btn btn-primary" id="show-canvas">▧ Tampilkan di Canvas</button><button class="btn btn-soft" id="verify-topology" hidden>⌁ Verifikasi Topologi</button><button class="btn btn-primary" id="approve-integration" hidden>✓ Setujui Integrasi</button><button class="btn btn-soft" id="revise-igt" hidden>✎ Revisi</button></div>
+<div class="detail-actions"><a class="btn btn-soft" id="back-home" href="../beranda/index.html">← Kembali ke Dashboard</a><a class="btn btn-soft" id="back-list" href="../upload-data/index.html?tab=igt-utama">Kembali ke IGT Utama</a><button class="btn btn-primary" id="show-canvas">▧ Tampilkan di Canvas</button><button class="btn btn-soft" id="verify-topology" hidden>⌁ Verifikasi Topologi</button><button class="btn btn-primary" id="approve-integration" hidden>✓ Setujui Integrasi</button><button class="btn btn-soft" id="revise-igt" hidden>✎ Revisi</button></div>
 <section class="card detail-section"><div class="card-head"><div><h2>Informasi Pengajuan</h2><p>Identitas dan metadata data IGT.</p></div><span id="status-badge" class="status info">Terkompilasi</span></div>
 <div class="detail-grid">
 <div class="detail-item"><div class="detail-label">ID Pengajuan</div><div class="detail-value" id="igt-id">IGT-2026-012</div></div>
@@ -47,7 +47,7 @@ const records={
 const params=new URLSearchParams(location.search),d=records[params.get("id")]||records["0"],role=["superadmin","admin","umum"].includes(params.get("role"))?params.get("role"):"operator",isSuperadmin=role==="superadmin",isAdmin=role==="admin";
 document.title=d.nama+" · Detail IGT-PR";
 const uploadUrl="../../"+role+"/upload-data/index.html?tab=igt-utama";
-document.querySelector(".crumb").innerHTML='Geoportal IGT-PR　/　<a href="'+uploadUrl+'">Upload Data</a>　/　<strong>Detail IGT</strong>';
+document.querySelector(".crumb").innerHTML='Geoportal IGT-PR　/　<a href="'+uploadUrl+'">IGT Utama</a>　/　<strong>Detail IGT</strong>';
 if(role!=="operator"){const who={superadmin:['SA','Superadmin'],admin:['AD','Admin'],umum:['UM','Umum']}[role];document.querySelector(".user-chip").innerHTML='<div class="avatar">'+who[0]+'</div><span>'+who[1]+'</span>';}
 document.getElementById("back-home").href="../../"+role+"/beranda/index.html";document.getElementById("back-list").href=uploadUrl;
 document.getElementById("igt-name").textContent=d.nama;

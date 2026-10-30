@@ -1015,6 +1015,27 @@ tbody tr:hover {
   gap: 8px;
 }
 
+.menu-buttons-superadmin {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.menu-buttons-superadmin > :first-child {
+  grid-column: 1 / -1;
+}
+
+.ri-icon {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  display: inline-block;
+  vertical-align: -2px;
+}
+
+.stat-icon .ri-icon {
+  width: 18px;
+  height: 18px;
+}
+
 .sort-header {
   display: inline-flex;
   align-items: center;

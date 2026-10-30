@@ -1,9 +1,9 @@
 <!doctype html>
 <html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Detail Layer Derivatif · IGT-PR</title><link rel="icon" type="image/x-icon" href="https://www.atrbpn.go.id/favicon.ico"><link rel="stylesheet" href="../../../styles.css">
 </head><body class="panel panel-detail" data-page="layer-derivatif-detail"><div class="app"><div class="workspace">
-<header class="topbar"><div class="crumb">Geoportal IGT-PR　/　<a href="../upload-data/index.html?tab=derivatif">Upload Data</a>　/　<strong>Detail</strong></div><div class="top-actions"><button class="icon-btn" aria-label="Notifikasi">♧</button><div class="user-chip"><div class="avatar">JH</div><span>Operator Pusat</span></div></div></header>
+<header class="topbar"><div class="crumb">Geoportal IGT-PR　/　<a href="../upload-data/index.html?tab=derivatif">IGT Derivatif</a>　/　<strong>Detail</strong></div><div class="top-actions"><button class="icon-btn" aria-label="Notifikasi">♧</button><div class="user-chip"><div class="avatar">JH</div><span>Operator Pusat</span></div></div></header>
 <main class="main"><div class="page-head"><div><div class="eyebrow">Sistem Informasi Geospasial</div><h1 id="layer-name">Detail Layer Derivatif</h1><p>Informasi pengajuan, gaya tampilan, dan masa berlaku layer.</p></div></div>
-<div class="detail-actions"><a class="btn btn-soft" id="back-home" href="../beranda/index.html">← Kembali ke Dashboard</a><a class="btn btn-soft" id="back-list" href="../upload-data/index.html?tab=derivatif">Kembali ke Upload Data</a><button class="btn btn-primary" id="show-canvas">▧ Tampilkan di Canvas</button></div>
+<div class="detail-actions"><a class="btn btn-soft" id="back-home" href="../beranda/index.html">← Kembali ke Dashboard</a><a class="btn btn-soft" id="back-list" href="../upload-data/index.html?tab=derivatif">Kembali ke IGT Derivatif</a><button class="btn btn-primary" id="show-canvas">▧ Tampilkan di Canvas</button></div>
 <section class="card detail-section"><div class="card-head"><div><h2>Informasi Pengajuan</h2><p>Identitas dan metadata layer derivatif.</p></div><span id="status-badge" class="status ok">Disetujui</span></div>
 <div class="detail-grid">
 <div class="detail-item"><div class="detail-label">ID Pengajuan</div><div class="detail-value" id="layer-id">DRV-2026-008</div></div>
@@ -30,7 +30,7 @@ const params=new URLSearchParams(location.search),d=data[params.get("id")]||data
 const uploadUrl="../../"+role+"/upload-data/index.html?tab=derivatif";
 if(role!=="operator"){const who={superadmin:["Superadmin","SA"],admin:["Admin","AD"],umum:["Umum","UM"]}[role];document.querySelector(".user-chip span").textContent=who[0];document.querySelector(".avatar").textContent=who[1];}
 document.getElementById("back-home").href="../../"+role+"/beranda/index.html";document.getElementById("back-list").href=uploadUrl;
-document.querySelector(".crumb").innerHTML='Geoportal IGT-PR　/　<a href="'+uploadUrl+'">Upload Data</a>　/　<strong>Detail</strong>';
+document.querySelector(".crumb").innerHTML='Geoportal IGT-PR　/　<a href="'+uploadUrl+'">IGT Derivatif</a>　/　<strong>Detail</strong>';
 document.title=d.nama+" · Detail Layer Derivatif";
 document.getElementById("layer-name").textContent=d.nama;
 document.getElementById("layer-name-meta").textContent=d.nama;

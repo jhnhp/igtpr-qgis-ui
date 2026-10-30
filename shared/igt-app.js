@@ -10,6 +10,34 @@ const IgtApp = (() => {
   favicon.href = 'https://www.atrbpn.go.id/favicon.ico';
   document.head.appendChild(favicon);
 
+  // RemixIcon paths used in IGTPR-UI-mockup (assets/lib/remixicon & assets/js/core/layout.js)
+  const RI_PATHS = {
+    'map-pin-line': 'M12 20.9l4.95-4.95a7 7 0 1 0-9.9 0L12 20.9zm0 2.828l-6.364-6.364a9 9 0 1 1 12.728 0L12 23.728zM12 13a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 2a4 4 0 1 1 0-8 4 4 0 0 1 0 8z',
+    'map-2-line': 'M2 5l7-3 6 3 6.303-2.701a.5.5 0 0 1 .697.46V19l-7 3-6-3-6.303 2.701a.5.5 0 0 1-.697-.46V5zm14 14.395l4-1.714V5.033l-4 1.714v12.648zm-2-.131V6.736l-4-2v12.528l4 2zm-6-2.011V4.605L4 6.319v12.648l4-1.714z',
+    'stack-line': 'M20.083 15.2l1.202.721a.5.5 0 0 1 0 .858l-8.77 5.262a1 1 0 0 1-1.03 0l-8.77-5.262a.5.5 0 0 1 0-.858l1.202-.721L12 20.05l8.083-4.85zm0-4.7l1.202.721a.5.5 0 0 1 0 .858L12 17.65l-9.285-5.571a.5.5 0 0 1 0-.858l1.202-.721L12 15.35l8.083-4.85zm-7.569-9.191l8.771 5.262a.5.5 0 0 1 0 .858L12 13 2.715 7.429a.5.5 0 0 1 0-.858l8.77-5.262a1 1 0 0 1 1.03 0zM12 3.332L5.887 7 12 10.668 18.113 7 12 3.332z',
+    'global-line': 'M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm-2.29-2.333A17.9 17.9 0 0 1 8.027 13H4.062a8.008 8.008 0 0 0 5.648 6.667zM10.03 13c.151 2.439.848 4.73 1.97 6.752A15.905 15.905 0 0 0 13.97 13h-3.94zm9.908 0h-3.965a17.9 17.9 0 0 1-1.683 6.667A8.008 8.008 0 0 0 19.938 13zM4.062 11h3.965A17.9 17.9 0 0 1 9.71 4.333 8.008 8.008 0 0 0 4.062 11zm5.969 0h3.938A15.905 15.905 0 0 0 12 4.248 15.905 15.905 0 0 0 10.03 11zm4.259-6.667A17.9 17.9 0 0 1 15.973 11h3.965a8.008 8.008 0 0 0-5.648-6.667z',
+    'database-2-line': 'M5 12.5c0 .313.461.858 1.53 1.393C7.914 14.585 9.877 15 12 15c2.123 0 4.086-.415 5.47-1.107 1.069-.535 1.53-1.08 1.53-1.393v-2.171C17.35 11.349 14.827 12 12 12s-5.35-.652-7-1.671V12.5zm14 2.829C17.35 16.349 14.827 17 12 17s-5.35-.652-7-1.671V17.5c0 .313.461.858 1.53 1.393C7.914 19.585 9.877 20 12 20c2.123 0 4.086-.415 5.47-1.107 1.069-.535 1.53-1.08 1.53-1.393v-2.171zM3 17.5v-10C3 5.015 7.03 3 12 3s9 2.015 9 4.5v10c0 2.485-4.03 4.5-9 4.5s-9-2.015-9-4.5zm9-7.5c2.123 0 4.086-.415 5.47-1.107C18.539 8.358 19 7.813 19 7.5c0-.313-.461-.858-1.53-1.393C16.086 5.415 14.123 5 12 5c-2.123 0-4.086.415-5.47 1.107C5.461 6.642 5 7.187 5 7.5c0 .313.461.858 1.53 1.393C7.914 9.585 9.877 10 12 10z',
+    'upload-cloud-2-line': 'M12 12.586l4.243 4.242-1.415 1.415L13 16.415V22h-2v-5.587l-1.828 1.83-1.415-1.415L12 12.586zM12 2a7.001 7.001 0 0 1 6.954 6.194 5.5 5.5 0 0 1-.953 10.784v-2.014a3.5 3.5 0 1 0-1.112-6.91 5 5 0 1 0-9.777 0 3.5 3.5 0 0 0-1.292 6.88l.18.03v2.014a5.5 5.5 0 0 1-.954-10.784A7 7 0 0 1 12 2z',
+    'file-text-line': 'M21 8v12.993A1 1 0 0 1 20.007 22H3.993A.993.993 0 0 1 3 21.008V2.992C3 2.455 3.449 2 4.002 2h10.995L21 8zm-2 1h-5V4H5v16h14V9zM8 7h3v2H8V7zm0 4h8v2H8v-2zm0 4h8v2H8v-2z',
+    'node-tree': 'M10 2c.552 0 1 .448 1 1v4c0 .552-.448 1-1 1H8v2h5V9c0-.552.448-1 1-1h6c.552 0 1 .448 1 1v4c0 .552-.448 1-1 1h-6c-.552 0-1-.448-1-1v-1H8v6h5v-1c0-.552.448-1 1-1h6c.552 0 1 .448 1 1v4c0 .552-.448 1-1 1h-6c-.552 0-1-.448-1-1v-1H7c-.552 0-1-.448-1-1V8H4c-.552 0-1-.448-1-1V3c0-.552.448-1 1-1h6zm9 16h-4v2h4v-2zm0-8h-4v2h4v-2zM9 4H5v2h4V4z',
+    'folder-line': 'M4 5v14h16V7h-8.414l-2-2H4zm8.414 0H21a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h7.414l2 2z',
+    'checkbox-circle-line': 'M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-.997-4L6.76 11.757l1.414-1.414 2.829 2.829 5.656-5.657 1.415 1.414L11.003 16z',
+    'time-line': 'M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm1-8h4v2h-6V7h2v5z',
+    'error-warning-line': 'M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-1-5h2v2h-2v-2zm0-8h2v6h-2V7z',
+    'eye-line': 'M12 3c5.392 0 9.878 3.88 10.819 9-.94 5.12-5.427 9-10.819 9-5.392 0-9.878-3.88-10.819-9C2.121 6.88 6.608 3 12 3zm0 16a9.005 9.005 0 0 0 8.777-7 9.005 9.005 0 0 0-17.554 0A9.005 9.005 0 0 0 12 19zm0-2.5a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9zm0-2a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z',
+    'focus-3-line': 'M13 1l.001 3.062A8.004 8.004 0 0 1 19.938 11H23v2l-3.062.001a8.004 8.004 0 0 1-6.937 6.937L13 23h-2v-3.062a8.004 8.004 0 0 1-6.938-6.937L1 13v-2h3.062A8.004 8.004 0 0 1 11 4.062V1h2zm-1 5a6 6 0 1 0 0 12 6 6 0 0 0 0-12zm0 4a2 2 0 1 1 0 4 2 2 0 0 1 0-4z',
+    'check-line': 'M10 15.172l9.192-9.193 1.415 1.414L10 18l-6.364-6.364 1.414-1.414z',
+    'close-line': 'M12 10.586l4.95-4.95 1.414 1.414-4.95 4.95 4.95 4.95-1.414 1.414-4.95-4.95-4.95 4.95-1.414-1.414 4.95-4.95-4.95-4.95L7.05 5.636z',
+    'edit-line': 'M6.414 16L16.556 5.858l-1.414-1.414L5 14.586V16h1.414zm.829 2H3v-4.243L14.435 2.322a1 1 0 0 1 1.414 0l2.829 2.829a1 1 0 0 1 0 1.414L7.243 18zM3 20h18v2H3v-2z',
+    'delete-bin-line': 'M17 6h5v2h-2v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V8H2V6h5V3a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v3zm1 2H6v12h12V8zm-9 3h2v6H9v-6zm4 0h2v6h-2v-6zM9 4v2h6V4H9z',
+    'notification-3-line': 'M20 17h2v2H2v-2h2v-7a8 8 0 1 1 16 0v7zm-2 0v-7a6 6 0 1 0-12 0v7h12zm-9 4h6v2H9v-2z',
+  };
+
+  const ri = (name) => `<svg class="ri-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="${RI_PATHS[name] || RI_PATHS['stack-line']}"/></svg>`;
+
+  const notifBtn = document.querySelector('.icon-btn[aria-label="Notifikasi"]');
+  if (notifBtn) notifBtn.innerHTML = ri('notification-3-line');
+
   const STATUS_CLASS = {
     Proses: 'info',
     Terkompilasi: 'info',
@@ -49,24 +77,51 @@ const IgtApp = (() => {
   };
   const BIDANG_WORKFLOW_URL = '../derivatif-bidang/index.html';
 
+  function managementCategories(role) {
+    const availableCategories = CATEGORY_ORDER.filter((key) => IgtData.canUpload(role, key));
+    // Superadmin can review IGT Utama and derivatif, but may only upload IGT Lainnya.
+    return role === 'superadmin'
+      ? ['igt-utama', 'derivatif', ...availableCategories.filter((key) => key === 'lainnya')]
+      : [
+          ...(availableCategories.some((key) => key === 'pertanahan' || key === 'tata-ruang') ? ['igt-utama'] : []),
+          ...availableCategories.filter((key) => key !== 'pertanahan' && key !== 'tata-ruang'),
+        ];
+  }
+
+  const managementLabel = (key) => (key === 'igt-utama' ? 'IGT Utama' : CATEGORIES[key].label);
+  const CATALOG_ICON = {
+    pertanahan: ri('map-pin-line'),
+    'tata-ruang': ri('map-2-line'),
+    derivatif: ri('stack-line'),
+    lainnya: ri('global-line'),
+  };
+  const MANAGEMENT_ICON = {
+    'igt-utama': ri('database-2-line'),
+    derivatif: ri('upload-cloud-2-line'),
+    lainnya: ri('file-text-line'),
+  };
+
   // ----------------------------------------------------------------- dashboard
 
   // Repository overview: how many datasets are compiled and integrated. No upload controls here.
   function dashboard(role) {
     const records = IgtData.loadRecords().filter((r) => IgtData.canView(role, r.category));
     const categories = CATEGORY_ORDER.filter((key) => IgtData.canView(role, key));
-    const catalogButtons = categories.map((key) => '<a class="btn btn-soft menu-btn" href="../' + CATEGORIES[key].slug + '/index.html">▧ ' + CATEGORIES[key].label + '</a>').join('');
+    const catalogButtons = categories.map((key) => '<a class="btn btn-soft menu-btn" href="../' + CATEGORIES[key].slug + '/index.html">' + (CATALOG_ICON[key] || ri('stack-line')) + '<span>' + CATEGORIES[key].label + '</span></a>').join('');
+    const manageButtons = managementCategories(role)
+      .map((key) => '<a class="btn btn-primary menu-btn" id="upload-button-' + key + '" href="../upload-data/index.html?tab=' + key + '">' + (MANAGEMENT_ICON[key] || ri('database-2-line')) + '<span>' + managementLabel(key) + '</span></a>')
+      .join('');
     $('#view').innerHTML =
       '<div class="field year-filter-wrap"><label for="dashboard-year-filter">FILTER TAHUN</label><select id="dashboard-year-filter">' + yearFilterOptions(records) + '</select></div>' +
       '<div class="grid stats">' +
-      statCard('Terkompilasi', '0', 'Menunggu integrasi', '▤', 'amber', 'count-compiled') +
-      statCard('Terintegrasi', '0', 'Pertanahan dan Tata Ruang', '✓', 'green', 'count-integrated') +
+      statCard('Terkompilasi', '0', 'Menunggu integrasi', ri('folder-line'), 'amber', 'count-compiled') +
+      statCard('Terintegrasi', '0', 'Pertanahan dan Tata Ruang', ri('checkbox-circle-line'), 'green', 'count-integrated') +
       '</div>' +
       '<section class="card"><div class="card-head"><div><h2>Katalog IGT</h2><p>Pilih kategori untuk melihat dataset.</p></div></div>' +
       '<div class="menu-buttons" id="catalog-buttons">' + catalogButtons + '</div>' +
       '<div class="card-head menu-upload-head"><div><h2>Kelola data</h2><p>Unggah data baru dan pantau status pengajuan.</p></div></div>' +
-      '<div class="menu-buttons"><a class="btn btn-primary menu-btn" id="upload-button" href="../upload-data/index.html">▦ Manajemen Data</a></div>' +
-      (ROLES[role].modelBuilder === false ? '' : '<div class="menu-buttons model-builder-buttons"><a class="btn btn-primary menu-btn" id="model-builder-button" href="../../../shared/model-builder/index.html?role=' + role + '">⚙ Model Builder</a></div>') +
+      '<div class="menu-buttons' + (role === 'superadmin' ? ' menu-buttons-superadmin' : '') + '" id="upload-buttons">' + manageButtons + '</div>' +
+      (ROLES[role].modelBuilder === false ? '' : '<div class="menu-buttons model-builder-buttons"><a class="btn btn-primary menu-btn" id="model-builder-button" href="../../../shared/model-builder/index.html?role=' + role + '">' + ri('node-tree') + '<span>Model Builder</span></a></div>') +
       '</section>';
     const updateDashboard = () => {
       const year = $('#dashboard-year-filter').value;
@@ -124,7 +179,7 @@ const IgtApp = (() => {
       });
       $('#catalog-rows').innerHTML = shown.map((d) =>
         '<tr><td data-label="Nama IGT">' + d.name + '</td><td data-label="Ditjen">' + (d.ditjen || d.source || '—') + '</td><td data-label="Tanggal">' + (d.updated || d.date || '—') + '</td>' +
-        '<td data-label="Tampilkan WMS">' + button('btn-soft', 'wms', d.id, '▧ WMS') + '</td><td data-label="Tampilkan WFS">' + button('btn-soft', 'wfs', d.id, '▤ WFS') + '</td></tr>'
+        '<td data-label="Tampilkan WMS">' + button('btn-soft', 'wms', d.id, ri('map-2-line') + '<span>WMS</span>') + '</td><td data-label="Tampilkan WFS">' + button('btn-soft', 'wfs', d.id, ri('stack-line') + '<span>WFS</span>') + '</td></tr>'
       ).join('');
       setText('catalog-count', shown.length + ' dari ' + datasets.length + ' dataset · ' + (year === 'all' ? 'semua tahun' : 'tahun ' + year));
       const empty = $('#empty-state');
@@ -152,7 +207,7 @@ const IgtApp = (() => {
   // --------------------------------------------------------------- upload data
 
   const UPLOAD_TEXT = {
-    pertanahan: 'Muat baseline bidang atau unggah atribut baru, lalu pantau status pengajuan.',
+    pertanahan: 'Unggah atribut bidang baru, lalu pantau status pengajuan.',
     'tata-ruang': 'Unggah geometri dan atribut kawasan, lalu pantau status verifikasinya.',
     derivatif: 'Ajukan layer derivatif dan pantau keputusan persetujuannya.',
     lainnya: 'Kelola layer IGT dari sumber eksternal. Data yang diunggah Superadmin langsung tersedia tanpa proses persetujuan.',
@@ -184,20 +239,20 @@ const IgtApp = (() => {
     if (category === 'derivatif') {
       if (role === 'admin') {
         return (
-          `<div class="toolbar"><button class="btn btn-primary" data-action="upload-derivatif">↑ Upload Derivatif</button></div>` +
+          `<div class="toolbar"><button class="btn btn-primary" data-action="upload-derivatif">${ri('upload-cloud-2-line')}<span>Upload Derivatif</span></button></div>` +
           `<div class="notice"><strong>Catatan</strong>Unggahan Admin langsung berstatus Disetujui. Pengajuan Operator dan Umum berstatus Diajukan sampai diputuskan.</div>`
         );
       }
       if (role === 'umum') {
         return (
-          `<div class="toolbar"><button class="btn btn-primary" data-action="upload-derivatif">↑ Upload Derivatif</button></div>` +
+          `<div class="toolbar"><button class="btn btn-primary" data-action="upload-derivatif">${ri('upload-cloud-2-line')}<span>Upload Derivatif</span></button></div>` +
           `<div class="notice"><strong>Catatan</strong>Pengajuan Umum berstatus Diajukan sampai disetujui atau ditolak oleh Admin atau Superadmin. Anda hanya melihat pengajuan Anda sendiri.</div>`
         );
       }
       if (role === 'operator') {
         return (
-          `<div class="toolbar"><a class="btn btn-primary" href="${LEGACY}06-derivative-kawasan.html">↑ Upload Derivatif Kawasan</a>` +
-          `<a class="btn btn-primary" href="${BIDANG_WORKFLOW_URL}">↑ Upload Derivatif Bidang</a></div>` +
+          `<div class="toolbar"><a class="btn btn-primary" href="${LEGACY}06-derivative-kawasan.html">${ri('upload-cloud-2-line')}<span>Upload Derivatif Kawasan</span></a>` +
+          `<a class="btn btn-primary" href="${BIDANG_WORKFLOW_URL}">${ri('upload-cloud-2-line')}<span>Upload Derivatif Bidang</span></a></div>` +
           `<div class="notice"><strong>Catatan</strong>Pengajuan berstatus Diajukan sampai disetujui atau ditolak oleh Admin atau Superadmin.</div>`
         );
       }
@@ -206,7 +261,7 @@ const IgtApp = (() => {
       );
     }
     return (
-      `<div class="toolbar"><button class="btn btn-primary" data-action="upload-lainnya">＋ Upload layer</button></div>` +
+      `<div class="toolbar"><button class="btn btn-primary" data-action="upload-lainnya">${ri('upload-cloud-2-line')}<span>Upload layer</span></button></div>` +
       `<div class="notice"><strong>Catatan</strong>Penambahan dan pengaturan layer dilakukan langsung melalui QGIS. Layer eksternal tidak memakai status persetujuan.</div>`
     );
   }
@@ -215,53 +270,62 @@ const IgtApp = (() => {
   function rowActions(role, r) {
     const reviewer = role === 'admin' || role === 'superadmin';
     const kind = CATEGORIES[r.category].detail;
-    const extras = [button('btn-soft', 'show-qgis', r.id, '▧ Tampilkan di QGIS')];
+    const extras = [button('btn-soft', 'show-qgis', r.id, ri('eye-line') + '<span>Tampilkan di QGIS</span>')];
     if (r.category === 'lainnya') {
-      if (role === 'superadmin') extras.push(button('btn-danger', 'delete', r.id, 'Hapus'));
+      if (role === 'superadmin') extras.push(button('btn-danger', 'delete', r.id, ri('delete-bin-line') + '<span>Hapus</span>'));
       return toolbar(...extras);
     }
     if (kind === 'utama') {
       if (reviewer && r.status === 'Terkompilasi') {
-        extras.push(button('btn-primary', 'topology', r.id, '⌁ Verifikasi Topologi'));
-        if (role === 'superadmin') extras.push(button('btn-primary', 'approve-integration', r.id, '✓ Setujui Integrasi'));
+        extras.push(button('btn-primary', 'topology', r.id, ri('focus-3-line') + '<span>Verifikasi Topologi</span>'));
+        if (role === 'superadmin') extras.push(button('btn-primary', 'approve-integration', r.id, ri('check-line') + '<span>Setujui Integrasi</span>'));
       }
-      if (role === 'operator' && r.status === 'Revisi') extras.push(button('btn-soft', 'revision', r.id, '✎ Revisi'));
+      if (role === 'operator' && r.status === 'Revisi') extras.push(button('btn-soft', 'revision', r.id, ri('edit-line') + '<span>Revisi</span>'));
     } else if (reviewer && r.status === 'Diajukan') {
-      extras.push(button('btn-primary', 'approve', r.id, '✓ Setujui'), button('btn-soft', 'reject', r.id, '✕ Tolak'));
+      extras.push(button('btn-primary', 'approve', r.id, ri('check-line') + '<span>Setujui</span>'), button('btn-soft', 'reject', r.id, ri('close-line') + '<span>Tolak</span>'));
     }
     return toolbar(...extras);
   }
 
-  // Submission management: summary, one tab per authorized category, upload controls and submission table.
+  // Submission management: summary, upload controls and submission table for the selected category.
   function upload(role) {
-    const availableCategories = CATEGORY_ORDER.filter((key) => IgtData.canUpload(role, key));
-    // Superadmin can review IGT Utama and load its baseline, but may only upload IGT Lainnya.
-    const categories = role === 'superadmin'
-      ? ['igt-utama', 'derivatif', ...availableCategories.filter((key) => key === 'lainnya')]
-      : [
-          ...(availableCategories.some((key) => key === 'pertanahan' || key === 'tata-ruang') ? ['igt-utama'] : []),
-          ...availableCategories.filter((key) => key !== 'pertanahan' && key !== 'tata-ruang'),
-        ];
+    const categories = managementCategories(role);
     const allRecords = IgtData.loadRecords();
     const records = role === 'superadmin'
       ? allRecords.filter((r) => ['pertanahan', 'tata-ruang', 'derivatif', 'lainnya'].includes(r.category))
       : IgtData.submissionsFor(role, allRecords);
     const params = new URLSearchParams(location.search);
     const requested = params.get('tab');
-    let tab = categories.includes(requested) ? requested : (requested === 'pertanahan' || requested === 'tata-ruang') && categories.includes('igt-utama') ? 'igt-utama' : categories[0];
+    const normalizedRequested = (requested === 'pertanahan' || requested === 'tata-ruang') ? 'igt-utama' : requested;
+    if (normalizedRequested && !categories.includes(normalizedRequested)) {
+      const deniedLabel = normalizedRequested === 'igt-utama' ? 'IGT Utama' : (CATEGORIES[normalizedRequested] ? CATEGORIES[normalizedRequested].label : normalizedRequested);
+      $('#view').innerHTML = '<div class="notice"><strong>Akses ditolak</strong>' + deniedLabel + ' tidak tersedia untuk role ini.</div>';
+      return;
+    }
+    let tab = normalizedRequested && categories.includes(normalizedRequested) ? normalizedRequested : categories[0];
     // Default to the leftmost status tab for the initially selected category.
     let statusTab = params.get('status') || (tab === 'igt-utama' && role === 'operator' ? 'Revisi' : tab === 'igt-utama' ? 'Diproses' : tab === 'derivatif' && (role === 'operator' || role === 'umum') ? 'Semua' : tab === 'derivatif' ? 'Diproses' : 'Semua');
     let nextDerivative = 9;
 
+    const isMainInit = tab === 'igt-utama';
+    const pageTitle = managementLabel(tab);
+    const pageDesc = isMainInit ? 'Kelola pengajuan IGT Pertanahan dan IGT Tata Ruang dari satu halaman.' : UPLOAD_TEXT[tab];
+    document.title = pageTitle + ' · IGT-PR';
+    const crumbStrong = document.querySelector('.crumb strong');
+    if (crumbStrong) crumbStrong.textContent = pageTitle;
+    const headH1 = document.querySelector('.page-head h1');
+    if (headH1) headH1.textContent = pageTitle;
+    const headP = document.querySelector('.page-head p');
+    if (headP) headP.textContent = pageDesc;
+
     $('#view').innerHTML =
       `<div class="grid stats">` +
-      statCard('Total pengajuan', '', 'Semua kategori', '▦', '', 'count-total') +
-      statCard('Dalam proses', '', 'Proses atau Diajukan', '◷', 'amber', 'count-process') +
-      statCard('Menunggu integrasi', '', 'Terkompilasi', '▤', '', 'count-waiting') +
-      statCard('Perlu perhatian', '', 'Revisi, Ditolak, atau Kadaluwarsa', '!', 'red', 'count-attention') +
-      `</div><section class="card"><div class="tabs" data-tabs>` +
-      categories.map((key) => `<button class="tab" data-tab="${key}">${key === 'igt-utama' ? 'IGT Utama' : CATEGORIES[key].label}</button>`).join('') +
-      `</div><div class="card-head"><div><h2 id="tab-heading"></h2><p id="tab-description"></p></div></div>` +
+      statCard('Total pengajuan', '', pageTitle, MANAGEMENT_ICON[tab] || ri('database-2-line'), '', 'count-total') +
+      statCard('Dalam proses', '', 'Proses atau Diajukan', ri('time-line'), 'amber', 'count-process') +
+      statCard('Menunggu integrasi', '', 'Terkompilasi', ri('folder-line'), '', 'count-waiting') +
+      statCard('Perlu perhatian', '', 'Revisi, Ditolak, atau Kadaluwarsa', ri('error-warning-line'), 'red', 'count-attention') +
+      `</div><section class="card">` +
+      `<div class="card-head"><div><h2 id="tab-heading"></h2><p id="tab-description"></p></div></div>` +
       `<div id="upload-panel"></div>` +
       `<div id="igt-upload-modal" class="modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="igt-upload-modal-title" style="position:fixed;inset:0;z-index:1000;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;padding:20px;overflow:auto">` +
       `<section class="card" style="width:min(760px,100%);max-height:90vh;overflow:auto;margin:auto"><div class="card-head"><div><h2 id="igt-upload-modal-title">Upload IGT</h2><p id="igt-upload-modal-description"></p></div><button type="button" class="btn btn-soft" data-close-upload-modal>✕ Tutup</button></div><div id="igt-upload-modal-content"></div></section></div>` +
@@ -270,27 +334,23 @@ const IgtApp = (() => {
       `<div class="table-wrap"><table class="stack"><thead><tr><th>ID Pengajuan</th><th>Layer Target</th><th id="submission-date-heading">Tanggal Upload</th><th>Status</th><th>Aksi</th></tr></thead>` +
       `<tbody id="submission-rows"></tbody></table></div><div class="empty-state" id="empty-state" hidden>Belum ada pengajuan pada kategori ini.</div></section>`;
 
-    function renderCounts() {
-      const count = (...statuses) => records.filter((r) => statuses.includes(r.status)).length;
-      setText('count-total', records.length);
+    function renderCounts(ownRecords) {
+      const count = (...statuses) => ownRecords.filter((r) => statuses.includes(r.status)).length;
+      setText('count-total', ownRecords.length);
       setText('count-process', count('Proses', 'Diajukan'));
       setText('count-waiting', count('Terkompilasi'));
       setText('count-attention', count('Revisi', 'Ditolak', 'Kadaluwarsa'));
     }
 
     function render() {
-      document.querySelectorAll('[data-tab]').forEach((t) => {
-        t.classList.toggle('active', t.dataset.tab === tab);
-        t.setAttribute('aria-selected', t.dataset.tab === tab);
-      });
       const isMain = tab === 'igt-utama';
       setText('submission-date-heading', isMain ? 'Tanggal Terintegrasi' : tab === 'derivatif' ? 'Tanggal Disetujui' : 'Tanggal Upload');
       setText('tab-heading', isMain ? 'IGT Utama' : CATEGORIES[tab].label);
-      setText('tab-description', isMain ? 'Kelola pengajuan IGT Pertanahan dan IGT Tata Ruang dari satu tab.' : UPLOAD_TEXT[tab]);
+      setText('tab-description', isMain ? 'Kelola pengajuan IGT Pertanahan dan IGT Tata Ruang dari satu halaman.' : UPLOAD_TEXT[tab]);
       $('#upload-panel').innerHTML = isMain
         ? (role === 'superadmin'
-          ? `<div class="toolbar"><button class="btn btn-primary" data-action="load-baseline">▦ Load Baseline</button></div><div class="notice"><strong>Catatan</strong>Superadmin hanya memeriksa topologi dan menyetujui integrasi IGT Utama. Unggah data IGT Utama dilakukan oleh role yang berwenang.</div>`
-          : `<div class="toolbar"><button class="btn btn-primary" data-action="load-baseline">▦ Load Baseline</button><button class="btn btn-primary" data-open-upload-modal="pertanahan">↑ Upload Data Pertanahan</button><button class="btn btn-primary" data-open-upload-modal="tata-ruang">↑ Upload Data Tata Ruang</button></div>`)
+          ? `<div class="notice"><strong>Catatan</strong>Superadmin hanya memeriksa topologi dan menyetujui integrasi IGT Utama. Unggah data IGT Utama dilakukan oleh role yang berwenang.</div>`
+          : `<div class="toolbar"><button class="btn btn-primary" data-open-upload-modal="pertanahan">${ri('upload-cloud-2-line')}<span>Upload Data Pertanahan</span></button><button class="btn btn-primary" data-open-upload-modal="tata-ruang">${ri('upload-cloud-2-line')}<span>Upload Data Tata Ruang</span></button></div>`)
         : uploadPanel(role, tab);
       const own = records.filter((r) => isMain ? (r.category === 'pertanahan' || r.category === 'tata-ruang') : r.category === tab);
       const statusOptions = isMain
@@ -335,22 +395,9 @@ const IgtApp = (() => {
         .join('');
       setText('submission-count', `${displayed.length} dari ${own.length} pengajuan pada ${isMain ? 'IGT Utama' : CATEGORIES[tab].label}.`);
       $('#empty-state').hidden = displayed.length > 0;
-      renderCounts();
+      renderCounts(own);
     }
 
-    document.querySelectorAll('[data-tab]').forEach((t) =>
-      t.addEventListener('click', () => {
-        tab = t.dataset.tab;
-        const isMainTab = tab === 'igt-utama';
-        statusTab = isMainTab ? (role === 'operator' ? 'Revisi' : 'Diproses') : tab === 'derivatif' ? ((role === 'operator' || role === 'umum') ? 'Semua' : 'Diproses') : 'Semua';
-        try {
-          history.replaceState(null, '', '?tab=' + tab);
-        } catch (e) {
-          /* file:// previews may refuse; the tab still switches */
-        }
-        render();
-      }),
-    );
     $('#submission-status-tabs').addEventListener('click', (event) => {
       const target = event.target.closest('[data-status-tab]');
       if (!target) return;
@@ -371,7 +418,7 @@ const IgtApp = (() => {
         }
         const modal = $('#igt-upload-modal');
         $('#igt-upload-modal-title').textContent = category === 'pertanahan' ? 'Upload IGT Pertanahan' : 'Upload IGT Tata Ruang';
-        $('#igt-upload-modal-description').textContent = category === 'pertanahan' ? 'Muat baseline atau unggah atribut bidang.' : 'Unggah geometri dan atribut kawasan.';
+        $('#igt-upload-modal-description').textContent = category === 'pertanahan' ? 'Unggah atribut bidang.' : 'Unggah geometri dan atribut kawasan.';
         $('#igt-upload-modal-content').innerHTML = uploadPanel(role, category);
         modal.hidden = false;
         modal.style.display = 'flex';
@@ -383,8 +430,7 @@ const IgtApp = (() => {
         modal.style.display = 'none';
         return;
       }
-      if (action === 'load-baseline') alert('Simulasi: pilih layer baseline dari QGIS.');
-      else if (action === 'upload') {
+      if (action === 'upload') {
         if (role === 'superadmin') {
           alert('Superadmin tidak memiliki akses untuk mengunggah IGT Utama.');
           return;
