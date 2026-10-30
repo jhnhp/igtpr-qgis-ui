@@ -2105,6 +2105,28 @@ body.v2-page .history-item {
   font-weight: 800;
 }
 
+/* Multi-Layer Unified Chip (Mint green matching ATR/BPN Geoportal) */
+.igt-chip--multi-layer {
+  background: #ecfdf5;
+  border: 1.2px solid #6ee7b7;
+  color: #047857;
+}
+.igt-chip--multi-layer:hover {
+  background: #d1fae5;
+  border-color: #34d399;
+  color: #065f46;
+}
+.igt-chip--multi-layer .igt-chip__count {
+  background: rgba(4, 120, 87, 0.12);
+  color: #047857;
+}
+
+.igt-action-cell-multilayer {
+  text-align: center;
+  vertical-align: middle;
+  padding: 6px 8px !important;
+}
+
 /* Multi-Year Chip (Green mint, matching Kawasan & Lahan Baku Sawah) */
 .igt-chip--multi-year {
   background: #ecfdf5;

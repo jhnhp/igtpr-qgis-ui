@@ -125,7 +125,7 @@ DATASETS = [
         'satker': 'Ditjen Pengendalian dan Penertiban Tanah dan Ruang',
         'scope': 'Multi-Area (Kab. Sleman, Bantul, Kulon Progo)', 'prov': 'D.I. Yogyakarta', 'kab': 'Multi-Kabupaten',
         'date': '18 Okt 2026', 'updated': '18 Okt 2026', 'status': 'Terintegrasi',
-        'multiType': 'multi-year', 'multiLabel': 'Multi-Year',
+        'multiType': 'multi-year', 'multiLabel': 'Multi-Layer',
         'subLayers': [
             {'id': 'TTT-2026', 'name': 'Tanah Terindikasi Telantar 2026', 'label': 'Tahun 2026', 'year': '2026', 'updated': '18 Okt 2026', 'scope': 'Multi-Area (Sleman, Bantul)'},
             {'id': 'TTT-2024', 'name': 'Tanah Terindikasi Telantar 2024', 'label': 'Tahun 2024', 'year': '2024', 'updated': '15 Okt 2024', 'scope': 'Multi-Area (Kulon Progo)'},
@@ -193,7 +193,7 @@ DATASETS = [
         'direktorat': 'Direktorat Bina Perencanaan Tata Ruang Daerah Wilayah I',
         'satker': 'Ditjen Tata Ruang', 'scope': 'Multi-Kabupaten', 'prov': 'D.I. Yogyakarta', 'kab': 'Multi-Kabupaten',
         'date': '18 Okt 2026', 'updated': '18 Okt 2026', 'status': 'Terintegrasi',
-        'multiType': 'multi-scale', 'multiLabel': 'Multi-Skala',
+        'multiType': 'multi-scale', 'multiLabel': 'Multi-Layer',
         'subLayers': [
             {'id': 'RTRW-50K', 'name': 'RTRW Kab Skala 1:50.000', 'label': 'Skala 1:50.000', 'skala': '1:50.000', 'updated': '18 Okt 2026', 'scope': 'Pola Ruang Wilayah Kabupaten'},
             {'id': 'RTRW-25K', 'name': 'RTRW Kab Skala 1:25.000', 'label': 'Skala 1:25.000', 'skala': '1:25.000', 'updated': '15 Jul 2026', 'scope': 'Kawasan Strategis Kabupaten'},
@@ -228,7 +228,7 @@ DATASETS = [
         'direktorat': 'Direktorat Bina Perencanaan Tata Ruang Daerah Wilayah I',
         'satker': 'Kantah Kab. Sleman', 'scope': 'Kab. Sleman (Kawasan Depok)', 'prov': 'D.I. Yogyakarta', 'kab': 'Kab. Sleman',
         'date': '18 Okt 2026', 'updated': '18 Okt 2026', 'status': 'Terintegrasi',
-        'multiType': 'multi-scale', 'multiLabel': 'Multi-Skala',
+        'multiType': 'multi-scale', 'multiLabel': 'Multi-Layer',
         'subLayers': [
             {'id': 'RDTR-5K', 'name': 'RDTR Kab/Kota Skala 1:5.000', 'label': 'Skala 1:5.000', 'skala': '1:5.000', 'updated': '18 Okt 2026', 'scope': 'Kawasan Perkotaan Depok (Blok Rinci)'},
             {'id': 'RDTR-10K', 'name': 'RDTR Kab/Kota Skala 1:10.000', 'label': 'Skala 1:10.000', 'skala': '1:10.000', 'updated': '12 Agt 2026', 'scope': 'Aglomerasi Perkotaan Sleman'},
@@ -246,7 +246,7 @@ DATASETS = [
         'direktorat': 'Direktorat Penatagunaan Tanah', 'satker': 'Kantah Kab. Bantul',
         'scope': 'Kab. Bantul', 'prov': 'D.I. Yogyakarta', 'kab': 'Kab. Bantul',
         'date': '17 Okt 2026', 'updated': '18 Okt 2026', 'status': 'Terintegrasi',
-        'multiType': 'multi-year', 'multiLabel': 'Multi-Year',
+        'multiType': 'multi-year', 'multiLabel': 'Multi-Layer',
         'subLayers': [
             {'id': 'LBS-2024', 'name': 'Lahan Baku Sawah 2024', 'label': 'Tahun 2024', 'year': '2024', 'updated': '18 Okt 2024', 'scope': 'Kab. Bantul'},
             {'id': 'LBS-2023', 'name': 'Lahan Baku Sawah 2023', 'label': 'Tahun 2023', 'year': '2023', 'updated': '15 Des 2023', 'scope': 'Kab. Bantul'},
@@ -259,7 +259,7 @@ DATASETS = [
         'direktorat': 'Direktorat Penilaian Tanah dan Ekonomi Pertanahan', 'satker': 'Kantah Kab. Sleman',
         'scope': 'Kab. Sleman', 'prov': 'D.I. Yogyakarta', 'kab': 'Kab. Sleman',
         'date': '17 Okt 2026', 'updated': '18 Okt 2026', 'status': 'Terintegrasi',
-        'multiType': 'multi-year', 'multiLabel': 'Multi-Year',
+        'multiType': 'multi-year', 'multiLabel': 'Multi-Layer',
         'subLayers': [
             {'id': 'ZNT-2026', 'name': 'Zona Nilai Tanah 2026', 'label': 'Tahun 2026', 'year': '2026', 'updated': '18 Okt 2026', 'scope': 'Kab. Sleman (Pembaruan Terkini)'},
             {'id': 'ZNT-2025', 'name': 'Zona Nilai Tanah 2025', 'label': 'Tahun 2025', 'year': '2025', 'updated': '10 Des 2025', 'scope': 'Kab. Sleman'},

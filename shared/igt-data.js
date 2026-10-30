@@ -67,7 +67,7 @@ const IgtData = (() => {
     { category: 'pertanahan', n: 6, id: 'IGT-PR-007', name: 'IGT Pertimbangan Teknis Pertanahan', direktorat: 'Direktorat Penatagunaan Tanah', satker: 'Kantah Kab. Sleman', scope: 'Kab. Sleman', prov: 'D.I. Yogyakarta', kab: 'Kab. Sleman', date: '18 Okt 2026', updated: '18 Okt 2026', status: 'Terintegrasi' },
     { category: 'pertanahan', n: 7, id: 'IGT-PR-008', name: 'IGT Inventarisasi Tanah Kritis', direktorat: 'Direktorat Penatagunaan Tanah', satker: 'Kanwil BPN D.I. Yogyakarta', scope: 'Multi-Area (Kab. Bantul & Gunungkidul)', prov: 'D.I. Yogyakarta', kab: 'Multi-Area (Bantul, Gunungkidul)', date: '18 Okt 2026', updated: '18 Okt 2026', status: 'Revisi', revisionNote: 'Perbaiki kelengkapan atribut dan pastikan kode wilayah konsisten.' },
     { category: 'pertanahan', n: 8, id: 'IGT-PR-009', name: 'IGT Tanah Terindikasi Telantar', direktorat: 'Direktur Penertiban Penguasaan, Pemilikan dan Penggunaan Tanah', satker: 'Ditjen Pengendalian dan Penertiban Tanah dan Ruang', scope: 'Multi-Area (Kab. Sleman, Bantul, Kulon Progo)', prov: 'D.I. Yogyakarta', kab: 'Multi-Area (Sleman, Bantul, Kulon Progo)', date: '18 Okt 2026', updated: '18 Okt 2026', status: 'Terintegrasi',
-      multiType: 'multi-year', multiLabel: 'Multi-Year',
+      multiType: 'multi-year', multiLabel: 'Multi-Layer',
       subLayers: [
         { id: 'TTT-2026', name: 'Tanah Terindikasi Telantar 2026', label: 'Tahun 2026', year: '2026', updated: '18 Okt 2026', scope: 'Multi-Area (Sleman, Bantul, Kulon Progo)' },
         { id: 'TTT-2024', name: 'Tanah Terindikasi Telantar 2024', label: 'Tahun 2024', year: '2024', updated: '15 Okt 2024', scope: 'Multi-Area (Sleman, Bantul, Kulon Progo)' }
@@ -83,7 +83,7 @@ const IgtData = (() => {
     { category: 'tata-ruang', n: 16, id: 'IGT-PR-017', name: 'IGT RTRW Nasional', direktorat: 'Direktorat Perencanaan Tata Ruang', satker: 'Ditjen Tata Ruang', scope: 'Nasional (Seluruh Wilayah RI)', prov: 'Nasional', kab: 'Seluruh Indonesia', date: '18 Okt 2026', updated: '18 Okt 2026', status: 'Terintegrasi' },
     { category: 'tata-ruang', n: 17, id: 'IGT-PR-018', name: 'IGT RTRW Provinsi', direktorat: 'Direktorat Bina Perencanaan Tata Ruang Daerah Wilayah I', satker: 'Kanwil BPN D.I. Yogyakarta', scope: 'Provinsi (D.I. Yogyakarta)', prov: 'D.I. Yogyakarta', kab: 'Lintas Kabupaten/Kota', date: '18 Okt 2026', updated: '18 Okt 2026', status: 'Terintegrasi' },
     { category: 'tata-ruang', n: 18, id: 'IGT-PR-019', name: 'IGT RTRW Kabupaten', direktorat: 'Direktorat Bina Perencanaan Tata Ruang Daerah Wilayah I', satker: 'Ditjen Tata Ruang', scope: 'Multi-Kabupaten (Sleman, Bantul, Kulon Progo)', prov: 'D.I. Yogyakarta', kab: 'Multi-Kabupaten', date: '18 Okt 2026', updated: '18 Okt 2026', status: 'Terintegrasi',
-      multiType: 'multi-scale', multiLabel: 'Multi-Skala',
+      multiType: 'multi-scale', multiLabel: 'Multi-Layer',
       subLayers: [
         { id: 'RTRW-50K', name: 'RTRW Kab Skala 1:50.000', label: 'Skala 1:50.000', skala: '1:50.000', updated: '18 Okt 2026', scope: 'Rencana Pola Ruang Kabupaten' },
         { id: 'RTRW-25K', name: 'RTRW Kab Skala 1:25.000', label: 'Skala 1:25.000', skala: '1:25.000', updated: '15 Jul 2026', scope: 'Kawasan Strategis Kabupaten' }
@@ -94,7 +94,7 @@ const IgtData = (() => {
     { category: 'tata-ruang', n: 21, id: 'IGT-PR-022', name: 'IGT RTR Pulau/Kepulauan', direktorat: 'Direktorat Perencanaan Tata Ruang', satker: 'Ditjen Tata Ruang', scope: 'Multi-Area (Pulau Jawa - Bali)', prov: 'Lintas Provinsi (Jawa-Bali)', kab: 'Lintas Wilayah', date: '18 Okt 2026', updated: '18 Okt 2026', status: 'Terintegrasi' },
     { category: 'tata-ruang', n: 22, id: 'IGT-PR-023', name: 'IGT RTR Kawasan Strategis Nasional', direktorat: 'Direktorat Perencanaan Tata Ruang', satker: 'Ditjen Tata Ruang', scope: 'Multi-Area (KSN Borobudur & Sekitarnya)', prov: 'D.I. Yogyakarta & Jawa Tengah', kab: 'Multi-Area (Magelang, Sleman, Kulon Progo)', date: '18 Okt 2026', updated: '18 Okt 2026', status: 'Terintegrasi' },
     { category: 'tata-ruang', n: 23, id: 'IGT-PR-024', name: 'IGT RDTR Kabupaten/Kota', direktorat: 'Direktorat Bina Perencanaan Tata Ruang Daerah Wilayah I', satker: 'Kantah Kab. Sleman', scope: 'Kab. Sleman (Kawasan Perkotaan Depok)', prov: 'D.I. Yogyakarta', kab: 'Kab. Sleman', date: '18 Okt 2026', updated: '18 Okt 2026', status: 'Terintegrasi',
-      multiType: 'multi-scale', multiLabel: 'Multi-Skala',
+      multiType: 'multi-scale', multiLabel: 'Multi-Layer',
       subLayers: [
         { id: 'RDTR-5K', name: 'RDTR Kab/Kota Skala 1:5.000', label: 'Skala 1:5.000', skala: '1:5.000', updated: '18 Okt 2026', scope: 'Kawasan Perkotaan Depok (Blok Rinci)' },
         { id: 'RDTR-10K', name: 'RDTR Kab/Kota Skala 1:10.000', label: 'Skala 1:10.000', skala: '1:10.000', updated: '12 Agt 2026', scope: 'Kawasan Aglomerasi Sleman' },
@@ -103,7 +103,7 @@ const IgtData = (() => {
     },
     { category: 'tata-ruang', n: 24, id: 'IGT-PR-025', name: 'IGT KKPR', direktorat: 'Direktorat Sinkronisasi Pemanfaatan Ruang', satker: 'Kanwil BPN D.I. Yogyakarta', scope: 'Multi-Area (Prov. D.I. Yogyakarta)', prov: 'D.I. Yogyakarta', kab: 'Lintas Kabupaten/Kota', date: '18 Okt 2026', updated: '18 Okt 2026', status: 'Terintegrasi' },
     { category: 'tata-ruang', n: 25, id: 'IGT-PR-026', name: 'IGT Lahan Baku Sawah', direktorat: 'Direktorat Penatagunaan Tanah', satker: 'Kantah Kab. Bantul', scope: 'Kab. Bantul', prov: 'D.I. Yogyakarta', kab: 'Kab. Bantul', date: '17 Okt 2026', updated: '18 Okt 2026', status: 'Terintegrasi',
-      multiType: 'multi-year', multiLabel: 'Multi-Year',
+      multiType: 'multi-year', multiLabel: 'Multi-Layer',
       subLayers: [
         { id: 'LBS-2024', name: 'Lahan Baku Sawah 2024', label: 'Tahun 2024', year: '2024', updated: '18 Okt 2024', scope: 'Kab. Bantul' },
         { id: 'LBS-2023', name: 'Lahan Baku Sawah 2023', label: 'Tahun 2023', year: '2023', updated: '15 Des 2023', scope: 'Kab. Bantul' },
@@ -123,7 +123,7 @@ const IgtData = (() => {
     { category: 'tata-ruang', n: 35, id: 'IGT-PR-036', name: 'IGT Lahan Sawah Dilindungi', direktorat: 'Direktorat Pengendalian Hak Tanah, Alih Fungsi Lahan, Kepulauan dan Wilayah Tertentu', satker: 'Kanwil BPN D.I. Yogyakarta', scope: 'Multi-Area (Kab. Sleman & Bantul)', prov: 'D.I. Yogyakarta', kab: 'Multi-Area (Sleman, Bantul)', date: '17 Okt 2026', status: 'Terkompilasi' },
     { category: 'tata-ruang', n: 36, id: 'IGT-PR-037', name: 'IGT Kawasan Terindikasi Telantar', direktorat: 'Direktur Penertiban Penguasaan, Pemilikan dan Penggunaan Tanah', satker: 'Ditjen Pengendalian dan Penertiban Tanah dan Ruang', scope: 'Multi-Area (Kab. Kulon Progo & Gunungkidul)', prov: 'D.I. Yogyakarta', kab: 'Multi-Area (Kulon Progo, Gunungkidul)', date: '17 Okt 2026', status: 'Terkompilasi' },
     { category: 'tata-ruang', n: 37, id: 'IGT-PR-038', name: 'IGT Zona Nilai Tanah', direktorat: 'Direktorat Penilaian Tanah dan Ekonomi Pertanahan', satker: 'Kantah Kab. Sleman', scope: 'Kab. Sleman', prov: 'D.I. Yogyakarta', kab: 'Kab. Sleman', date: '17 Okt 2026', updated: '18 Okt 2026', status: 'Terintegrasi',
-      multiType: 'multi-year', multiLabel: 'Multi-Year',
+      multiType: 'multi-year', multiLabel: 'Multi-Layer',
       subLayers: [
         { id: 'ZNT-2026', name: 'Zona Nilai Tanah 2026', label: 'Tahun 2026', year: '2026', updated: '18 Okt 2026', scope: 'Kab. Sleman (Pembaruan Terkini)' },
         { id: 'ZNT-2025', name: 'Zona Nilai Tanah 2025', label: 'Tahun 2025', year: '2025', updated: '10 Des 2025', scope: 'Kab. Sleman' },

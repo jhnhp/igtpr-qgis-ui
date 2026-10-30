@@ -283,18 +283,20 @@ const IgtApp = (() => {
               '</button>'
             : '') +
           '<strong class="igt-catalog-name">' + d.name + '</strong>' +
-          (hasSubs
-            ? '<button type="button" class="igt-chip igt-chip--' + (d.multiType || 'multi-year') + '" data-toggle-sub="' + d.id + '" aria-expanded="' + (isExp ? 'true' : 'false') + '" title="Dataset ' + (d.multiLabel || 'Multi-Layer') + '. Klik untuk membuka/menutup sub-layer">' +
-              '<span class="igt-chip__text">' + (d.multiLabel || 'Multi-Layer') + '</span>' +
-              '<span class="igt-chip__count">' + d.subLayers.length + ' Layer</span>' +
-              '<span class="igt-chip__caret" aria-hidden="true">' + (isExp ? '▴' : '▾') + '</span>' +
-              '</button>'
-            : '') +
           '</div></div></td>' +
           '<td data-label="' + orgLabel + '">' + (d.direktorat || d.satker || d.ditjen || d.instansi || d.source || '—') + '</td>' +
           '<td data-label="Tanggal">' + (d.updated || d.date || '—') + '</td>' +
-          '<td data-label="Tampilkan WMS">' + button('btn-soft', 'wms', d.id, ri('map-2-line') + '<span>' + (hasSubs ? 'Semua WMS' : 'WMS') + '</span>') + '</td>' +
-          '<td data-label="Tampilkan WFS">' + button('btn-soft', 'wfs', d.id, ri('stack-line') + '<span>' + (hasSubs ? 'Semua WFS' : 'WFS') + '</span>') + '</td>' +
+          (hasSubs
+            ? '<td colspan="2" class="igt-action-cell-multilayer" data-label="Sub-layer">' +
+              '<button type="button" class="igt-chip igt-chip--multi-layer" data-toggle-sub="' + d.id + '" aria-expanded="' + (isExp ? 'true' : 'false') + '" title="Dataset Multi-Layer. Klik untuk membuka/menutup sub-layer">' +
+              '<span class="igt-chip__text">Multi-Layer</span>' +
+              '<span class="igt-chip__count">' + d.subLayers.length + ' Layer</span>' +
+              '<span class="igt-chip__caret" aria-hidden="true">' + (isExp ? '▴' : '▾') + '</span>' +
+              '</button>' +
+              '</td>'
+            : '<td data-label="Tampilkan WMS">' + button('btn-soft', 'wms', d.id, ri('map-2-line') + '<span>WMS</span>') + '</td>' +
+              '<td data-label="Tampilkan WFS">' + button('btn-soft', 'wfs', d.id, ri('stack-line') + '<span>WFS</span>') + '</td>'
+          ) +
           '</tr>'
         );
 

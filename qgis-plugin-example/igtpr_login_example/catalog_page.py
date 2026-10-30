@@ -17,32 +17,57 @@ CATEGORY_KEYS = ['pertanahan', 'tata-ruang', 'derivatif', 'lainnya']
 
 
 class MultiLayerChip(QPushButton):
-    """Chip penanda dataset multi-layer (Multi-Year atau Multi-Skala)."""
+    """Chip penanda 'Multi-Layer' di kolom aksi kanan (posisi WMS)."""
 
-    def __init__(self, multi_type, label, count, parent=None):
-        super().__init__(parent)
-        self.multi_type = multi_type
+    def __init__(self, parent=None):
+        super().__init__('Multi-Layer', parent)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setStyleSheet("""
+            QPushButton {
+                background-color: #ecfdf5;
+                border: 1px solid #a7f3d0;
+                border-radius: 6px;
+                color: #047857;
+                font-size: 11px;
+                font-weight: 700;
+                padding: 4px 6px;
+            }
+            QPushButton:hover {
+                background-color: #d1fae5;
+                border-color: #34d399;
+                color: #065f46;
+            }
+        """)
 
-        is_year = (multi_type == 'multi-year')
-        bg = '#ecfdf5' if is_year else '#eff6ff'
-        border = '#a7f3d0' if is_year else '#bfdbfe'
-        color = '#047857' if is_year else '#1d4ed8'
 
-        self.setText(f"{label} · {count} Layer ▾")
+class MultiLayerCountBtn(QPushButton):
+    """Tombol jumlah layer dan caret di kolom aksi kanan (posisi WFS)."""
+
+    def __init__(self, count, is_expanded=False, parent=None):
+        super().__init__(parent)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.count = count
+        self.is_expanded = is_expanded
+        self.update_state(is_expanded)
+
+    def update_state(self, is_expanded):
+        self.is_expanded = is_expanded
+        caret = '▴' if is_expanded else '▾'
+        self.setText(f"{self.count} Layer {caret}")
         self.setStyleSheet(f"""
             QPushButton {{
-                background-color: {bg};
-                border: 1px solid {border};
+                background-color: {'#d1fae5' if is_expanded else '#ecfdf5'};
+                border: 1px solid {'#34d399' if is_expanded else '#a7f3d0'};
                 border-radius: 6px;
-                color: {color};
+                color: {'#065f46' if is_expanded else '#047857'};
                 font-size: 10.5px;
                 font-weight: 700;
-                padding: 3px 8px;
+                padding: 4px 6px;
             }}
             QPushButton:hover {{
-                background-color: {'#d1fae5' if is_year else '#dbeafe'};
-                border-color: {color};
+                background-color: #a7f3d0;
+                border-color: #059669;
+                color: #065f46;
             }}
         """)
 
@@ -252,10 +277,17 @@ class CatalogPage(QWidget):
         self.tree.setColumnWidth(1, 230)
         self.tree.setColumnWidth(3, 105)
         self.tree.setColumnWidth(4, 105)
+        self.tree.itemExpanded.connect(self._on_item_expanded_changed)
+        self.tree.itemCollapsed.connect(self._on_item_expanded_changed)
 
         layout.addWidget(self.tree, 1)
 
         self.set_category(current_category)
+
+    def _on_item_expanded_changed(self, item):
+        w = self.tree.itemWidget(item, 4)
+        if isinstance(w, MultiLayerCountBtn):
+            w.update_state(item.isExpanded())
 
     def set_category(self, cat_key):
         self.current_category = cat_key
@@ -344,7 +376,7 @@ class CatalogPage(QWidget):
             # Parent Item
             item = QTreeWidgetItem(self.tree)
 
-            # Col 0: Custom Widget with Title & Multi-Layer Chip
+            # Col 0: Custom Widget with Title only
             col0_widget = QWidget()
             col0_layout = QHBoxLayout(col0_widget)
             col0_layout.setContentsMargins(6, 4, 6, 4)
@@ -353,17 +385,6 @@ class CatalogPage(QWidget):
             name_lbl = QLabel(d['name'], col0_widget)
             name_lbl.setStyleSheet("color: #0f294d; font-size: 12.5px; font-weight: 700;")
             col0_layout.addWidget(name_lbl)
-
-            if has_subs:
-                chip = MultiLayerChip(
-                    multi_type=d.get('multiType', 'multi-year'),
-                    label=d.get('multiLabel', 'Multi-Layer'),
-                    count=len(d['subLayers']),
-                    parent=col0_widget,
-                )
-                chip.clicked.connect(lambda checked, it=item: it.setExpanded(not it.isExpanded()))
-                col0_layout.addWidget(chip)
-
             col0_layout.addStretch()
             self.tree.setItemWidget(item, 0, col0_widget)
 
@@ -378,47 +399,64 @@ class CatalogPage(QWidget):
             date_lbl.setStyleSheet("color: #64748b; font-size: 11.5px;")
             self.tree.setItemWidget(item, 2, date_lbl)
 
-            # Col 3: WMS Button
-            btn_wms = QPushButton('Semua WMS' if has_subs else 'WMS')
-            btn_wms.setCursor(Qt.CursorShape.PointingHandCursor)
-            btn_wms.setStyleSheet("""
-                QPushButton {
-                    background-color: #eff6ff;
-                    color: #1f6fd6;
-                    border: 1px solid #bfdbfe;
-                    border-radius: 6px;
-                    font-size: 11px;
-                    font-weight: 700;
-                    padding: 4px 8px;
-                }
-                QPushButton:hover {
-                    background-color: #1f6fd6;
-                    color: #ffffff;
-                }
-            """)
-            btn_wms.clicked.connect(lambda checked, ds=d: self.wmsRequested.emit(ds, None))
-            self.tree.setItemWidget(item, 3, btn_wms)
+            # Col 3 & 4: Actions (WMS/WFS for single layer, Multi-Layer Chip pair for multi-layer)
+            if has_subs:
+                chip_btn = MultiLayerChip(self.tree)
+                count_btn = MultiLayerCountBtn(len(d['subLayers']), is_expanded=item.isExpanded(), parent=self.tree)
 
-            # Col 4: WFS Button
-            btn_wfs = QPushButton('Semua WFS' if has_subs else 'WFS')
-            btn_wfs.setCursor(Qt.CursorShape.PointingHandCursor)
-            btn_wfs.setStyleSheet("""
-                QPushButton {
-                    background-color: #f5f3ff;
-                    color: #7c3aed;
-                    border: 1px solid #ddd6fe;
-                    border-radius: 6px;
-                    font-size: 11px;
-                    font-weight: 700;
-                    padding: 4px 8px;
-                }
-                QPushButton:hover {
-                    background-color: #7c3aed;
-                    color: #ffffff;
-                }
-            """)
-            btn_wfs.clicked.connect(lambda checked, ds=d: self.wfsRequested.emit(ds, None))
-            self.tree.setItemWidget(item, 4, btn_wfs)
+                def make_toggle(it, cb):
+                    def _toggle():
+                        exp = not it.isExpanded()
+                        it.setExpanded(exp)
+                        cb.update_state(exp)
+                    return _toggle
+
+                toggler = make_toggle(item, count_btn)
+                chip_btn.clicked.connect(toggler)
+                count_btn.clicked.connect(toggler)
+
+                self.tree.setItemWidget(item, 3, chip_btn)
+                self.tree.setItemWidget(item, 4, count_btn)
+            else:
+                btn_wms = QPushButton('WMS')
+                btn_wms.setCursor(Qt.CursorShape.PointingHandCursor)
+                btn_wms.setStyleSheet("""
+                    QPushButton {
+                        background-color: #eff6ff;
+                        color: #1f6fd6;
+                        border: 1px solid #bfdbfe;
+                        border-radius: 6px;
+                        font-size: 11px;
+                        font-weight: 700;
+                        padding: 4px 8px;
+                    }
+                    QPushButton:hover {
+                        background-color: #1f6fd6;
+                        color: #ffffff;
+                    }
+                """)
+                btn_wms.clicked.connect(lambda checked, ds=d: self.wmsRequested.emit(ds, None))
+                self.tree.setItemWidget(item, 3, btn_wms)
+
+                btn_wfs = QPushButton('WFS')
+                btn_wfs.setCursor(Qt.CursorShape.PointingHandCursor)
+                btn_wfs.setStyleSheet("""
+                    QPushButton {
+                        background-color: #f5f3ff;
+                        color: #7c3aed;
+                        border: 1px solid #ddd6fe;
+                        border-radius: 6px;
+                        font-size: 11px;
+                        font-weight: 700;
+                        padding: 4px 8px;
+                    }
+                    QPushButton:hover {
+                        background-color: #7c3aed;
+                        color: #ffffff;
+                    }
+                """)
+                btn_wfs.clicked.connect(lambda checked, ds=d: self.wfsRequested.emit(ds, None))
+                self.tree.setItemWidget(item, 4, btn_wfs)
 
             # Expand if searching and query matches sublayers
             if query and has_subs:
