@@ -115,6 +115,8 @@ const DerivatifBidang = (() => {
       view.innerHTML = '<div class="notice"><strong>Akses ditolak</strong>Upload Derivatif Bidang tidak tersedia untuk role ini.</div>';
       return;
     }
+    const backUrl = role === 'superadmin2' ? '../beranda/index.html' : '../upload-data/index.html?tab=derivatif';
+    const finishLabel = role === 'superadmin2' ? 'Selesai · Kembali ke Dashboard' : 'Selesai · Kembali ke IGT Derivatif';
 
     const state = {
       step: 1,
@@ -347,7 +349,7 @@ const DerivatifBidang = (() => {
         (saved
           ? `<div class="notice ok" role="status" id="save-success"><strong>Berkas tercatat (simulasi)</strong>${esc(state.filename.trim() + ext)} dicatat sebagai berkas contoh berisi ID Bidang, definisi kolom, nilai atribut dan format. Tidak ada berkas fisik yang dibuat.` +
             `<div class="toolbar"><button type="button" class="btn btn-primary" data-act="next">Lanjut ke Atribut Disetujui →</button>` +
-            `<a class="btn btn-soft" href="../upload-data/index.html?tab=derivatif" id="finish-later">Selesai, lanjutkan nanti</a></div></div>`
+            `<a class="btn btn-soft" href="${backUrl}" id="finish-later">Selesai, lanjutkan nanti</a></div></div>`
           : '')
       );
     }
@@ -386,7 +388,7 @@ const DerivatifBidang = (() => {
           ? `<div class="notice warn" role="status" id="join-unmatched"><strong>${unmatched.length} ID tidak ditemukan di baseline</strong>Baris berikut tidak digabungkan ke bidang mana pun: ${unmatched.map((r) => esc(r.id)).join(', ')}.</div>`
           : '') +
         (state.notice ? `<div class="notice ok" role="status" id="show-result"><strong>Simulasi</strong>${esc(state.notice)}</div>` : '') +
-        `<div class="toolbar"><button type="button" class="btn btn-primary" data-act="show-in-qgis" id="show-in-qgis" ${matched.length ? '' : 'disabled'}>▧ Tampilkan Hasil di QGIS (simulasi)</button></div>`
+        `<div class="toolbar"><button type="button" class="btn btn-primary" data-act="show-in-qgis" id="show-in-qgis" ${matched.length ? '' : 'disabled'}><svg class="ri-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3c5.392 0 9.878 3.88 10.819 9-.94 5.12-5.427 9-10.819 9-5.392 0-9.878-3.88-10.819-9C2.121 6.88 6.608 3 12 3zm0 16a9.005 9.005 0 0 0 8.777-7 9.005 9.005 0 0 0-17.554 0A9.005 9.005 0 0 0 12 19zm0-2.5a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9zm0-2a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/></svg><span>Tampilkan</span></button></div>`
       );
     }
 
@@ -408,7 +410,7 @@ const DerivatifBidang = (() => {
             `<div class="toolbar"><button type="button" class="btn btn-primary" data-act="run-join" id="run-join" ${state.sourceLoaded ? '' : 'disabled'}>⇄ Gabungkan berdasarkan ID Bidang</button></div>`
           : '') +
         joinPanel() +
-        `<div class="toolbar"><a class="btn btn-soft" href="../upload-data/index.html?tab=derivatif" id="finish">Selesai · Kembali ke IGT Derivatif</a></div>`
+        `<div class="toolbar"><a class="btn btn-soft" href="${backUrl}" id="finish">${finishLabel}</a></div>`
       );
     }
 
@@ -432,7 +434,7 @@ const DerivatifBidang = (() => {
       const s = state.step;
       const block = blockers(s)[0];
       const back = s === 1
-        ? `<a class="btn btn-soft" href="../upload-data/index.html?tab=derivatif" id="nav-back">← Kembali</a>`
+        ? `<a class="btn btn-soft" href="${backUrl}" id="nav-back">← Kembali</a>`
         : `<button type="button" class="btn btn-soft" data-act="back" id="nav-back">← Kembali</button>`;
       const next = s === APPROVED
         ? ''

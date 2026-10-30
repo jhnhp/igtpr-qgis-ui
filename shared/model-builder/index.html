@@ -50,5 +50,5 @@ let fontSize=13;function applyFont(){document.querySelector('.model-table').styl
 document.getElementById('font-down').addEventListener('click',()=>{fontSize=Math.max(10,fontSize-1);applyFont();});
 document.getElementById('font-up').addEventListener('click',()=>{fontSize=Math.min(20,fontSize+1);applyFont();});
 document.getElementById('zoom-reset').addEventListener('click',()=>{fontSize=13;applyFont();});
-const backRole=new URLSearchParams(location.search).get("role");if(["superadmin","admin","operator","umum"].includes(backRole))document.querySelector(".back-row a").href="../../roles/"+backRole+"/beranda/index.html";
+const backRole=new URLSearchParams(location.search).get("role");if(["superadmin","superadmin2","admin","operator","umum"].includes(backRole))document.querySelector(".back-row a").href="../../roles/"+backRole+"/beranda/index.html";
 </script></body></html>

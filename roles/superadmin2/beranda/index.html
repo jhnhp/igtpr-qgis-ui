@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dashboard Superadmin 2 · IGT-PR</title>
+<link rel="icon" type="image/x-icon" href="https://www.atrbpn.go.id/favicon.ico">
+<link rel="stylesheet" href="../../../styles.css">
+<style>
+.hub-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  align-items: stretch;
+}
+.hub-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  background: #ffffff;
+  border: 1px solid #dce7f5;
+  box-shadow: 0 6px 20px rgba(16, 43, 89, 0.04);
+  overflow: hidden;
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+.hub-card-link {
+  text-decoration: none;
+  color: inherit;
+}
+.hub-card-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px rgba(109, 40, 217, 0.09);
+}
+.hub-card-head {
+  padding: 18px 16px 14px;
+  border-bottom: 1px solid transparent;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+.hub-card--blue {
+  border-color: #dbe8f8;
+}
+.hub-card--blue .hub-card-head {
+  background: linear-gradient(180deg, #eef5ff 0%, #f5f9ff 100%);
+  border-bottom-color: #e4eefc;
+}
+.hub-card--green {
+  border-color: #d5efe2;
+}
+.hub-card--green .hub-card-head {
+  background: linear-gradient(180deg, #ecfdf5 0%, #f3fbf7 100%);
+  border-bottom-color: #dff3e8;
+}
+.hub-card--purple {
+  border-color: #e9e0fb;
+  background: linear-gradient(180deg, #f7f3ff 0%, #faf8ff 100%);
+}
+.hub-card--purple .hub-card-head {
+  padding-bottom: 20px;
+}
+.hub-head-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.hub-badge {
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+}
+.hub-badge svg {
+  width: 24px;
+  height: 24px;
+}
+.hub-badge--blue {
+  background: #dceafe;
+  color: #1858b8;
+}
+.hub-badge--green {
+  background: #d3f3e2;
+  color: #15803d;
+}
+.hub-badge--purple {
+  background: #ebe0ff;
+  color: #6d28d9;
+}
+.hub-chevron {
+  width: 18px;
+  height: 18px;
+  opacity: 0.75;
+  flex: none;
+}
+.hub-card--blue .hub-chevron { color: #1858b8; }
+.hub-card--green .hub-chevron { color: #15803d; }
+.hub-card--purple .hub-chevron { color: #6d28d9; }
+.hub-card-title {
+  margin: 0 0 6px;
+  font-size: 17px;
+  font-weight: 800;
+  color: #0f294d;
+  letter-spacing: -0.3px;
+}
+.hub-card-desc {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #5b6f8a;
+}
+.hub-list {
+  padding: 12px 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  background: #ffffff;
+}
+.hub-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 11px;
+  border-radius: 10px;
+  background: #f3f7fc;
+  border: 1px solid #e8eff8;
+  text-decoration: none;
+  color: #142c50;
+  font-size: 12px;
+  font-weight: 700;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+.hub-item:hover {
+  background: #e8f1fd;
+  border-color: #c7dcf9;
+  transform: translateX(2px);
+}
+.hub-card--green .hub-item {
+  background: #f3f7f6;
+  border-color: #e4efec;
+}
+.hub-card--green .hub-item:hover {
+  background: #e6f6ee;
+  border-color: #bfe6d1;
+}
+.hub-item-icon {
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.hub-item-icon svg {
+  width: 19px;
+  height: 19px;
+}
+.hub-card--blue .hub-item-icon { color: #1858b8; }
+.hub-card--green .hub-item-icon { color: #15803d; }
+.hub-item-label {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.35;
+}
+.hub-item-arrow {
+  width: 15px;
+  height: 15px;
+  color: #64748b;
+  flex: none;
+}
+.logout-bar {
+  margin-top: 14px;
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid #fadcdc;
+  background: linear-gradient(90deg, #fff5f5 0%, #fff9f9 100%);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+.logout-bar:hover {
+  background: #ffecec;
+  border-color: #f5bcbc;
+  transform: translateY(-1px);
+}
+.logout-badge {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: #fee2e2;
+  color: #c81e1e;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.logout-badge svg {
+  width: 21px;
+  height: 21px;
+}
+.logout-text {
+  flex: 1;
+  min-width: 0;
+}
+.logout-title {
+  margin: 0 0 2px;
+  font-size: 15px;
+  font-weight: 800;
+  color: #6b1d1d;
+}
+.logout-desc {
+  margin: 0;
+  font-size: 12px;
+  color: #7f6a6a;
+}
+.logout-arrow {
+  width: 18px;
+  height: 18px;
+  color: #b91c1c;
+  flex: none;
+}
+@media (max-width: 680px) {
+  .hub-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+<body class="panel panel-dash panel-list panel-home" data-page="beranda">
+<div class="app">
+<div class="workspace">
+<header class="topbar">
+  <div class="crumb">Geoportal IGT-PR　/　<strong>Dashboard</strong></div>
+  <div class="top-actions">
+    <button class="icon-btn" aria-label="Notifikasi">
+      <svg class="ri-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 17h2v2H2v-2h2v-7a8 8 0 1 1 16 0v7zm-2 0v-7a6 6 0 1 0-12 0v7h12zm-9 4h6v2H9v-2z"/></svg>
+    </button>
+    <div class="user-chip"><div class="avatar">SA</div><span>Superadmin 2</span></div>
+  </div>
+</header>
+
+<main class="main">
+  <div class="page-head">
+    <div>
+      <div class="eyebrow">Sistem Informasi Geospasial</div>
+      <h1>Dashboard</h1>
+      <p>Ringkasan status data IGT yang sudah dikompilasi dan diintegrasikan.</p>
+    </div>
+  </div>
+
+  <div class="field year-filter-wrap">
+    <label for="dashboard-year-filter">FILTER TAHUN</label>
+    <select id="dashboard-year-filter">
+      <option value="all" selected>Semua tahun</option>
+      <option value="2026">2026</option>
+      <option value="2025">2025</option>
+      <option value="2024">2024</option>
+      <option value="2023">2023</option>
+    </select>
+  </div>
+
+  <div class="grid stats">
+    <div class="card stat">
+      <div>
+        <div class="label">Terkompilasi</div>
+        <div class="num" id="count-compiled">13</div>
+        <div class="hint">Menunggu integrasi</div>
+      </div>
+      <div class="stat-icon amber">
+        <svg class="ri-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 5v14h16V7h-8.414l-2-2H4zm8.414 0H21a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h7.414l2 2z"/></svg>
+      </div>
+    </div>
+    <div class="card stat">
+      <div>
+        <div class="label">Terintegrasi</div>
+        <div class="num" id="count-integrated">24</div>
+        <div class="hint">Pertanahan dan Tata Ruang</div>
+      </div>
+      <div class="stat-icon green">
+        <svg class="ri-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-.997-4L6.76 11.757l1.414-1.414 2.829 2.829 5.656-5.657 1.415 1.414L11.003 16z"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <h2>Katalog IGT</h2>
+        <p>Pilih kategori untuk melihat dataset.</p>
+      </div>
+    </div>
+    <div class="menu-buttons" id="catalog-buttons">
+      <a class="btn btn-soft menu-btn" href="../igt-pertanahan/index.html">
+        <svg class="ri-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 20.9l4.95-4.95a7 7 0 1 0-9.9 0L12 20.9zm0 2.828l-6.364-6.364a9 9 0 1 1 12.728 0L12 23.728zM12 13a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 2a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"/></svg>
+        <span>IGT Pertanahan</span>
+      </a>
+      <a class="btn btn-soft menu-btn" href="../igt-tata-ruang/index.html">
+        <svg class="ri-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2 5l7-3 6 3 6.303-2.701a.5.5 0 0 1 .697.46V19l-7 3-6-3-6.303 2.701a.5.5 0 0 1-.697-.46V5zm14 14.395l4-1.714V5.033l-4 1.714v12.648zm-2-.131V6.736l-4-2v12.528l4 2zm-6-2.011V4.605L4 6.319v12.648l4-1.714z"/></svg>
+        <span>IGT Tata Ruang</span>
+      </a>
+      <a class="btn btn-soft menu-btn" href="../igt-derivatif/index.html">
+        <svg class="ri-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.083 15.2l1.202.721a.5.5 0 0 1 0 .858l-8.77 5.262a1 1 0 0 1-1.03 0l-8.77-5.262a.5.5 0 0 1 0-.858l1.202-.721L12 20.05l8.083-4.85zm0-4.7l1.202.721a.5.5 0 0 1 0 .858L12 17.65l-9.285-5.571a.5.5 0 0 1 0-.858l1.202-.721L12 15.35l8.083-4.85zm-7.569-9.191l8.771 5.262a.5.5 0 0 1 0 .858L12 13 2.715 7.429a.5.5 0 0 1 0-.858l8.77-5.262a1 1 0 0 1 1.03 0zM12 3.332L5.887 7 12 10.668 18.113 7 12 3.332z"/></svg>
+        <span>IGT Derivatif</span>
+      </a>
+      <a class="btn btn-soft menu-btn" href="../igt-lainnya/index.html">
+        <svg class="ri-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm-2.29-2.333A17.9 17.9 0 0 1 8.027 13H4.062a8.008 8.008 0 0 0 5.648 6.667zM10.03 13c.151 2.439.848 4.73 1.97 6.752A15.905 15.905 0 0 0 13.97 13h-3.94zm9.908 0h-3.965a17.9 17.9 0 0 1-1.683 6.667A8.008 8.008 0 0 0 19.938 13zM4.062 11h3.965A17.9 17.9 0 0 1 9.71 4.333 8.008 8.008 0 0 0 4.062 11zm5.969 0h3.938A15.905 15.905 0 0 0 12 4.248 15.905 15.905 0 0 0 10.03 11zm4.259-6.667A17.9 17.9 0 0 1 15.973 11h3.965a8.008 8.008 0 0 0-5.648-6.667z"/></svg>
+        <span>IGT Lainnya</span>
+      </a>
+    </div>
+
+    <div class="card-head menu-upload-head">
+      <div>
+        <h2>Kelola Data &amp; Analisis</h2>
+        <p>Unggah data baru, pantau status pengajuan, dan jalankan model analisis.</p>
+      </div>
+    </div>
+
+    <div class="hub-grid">
+      <!-- 1. UPLOAD DATA -->
+      <section class="hub-card hub-card--blue">
+        <a class="hub-card-head" href="../upload-igt-utama/index.html">
+          <div class="hub-head-top">
+            <div class="hub-badge hub-badge--blue">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/>
+                <path d="M12 12v9"/>
+                <path d="m16 16-4-4-4 4"/>
+              </svg>
+            </div>
+            <svg class="hub-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+          </div>
+          <h2 class="hub-card-title">Upload Data</h2>
+          <p class="hub-card-desc">Kelola dan unggah data geospasial ke dalam sistem.</p>
+        </a>
+        <div class="hub-list">
+          <a class="hub-item" href="../upload-igt-utama/index.html">
+            <span class="hub-item-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <ellipse cx="12" cy="5" rx="8" ry="3"/>
+                <path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5"/>
+                <path d="M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/>
+              </svg>
+            </span>
+            <span class="hub-item-label">Upload IGT Utama</span>
+            <svg class="hub-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+          </a>
+
+          <a class="hub-item" href="../upload-derivatif/index.html">
+            <span class="hub-item-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="m12 2 10 5.5-10 5.5L2 7.5 12 2Z"/>
+                <path d="m2 12.5 10 5.5 10-5.5"/>
+                <path d="m2 17 10 5.5 10-5.5"/>
+              </svg>
+            </span>
+            <span class="hub-item-label">Upload IGT Tematik Derivatif</span>
+            <svg class="hub-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+          </a>
+
+          <a class="hub-item" href="../derivatif-bidang/index.html">
+            <span class="hub-item-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/>
+              </svg>
+            </span>
+            <span class="hub-item-label">Custom Tematik Derivatif</span>
+            <svg class="hub-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+          </a>
+
+          <a class="hub-item" href="../derivatif-bidang/index.html?step=6">
+            <span class="hub-item-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/>
+                <path d="M12 12v9"/>
+                <path d="m16 16-4-4-4 4"/>
+              </svg>
+            </span>
+            <span class="hub-item-label">Load Custom Tematik Derivatif</span>
+            <svg class="hub-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+          </a>
+        </div>
+      </section>
+
+      <!-- 2. MANAJEMEN DATA -->
+      <section class="hub-card hub-card--green">
+        <a class="hub-card-head" href="../upload-data/index.html">
+          <div class="hub-head-top">
+            <div class="hub-badge hub-badge--green">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <ellipse cx="12" cy="5" rx="8" ry="3"/>
+                <path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5"/>
+                <path d="M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/>
+              </svg>
+            </div>
+            <svg class="hub-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+          </div>
+          <h2 class="hub-card-title">Manajemen Data</h2>
+          <p class="hub-card-desc">Kelola proses, revisi, dan status data geospasial Anda.</p>
+        </a>
+        <div class="hub-list">
+          <a class="hub-item" href="../upload-data/index.html?status=Diproses">
+            <span class="hub-item-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/>
+              </svg>
+            </span>
+            <span class="hub-item-label">Proses</span>
+            <svg class="hub-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+          </a>
+
+          <a class="hub-item" href="../upload-data/index.html?status=Revisi">
+            <span class="hub-item-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 20h9"/>
+                <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+              </svg>
+            </span>
+            <span class="hub-item-label">Revisi Perbaikan</span>
+            <svg class="hub-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+          </a>
+
+          <a class="hub-item" href="../upload-data/index.html?status=Disetujui">
+            <span class="hub-item-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/>
+                <path d="m9 12 2 2 4-4"/>
+              </svg>
+            </span>
+            <span class="hub-item-label">Disetujui</span>
+            <svg class="hub-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+          </a>
+        </div>
+      </section>
+
+      <!-- 3. MODEL BUILDER -->
+      <a class="hub-card hub-card--purple hub-card-link" href="../../../shared/model-builder/index.html?role=superadmin2">
+        <div class="hub-card-head">
+          <div class="hub-head-top">
+            <div class="hub-badge hub-badge--purple">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="9" y="2" width="6" height="5" rx="1"/>
+                <rect x="3" y="16" width="6" height="5" rx="1"/>
+                <rect x="15" y="16" width="6" height="5" rx="1"/>
+                <path d="M12 7v4m-6 5v-3a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3"/>
+              </svg>
+            </div>
+            <svg class="hub-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+          </div>
+          <h2 class="hub-card-title">Model Builder</h2>
+          <p class="hub-card-desc">Bangun dan jalankan model pengolahan data geospasial.</p>
+        </div>
+      </a>
+    </div>
+
+    <!-- LOGOUT BAR -->
+    <button type="button" class="logout-bar" id="logout-btn">
+      <div class="logout-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+      </div>
+      <div class="logout-text">
+        <h3 class="logout-title">Logout</h3>
+        <p class="logout-desc">Keluar dari akun Anda.</p>
+      </div>
+      <svg class="logout-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+  </section>
+
+  <div class="footer">Mockup UI plugin QGIS · data contoh</div>
+</main>
+</div>
+</div>
+<script src="../../../shared/igt-data.js"></script>
+<script src="../../../app.js"></script>
+<script>
+const records = IgtData.loadRecords().filter((r) => IgtData.canView('superadmin2', r.category));
+const yearOf = (record) => {
+  const match = String(record.updated || record.date || '').match(/(20[0-9]{2})/);
+  return match ? match[1] : 'Tidak diketahui';
+};
+const yearSelect = document.getElementById('dashboard-year-filter');
+const updateCounts = () => {
+  const year = yearSelect.value;
+  const visible = records.filter((r) => year === 'all' || yearOf(r) === year);
+  const staged = IgtData.integrationRecords(visible);
+  document.getElementById('count-compiled').textContent = IgtData.countByStatus(staged, 'Terkompilasi');
+  document.getElementById('count-integrated').textContent = IgtData.countByStatus(staged, 'Terintegrasi');
+};
+yearSelect.addEventListener('change', updateCounts);
+updateCounts();
+
+document.getElementById('logout-btn').addEventListener('click', () => {
+  toast('Simulasi logout: keluar dari akun dan kembali ke halaman Login.');
+});
+</script>
+</body>
+</html>

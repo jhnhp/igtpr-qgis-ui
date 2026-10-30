@@ -3,7 +3,7 @@
 </head><body class="panel panel-detail" data-page="layer-derivatif-detail"><div class="app"><div class="workspace">
 <header class="topbar"><div class="crumb">Geoportal IGT-PR　/　<a href="../upload-data/index.html?tab=derivatif">IGT Derivatif</a>　/　<strong>Detail</strong></div><div class="top-actions"><button class="icon-btn" aria-label="Notifikasi">♧</button><div class="user-chip"><div class="avatar">JH</div><span>Operator Pusat</span></div></div></header>
 <main class="main"><div class="page-head"><div><div class="eyebrow">Sistem Informasi Geospasial</div><h1 id="layer-name">Detail Layer Derivatif</h1><p>Informasi pengajuan, gaya tampilan, dan masa berlaku layer.</p></div></div>
-<div class="detail-actions"><a class="btn btn-soft" id="back-home" href="../beranda/index.html">← Kembali ke Dashboard</a><a class="btn btn-soft" id="back-list" href="../upload-data/index.html?tab=derivatif">Kembali ke IGT Derivatif</a><button class="btn btn-primary" id="show-canvas">▧ Tampilkan di Canvas</button></div>
+<div class="detail-actions"><a class="btn btn-soft" id="back-home" href="../beranda/index.html">← Kembali ke Dashboard</a><a class="btn btn-soft" id="back-list" href="../upload-data/index.html?tab=derivatif">Kembali ke IGT Derivatif</a><button class="btn btn-primary" id="show-canvas"><svg class="ri-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3c5.392 0 9.878 3.88 10.819 9-.94 5.12-5.427 9-10.819 9-5.392 0-9.878-3.88-10.819-9C2.121 6.88 6.608 3 12 3zm0 16a9.005 9.005 0 0 0 8.777-7 9.005 9.005 0 0 0-17.554 0A9.005 9.005 0 0 0 12 19zm0-2.5a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9zm0-2a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/></svg><span>Tampilkan</span></button></div>
 <section class="card detail-section"><div class="card-head"><div><h2>Informasi Pengajuan</h2><p>Identitas dan metadata layer derivatif.</p></div><span id="status-badge" class="status ok">Disetujui</span></div>
 <div class="detail-grid">
 <div class="detail-item"><div class="detail-label">ID Pengajuan</div><div class="detail-value" id="layer-id">DRV-2026-008</div></div>
@@ -26,11 +26,12 @@ const data={
 "3":{id:"DRV-2026-005",nama:"Derivatif Bidang Wilayah B",jenis:"Berbasis Bidang",tanggal:"12 Okt 2026",status:"Disetujui",sld:"derivatif-bidang-wilayah-b.sld",expired:"14 hari",notes:"Layer derivatif telah disetujui dan siap digunakan."},
 "4":{id:"DRV-2026-004",nama:"Derivatif Kawasan Permukiman",jenis:"Berbasis Kawasan",tanggal:"2 Okt 2026",status:"Kadaluwarsa",sld:"derivatif-kawasan-permukiman.sld",expired:"Berakhir",notes:"Masa berlaku layer telah berakhir; layer tidak lagi ditampilkan di katalog."}
 };
-const params=new URLSearchParams(location.search),d=data[params.get("id")]||data["0"],role=["superadmin","admin","umum"].includes(params.get("role"))?params.get("role"):"operator",isSuperadmin=role==="superadmin",isAdmin=role==="admin";
+const params=new URLSearchParams(location.search),d=data[params.get("id")]||data["0"],role=["superadmin","superadmin2","admin","umum"].includes(params.get("role"))?params.get("role"):"operator",isSuperadmin=role==="superadmin"||role==="superadmin2",isAdmin=role==="admin";
 const uploadUrl="../../"+role+"/upload-data/index.html?tab=derivatif";
-if(role!=="operator"){const who={superadmin:["Superadmin","SA"],admin:["Admin","AD"],umum:["Umum","UM"]}[role];document.querySelector(".user-chip span").textContent=who[0];document.querySelector(".avatar").textContent=who[1];}
-document.getElementById("back-home").href="../../"+role+"/beranda/index.html";document.getElementById("back-list").href=uploadUrl;
-document.querySelector(".crumb").innerHTML='Geoportal IGT-PR　/　<a href="'+uploadUrl+'">IGT Derivatif</a>　/　<strong>Detail</strong>';
+const listLabel=role==="superadmin2"?"Manajemen Data":"IGT Derivatif";
+if(role!=="operator"){const who={superadmin:["Superadmin","SA"],superadmin2:["Superadmin 2","SA"],admin:["Admin","AD"],umum:["Umum","UM"]}[role];document.querySelector(".user-chip span").textContent=who[0];document.querySelector(".avatar").textContent=who[1];}
+document.getElementById("back-home").href="../../"+role+"/beranda/index.html";document.getElementById("back-list").href=uploadUrl;document.getElementById("back-list").textContent="Kembali ke "+listLabel;
+document.querySelector(".crumb").innerHTML='Geoportal IGT-PR　/　<a href="'+uploadUrl+'">'+listLabel+'</a>　/　<strong>Detail</strong>';
 document.title=d.nama+" · Detail Layer Derivatif";
 document.getElementById("layer-name").textContent=d.nama;
 document.getElementById("layer-name-meta").textContent=d.nama;
