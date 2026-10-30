@@ -8,7 +8,7 @@
 <style>
 .hub-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
   align-items: stretch;
 }
@@ -52,11 +52,23 @@
   border-bottom-color: #dff3e8;
 }
 .hub-card--purple {
+  margin-top: 14px;
   border-color: #e9e0fb;
-  background: linear-gradient(180deg, #f7f3ff 0%, #faf8ff 100%);
+  background: linear-gradient(90deg, #f7f3ff 0%, #faf8ff 100%);
 }
 .hub-card--purple .hub-card-head {
-  padding-bottom: 20px;
+  padding: 15px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.hub-card--purple .hub-card-text {
+  flex: 1;
+  min-width: 0;
+}
+.hub-card--purple .hub-card-title {
+  margin: 0 0 3px;
+  font-size: 16px;
 }
 .hub-head-top {
   display: flex;
@@ -436,26 +448,26 @@
           </a>
         </div>
       </section>
+    </div>
 
-      <!-- 3. MODEL BUILDER -->
-      <a class="hub-card hub-card--purple hub-card-link" href="../../../shared/model-builder/index.html?role=superadmin2">
-        <div class="hub-card-head">
-          <div class="hub-head-top">
-            <div class="hub-badge hub-badge--purple">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <rect x="9" y="2" width="6" height="5" rx="1"/>
-                <rect x="3" y="16" width="6" height="5" rx="1"/>
-                <rect x="15" y="16" width="6" height="5" rx="1"/>
-                <path d="M12 7v4m-6 5v-3a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3"/>
-              </svg>
-            </div>
-            <svg class="hub-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
-          </div>
+    <!-- 3. MODEL BUILDER (DI BAWAH) -->
+    <a class="hub-card hub-card--purple hub-card-link" href="../../../shared/model-builder/index.html?role=superadmin2">
+      <div class="hub-card-head">
+        <div class="hub-badge hub-badge--purple">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="9" y="2" width="6" height="5" rx="1"/>
+            <rect x="3" y="16" width="6" height="5" rx="1"/>
+            <rect x="15" y="16" width="6" height="5" rx="1"/>
+            <path d="M12 7v4m-6 5v-3a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3"/>
+          </svg>
+        </div>
+        <div class="hub-card-text">
           <h2 class="hub-card-title">Model Builder</h2>
           <p class="hub-card-desc">Bangun dan jalankan model pengolahan data geospasial.</p>
         </div>
-      </a>
-    </div>
+        <svg class="hub-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+      </div>
+    </a>
 
     <!-- LOGOUT BAR -->
     <button type="button" class="logout-bar" id="logout-btn">
