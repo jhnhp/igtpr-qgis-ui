@@ -18,7 +18,7 @@ import math
 from qgis.PyQt.QtCore import QSize, Qt, pyqtSignal
 from qgis.PyQt.QtGui import QColor, QCursor, QFont, QIcon
 from qgis.PyQt.QtWidgets import (
-    QComboBox, QFrame, QHBoxLayout, QLabel, QLineEdit,
+    QBoxLayout, QComboBox, QFrame, QHBoxLayout, QLabel, QLineEdit,
     QPushButton, QScrollArea, QSizePolicy, QVBoxLayout, QWidget,
 )
 
@@ -108,9 +108,9 @@ class DatasetCard(QFrame):
         card_layout.setSpacing(4 if not self.show_metadata else 6)
 
         # 1. Baris Utama: Kolom Kiri (Judul, Walidata, Tanggal) & Kolom Kanan (Aksi Vertikal di Tengah)
-        main_row = QHBoxLayout()
-        main_row.setContentsMargins(0, 0, 0, 0)
-        main_row.setSpacing(10)
+        self.main_row = QBoxLayout(QBoxLayout.Direction.LeftToRight)
+        self.main_row.setContentsMargins(0, 0, 0, 0)
+        self.main_row.setSpacing(10)
 
         left_col = QVBoxLayout()
         left_col.setContentsMargins(0, 0, 0, 0)
@@ -131,10 +131,12 @@ class DatasetCard(QFrame):
         self.title_lbl = QLabel(dataset.get('name', ''), self)
         self.title_lbl.setStyleSheet("color: #0f294d; font-size: 13px; font-weight: 700;")
         self.title_lbl.setWordWrap(True)
-        title_row.addWidget(self.title_lbl, 0, Qt.AlignmentFlag.AlignVCenter)
+        self.title_lbl.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        title_row.addWidget(self.title_lbl, 1, Qt.AlignmentFlag.AlignVCenter)
 
         # Kategori Tag (Berdampingan di kanan nama IGT)
         cat_badge = QLabel(self)
+        cat_badge.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         if cat == 'pertanahan':
             cat_badge.setText('Pertanahan')
             cat_badge.setStyleSheet("background-color: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; border-radius: 4px; font-size: 9.5px; font-weight: 700; padding: 1px 6px;")
@@ -148,7 +150,6 @@ class DatasetCard(QFrame):
             cat_badge.setText('K/L Lainnya')
             cat_badge.setStyleSheet("background-color: #f0f9ff; color: #0284c7; border: 1px solid #bae6fd; border-radius: 4px; font-size: 9.5px; font-weight: 700; padding: 1px 6px;")
         title_row.addWidget(cat_badge, 0, Qt.AlignmentFlag.AlignVCenter)
-        title_row.addStretch(1)
 
         left_col.addLayout(title_row)
 
@@ -165,12 +166,12 @@ class DatasetCard(QFrame):
             self.date_lbl.setStyleSheet("color: #64748b; font-size: 11px; margin-left: 22px;")
             left_col.addWidget(self.date_lbl)
 
-        main_row.addLayout(left_col, 1)
+        self.main_row.addLayout(left_col, 1)
 
         # Kolom Kanan: Tombol Aksi (Tepat di Tengah Vertikal)
-        action_wrap = QHBoxLayout()
-        action_wrap.setContentsMargins(0, 0, 0, 0)
-        action_wrap.setSpacing(6)
+        self.action_wrap = QHBoxLayout()
+        self.action_wrap.setContentsMargins(0, 0, 0, 0)
+        self.action_wrap.setSpacing(6)
 
         if self.has_subs:
             sub_count = len(dataset['subLayers'])
@@ -179,25 +180,25 @@ class DatasetCard(QFrame):
             self.chip_btn.setObjectName('multiChip')
             self.chip_btn.setCursor(Qt.CursorShape.PointingHandCursor)
             self.chip_btn.clicked.connect(self.toggle_expand)
-            action_wrap.addWidget(self.chip_btn)
+            self.action_wrap.addWidget(self.chip_btn)
         else:
             self.btn_wms = QPushButton('WMS', self)
             self.btn_wms.setObjectName('actionWms')
             self.btn_wms.setCursor(Qt.CursorShape.PointingHandCursor)
             self.btn_wms.clicked.connect(lambda: self.wmsClicked.emit(self.dataset, None))
-            action_wrap.addWidget(self.btn_wms)
+            self.action_wrap.addWidget(self.btn_wms)
 
             if self.allow_wfs:
                 self.btn_wfs = QPushButton('WFS', self)
                 self.btn_wfs.setObjectName('actionWfs')
                 self.btn_wfs.setCursor(Qt.CursorShape.PointingHandCursor)
                 self.btn_wfs.clicked.connect(lambda: self.wfsClicked.emit(self.dataset, None))
-                action_wrap.addWidget(self.btn_wfs)
+                self.action_wrap.addWidget(self.btn_wfs)
 
-        main_row.addLayout(action_wrap, 0)
-        main_row.setAlignment(action_wrap, Qt.AlignmentFlag.AlignVCenter)
+        self.main_row.addLayout(self.action_wrap, 0)
+        self.main_row.setAlignment(self.action_wrap, Qt.AlignmentFlag.AlignVCenter)
 
-        card_layout.addLayout(main_row)
+        card_layout.addLayout(self.main_row)
 
         # 2. Sub-layers Container (Accordion)
         if self.has_subs:
@@ -294,6 +295,24 @@ class DatasetCard(QFrame):
         sub_count = len(self.dataset['subLayers'])
         caret = '▴' if self.is_expanded else '▾'
         self.chip_btn.setText(f"Multi-Layer · {sub_count} Layer {caret}")
+
+    def apply_width(self, width):
+        is_narrow = width < 280
+        if is_narrow:
+            self.main_row.setDirection(QBoxLayout.Direction.TopToBottom)
+            self.main_row.setSpacing(6)
+            self.main_row.setAlignment(self.action_wrap, Qt.AlignmentFlag.AlignRight)
+        else:
+            self.main_row.setDirection(QBoxLayout.Direction.LeftToRight)
+            self.main_row.setSpacing(10)
+            self.main_row.setAlignment(self.action_wrap, Qt.AlignmentFlag.AlignVCenter)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.apply_width(event.size().width())
+
+    def minimumSizeHint(self):
+        return QSize(160, 36)
 
 
 class CatalogPage(QWidget):
@@ -435,6 +454,7 @@ class CatalogPage(QWidget):
             ib_layout = QVBoxLayout(self.inner_body)
             ib_layout.setContentsMargins(14, 2, 14, 0)
             ib_layout.setSpacing(10)
+            cc_layout.addWidget(self.inner_body)
 
             target_layout = ib_layout
             main_layout.addWidget(self.container_card)
@@ -529,37 +549,45 @@ class CatalogPage(QWidget):
         self.fc_main_layout.addLayout(search_box)
 
         # Dropdowns row (Provinsi + Kabupaten)
-        filter_row = QHBoxLayout()
-        filter_row.setSpacing(8)
+        self.filter_box_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
+        self.filter_box_layout.setContentsMargins(0, 0, 0, 0)
+        self.filter_box_layout.setSpacing(8)
 
         # Provinsi Filter
-        prov_box = QVBoxLayout()
-        prov_box.setSpacing(2)
-        self.prov_lbl = QLabel('PROVINSI', self.filter_card)
+        prov_box = QWidget(self.filter_card)
+        prov_box_layout = QVBoxLayout(prov_box)
+        prov_box_layout.setContentsMargins(0, 0, 0, 0)
+        prov_box_layout.setSpacing(2)
+        self.prov_lbl = QLabel('PROVINSI', prov_box)
         self.prov_lbl.setStyleSheet("color: #64748b; font-size: 9px; font-weight: 800; letter-spacing: 0.5px;")
-        prov_box.addWidget(self.prov_lbl)
-        self.prov_combo = QComboBox(self.filter_card)
+        prov_box_layout.addWidget(self.prov_lbl)
+        self.prov_combo = QComboBox(prov_box)
+        self.prov_combo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.prov_combo.currentIndexChanged.connect(self._on_prov_changed)
-        prov_box.addWidget(self.prov_combo)
-        filter_row.addLayout(prov_box, 1)
+        prov_box_layout.addWidget(self.prov_combo)
+        self.filter_box_layout.addWidget(prov_box, 1)
 
         # Kabupaten Filter
-        kab_box = QVBoxLayout()
-        kab_box.setSpacing(2)
-        self.kab_lbl = QLabel('KABUPATEN / KOTA', self.filter_card)
+        kab_box = QWidget(self.filter_card)
+        kab_box_layout = QVBoxLayout(kab_box)
+        kab_box_layout.setContentsMargins(0, 0, 0, 0)
+        kab_box_layout.setSpacing(2)
+        self.kab_lbl = QLabel('KABUPATEN / KOTA', kab_box)
         self.kab_lbl.setStyleSheet("color: #64748b; font-size: 9px; font-weight: 800; letter-spacing: 0.5px;")
-        kab_box.addWidget(self.kab_lbl)
-        self.kab_combo = QComboBox(self.filter_card)
+        kab_box_layout.addWidget(self.kab_lbl)
+        self.kab_combo = QComboBox(kab_box)
+        self.kab_combo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.kab_combo.currentIndexChanged.connect(self._on_kab_changed)
-        kab_box.addWidget(self.kab_combo)
-        filter_row.addLayout(kab_box, 1)
+        kab_box_layout.addWidget(self.kab_combo)
+        self.filter_box_layout.addWidget(kab_box, 1)
 
-        self.fc_main_layout.addLayout(filter_row)
+        self.fc_main_layout.addLayout(self.filter_box_layout)
         target_layout.addWidget(self.filter_card)
 
         # 4. Count & Summary Info
         self.count_lbl = QLabel('', self)
         self.count_lbl.setStyleSheet("color: #475569; font-size: 11px; font-weight: 600;")
+        self.count_lbl.setWordWrap(True)
         target_layout.addWidget(self.count_lbl)
 
         # 5. Daftar Kartu Dataset (Langsung di layout jika embedded, atau dalam QScrollArea jika standalone)
@@ -607,10 +635,12 @@ class CatalogPage(QWidget):
                 color: #1f6fd6;
                 border: 1px solid #cbd5e1;
                 border-radius: 6px;
-                min-width: 28px;
-                max-width: 28px;
-                min-height: 28px;
-                max-height: 28px;
+                min-width: 24px;
+                max-width: 26px;
+                min-height: 26px;
+                max-height: 26px;
+                font-size: 12px;
+                font-weight: 700;
                 padding: 0;
             }
             QPushButton#prevBtn:hover, QPushButton#nextBtn:hover {
@@ -627,10 +657,10 @@ class CatalogPage(QWidget):
                 color: #334155;
                 border: 1px solid #cbd5e1;
                 border-radius: 6px;
-                min-width: 28px;
-                max-width: 32px;
-                min-height: 28px;
-                max-height: 28px;
+                min-width: 24px;
+                max-width: 28px;
+                min-height: 26px;
+                max-height: 26px;
                 padding: 0;
                 font-size: 11px;
                 font-weight: 700;
@@ -646,54 +676,56 @@ class CatalogPage(QWidget):
             }
         """)
 
-        self.pag_main_layout = QHBoxLayout(self.pag_card)
-        self.pag_main_layout.setContentsMargins(4, 2, 4, 2)
-        self.pag_main_layout.setSpacing(8)
+        self.pag_main_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight, self.pag_card)
+        self.pag_main_layout.setContentsMargins(6, 4, 6, 4)
+        self.pag_main_layout.setSpacing(6)
 
         # Bagian Kiri Bawah: Pilihan menampilkan berapa card
-        size_wrap = QHBoxLayout()
-        size_wrap.setSpacing(6)
-        self.size_lbl = QLabel('Tampilkan:', self.pag_card)
+        self.size_widget = QWidget(self.pag_card)
+        self.size_wrap = QHBoxLayout(self.size_widget)
+        self.size_wrap.setContentsMargins(0, 0, 0, 0)
+        self.size_wrap.setSpacing(6)
+        self.size_lbl = QLabel('Tampilkan:', self.size_widget)
         self.size_lbl.setStyleSheet("color: #64748b; font-size: 11px; font-weight: 700;")
-        size_wrap.addWidget(self.size_lbl)
+        self.size_wrap.addWidget(self.size_lbl)
 
-        self.size_combo = QComboBox(self.pag_card)
+        self.size_combo = QComboBox(self.size_widget)
         self.size_combo.setObjectName('sizeCombo')
         for count in [4, 8, 12, 16, 24]:
             self.size_combo.addItem(f"{count} card", count)
         self.size_combo.setCurrentIndex(1)  # Default 8 card
         self.size_combo.currentIndexChanged.connect(self._on_page_size_changed)
-        size_wrap.addWidget(self.size_combo)
-        self.pag_main_layout.addLayout(size_wrap)
+        self.size_wrap.addWidget(self.size_combo)
+        self.pag_main_layout.addWidget(self.size_widget)
 
-        self.pag_main_layout.addStretch(1)
+        self.pag_stretch = self.pag_main_layout.addStretch(1)
 
         # Bagian Kanan Bawah: Seluruh navigasi page disatukan [←] [1] [2] [3] [4] [→]
-        nav_group = QHBoxLayout()
-        nav_group.setSpacing(4)
+        self.nav_widget = QWidget(self.pag_card)
+        self.nav_group = QHBoxLayout(self.nav_widget)
+        self.nav_group.setContentsMargins(0, 0, 0, 0)
+        self.nav_group.setSpacing(4)
 
-        self.prev_btn = QPushButton(self.pag_card)
+        self.prev_btn = QPushButton('←', self.nav_widget)
         self.prev_btn.setObjectName('prevBtn')
-        self.prev_btn.setIcon(QIcon(svg_pixmap(ICONS['arrow-left'].format(color='#1f6fd6'), QSize(14, 14))))
         self.prev_btn.setToolTip('Halaman sebelumnya')
         self.prev_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.prev_btn.clicked.connect(self._on_prev_page)
-        nav_group.addWidget(self.prev_btn)
+        self.nav_group.addWidget(self.prev_btn)
 
         self.page_numbers_layout = QHBoxLayout()
         self.page_numbers_layout.setContentsMargins(0, 0, 0, 0)
         self.page_numbers_layout.setSpacing(4)
-        nav_group.addLayout(self.page_numbers_layout)
+        self.nav_group.addLayout(self.page_numbers_layout)
 
-        self.next_btn = QPushButton(self.pag_card)
+        self.next_btn = QPushButton('→', self.nav_widget)
         self.next_btn.setObjectName('nextBtn')
-        self.next_btn.setIcon(QIcon(svg_pixmap(ICONS['chevron-right'].format(color='#1f6fd6'), QSize(14, 14))))
         self.next_btn.setToolTip('Halaman berikutnya')
         self.next_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.next_btn.clicked.connect(self._on_next_page)
-        nav_group.addWidget(self.next_btn)
+        self.nav_group.addWidget(self.next_btn)
 
-        self.pag_main_layout.addLayout(nav_group)
+        self.pag_main_layout.addWidget(self.nav_widget)
 
         target_layout.addWidget(self.pag_card)
 
@@ -701,6 +733,32 @@ class CatalogPage(QWidget):
         self.set_category(self.current_category)
 
     # ------------------------------------------------------------------ Responsivitas
+    def apply_width(self, width):
+        is_narrow = width < 280
+        if hasattr(self, 'filter_box_layout'):
+            self.filter_box_layout.setDirection(
+                QBoxLayout.Direction.TopToBottom if is_narrow else QBoxLayout.Direction.LeftToRight
+            )
+        if hasattr(self, 'pag_main_layout'):
+            self.pag_main_layout.setDirection(
+                QBoxLayout.Direction.TopToBottom if is_narrow else QBoxLayout.Direction.LeftToRight
+            )
+            if hasattr(self, 'size_widget') and hasattr(self, 'nav_widget'):
+                self.pag_main_layout.setAlignment(self.size_widget, Qt.AlignmentFlag.AlignCenter if is_narrow else Qt.AlignmentFlag.AlignLeft)
+                self.pag_main_layout.setAlignment(self.nav_widget, Qt.AlignmentFlag.AlignCenter if is_narrow else Qt.AlignmentFlag.AlignRight)
+        if hasattr(self, 'size_lbl'):
+            self.size_lbl.setVisible(width >= 360)
+        if hasattr(self, 'list_layout'):
+            for i in range(self.list_layout.count()):
+                item = self.list_layout.itemAt(i)
+                if item and item.widget() and hasattr(item.widget(), 'apply_width'):
+                    item.widget().apply_width(width)
+        is_narrow = width < 280
+        if getattr(self, '_last_is_narrow', None) != is_narrow:
+            self._last_is_narrow = is_narrow
+            if hasattr(self, '_last_total_pages'):
+                self._update_pagination_ui(self._last_total_pages, self._last_total_items)
+
     def resizeEvent(self, event):
         super().resizeEvent(event)
         w = event.size().width()
@@ -709,8 +767,10 @@ class CatalogPage(QWidget):
                 self.back_btn.setText('← Kembali')
             else:
                 self.back_btn.setText('← Kembali ke Dashboard')
-        if hasattr(self, 'size_lbl'):
-            self.size_lbl.setVisible(w >= 360)
+        self.apply_width(w)
+
+    def minimumSizeHint(self):
+        return QSize(180, 120)
 
     # ------------------------------------------------------------------ Kategori & Filter
     def get_category_datasets(self, cat):
@@ -924,6 +984,7 @@ class CatalogPage(QWidget):
 
                 allow_wfs = can_access_wfs(self.current_role, d)
                 card = DatasetCard(d, is_expanded=is_exp, show_metadata=not self.embedded, allow_wfs=allow_wfs, parent=self.list_content)
+                card.apply_width(self.width())
                 card.wmsClicked.connect(lambda ds, sl: self.wmsRequested.emit(ds, sl))
                 card.wfsClicked.connect(lambda ds, sl: self.wfsRequested.emit(ds, sl))
                 self.list_layout.addWidget(card)
@@ -931,6 +992,8 @@ class CatalogPage(QWidget):
         self.list_layout.addStretch()
 
         # Update Pagination Controls
+        self._last_total_pages = total_pages
+        self._last_total_items = total_items
         self._update_pagination_ui(total_pages, total_items)
 
     def _update_pagination_ui(self, total_pages, total_items):
@@ -942,17 +1005,20 @@ class CatalogPage(QWidget):
             item = self.page_numbers_layout.takeAt(0)
             w = item.widget()
             if w:
+                w.hide()
+                w.setParent(None)
                 w.deleteLater()
 
-        # Build number buttons (range aktif)
-        max_num_btns = 5
-        start_p = max(1, self.current_page - 2)
+        # Build number buttons (range aktif: 3 button jika dock sempit < 280px, 5 button jika normal)
+        max_num_btns = 3 if self.width() < 280 else 5
+        half = 1 if max_num_btns == 3 else 2
+        start_p = max(1, self.current_page - half)
         end_p = min(total_pages, start_p + max_num_btns - 1)
         if end_p - start_p < max_num_btns - 1:
             start_p = max(1, end_p - max_num_btns + 1)
 
         for p in range(start_p, end_p + 1):
-            btn = QPushButton(str(p), self.pag_card)
+            btn = QPushButton(str(p), self.nav_widget)
             btn.setProperty('pageBtn', 'true')
             btn.setProperty('active', 'true' if p == self.current_page else 'false')
             btn.setCursor(Qt.CursorShape.PointingHandCursor)

@@ -557,3 +557,6 @@ class ManagementPage(QWidget):
         record['status'] = 'Diajukan'
         self.actionPerformed.emit('revision-submitted', record)
         self._render_table()
+
+    def minimumSizeHint(self):
+        return QSize(200, 120)

@@ -169,7 +169,7 @@ class TopbarWidget(QFrame):
 
     # ------------------------------------------------------------------ responsif
     def minimumSizeHint(self):
-        return QSize(180, 48)
+        return QSize(160, 48)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -183,7 +183,7 @@ class TopbarWidget(QFrame):
         self.user_chip.style().unpolish(self.user_chip)
         self.user_chip.style().polish(self.user_chip)
         if self._base_btn is not None:
-            show_base = width >= 460 or len(self._crumbs) == 1
+            show_base = width >= 380
             self._base_btn.setVisible(show_base)
             self._base_sep.setVisible(show_base)
         # Crumb tengah ('Katalog IGT', 'Manajemen Data') disembunyikan di dock sangat sempit.

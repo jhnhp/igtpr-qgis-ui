@@ -54,8 +54,9 @@ class DynamicStackedWidget(QStackedWidget):
     def minimumSizeHint(self):
         cur = self.currentWidget()
         if cur is not None:
-            return cur.minimumSizeHint()
-        return super().minimumSizeHint()
+            sz = cur.minimumSizeHint()
+            return QSize(min(200, sz.width()), sz.height())
+        return QSize(200, 120)
 
     def sizeHint(self):
         cur = self.currentWidget()
@@ -117,7 +118,7 @@ class IgtprDockWidget(QDockWidget):
 
         self.main_layout.addWidget(self.stack, 1)
         self.setWidget(container)
-        self.setMinimumWidth(280)
+        self.setMinimumWidth(200)
 
         # Connect Topbar Navigation
         self.topbar.homeRequested.connect(self.show_dashboard)

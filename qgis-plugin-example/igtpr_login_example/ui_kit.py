@@ -376,6 +376,9 @@ class ClickableCard(QFrame):
             self.clicked.emit()
         super().mouseReleaseEvent(event)
 
+    def minimumSizeHint(self):
+        return QSize(80, 32)
+
 
 class HubItem(ClickableCard):
     """Baris tombol hub: ikon, label, chevron."""
@@ -389,6 +392,9 @@ class HubItem(ClickableCard):
         lbl = label(text, 'hubItem' if bold else 'body', True, self)
         lay.addWidget(lbl, 1)
         lay.addWidget(icon_label('chevron-right', '#64748b', 14, self))
+
+    def minimumSizeHint(self):
+        return QSize(80, 32)
 
 
 class ElidedLabel(QLabel):
@@ -536,6 +542,9 @@ class ResponsiveGrid(QWidget):
         cols = self._columns_for(width)
         if cols != self._cols:
             self._relayout(cols)
+        for w in self._items:
+            if hasattr(w, 'apply_width'):
+                w.apply_width(width)
 
     def _relayout(self, cols):
         self._cols = cols
@@ -604,7 +613,7 @@ class ResponsivePage(QWidget):
     def resizeEvent(self, event):
         super().resizeEvent(event)
         self.page_width = event.size().width()
-        m = 10 if self.page_width < 380 else 14
+        m = 8 if self.page_width < 280 else (10 if self.page_width < 380 else 14)
         self.body.setContentsMargins(m, m, m, m + 4)
         for comp in list(self._responsive):
             comp.apply_width(self.page_width)
@@ -648,11 +657,14 @@ class HeroHeader(QFrame):
 
     def apply_width(self, width):
         self.row.apply_width(width)
-        m = 14 if width < 380 else 18
-        self.layout().setContentsMargins(m, 14, m, 14)
+        m = 10 if width < 280 else (14 if width < 380 else 18)
+        self.layout().setContentsMargins(m, 12 if width < 280 else 14, m, 12 if width < 280 else 14)
         if self.side_widget is not None:
             # Di layar sempit tombol/filter mengisi selebar kartu (seperti web).
             self.side_widget.setMinimumWidth(0 if not self.row.wide else 170)
+
+    def minimumSizeHint(self):
+        return QSize(140, 60)
 
     def set_texts(self, title=None, desc=None):
         if title is not None:

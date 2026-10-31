@@ -8,7 +8,7 @@ Padanan dengan roles/*2/beranda/index.html:
 - kartu Unggah/Manajemen: 2 kolom >= 760 px
 """
 
-from qgis.PyQt.QtCore import Qt, pyqtSignal
+from qgis.PyQt.QtCore import QSize, Qt, pyqtSignal
 from qgis.PyQt.QtWidgets import QComboBox, QFrame, QHBoxLayout, QSizePolicy, QVBoxLayout, QWidget
 
 from .catalog_page import CatalogPage
@@ -25,20 +25,27 @@ class StatCard(QFrame):
     def __init__(self, kind, title, pill_text, pill_kind, icon_key, icon_color, icon_bg, parent=None):
         super().__init__(parent)
         self.setProperty('card', kind)
-        lay = QHBoxLayout(self)
-        lay.setContentsMargins(16, 14, 16, 14)
-        lay.setSpacing(10)
+        self.lay = QHBoxLayout(self)
+        self.lay.setContentsMargins(16, 14, 16, 14)
+        self.lay.setSpacing(10)
         info = QVBoxLayout()
         info.setSpacing(3)
         info.addWidget(label(title.upper(), 'statLabel', True, self))
         self.num = label('0', 'statNum', False, self)
         info.addWidget(self.num)
         info.addWidget(pill(pill_text, pill_kind, self), 0, Qt.AlignmentFlag.AlignLeft)
-        lay.addLayout(info, 1)
-        lay.addWidget(icon_badge(icon_key, icon_color, icon_bg, 44, 22, 12, self), 0, Qt.AlignmentFlag.AlignVCenter)
+        self.lay.addLayout(info, 1)
+        self.lay.addWidget(icon_badge(icon_key, icon_color, icon_bg, 44, 22, 12, self), 0, Qt.AlignmentFlag.AlignVCenter)
 
     def set_value(self, value):
         self.num.setText(str(value))
+
+    def apply_width(self, width):
+        m = 10 if width < 280 else 16
+        self.lay.setContentsMargins(m, 10 if width < 280 else 14, m, 10 if width < 280 else 14)
+
+    def minimumSizeHint(self):
+        return QSize(100, 50)
 
 
 class HubCard(QFrame):
@@ -54,26 +61,26 @@ class HubCard(QFrame):
         lay.setContentsMargins(0, 0, 0, 12)
         lay.setSpacing(12)
 
-        head = card(head_kind, self)
-        h_lay = QVBoxLayout(head) if stacked_head else QHBoxLayout(head)
+        self.head = card(head_kind, self)
+        h_lay = QVBoxLayout(self.head) if stacked_head else QHBoxLayout(self.head)
         h_lay.setContentsMargins(16, 14, 16, 14)
         h_lay.setSpacing(8 if stacked_head else 14)
-        badge = icon_badge(icon_key, icon_color, icon_bg, 44, 22, 12, head)
+        badge = icon_badge(icon_key, icon_color, icon_bg, 44, 22, 12, self.head)
         texts = QVBoxLayout()
         texts.setSpacing(3)
-        texts.addWidget(label(title, 'h2', True, head))
-        texts.addWidget(label(desc, 'muted', True, head))
+        texts.addWidget(label(title, 'h2', True, self.head))
+        texts.addWidget(label(desc, 'muted', True, self.head))
         if stacked_head:
             top = QHBoxLayout()
             top.addWidget(badge)
             top.addStretch(1)
-            top.addWidget(icon_label('chevron-right', icon_color, 16, head))
+            top.addWidget(icon_label('chevron-right', icon_color, 16, self.head))
             h_lay.addLayout(top)
             h_lay.addLayout(texts)
         else:
             h_lay.addWidget(badge, 0, Qt.AlignmentFlag.AlignTop)
             h_lay.addLayout(texts, 1)
-        lay.addWidget(head)
+        lay.addWidget(self.head)
 
         self.grid = ResponsiveGrid(list(breakpoints), 10, self)
         for key, item_icon, text, color in items:
@@ -87,6 +94,12 @@ class HubCard(QFrame):
 
     def apply_width(self, width):
         self.grid.apply_width(width)
+        m = 10 if width < 280 else 16
+        if hasattr(self, 'head'):
+            self.head.layout().setContentsMargins(m, 10 if width < 280 else 14, m, 10 if width < 280 else 14)
+
+    def minimumSizeHint(self):
+        return QSize(100, 60)
 
 
 class WideCard(ClickableCard):
@@ -104,6 +117,9 @@ class WideCard(ClickableCard):
         texts.addWidget(label(desc, desc_cls, True, self))
         lay.addLayout(texts, 1)
         lay.addWidget(icon_label('chevron-right', icon_color, 16, self), 0, Qt.AlignmentFlag.AlignVCenter)
+
+    def minimumSizeHint(self):
+        return QSize(100, 48)
 
 
 class DashboardPage(ResponsivePage):
@@ -150,7 +166,7 @@ class DashboardPage(ResponsivePage):
         self.body.addWidget(self.stats)
 
         # 3. Live Embedded Katalog IGT (Langsung aktif di dashboard)
-        self.catalog_widget = CatalogPage(current_category='igt-pr', current_role=self.current_role, embedded=True, parent=self.content)
+        self.catalog_widget = self.responsive(CatalogPage(current_category='igt-pr', current_role=self.current_role, embedded=True, parent=self.content))
         self.catalog_widget.openFullCatalogRequested.connect(self.openCatalogRequested.emit)
         self.catalog_widget.wmsRequested.connect(self.wmsRequested.emit)
         self.catalog_widget.wfsRequested.connect(self.wfsRequested.emit)

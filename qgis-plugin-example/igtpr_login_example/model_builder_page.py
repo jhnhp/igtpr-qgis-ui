@@ -210,3 +210,6 @@ class ModelBuilderPage(QWidget):
             self.table.setCellWidget(row, 2, btn_run)
 
             self.table.setRowHeight(row, 62)
+
+    def minimumSizeHint(self):
+        return QSize(200, 120)

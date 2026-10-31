@@ -428,6 +428,9 @@ class LoginPage(QWidget):
         self._relayout(event.size().width())
         super().resizeEvent(event)
 
+    def minimumSizeHint(self):
+        return QSize(200, 200)
+
     def _relayout(self, width):
         if width >= NARROW:
             mode = 'wide'
@@ -548,4 +551,4 @@ class LoginDockWidget(QDockWidget):
         scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         scroll.setWidget(self.page)
         self.setWidget(scroll)
-        self.setMinimumWidth(330)
+        self.setMinimumWidth(200)

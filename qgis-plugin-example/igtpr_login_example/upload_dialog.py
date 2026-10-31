@@ -362,3 +362,6 @@ class UploadPage(QWidget):
             'scope': wilayah,
         }
         self.uploadSubmitted.emit(submission)
+
+    def minimumSizeHint(self):
+        return QSize(200, 120)
