@@ -39,6 +39,31 @@ PLUGIN_DIR = os.path.dirname(__file__)
 MENU_TITLE = '&Geoportal IGT-PR'
 
 
+class DynamicStackedWidget(QStackedWidget):
+    """QStackedWidget dengan minimumSizeHint dan sizeHint dinamis mengikuti halaman aktif.
+
+    Secara bawaan di Qt, QStackedWidget mengambil ukuran maksimum dari seluruh halaman di stack,
+    sehingga halaman yang lebar (misal Management / Model Builder) dapat mengunci dock widget
+    tidak bisa dikecilkan meskipun sedang berada di Dashboard atau Katalog.
+    """
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.currentChanged.connect(lambda idx: self.updateGeometry())
+
+    def minimumSizeHint(self):
+        cur = self.currentWidget()
+        if cur is not None:
+            return cur.minimumSizeHint()
+        return super().minimumSizeHint()
+
+    def sizeHint(self):
+        cur = self.currentWidget()
+        if cur is not None:
+            return cur.sizeHint()
+        return super().sizeHint()
+
+
 class IgtprDockWidget(QDockWidget):
     """Panel dock terpadu yang memuat seluruh alur Mockup V2 dalam QStackedWidget."""
 
@@ -59,7 +84,7 @@ class IgtprDockWidget(QDockWidget):
         self.topbar.hide()  # tersembunyi di halaman login
 
         # 2. Stacked Pages
-        self.stack = QStackedWidget(container)
+        self.stack = DynamicStackedWidget(container)
 
         # Page 0: Login Page (di dalam QScrollArea)
         self.login_page = LoginPage(bpn_logo, igtpr_logo, qgis_icon)
@@ -207,9 +232,11 @@ class IgtprLoginExample:
             # Connect Role Switching
             self.dock.topbar.switchRoleRequested.connect(self.on_switch_role_clicked)
 
-            # Connect Catalog Layer Load Actions
+            # Connect Catalog & Dashboard Layer Load Actions
             self.dock.catalog_page.wmsRequested.connect(self.on_load_wms)
             self.dock.catalog_page.wfsRequested.connect(self.on_load_wfs)
+            self.dock.dashboard_page.wmsRequested.connect(self.on_load_wms)
+            self.dock.dashboard_page.wfsRequested.connect(self.on_load_wfs)
 
             # Connect Management Actions
             self.dock.management_page.showLayerRequested.connect(self.on_show_submission_layer)

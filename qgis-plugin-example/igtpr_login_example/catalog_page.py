@@ -25,7 +25,7 @@ from qgis.PyQt.QtWidgets import (
 from .assets import ICONS
 from .data import CATEGORIES, DATASETS
 from .login_page import svg_pixmap
-from .ui_kit import FlowLayout
+from .ui_kit import FlowLayout, icon_badge
 
 CATEGORY_KEYS = ['igt-pr', 'pertanahan', 'tata-ruang', 'derivatif', 'lainnya']
 PAGE_SIZE = 8
@@ -104,26 +104,33 @@ class DatasetCard(QFrame):
         card_layout.setContentsMargins(12, 10, 12, 10)
         card_layout.setSpacing(6)
 
-        # 1. Baris Judul & Kategori Tag
-        top_row = QHBoxLayout()
-        top_row.setContentsMargins(0, 0, 0, 0)
-        top_row.setSpacing(6)
+        # 1. Baris Utama: Kolom Kiri (Judul, Walidata, Tanggal) & Kolom Kanan (Aksi Vertikal di Tengah)
+        main_row = QHBoxLayout()
+        main_row.setContentsMargins(0, 0, 0, 0)
+        main_row.setSpacing(10)
 
-        # Icon Kategori
+        left_col = QVBoxLayout()
+        left_col.setContentsMargins(0, 0, 0, 0)
+        left_col.setSpacing(3)
+
+        # Baris 1: Icon + Judul IGT + Chip Kategori
+        title_row = QHBoxLayout()
+        title_row.setContentsMargins(0, 0, 0, 0)
+        title_row.setSpacing(6)
+
         self.icon_lbl = QLabel(self)
         cat = dataset.get('category', '')
         icon_name = 'map' if cat == 'tata-ruang' else 'layers' if cat == 'derivatif' else 'pin'
         icon_color = '#047857' if cat == 'tata-ruang' else '#7c3aed' if cat == 'derivatif' else '#1f6fd6'
         self.icon_lbl.setPixmap(svg_pixmap(ICONS.get(icon_name, ICONS['layers']).format(color=icon_color), QSize(16, 16)))
-        top_row.addWidget(self.icon_lbl, 0, Qt.AlignmentFlag.AlignTop)
+        title_row.addWidget(self.icon_lbl, 0, Qt.AlignmentFlag.AlignVCenter)
 
-        # Nama IGT
         self.title_lbl = QLabel(dataset.get('name', ''), self)
         self.title_lbl.setStyleSheet("color: #0f294d; font-size: 13px; font-weight: 700;")
         self.title_lbl.setWordWrap(True)
-        top_row.addWidget(self.title_lbl, 1)
+        title_row.addWidget(self.title_lbl, 0, Qt.AlignmentFlag.AlignVCenter)
 
-        # Kategori Tag
+        # Kategori Tag (Berdampingan di kanan nama IGT)
         cat_badge = QLabel(self)
         if cat == 'pertanahan':
             cat_badge.setText('Pertanahan')
@@ -137,29 +144,30 @@ class DatasetCard(QFrame):
         else:
             cat_badge.setText('K/L Lainnya')
             cat_badge.setStyleSheet("background-color: #f0f9ff; color: #0284c7; border: 1px solid #bae6fd; border-radius: 4px; font-size: 9.5px; font-weight: 700; padding: 1px 6px;")
-        top_row.addWidget(cat_badge, 0, Qt.AlignmentFlag.AlignTop)
+        title_row.addWidget(cat_badge, 0, Qt.AlignmentFlag.AlignVCenter)
+        title_row.addStretch(1)
 
-        card_layout.addLayout(top_row)
+        left_col.addLayout(title_row)
 
-        # 2. Baris Metadata Organisasi & Tanggal
-        meta_row = QHBoxLayout()
-        meta_row.setContentsMargins(22, 0, 0, 0)
-        meta_row.setSpacing(6)
-
+        # Baris 2: Nama Direktorat (1 baris lega, melipat dinamis saat sempit)
         org_text = dataset.get('direktorat') or dataset.get('satker') or dataset.get('instansi') or '—'
+        self.org_lbl = QLabel(org_text, self)
+        self.org_lbl.setStyleSheet("color: #475569; font-size: 11.5px; margin-left: 22px;")
+        self.org_lbl.setWordWrap(True)
+        left_col.addWidget(self.org_lbl)
+
+        # Baris 3: Tanggal Terintegrasi
         date_text = dataset.get('updated') or dataset.get('date') or '—'
-        self.meta_lbl = QLabel(f"{org_text}  ·  {date_text}", self)
-        self.meta_lbl.setStyleSheet("color: #475569; font-size: 11px;")
-        self.meta_lbl.setWordWrap(True)
-        meta_row.addWidget(self.meta_lbl, 1)
+        self.date_lbl = QLabel(f"Terintegrasi: {date_text}", self)
+        self.date_lbl.setStyleSheet("color: #64748b; font-size: 11px; margin-left: 22px;")
+        left_col.addWidget(self.date_lbl)
 
-        card_layout.addLayout(meta_row)
+        main_row.addLayout(left_col, 1)
 
-        # 3. Baris Tombol Aksi (WMS / WFS atau Multi-Layer Toggle Chip)
-        action_row = QHBoxLayout()
-        action_row.setContentsMargins(22, 2, 0, 0)
-        action_row.setSpacing(6)
-        action_row.addStretch(1)
+        # Kolom Kanan: Tombol Aksi (Tepat di Tengah Vertikal)
+        action_wrap = QHBoxLayout()
+        action_wrap.setContentsMargins(0, 0, 0, 0)
+        action_wrap.setSpacing(6)
 
         if self.has_subs:
             sub_count = len(dataset['subLayers'])
@@ -168,23 +176,26 @@ class DatasetCard(QFrame):
             self.chip_btn.setObjectName('multiChip')
             self.chip_btn.setCursor(Qt.CursorShape.PointingHandCursor)
             self.chip_btn.clicked.connect(self.toggle_expand)
-            action_row.addWidget(self.chip_btn)
+            action_wrap.addWidget(self.chip_btn)
         else:
             self.btn_wms = QPushButton('WMS', self)
             self.btn_wms.setObjectName('actionWms')
             self.btn_wms.setCursor(Qt.CursorShape.PointingHandCursor)
             self.btn_wms.clicked.connect(lambda: self.wmsClicked.emit(self.dataset, None))
-            action_row.addWidget(self.btn_wms)
+            action_wrap.addWidget(self.btn_wms)
 
             self.btn_wfs = QPushButton('WFS', self)
             self.btn_wfs.setObjectName('actionWfs')
             self.btn_wfs.setCursor(Qt.CursorShape.PointingHandCursor)
             self.btn_wfs.clicked.connect(lambda: self.wfsClicked.emit(self.dataset, None))
-            action_row.addWidget(self.btn_wfs)
+            action_wrap.addWidget(self.btn_wfs)
 
-        card_layout.addLayout(action_row)
+        main_row.addLayout(action_wrap, 0)
+        main_row.setAlignment(action_wrap, Qt.AlignmentFlag.AlignVCenter)
 
-        # 4. Sub-layers Container (Accordion)
+        card_layout.addLayout(main_row)
+
+        # 2. Sub-layers Container (Accordion)
         if self.has_subs:
             self.subs_container = QFrame(self)
             self.subs_container.setObjectName('subsContainer')
@@ -194,6 +205,7 @@ class DatasetCard(QFrame):
                     border: 1px solid #e2e8f0;
                     border-radius: 8px;
                     margin-top: 4px;
+                    margin-left: 22px;
                 }
             """)
             subs_layout = QVBoxLayout(self.subs_container)
@@ -280,24 +292,32 @@ class DatasetCard(QFrame):
 
 
 class CatalogPage(QWidget):
-    """Halaman Katalog Data V2 dengan 5 Tab Kategori, Paginasi 8 Data, dan Desain Responsif."""
+    """Halaman / Widget Katalog Data V2 dengan 5 Tab Kategori, Paginasi 8 Data, dan Desain Responsif."""
 
     backToDashboardRequested = pyqtSignal()
+    openFullCatalogRequested = pyqtSignal(str)   # category key
     wmsRequested = pyqtSignal(dict, object)   # (dataset, sublayer or None)
     wfsRequested = pyqtSignal(dict, object)   # (dataset, sublayer or None)
 
-    def __init__(self, current_category='igt-pr', current_role='superadmin', parent=None):
+    def __init__(self, current_category='igt-pr', current_role='superadmin', embedded=False, parent=None):
         super().__init__(parent)
+        self.embedded = embedded
         self.current_category = current_category if current_category in CATEGORY_KEYS else 'igt-pr'
         self.current_role = current_role
         self.current_page = 1
         self.page_size = PAGE_SIZE
         self.expanded_states = {}
-        self.setObjectName('catalogPage')
+        self.setObjectName('catalogEmbedded' if embedded else 'catalogPage')
 
         self.setStyleSheet("""
             QWidget#catalogPage {
                 background-color: #f4f7fb;
+                font-family: "Segoe UI", Arial, sans-serif;
+            }
+            QWidget#catalogEmbedded {
+                background-color: #ffffff;
+                border: 1px solid #dce5ef;
+                border-radius: 14px;
                 font-family: "Segoe UI", Arial, sans-serif;
             }
             QLabel {
@@ -347,39 +367,105 @@ class CatalogPage(QWidget):
 
         # Main Outer Layout
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(10, 8, 10, 8)
+        if self.embedded:
+            main_layout.setContentsMargins(12, 12, 12, 12)
+        else:
+            main_layout.setContentsMargins(10, 8, 10, 8)
         main_layout.setSpacing(8)
 
-        # 1. Header (Title, Desc, Back Button)
-        self.head_widget = QWidget(self)
-        self.head_layout = QHBoxLayout(self.head_widget)
-        self.head_layout.setContentsMargins(0, 0, 0, 0)
-        self.head_layout.setSpacing(8)
+        # 1. Header
+        if self.embedded:
+            # Header Box Katalog IGT untuk Dashboard Utama
+            self.head_card = QFrame(self)
+            self.head_card.setObjectName('headCard')
+            self.head_card.setStyleSheet("""
+                QFrame#headCard {
+                    background-color: #f0f9ff;
+                    border: 1px solid #bae6fd;
+                    border-radius: 12px;
+                }
+            """)
+            hc_layout = QHBoxLayout(self.head_card)
+            hc_layout.setContentsMargins(12, 10, 12, 10)
+            hc_layout.setSpacing(10)
 
-        text_layout = QVBoxLayout()
-        text_layout.setSpacing(2)
+            badge = icon_badge('map', '#0284c7', '#c7e8fb', 38, 20, 10, self.head_card)
+            hc_layout.addWidget(badge, 0, Qt.AlignmentFlag.AlignVCenter)
 
-        self.title_lbl = QLabel('Katalog IGT-PR', self.head_widget)
-        self.title_lbl.setStyleSheet("color: #0f294d; font-size: 17px; font-weight: 800;")
-        text_layout.addWidget(self.title_lbl)
+            ht_layout = QVBoxLayout()
+            ht_layout.setSpacing(2)
+            self.title_lbl = QLabel('Katalog IGT', self.head_card)
+            self.title_lbl.setStyleSheet("color: #0f294d; font-size: 15px; font-weight: 800;")
+            ht_layout.addWidget(self.title_lbl)
 
-        self.desc_lbl = QLabel('Katalog terpadu IGT Pertanahan dan Tata Ruang Kementerian ATR/BPN.', self.head_widget)
-        self.desc_lbl.setStyleSheet("color: #64748b; font-size: 11px;")
-        self.desc_lbl.setWordWrap(True)
-        text_layout.addWidget(self.desc_lbl)
-        self.head_layout.addLayout(text_layout, 1)
+            self.desc_lbl = QLabel('Katalog terpadu data IGT Pertanahan dan Tata Ruang Kementerian ATR/BPN.', self.head_card)
+            self.desc_lbl.setStyleSheet("color: #475569; font-size: 11px;")
+            self.desc_lbl.setWordWrap(True)
+            ht_layout.addWidget(self.desc_lbl)
+            hc_layout.addLayout(ht_layout, 1)
 
-        self.back_btn = QPushButton('← Kembali ke Dashboard', self.head_widget)
-        self.back_btn.setObjectName('backBtn')
-        self.back_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.back_btn.clicked.connect(self.backToDashboardRequested.emit)
-        self.head_layout.addWidget(self.back_btn, 0, Qt.AlignmentFlag.AlignTop)
-        main_layout.addWidget(self.head_widget)
+            self.open_full_btn = QPushButton('Buka Katalog Lengkap →', self.head_card)
+            self.open_full_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            self.open_full_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #ffffff;
+                    color: #0284c7;
+                    border: 1px solid #7dd3fc;
+                    border-radius: 8px;
+                    font-size: 11px;
+                    font-weight: 700;
+                    padding: 6px 12px;
+                }
+                QPushButton:hover {
+                    background-color: #e0f2fe;
+                    border-color: #0284c7;
+                }
+            """)
+            self.open_full_btn.clicked.connect(lambda: self.openFullCatalogRequested.emit(self.current_category))
+            hc_layout.addWidget(self.open_full_btn, 0, Qt.AlignmentFlag.AlignVCenter)
 
-        # 2. Subnav 5 Tab Kategori (FlowLayout yang membungkus rapi)
-        self.tabs_container = QWidget(self)
-        self.subnav_layout = FlowLayout(self.tabs_container, h_spacing=6, v_spacing=6)
+            main_layout.addWidget(self.head_card)
+        else:
+            # Standalone page header (Title, Desc, Back Button)
+            self.head_widget = QWidget(self)
+            self.head_layout = QHBoxLayout(self.head_widget)
+            self.head_layout.setContentsMargins(0, 0, 0, 0)
+            self.head_layout.setSpacing(8)
+
+            text_layout = QVBoxLayout()
+            text_layout.setSpacing(2)
+
+            self.title_lbl = QLabel('Katalog IGT-PR', self.head_widget)
+            self.title_lbl.setStyleSheet("color: #0f294d; font-size: 17px; font-weight: 800;")
+            text_layout.addWidget(self.title_lbl)
+
+            self.desc_lbl = QLabel('Katalog terpadu IGT Pertanahan dan Tata Ruang Kementerian ATR/BPN.', self.head_widget)
+            self.desc_lbl.setStyleSheet("color: #64748b; font-size: 11px;")
+            self.desc_lbl.setWordWrap(True)
+            text_layout.addWidget(self.desc_lbl)
+            self.head_layout.addLayout(text_layout, 1)
+
+            self.back_btn = QPushButton('← Kembali ke Dashboard', self.head_widget)
+            self.back_btn.setObjectName('backBtn')
+            self.back_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            self.back_btn.clicked.connect(self.backToDashboardRequested.emit)
+            self.head_layout.addWidget(self.back_btn, 0, Qt.AlignmentFlag.AlignTop)
+            main_layout.addWidget(self.head_widget)
+
+        # 2. Subnav 5 Tab Kategori (Selalu 1 Baris Horizontal Scrollable)
+        self.tabs_scroll = QScrollArea(self)
+        self.tabs_scroll.setObjectName('tabsScroll')
+        self.tabs_scroll.setWidgetResizable(True)
+        self.tabs_scroll.setFixedHeight(40)
+        self.tabs_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.tabs_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.tabs_scroll.setStyleSheet("QScrollArea#tabsScroll { background: transparent; border: none; }")
+
+        self.tabs_container = QWidget(self.tabs_scroll)
+        self.tabs_container.setStyleSheet("background: transparent;")
+        self.subnav_layout = QHBoxLayout(self.tabs_container)
         self.subnav_layout.setContentsMargins(0, 0, 0, 0)
+        self.subnav_layout.setSpacing(6)
         self.nav_buttons = {}
 
         tabs_data = [
@@ -396,7 +482,9 @@ class CatalogPage(QWidget):
             self.subnav_layout.addWidget(btn)
             self.nav_buttons[cat_key] = btn
 
-        main_layout.addWidget(self.tabs_container)
+        self.subnav_layout.addStretch(1)
+        self.tabs_scroll.setWidget(self.tabs_container)
+        main_layout.addWidget(self.tabs_scroll)
 
         # 3. Filter Controls (Pencarian, Tahun, Wilayah)
         self.filter_card = QFrame(self)
@@ -460,19 +548,26 @@ class CatalogPage(QWidget):
         self.count_lbl.setStyleSheet("color: #475569; font-size: 11px; font-weight: 600;")
         main_layout.addWidget(self.count_lbl)
 
-        # 5. Scroll Area memuat Daftar Kartu Dataset
-        self.scroll = QScrollArea(self)
-        self.scroll.setObjectName('catalogScroll')
-        self.scroll.setWidgetResizable(True)
-        self.scroll.setFrameShape(QFrame.Shape.NoFrame)
-        self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        # 5. Daftar Kartu Dataset (Langsung di layout jika embedded, atau dalam QScrollArea jika standalone)
+        if self.embedded:
+            self.list_content = QWidget(self)
+            self.list_layout = QVBoxLayout(self.list_content)
+            self.list_layout.setContentsMargins(0, 2, 0, 4)
+            self.list_layout.setSpacing(8)
+            main_layout.addWidget(self.list_content)
+        else:
+            self.scroll = QScrollArea(self)
+            self.scroll.setObjectName('catalogScroll')
+            self.scroll.setWidgetResizable(True)
+            self.scroll.setFrameShape(QFrame.Shape.NoFrame)
+            self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
-        self.list_content = QWidget()
-        self.list_layout = QVBoxLayout(self.list_content)
-        self.list_layout.setContentsMargins(0, 2, 6, 6)
-        self.list_layout.setSpacing(8)
-        self.scroll.setWidget(self.list_content)
-        main_layout.addWidget(self.scroll, 1)
+            self.list_content = QWidget()
+            self.list_layout = QVBoxLayout(self.list_content)
+            self.list_layout.setContentsMargins(0, 2, 6, 6)
+            self.list_layout.setSpacing(8)
+            self.scroll.setWidget(self.list_content)
+            main_layout.addWidget(self.scroll, 1)
 
         # 6. Pagination Bar Responsif
         self.pag_card = QFrame(self)
@@ -579,13 +674,21 @@ class CatalogPage(QWidget):
     def resizeEvent(self, event):
         super().resizeEvent(event)
         w = event.size().width()
+        if hasattr(self, 'back_btn'):
+            if w < 380:
+                self.back_btn.setText('← Kembali')
+            else:
+                self.back_btn.setText('← Kembali ke Dashboard')
+        if hasattr(self, 'open_full_btn'):
+            if w < 440:
+                self.open_full_btn.setText('Buka Lengkap →')
+            else:
+                self.open_full_btn.setText('Buka Katalog Lengkap →')
         if w < 380:
-            self.back_btn.setText('← Kembali')
             self.prev_btn.setText('Prev')
             self.next_btn.setText('Next')
             self.jump_lbl.setVisible(False)
         else:
-            self.back_btn.setText('← Kembali ke Dashboard')
             self.prev_btn.setText('Sebelumnya')
             self.next_btn.setText('Berikutnya')
             self.jump_lbl.setVisible(True)
@@ -599,9 +702,10 @@ class CatalogPage(QWidget):
 
         cat_info = CATEGORIES.get(cat_key, CATEGORIES['igt-pr'])
 
-        # Update Header
-        self.title_lbl.setText(f"Katalog {cat_info['label']}")
-        self.desc_lbl.setText(f"{cat_info['desc']} Memuat data WMS/WFS langsung ke kanvas QGIS.")
+        # Update Header jika bukan mode embedded
+        if not self.embedded:
+            self.title_lbl.setText(f"Katalog {cat_info['label']}")
+            self.desc_lbl.setText(f"{cat_info['desc']} Memuat data WMS/WFS langsung ke kanvas QGIS.")
 
         # Update style tab aktif
         for key, btn in self.nav_buttons.items():

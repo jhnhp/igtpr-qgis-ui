@@ -11,6 +11,7 @@ Padanan dengan roles/*2/beranda/index.html:
 from qgis.PyQt.QtCore import Qt, pyqtSignal
 from qgis.PyQt.QtWidgets import QComboBox, QFrame, QHBoxLayout, QSizePolicy, QVBoxLayout, QWidget
 
+from .catalog_page import CatalogPage
 from .data import DATASETS, SUBMISSIONS
 from .ui_kit import (
     ClickableCard, HeroHeader, HubItem, ResponsiveGrid, ResponsivePage, card, field, icon_badge,
@@ -113,6 +114,8 @@ class DashboardPage(ResponsivePage):
     openUploadRequested = pyqtSignal(str)        # kategori unggah
     openModelBuilderRequested = pyqtSignal()
     logoutRequested = pyqtSignal()
+    wmsRequested = pyqtSignal(dict, object)      # (dataset, sublayer or None)
+    wfsRequested = pyqtSignal(dict, object)      # (dataset, sublayer or None)
 
     def __init__(self, current_role='superadmin', parent=None):
         super().__init__('dashboardPage', parent)
@@ -136,8 +139,8 @@ class DashboardPage(ResponsivePage):
             'blue', year_box, 640, self.content))
         self.body.addWidget(self.hero)
 
-        # 2. Statistik repositori (Pertanahan & Tata Ruang)
-        self.stats = self.responsive(ResponsiveGrid([(560, 2), (0, 1)], 12, self.content))
+        # 2. Statistik repositori (Pertanahan & Tata Ruang - 2 Kolom pada Tablet/Layar >= 460px)
+        self.stats = self.responsive(ResponsiveGrid([(460, 2), (0, 1)], 12, self.content))
         self.card_compiled = StatCard('statAmber', 'Terkompilasi', 'Menunggu integrasi', 'amber',
                                       'folder-plus', '#d97706', '#fde9a8')
         self.card_integrated = StatCard('statGreen', 'Terintegrasi', 'Pertanahan & Tata Ruang', 'green',
@@ -146,21 +149,15 @@ class DashboardPage(ResponsivePage):
         self.stats.add(self.card_integrated)
         self.body.addWidget(self.stats)
 
-        # 3. Hub Katalog IGT (sama untuk semua peran)
-        self.catalog_hub = self.responsive(HubCard(
-            'sky', 'headSky', 'map', '#0284c7', '#c7e8fb', 'Katalog IGT',
-            'Pilih kategori untuk menjelajahi dataset dan memuat layer WMS/WFS ke QGIS.',
-            [('igt-pr', 'layers', 'IGT-PR Terpadu', '#0284c7'),
-             ('pertanahan', 'pin', 'IGT Pertanahan', '#0284c7'),
-             ('tata-ruang', 'map', 'IGT Tata Ruang', '#0284c7'),
-             ('derivatif', 'layers', 'IGT Derivatif', '#0284c7'),
-             ('lainnya', 'globe', 'IGT K/L Lainnya', '#0284c7')],
-            'hub', [(620, 2), (0, 1)], False, self.content))
-        self.catalog_hub.itemClicked.connect(self.openCatalogRequested.emit)
-        self.body.addWidget(self.catalog_hub)
+        # 3. Live Embedded Katalog IGT (Langsung aktif di dashboard)
+        self.catalog_widget = CatalogPage(current_category='igt-pr', current_role=self.current_role, embedded=True, parent=self.content)
+        self.catalog_widget.openFullCatalogRequested.connect(self.openCatalogRequested.emit)
+        self.catalog_widget.wmsRequested.connect(self.wmsRequested.emit)
+        self.catalog_widget.wfsRequested.connect(self.wfsRequested.emit)
+        self.body.addWidget(self.catalog_widget)
 
-        # 4. Hub Unggah & Manajemen (isinya bergantung peran)
-        self.workflow = self.responsive(ResponsiveGrid([(760, 2), (0, 1)], 12, self.content))
+        # 4. Hub Unggah & Manajemen (isinya bergantung peran - 2 Kolom pada Tablet/Layar >= 480px)
+        self.workflow = self.responsive(ResponsiveGrid([(480, 2), (0, 1)], 12, self.content))
         self.body.addWidget(self.workflow)
 
         # 5. Model Builder & Logout
@@ -182,6 +179,8 @@ class DashboardPage(ResponsivePage):
     # ------------------------------------------------------------------ peran
     def set_role(self, role_id):
         self.current_role = role_id
+        if hasattr(self, 'catalog_widget'):
+            self.catalog_widget.current_role = role_id
         self._build_workflow()
         self._update_counts()
 
