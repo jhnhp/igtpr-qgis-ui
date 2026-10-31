@@ -37,6 +37,15 @@ ROLES = {
 }
 
 CATEGORIES = {
+    'igt-pr': {
+        'id': 'igt-pr',
+        'label': 'IGT-PR',
+        'shortLabel': 'IGT-PR',
+        'basis': 'terpadu',
+        'color': '#0f294d',
+        'bg': '#e0f2fe',
+        'desc': 'Katalog terpadu IGT Pertanahan dan IGT Tata Ruang Kementerian ATR/BPN.',
+    },
     'pertanahan': {
         'id': 'pertanahan',
         'label': 'IGT Pertanahan',
@@ -57,7 +66,7 @@ CATEGORIES = {
     },
     'derivatif': {
         'id': 'derivatif',
-        'label': 'IGT Derivatif Multiguna',
+        'label': 'IGT Derivatif',
         'shortLabel': 'IGT Derivatif',
         'basis': 'kawasan',
         'color': '#7c3aed',
@@ -66,8 +75,8 @@ CATEGORIES = {
     },
     'lainnya': {
         'id': 'lainnya',
-        'label': 'IGT Lainnya',
-        'shortLabel': 'Lainnya',
+        'label': 'IGT K/L Lainnya',
+        'shortLabel': 'IGT K/L Lainnya',
         'basis': 'kawasan',
         'color': '#0284c7',
         'bg': '#f0f9ff',

@@ -1,570 +1,241 @@
 # -*- coding: utf-8 -*-
-"""Halaman Beranda / Dashboard (Mockup V2: Feature-Based Card UI)."""
+"""Halaman Beranda / Dashboard (Mockup V2), responsif terhadap lebar dock.
 
-from qgis.PyQt.QtCore import QSize, Qt, pyqtSignal
-from qgis.PyQt.QtGui import QColor, QCursor, QFont, QIcon
-from qgis.PyQt.QtWidgets import (
-    QComboBox, QFrame, QGridLayout, QHBoxLayout, QLabel, QPushButton,
-    QScrollArea, QSizePolicy, QVBoxLayout, QWidget,
+Padanan dengan roles/*2/beranda/index.html:
+- hero + filter tahun   : berdampingan >= 640 px, bertumpuk di bawahnya
+- kartu statistik       : 2 kolom >= 560 px, 1 kolom di bawahnya
+- tombol Katalog IGT    : 2 kolom >= 620 px
+- kartu Unggah/Manajemen: 2 kolom >= 760 px
+"""
+
+from qgis.PyQt.QtCore import Qt, pyqtSignal
+from qgis.PyQt.QtWidgets import QComboBox, QFrame, QHBoxLayout, QSizePolicy, QVBoxLayout, QWidget
+
+from .data import DATASETS, SUBMISSIONS
+from .ui_kit import (
+    ClickableCard, HeroHeader, HubItem, ResponsiveGrid, ResponsivePage, card, field, icon_badge,
+    icon_label, label, pill,
 )
 
-from .assets import ICONS
-from .data import CATEGORIES, DATASETS, ROLES, SUBMISSIONS
-from .login_page import svg_pixmap
 
+class StatCard(QFrame):
+    """Kartu ringkasan angka (Terkompilasi / Terintegrasi / dst.)."""
 
-class HubItemButton(QPushButton):
-    """Tombol item di dalam kartu hub beranda."""
-
-    def __init__(self, icon_key, label_text, color='#1f6fd6', bg='#f0f9ff', border='#e0f2fe', parent=None):
+    def __init__(self, kind, title, pill_text, pill_kind, icon_key, icon_color, icon_bg, parent=None):
         super().__init__(parent)
-        self.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.setStyleSheet(f"""
-            QPushButton {{
-                background-color: {bg};
-                border: 1px solid {border};
-                border-radius: 10px;
-                padding: 10px 12px;
-                text-align: left;
-            }}
-            QPushButton:hover {{
-                background-color: #ffffff;
-                border-color: {color};
-            }}
-        """)
+        self.setProperty('card', kind)
+        lay = QHBoxLayout(self)
+        lay.setContentsMargins(16, 14, 16, 14)
+        lay.setSpacing(10)
+        info = QVBoxLayout()
+        info.setSpacing(3)
+        info.addWidget(label(title.upper(), 'statLabel', True, self))
+        self.num = label('0', 'statNum', False, self)
+        info.addWidget(self.num)
+        info.addWidget(pill(pill_text, pill_kind, self), 0, Qt.AlignmentFlag.AlignLeft)
+        lay.addLayout(info, 1)
+        lay.addWidget(icon_badge(icon_key, icon_color, icon_bg, 44, 22, 12, self), 0, Qt.AlignmentFlag.AlignVCenter)
 
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(4, 0, 4, 0)
-        layout.setSpacing(10)
-
-        # Icon
-        icon_lbl = QLabel(self)
-        icon_lbl.setPixmap(svg_pixmap(ICONS.get(icon_key, ICONS['layers']).format(color=color), QSize(20, 20)))
-        layout.addWidget(icon_lbl)
-
-        # Label
-        lbl = QLabel(label_text, self)
-        lbl.setStyleSheet(f"color: #0f294d; font-weight: 700; font-size: 12px;")
-        layout.addWidget(lbl, 1)
-
-        # Chevron arrow
-        arrow_lbl = QLabel(self)
-        arrow_lbl.setPixmap(svg_pixmap(ICONS['chevron-right'].format(color='#94a3b8'), QSize(14, 14)))
-        layout.addWidget(arrow_lbl)
+    def set_value(self, value):
+        self.num.setText(str(value))
 
 
-class DashboardPage(QWidget):
-    """Halaman Dashboard V2 lengkap dengan Header Hero, Stat Cards, Katalog Hub, dan Alur Kerja."""
+class HubCard(QFrame):
+    """Kartu hub: kepala berwarna (ikon, judul, deskripsi) dan daftar tombol HubItem."""
 
-    openCatalogRequested = pyqtSignal(str)       # category_id ('pertanahan', 'tata-ruang', 'derivatif', 'lainnya')
-    openManagementRequested = pyqtSignal(str)    # tab_id ('igt-utama', 'derivatif', 'lainnya')
-    openUploadRequested = pyqtSignal(str)        # tab_id
+    itemClicked = pyqtSignal(str)
+
+    def __init__(self, kind, head_kind, icon_key, icon_color, icon_bg, title, desc, items,
+                 item_kind='hub', breakpoints=((0, 1),), stacked_head=False, parent=None):
+        super().__init__(parent)
+        self.setProperty('card', kind)
+        lay = QVBoxLayout(self)
+        lay.setContentsMargins(0, 0, 0, 12)
+        lay.setSpacing(12)
+
+        head = card(head_kind, self)
+        h_lay = QVBoxLayout(head) if stacked_head else QHBoxLayout(head)
+        h_lay.setContentsMargins(16, 14, 16, 14)
+        h_lay.setSpacing(8 if stacked_head else 14)
+        badge = icon_badge(icon_key, icon_color, icon_bg, 44, 22, 12, head)
+        texts = QVBoxLayout()
+        texts.setSpacing(3)
+        texts.addWidget(label(title, 'h2', True, head))
+        texts.addWidget(label(desc, 'muted', True, head))
+        if stacked_head:
+            top = QHBoxLayout()
+            top.addWidget(badge)
+            top.addStretch(1)
+            top.addWidget(icon_label('chevron-right', icon_color, 16, head))
+            h_lay.addLayout(top)
+            h_lay.addLayout(texts)
+        else:
+            h_lay.addWidget(badge, 0, Qt.AlignmentFlag.AlignTop)
+            h_lay.addLayout(texts, 1)
+        lay.addWidget(head)
+
+        self.grid = ResponsiveGrid(list(breakpoints), 10, self)
+        for key, item_icon, text, color in items:
+            item = HubItem(item_icon, text, color, item_kind, parent=self.grid)
+            item.clicked.connect(lambda k=key: self.itemClicked.emit(k))
+            self.grid.add(item)
+        wrap = QHBoxLayout()
+        wrap.setContentsMargins(12, 0, 12, 0)
+        wrap.addWidget(self.grid)
+        lay.addLayout(wrap)
+
+    def apply_width(self, width):
+        self.grid.apply_width(width)
+
+
+class WideCard(ClickableCard):
+    """Kartu satu baris yang bisa diklik (Model Builder, Logout)."""
+
+    def __init__(self, kind, icon_key, icon_color, icon_bg, title, desc, title_cls, desc_cls, parent=None):
+        super().__init__(kind, parent)
+        lay = QHBoxLayout(self)
+        lay.setContentsMargins(16, 14, 16, 14)
+        lay.setSpacing(14)
+        lay.addWidget(icon_badge(icon_key, icon_color, icon_bg, 44, 22, 12, self), 0, Qt.AlignmentFlag.AlignVCenter)
+        texts = QVBoxLayout()
+        texts.setSpacing(2)
+        texts.addWidget(label(title, title_cls, True, self))
+        texts.addWidget(label(desc, desc_cls, True, self))
+        lay.addLayout(texts, 1)
+        lay.addWidget(icon_label('chevron-right', icon_color, 16, self), 0, Qt.AlignmentFlag.AlignVCenter)
+
+
+class DashboardPage(ResponsivePage):
+    """Dashboard V2: hero, statistik repositori, hub katalog, hub unggah/manajemen, Model Builder."""
+
+    openCatalogRequested = pyqtSignal(str)       # 'pertanahan', 'tata-ruang', 'derivatif', 'lainnya'
+    openManagementRequested = pyqtSignal(str)    # 'igt-utama', 'derivatif', 'lainnya'
+    openUploadRequested = pyqtSignal(str)        # kategori unggah
     openModelBuilderRequested = pyqtSignal()
     logoutRequested = pyqtSignal()
 
     def __init__(self, current_role='superadmin', parent=None):
-        super().__init__(parent)
+        super().__init__('dashboardPage', parent)
         self.current_role = current_role
-        self.setObjectName('dashboardPage')
 
-        self.setStyleSheet("""
-            QWidget#dashboardPage {
-                background-color: #f4f7fb;
-                font-family: "Segoe UI", Arial, sans-serif;
-            }
-            QLabel {
-                font-family: "Segoe UI", Arial, sans-serif;
-            }
-        """)
+        # 1. Hero + filter tahun
+        year_box = card('heroFilter')
+        yb = QVBoxLayout(year_box)
+        yb.setContentsMargins(14, 8, 12, 8)
+        yb.setSpacing(2)
+        yb.addWidget(label('FILTER TAHUN', 'filterLabel', False, year_box))
+        self.year_combo = QComboBox(year_box)
+        self.year_combo.setProperty('field', 'hero')
+        self.year_combo.addItems(['Semua tahun', '2026', '2025', '2024', '2023'])
+        self.year_combo.currentIndexChanged.connect(self._update_counts)
+        yb.addWidget(self.year_combo)
+        year_box.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
+        self.hero = self.responsive(HeroHeader(
+            'SISTEM INFORMASI GEOSPASIAL', 'Dashboard IGT-PR',
+            'Ringkasan status data geospasial, katalog layer, dan pintasan fitur kerja.',
+            'blue', year_box, 640, self.content))
+        self.body.addWidget(self.hero)
 
-        outer_layout = QVBoxLayout(self)
-        outer_layout.setContentsMargins(0, 0, 0, 0)
+        # 2. Statistik repositori (Pertanahan & Tata Ruang)
+        self.stats = self.responsive(ResponsiveGrid([(560, 2), (0, 1)], 12, self.content))
+        self.card_compiled = StatCard('statAmber', 'Terkompilasi', 'Menunggu integrasi', 'amber',
+                                      'folder-plus', '#d97706', '#fde9a8')
+        self.card_integrated = StatCard('statGreen', 'Terintegrasi', 'Pertanahan & Tata Ruang', 'green',
+                                        'check-circle', '#059669', '#c9f5df')
+        self.stats.add(self.card_compiled)
+        self.stats.add(self.card_integrated)
+        self.body.addWidget(self.stats)
 
-        # Scroll Area for responsive display in narrow docks
-        scroll = QScrollArea(self)
-        scroll.setWidgetResizable(True)
-        scroll.setFrameShape(QFrame.Shape.NoFrame)
-        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        # 3. Hub Katalog IGT (sama untuk semua peran)
+        self.catalog_hub = self.responsive(HubCard(
+            'sky', 'headSky', 'map', '#0284c7', '#c7e8fb', 'Katalog IGT',
+            'Pilih kategori untuk menjelajahi dataset dan memuat layer WMS/WFS ke QGIS.',
+            [('igt-pr', 'layers', 'IGT-PR Terpadu', '#0284c7'),
+             ('pertanahan', 'pin', 'IGT Pertanahan', '#0284c7'),
+             ('tata-ruang', 'map', 'IGT Tata Ruang', '#0284c7'),
+             ('derivatif', 'layers', 'IGT Derivatif', '#0284c7'),
+             ('lainnya', 'globe', 'IGT K/L Lainnya', '#0284c7')],
+            'hub', [(620, 2), (0, 1)], False, self.content))
+        self.catalog_hub.itemClicked.connect(self.openCatalogRequested.emit)
+        self.body.addWidget(self.catalog_hub)
 
-        content = QWidget()
-        self.content_layout = QVBoxLayout(content)
-        self.content_layout.setContentsMargins(16, 16, 16, 20)
-        self.content_layout.setSpacing(14)
+        # 4. Hub Unggah & Manajemen (isinya bergantung peran)
+        self.workflow = self.responsive(ResponsiveGrid([(760, 2), (0, 1)], 12, self.content))
+        self.body.addWidget(self.workflow)
 
-        # 1. Header Hero Card + Year Filter
-        self._build_hero_header()
+        # 5. Model Builder & Logout
+        self.mb_card = WideCard('mb', 'node-tree', '#7c3aed', '#ebe4fe', 'Model Builder',
+                                'Bangun dan jalankan model pengolahan data geospasial.', 'mbTitle', 'mbDesc',
+                                self.content)
+        self.mb_card.clicked.connect(self.openModelBuilderRequested.emit)
+        self.body.addWidget(self.mb_card)
 
-        # 2. Stat Cards (Terkompilasi & Terintegrasi)
-        self._build_stat_cards()
+        logout = WideCard('logout', 'logout', '#dc2626', '#fde2e2', 'Logout', 'Keluar dari akun Anda.',
+                          'logoutTitle', 'logoutDesc', self.content)
+        logout.clicked.connect(self.logoutRequested.emit)
+        self.body.addWidget(logout)
+        self.add_footer()
 
-        # 3. Hub Card: Katalog IGT (Card UI)
-        self._build_catalog_hub()
-
-        # 4. Hub Cards Grid: Unggah Data & Manajemen Data
-        self._build_workflow_hubs()
-
-        # 5. Hub Card: Model Builder
-        self._build_model_builder_hub()
-
-        # 6. Logout Bar
-        self._build_logout_bar()
-
-        self.content_layout.addStretch()
-        scroll.setWidget(content)
-        outer_layout.addWidget(scroll)
-
+        self._build_workflow()
         self._update_counts()
 
+    # ------------------------------------------------------------------ peran
     def set_role(self, role_id):
         self.current_role = role_id
+        self._build_workflow()
         self._update_counts()
 
-    # ------------------------------------------------------------------ UI Sections
-    def _build_hero_header(self):
-        hero = QFrame(self)
-        hero.setObjectName('heroHeader')
-        hero.setStyleSheet("""
-            QFrame#heroHeader {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #102b59, stop:1 #1b4588);
-                border-radius: 14px;
-            }
-        """)
-        h_layout = QHBoxLayout(hero)
-        h_layout.setContentsMargins(18, 16, 18, 16)
-        h_layout.setSpacing(14)
-
-        # Left Text
-        text_layout = QVBoxLayout()
-        text_layout.setSpacing(3)
-
-        eyebrow = QLabel('SISTEM INFORMASI GEOSPASIAL', hero)
-        eyebrow.setStyleSheet("""
-            QLabel {
-                background: rgba(255, 255, 255, 0.16);
-                color: #bfdbfe;
-                font-size: 9px;
-                font-weight: 800;
-                letter-spacing: 0.8px;
-                padding: 3px 8px;
-                border-radius: 8px;
-            }
-        """)
-        text_layout.addWidget(eyebrow, 0, Qt.AlignmentFlag.AlignLeft)
-
-        title = QLabel('Dashboard IGT-PR', hero)
-        title.setStyleSheet("color: #ffffff; font-size: 19px; font-weight: 800; margin-top: 3px;")
-        text_layout.addWidget(title)
-
-        desc = QLabel('Ringkasan status data geospasial, katalog layer, dan pintasan alur kerja.', hero)
-        desc.setWordWrap(True)
-        desc.setStyleSheet("color: #cbd5e1; font-size: 11.5px;")
-        text_layout.addWidget(desc)
-
-        h_layout.addLayout(text_layout, 1)
-
-        # Right Year Filter Box
-        year_box = QFrame(hero)
-        year_box.setStyleSheet("""
-            QFrame {
-                background: rgba(255, 255, 255, 0.12);
-                border: 1px solid rgba(255, 255, 255, 0.22);
-                border-radius: 10px;
-                padding: 6px 10px;
-            }
-            QLabel {
-                color: #bfdbfe;
-                font-size: 9px;
-                font-weight: 800;
-                letter-spacing: 0.5px;
-            }
-            QComboBox {
-                background: transparent;
-                border: none;
-                color: #ffffff;
-                font-weight: 700;
-                font-size: 12px;
-                min-width: 95px;
-            }
-            QComboBox::drop-down {
-                border: none;
-            }
-            QComboBox QAbstractItemView {
-                background-color: #ffffff;
-                color: #0f294d;
-                selection-background-color: #eff6ff;
-                selection-color: #1f6fd6;
-            }
-        """)
-        yb_layout = QVBoxLayout(year_box)
-        yb_layout.setContentsMargins(4, 2, 4, 2)
-        yb_layout.setSpacing(2)
-
-        yb_label = QLabel('FILTER TAHUN', year_box)
-        yb_layout.addWidget(yb_label)
-
-        self.year_combo = QComboBox(year_box)
-        self.year_combo.addItems(['Semua tahun', '2026', '2025', '2024', '2023'])
-        self.year_combo.currentIndexChanged.connect(self._on_year_changed)
-        yb_layout.addWidget(self.year_combo)
-
-        h_layout.addWidget(year_box, 0, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-        self.content_layout.addWidget(hero)
-
-    def _build_stat_cards(self):
-        grid = QGridLayout()
-        grid.setSpacing(12)
-
-        # Stat 1: Terkompilasi (Amber)
-        self.card_compiled = QFrame(self)
-        self.card_compiled.setObjectName('statCompiled')
-        self.card_compiled.setStyleSheet("""
-            QFrame#statCompiled {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #fffbeb, stop:1 #ffffff);
-                border: 1.5px solid #fde68a;
-                border-radius: 14px;
-            }
-        """)
-        c_layout = QHBoxLayout(self.card_compiled)
-        c_layout.setContentsMargins(14, 12, 14, 12)
-        info1 = QVBoxLayout()
-        info1.setSpacing(2)
-
-        lbl1 = QLabel('TERKOMPILASI', self.card_compiled)
-        lbl1.setStyleSheet("color: #78350f; font-size: 10px; font-weight: 800; letter-spacing: 0.5px;")
-        info1.addWidget(lbl1)
-
-        self.num_compiled = QLabel('13', self.card_compiled)
-        self.num_compiled.setStyleSheet("color: #0f294d; font-size: 26px; font-weight: 900;")
-        info1.addWidget(self.num_compiled)
-
-        pill1 = QLabel('Menunggu integrasi', self.card_compiled)
-        pill1.setStyleSheet("""
-            background-color: #fef3c7;
-            color: #b45309;
-            font-size: 10px;
-            font-weight: 700;
-            padding: 2px 7px;
-            border-radius: 5px;
-        """)
-        info1.addWidget(pill1, 0, Qt.AlignmentFlag.AlignLeft)
-        c_layout.addLayout(info1, 1)
-
-        badge1 = QLabel(self.card_compiled)
-        badge1.setPixmap(svg_pixmap(ICONS['folder'].format(color='#d97706'), QSize(28, 28)))
-        c_layout.addWidget(badge1, 0, Qt.AlignmentFlag.AlignVCenter)
-
-        grid.addWidget(self.card_compiled, 0, 0)
-
-        # Stat 2: Terintegrasi (Emerald)
-        self.card_integrated = QFrame(self)
-        self.card_integrated.setObjectName('statIntegrated')
-        self.card_integrated.setStyleSheet("""
-            QFrame#statIntegrated {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #ecfdf5, stop:1 #ffffff);
-                border: 1.5px solid #a7f3d0;
-                border-radius: 14px;
-            }
-        """)
-        i_layout = QHBoxLayout(self.card_integrated)
-        i_layout.setContentsMargins(14, 12, 14, 12)
-        info2 = QVBoxLayout()
-        info2.setSpacing(2)
-
-        lbl2 = QLabel('TERINTEGRASI', self.card_integrated)
-        lbl2.setStyleSheet("color: #065f46; font-size: 10px; font-weight: 800; letter-spacing: 0.5px;")
-        info2.addWidget(lbl2)
-
-        self.num_integrated = QLabel('24', self.card_integrated)
-        self.num_integrated.setStyleSheet("color: #0f294d; font-size: 26px; font-weight: 900;")
-        info2.addWidget(self.num_integrated)
-
-        pill2 = QLabel('Pertanahan & Tata Ruang', self.card_integrated)
-        pill2.setStyleSheet("""
-            background-color: #d1fae5;
-            color: #047857;
-            font-size: 10px;
-            font-weight: 700;
-            padding: 2px 7px;
-            border-radius: 5px;
-        """)
-        info2.addWidget(pill2, 0, Qt.AlignmentFlag.AlignLeft)
-        i_layout.addLayout(info2, 1)
-
-        badge2 = QLabel(self.card_integrated)
-        badge2.setPixmap(svg_pixmap(ICONS['check'].format(color='#059669'), QSize(28, 28)))
-        i_layout.addWidget(badge2, 0, Qt.AlignmentFlag.AlignVCenter)
-
-        grid.addWidget(self.card_integrated, 0, 1)
-
-        self.content_layout.addLayout(grid)
-
-    def _build_catalog_hub(self):
-        hub = QFrame(self)
-        hub.setObjectName('catalogHub')
-        hub.setStyleSheet("""
-            QFrame#catalogHub {
-                background-color: #ffffff;
-                border: 1.5px solid #bae6fd;
-                border-radius: 14px;
-            }
-        """)
-        h_layout = QVBoxLayout(hub)
-        h_layout.setContentsMargins(0, 0, 0, 12)
-        h_layout.setSpacing(10)
-
-        # Head
-        head = QFrame(hub)
-        head.setStyleSheet("""
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #e0f2fe, stop:1 #f0f9ff);
-            border-bottom: 1px solid #bae6fd;
-            border-top-left-radius: 12px;
-            border-top-right-radius: 12px;
-            padding: 10px 14px;
-        """)
-        head_layout = QHBoxLayout(head)
-        head_layout.setContentsMargins(6, 4, 6, 4)
-        head_layout.setSpacing(12)
-
-        badge = QLabel(head)
-        badge.setPixmap(svg_pixmap(ICONS['map'].format(color='#0284c7'), QSize(22, 22)))
-        head_layout.addWidget(badge)
-
-        head_text = QVBoxLayout()
-        head_text.setSpacing(2)
-        h_title = QLabel('Katalog IGT', head)
-        h_title.setStyleSheet("color: #0f294d; font-size: 14px; font-weight: 800;")
-        head_text.addWidget(h_title)
-
-        h_desc = QLabel('Pilih kategori untuk menjelajahi dataset dan memuat layer WMS/WFS ke QGIS.', head)
-        h_desc.setStyleSheet("color: #5b6f8a; font-size: 11px;")
-        head_text.addWidget(h_desc)
-        head_layout.addLayout(head_text, 1)
-
-        h_layout.addWidget(head)
-
-        # 4 Category Buttons (Grid)
-        cat_grid = QGridLayout()
-        cat_grid.setContentsMargins(12, 4, 12, 4)
-        cat_grid.setSpacing(10)
-
-        btn_pertanahan = HubItemButton('pin', 'IGT Pertanahan', color='#1f6fd6', bg='#eff6ff', border='#dbeafe', parent=hub)
-        btn_pertanahan.clicked.connect(lambda: self.openCatalogRequested.emit('pertanahan'))
-        cat_grid.addWidget(btn_pertanahan, 0, 0)
-
-        btn_tataruang = HubItemButton('map', 'IGT Tata Ruang', color='#047857', bg='#ecfdf5', border='#d1fae5', parent=hub)
-        btn_tataruang.clicked.connect(lambda: self.openCatalogRequested.emit('tata-ruang'))
-        cat_grid.addWidget(btn_tataruang, 0, 1)
-
-        btn_derivatif = HubItemButton('layers', 'IGT Derivatif Multiguna', color='#7c3aed', bg='#f5f3ff', border='#ede9fe', parent=hub)
-        btn_derivatif.clicked.connect(lambda: self.openCatalogRequested.emit('derivatif'))
-        cat_grid.addWidget(btn_derivatif, 1, 0)
-
-        btn_lainnya = HubItemButton('globe', 'IGT Lainnya', color='#0284c7', bg='#f0f9ff', border='#e0f2fe', parent=hub)
-        btn_lainnya.clicked.connect(lambda: self.openCatalogRequested.emit('lainnya'))
-        cat_grid.addWidget(btn_lainnya, 1, 1)
-
-        h_layout.addLayout(cat_grid)
-        self.content_layout.addWidget(hub)
-
-    def _build_workflow_hubs(self):
-        wf_grid = QGridLayout()
-        wf_grid.setSpacing(12)
-
-        # 1. Card Unggah Data
-        upload_card = QFrame(self)
-        upload_card.setStyleSheet("""
-            QFrame {
-                background-color: #ffffff;
-                border: 1px solid #dce5ef;
-                border-radius: 14px;
-            }
-        """)
-        u_layout = QVBoxLayout(upload_card)
-        u_layout.setContentsMargins(14, 14, 14, 14)
-        u_layout.setSpacing(10)
-
-        # Header Unggah
-        u_head = QHBoxLayout()
-        u_head.setSpacing(10)
-        u_badge = QLabel(upload_card)
-        u_badge.setPixmap(svg_pixmap(ICONS['upload'].format(color='#1f6fd6'), QSize(20, 20)))
-        u_head.addWidget(u_badge)
-
-        u_titles = QVBoxLayout()
-        u_titles.setSpacing(2)
-        u_t = QLabel('Unggah Data', upload_card)
-        u_t.setStyleSheet("color: #0f294d; font-size: 13.5px; font-weight: 800;")
-        u_titles.addWidget(u_t)
-        u_d = QLabel('Kelola dan unggah data geospasial.', upload_card)
-        u_d.setStyleSheet("color: #64748b; font-size: 11px;")
-        u_titles.addWidget(u_d)
-        u_head.addLayout(u_titles, 1)
-        u_layout.addLayout(u_head)
-
-        # Buttons Unggah
-        btn_u_utama = HubItemButton('database', 'Unggah IGT Utama', color='#1f6fd6', bg='#f8fafc', border='#e2e8f0', parent=upload_card)
-        btn_u_utama.clicked.connect(lambda: self.openUploadRequested.emit('pertanahan'))
-        u_layout.addWidget(btn_u_utama)
-
-        btn_u_deriv = HubItemButton('layers', 'Unggah IGT Derivatif', color='#7c3aed', bg='#f8fafc', border='#e2e8f0', parent=upload_card)
-        btn_u_deriv.clicked.connect(lambda: self.openUploadRequested.emit('derivatif'))
-        u_layout.addWidget(btn_u_deriv)
-
-        btn_u_custom = HubItemButton('gear', 'Kustom Tematik Derivatif', color='#059669', bg='#f8fafc', border='#e2e8f0', parent=upload_card)
-        btn_u_custom.clicked.connect(self.openModelBuilderRequested.emit)
-        u_layout.addWidget(btn_u_custom)
-
-        wf_grid.addWidget(upload_card, 0, 0)
-
-        # 2. Card Manajemen Data
-        manage_card = QFrame(self)
-        manage_card.setStyleSheet("""
-            QFrame {
-                background-color: #ffffff;
-                border: 1px solid #dce5ef;
-                border-radius: 14px;
-            }
-        """)
-        m_layout = QVBoxLayout(manage_card)
-        m_layout.setContentsMargins(14, 14, 14, 14)
-        m_layout.setSpacing(10)
-
-        # Header Manajemen
-        m_head = QHBoxLayout()
-        m_head.setSpacing(10)
-        m_badge = QLabel(manage_card)
-        m_badge.setPixmap(svg_pixmap(ICONS['database'].format(color='#047857'), QSize(20, 20)))
-        m_head.addWidget(m_badge)
-
-        m_titles = QVBoxLayout()
-        m_titles.setSpacing(2)
-        m_t = QLabel('Manajemen Data', manage_card)
-        m_t.setStyleSheet("color: #0f294d; font-size: 13.5px; font-weight: 800;")
-        m_titles.addWidget(m_t)
-        m_d = QLabel('Pantau pengajuan & status verifikasi.', manage_card)
-        m_d.setStyleSheet("color: #64748b; font-size: 11px;")
-        m_titles.addWidget(m_d)
-        m_head.addLayout(m_titles, 1)
-        m_layout.addLayout(m_head)
-
-        # Buttons Manajemen
-        btn_m_utama = HubItemButton('database', 'IGT Utama', color='#1f6fd6', bg='#f8fafc', border='#e2e8f0', parent=manage_card)
-        btn_m_utama.clicked.connect(lambda: self.openManagementRequested.emit('igt-utama'))
-        m_layout.addWidget(btn_m_utama)
-
-        btn_m_deriv = HubItemButton('layers', 'IGT Derivatif Multiguna', color='#7c3aed', bg='#f8fafc', border='#e2e8f0', parent=manage_card)
-        btn_m_deriv.clicked.connect(lambda: self.openManagementRequested.emit('derivatif'))
-        m_layout.addWidget(btn_m_deriv)
-
-        btn_m_lainnya = HubItemButton('globe', 'IGT Lainnya', color='#0284c7', bg='#f8fafc', border='#e2e8f0', parent=manage_card)
-        btn_m_lainnya.clicked.connect(lambda: self.openManagementRequested.emit('lainnya'))
-        m_layout.addWidget(btn_m_lainnya)
-
-        wf_grid.addWidget(manage_card, 0, 1)
-
-        self.content_layout.addLayout(wf_grid)
-
-    def _build_model_builder_hub(self):
-        mb_card = QPushButton(self)
-        mb_card.setObjectName('mbCard')
-        mb_card.setCursor(Qt.CursorShape.PointingHandCursor)
-        mb_card.clicked.connect(self.openModelBuilderRequested.emit)
-        mb_card.setStyleSheet("""
-            QPushButton#mbCard {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #f5f3ff, stop:1 #ffffff);
-                border: 1.5px solid #ddd6fe;
-                border-radius: 14px;
-                padding: 14px 16px;
-                text-align: left;
-            }
-            QPushButton#mbCard:hover {
-                border-color: #7c3aed;
-                background-color: #faf5ff;
-            }
-        """)
-
-        layout = QHBoxLayout(mb_card)
-        layout.setContentsMargins(6, 2, 6, 2)
-        layout.setSpacing(12)
-
-        badge = QLabel(mb_card)
-        badge.setPixmap(svg_pixmap(ICONS['node-tree'].format(color='#7c3aed'), QSize(24, 24)))
-        layout.addWidget(badge)
-
-        text_layout = QVBoxLayout()
-        text_layout.setSpacing(2)
-        title = QLabel('Model Builder Spasial', mb_card)
-        title.setStyleSheet("color: #2e1065; font-size: 13.5px; font-weight: 800;")
-        text_layout.addWidget(title)
-
-        desc = QLabel('Bangun dan jalankan pemrosesan analisis geospasial tematik langsung di QGIS.', mb_card)
-        desc.setStyleSheet("color: #6b21a8; font-size: 11px;")
-        text_layout.addWidget(desc)
-        layout.addLayout(text_layout, 1)
-
-        arrow = QLabel(mb_card)
-        arrow.setPixmap(svg_pixmap(ICONS['chevron-right'].format(color='#7c3aed'), QSize(16, 16)))
-        layout.addWidget(arrow)
-
-        self.content_layout.addWidget(mb_card)
-
-    def _build_logout_bar(self):
-        logout_btn = QPushButton(self)
-        logout_btn.setObjectName('logoutBar')
-        logout_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        logout_btn.clicked.connect(self.logoutRequested.emit)
-        logout_btn.setStyleSheet("""
-            QPushButton#logoutBar {
-                background-color: #ffffff;
-                border: 1px solid #fee2e2;
-                border-radius: 12px;
-                padding: 12px 14px;
-                text-align: left;
-            }
-            QPushButton#logoutBar:hover {
-                background-color: #fef2f2;
-                border-color: #f87171;
-            }
-        """)
-
-        layout = QHBoxLayout(logout_btn)
-        layout.setContentsMargins(6, 2, 6, 2)
-        layout.setSpacing(12)
-
-        icon_lbl = QLabel(logout_btn)
-        icon_lbl.setPixmap(svg_pixmap(ICONS['logout'].format(color='#b91c1c'), QSize(20, 20)))
-        layout.addWidget(icon_lbl)
-
-        text_layout = QVBoxLayout()
-        text_layout.setSpacing(2)
-        title = QLabel('Keluar dari Akun Geoportal', logout_btn)
-        title.setStyleSheet("color: #991b1b; font-size: 12.5px; font-weight: 700;")
-        text_layout.addWidget(title)
-
-        desc = QLabel('Akhiri sesi dan kembali ke halaman login utama IGT-PR.', logout_btn)
-        desc.setStyleSheet("color: #7f1d1d; font-size: 10.5px;")
-        text_layout.addWidget(desc)
-        layout.addLayout(text_layout, 1)
-
-        arrow = QLabel(logout_btn)
-        arrow.setPixmap(svg_pixmap(ICONS['chevron-right'].format(color='#b91c1c'), QSize(14, 14)))
-        layout.addWidget(arrow)
-
-        self.content_layout.addWidget(logout_btn)
-
-    # ------------------------------------------------------------------ Logic
-    def _on_year_changed(self):
-        self._update_counts()
-
-    def _update_counts(self):
+    def _build_workflow(self):
+        """Umum hanya boleh mengunggah IGT Derivatif dan tidak punya Model Builder;
+        manajemen IGT Lainnya hanya untuk Superadmin (lihat CLAUDE.md)."""
+        role = self.current_role
+        is_umum = role == 'umum'
+
+        upload_items = []
+        if not is_umum:
+            upload_items.append(('upload:pertanahan', 'database', 'Unggah IGT Utama', '#1f6fd6'))
+        upload_items.append(('upload:derivatif', 'layers', 'Unggah IGT Derivatif Multiguna', '#1f6fd6'))
+        if not is_umum:
+            upload_items.append(('model', 'gear', 'Kustom Tematik Derivatif', '#1f6fd6'))
+        if role == 'superadmin':
+            upload_items.append(('upload:lainnya', 'globe', 'Unggah IGT Lainnya', '#1f6fd6'))
+
+        manage_items = []
+        if not is_umum:
+            manage_items.append(('manage:igt-utama', 'database', 'IGT Utama', '#047857'))
+        manage_items.append(('manage:derivatif', 'layers', 'IGT Derivatif Multiguna', '#047857'))
+        if role == 'superadmin':
+            manage_items.append(('manage:lainnya', 'globe', 'IGT Lainnya', '#047857'))
+
+        self.workflow.clear()
+        upload = HubCard('plain', 'headBlue', 'cloud-upload', '#1f6fd6', '#dceafe', 'Unggah Data',
+                         'Kelola dan unggah data geospasial ke dalam sistem.', upload_items,
+                         'hub', [(0, 1)], True)
+        manage = HubCard('green', 'headGreen', 'database', '#047857', '#cdf3dd', 'Manajemen Data',
+                         'Kelola proses, revisi, dan status data geospasial per kategori IGT.', manage_items,
+                         'hubGreen', [(0, 1)], True)
+        upload.itemClicked.connect(self._on_workflow_item)
+        manage.itemClicked.connect(self._on_workflow_item)
+        self.workflow.add(upload)
+        self.workflow.add(manage)
+        self.mb_card.setVisible(not is_umum)
+
+    def _on_workflow_item(self, key):
+        if key == 'model':
+            self.openModelBuilderRequested.emit()
+        elif key.startswith('upload:'):
+            self.openUploadRequested.emit(key.split(':', 1)[1])
+        elif key.startswith('manage:'):
+            self.openManagementRequested.emit(key.split(':', 1)[1])
+
+    # ------------------------------------------------------------------ angka
+    def _update_counts(self, *_args):
         year = self.year_combo.currentText()
-        all_ds = DATASETS
+        utama = ('pertanahan', 'tata-ruang')
+        compiled = [s for s in SUBMISSIONS if s.get('status') == 'Terkompilasi' and s.get('category') in utama]
+        integrated = [d for d in DATASETS if d.get('status') == 'Terintegrasi' and d.get('category') in utama]
         if year != 'Semua tahun':
-            compiled = [d for d in SUBMISSIONS if d.get('status') == 'Terkompilasi' and year in d.get('date', '')]
-            integrated = [d for d in all_ds if year in d.get('updated', '') or year in d.get('date', '')]
-        else:
-            compiled = [d for d in SUBMISSIONS if d.get('status') == 'Terkompilasi']
-            integrated = [d for d in all_ds if d.get('status') == 'Terintegrasi']
-
-        self.num_compiled.setText(str(len(compiled)))
-        self.num_integrated.setText(str(len(integrated)))
+            compiled = [s for s in compiled if year in s.get('date', '')]
+            integrated = [d for d in integrated if year in d.get('updated', '') or year in d.get('date', '')]
+        self.card_compiled.set_value(len(compiled))
+        self.card_integrated.set_value(len(integrated))

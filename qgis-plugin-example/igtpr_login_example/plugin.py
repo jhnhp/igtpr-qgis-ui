@@ -75,7 +75,7 @@ class IgtprDockWidget(QDockWidget):
         self.stack.addWidget(self.dashboard_page)
 
         # Page 2: Catalog Data V2
-        self.catalog_page = CatalogPage(current_category='pertanahan', current_role=self.current_role, parent=self.stack)
+        self.catalog_page = CatalogPage(current_category='igt-pr', current_role=self.current_role, parent=self.stack)
         self.stack.addWidget(self.catalog_page)
 
         # Page 3: Management Data V2
@@ -92,11 +92,11 @@ class IgtprDockWidget(QDockWidget):
 
         self.main_layout.addWidget(self.stack, 1)
         self.setWidget(container)
-        self.setMinimumWidth(340)
+        self.setMinimumWidth(280)
 
         # Connect Topbar Navigation
         self.topbar.homeRequested.connect(self.show_dashboard)
-        self.topbar.catalogRequested.connect(lambda: self.show_catalog('pertanahan'))
+        self.topbar.catalogRequested.connect(lambda: self.show_catalog('igt-pr'))
         self.topbar.logoutRequested.connect(self.show_login)
 
         # Connect Dashboard Navigation
@@ -123,9 +123,9 @@ class IgtprDockWidget(QDockWidget):
         self.dashboard_page.set_role(self.current_role)
         self.stack.setCurrentWidget(self.dashboard_page)
 
-    def show_catalog(self, category_key='pertanahan'):
+    def show_catalog(self, category_key='igt-pr'):
         self.topbar.show()
-        cat_info = CATEGORIES.get(category_key, CATEGORIES['pertanahan'])
+        cat_info = CATEGORIES.get(category_key, CATEGORIES['igt-pr'])
         self.topbar.set_breadcrumbs(['Katalog IGT', cat_info['label']])
         self.catalog_page.set_category(category_key)
         self.stack.setCurrentWidget(self.catalog_page)

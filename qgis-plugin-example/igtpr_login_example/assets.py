@@ -40,6 +40,13 @@ ICONS = {
     'file': _ICON % '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>',
     'eye': _ICON % '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
     'alert': _ICON % '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
+    'edit': _ICON % '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+    'play': _ICON % '<polygon points="6 4 20 12 6 20 6 4"/>',
+    'check-circle': _ICON % '<circle cx="12" cy="12" r="9.5"/><polyline points="8 12.5 11 15.5 16.5 9.5"/>',
+    'folder-plus': _ICON % ('<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>'
+                            '<line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/>'),
+    'cloud-upload': _ICON % ('<path d="M16 16l-4-4-4 4"/><line x1="12" y1="12" x2="12" y2="21"/>'
+                             '<path d="M20.4 18.4A5 5 0 0 0 18 9h-1.3A8 8 0 1 0 3 16.3"/>'),
 }
 
 # Ikon "Q" pada tombol LOGIN.
