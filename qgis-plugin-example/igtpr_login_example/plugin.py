@@ -182,6 +182,22 @@ class IgtprDockWidget(QDockWidget):
         self.catalog_page.set_role(role_id)
         self.management_page.set_role(role_id)
 
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.apply_width(event.size().width())
+
+    def apply_width(self, width):
+        for widget in (
+            getattr(self, 'topbar', None),
+            getattr(self, 'dashboard_page', None),
+            getattr(self, 'catalog_page', None),
+            getattr(self, 'management_page', None),
+            getattr(self, 'upload_page', None),
+            getattr(self, 'model_builder_page', None),
+        ):
+            if widget and hasattr(widget, 'apply_width'):
+                widget.apply_width(width)
+
 
 # Alias untuk backwards compatibility
 LoginDockWidget = IgtprDockWidget
