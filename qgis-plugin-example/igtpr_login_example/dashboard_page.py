@@ -129,7 +129,7 @@ class DashboardPage(ResponsivePage):
         yb.addWidget(label('FILTER TAHUN', 'filterLabel', False, year_box))
         self.year_combo = QComboBox(year_box)
         self.year_combo.setProperty('field', 'hero')
-        self.year_combo.addItems(['Semua tahun', '2026', '2025', '2024', '2023'])
+        self.year_combo.addItems(['Semua tahun', '2026', '2025', '2024', '2023', '2021', '2019'])
         self.year_combo.currentIndexChanged.connect(self._update_counts)
         yb.addWidget(self.year_combo)
         year_box.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
@@ -238,3 +238,5 @@ class DashboardPage(ResponsivePage):
             integrated = [d for d in integrated if year in d.get('updated', '') or year in d.get('date', '')]
         self.card_compiled.set_value(len(compiled))
         self.card_integrated.set_value(len(integrated))
+        if hasattr(self, 'catalog_widget') and hasattr(self.catalog_widget, 'set_year_filter'):
+            self.catalog_widget.set_year_filter(year)

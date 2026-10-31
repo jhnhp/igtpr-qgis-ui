@@ -370,63 +370,71 @@ class CatalogPage(QWidget):
         # Main Outer Layout
         main_layout = QVBoxLayout(self)
         if self.embedded:
-            main_layout.setContentsMargins(12, 12, 12, 12)
+            main_layout.setContentsMargins(0, 0, 0, 0)
         else:
             main_layout.setContentsMargins(10, 8, 10, 8)
         main_layout.setSpacing(8)
 
-        # 1. Header
+        self.selected_year = 'Semua tahun'
+
+        # 1. Header & Container Card
         if self.embedded:
-            # Header Box Katalog IGT untuk Dashboard Utama
-            self.head_card = QFrame(self)
+            # Card Wrapper Katalog IGT untuk Dashboard Utama (Sejajar dengan HubCard di bawahnya)
+            self.container_card = QFrame(self)
+            self.container_card.setObjectName('catalogContainerCard')
+            self.container_card.setStyleSheet("""
+                QFrame#catalogContainerCard {
+                    background-color: #ffffff;
+                    border: 1px solid #bae6fd;
+                    border-radius: 14px;
+                }
+            """)
+            cc_layout = QVBoxLayout(self.container_card)
+            cc_layout.setContentsMargins(0, 0, 0, 14)
+            cc_layout.setSpacing(10)
+
+            # Header Kartu dengan latar gradasi dan rounded top corners
+            self.head_card = QFrame(self.container_card)
             self.head_card.setObjectName('headCard')
             self.head_card.setStyleSheet("""
                 QFrame#headCard {
-                    background-color: #f0f9ff;
-                    border: 1px solid #bae6fd;
-                    border-radius: 12px;
+                    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #e0f2fe, stop:1 #f0f9ff);
+                    border: none;
+                    border-bottom: 1px solid #bae6fd;
+                    border-top-left-radius: 13px;
+                    border-top-right-radius: 13px;
                 }
             """)
             hc_layout = QHBoxLayout(self.head_card)
-            hc_layout.setContentsMargins(12, 10, 12, 10)
-            hc_layout.setSpacing(10)
+            hc_layout.setContentsMargins(16, 14, 16, 14)
+            hc_layout.setSpacing(12)
 
-            badge = icon_badge('map', '#0284c7', '#c7e8fb', 38, 20, 10, self.head_card)
+            badge = icon_badge('map', '#0284c7', '#c7e8fb', 44, 22, 12, self.head_card)
             hc_layout.addWidget(badge, 0, Qt.AlignmentFlag.AlignVCenter)
 
             ht_layout = QVBoxLayout()
-            ht_layout.setSpacing(2)
+            ht_layout.setSpacing(3)
             self.title_lbl = QLabel('Katalog IGT', self.head_card)
-            self.title_lbl.setStyleSheet("color: #0f294d; font-size: 15px; font-weight: 800;")
+            self.title_lbl.setStyleSheet("color: #0f294d; font-size: 16px; font-weight: 800; background: transparent; border: none;")
             ht_layout.addWidget(self.title_lbl)
 
             self.desc_lbl = QLabel('Katalog terpadu data IGT Pertanahan dan Tata Ruang Kementerian ATR/BPN.', self.head_card)
-            self.desc_lbl.setStyleSheet("color: #475569; font-size: 11px;")
+            self.desc_lbl.setStyleSheet("color: #475569; font-size: 11px; background: transparent; border: none;")
             self.desc_lbl.setWordWrap(True)
             ht_layout.addWidget(self.desc_lbl)
             hc_layout.addLayout(ht_layout, 1)
 
-            self.open_full_btn = QPushButton('Buka Katalog Lengkap →', self.head_card)
-            self.open_full_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-            self.open_full_btn.setStyleSheet("""
-                QPushButton {
-                    background-color: #ffffff;
-                    color: #0284c7;
-                    border: 1px solid #7dd3fc;
-                    border-radius: 8px;
-                    font-size: 11px;
-                    font-weight: 700;
-                    padding: 6px 12px;
-                }
-                QPushButton:hover {
-                    background-color: #e0f2fe;
-                    border-color: #0284c7;
-                }
-            """)
-            self.open_full_btn.clicked.connect(lambda: self.openFullCatalogRequested.emit(self.current_category))
-            hc_layout.addWidget(self.open_full_btn, 0, Qt.AlignmentFlag.AlignVCenter)
+            cc_layout.addWidget(self.head_card)
 
-            main_layout.addWidget(self.head_card)
+            # Inner Body Container (Padding 14px horizontal di dalam card)
+            self.inner_body = QWidget(self.container_card)
+            self.inner_body.setStyleSheet("background: transparent;")
+            ib_layout = QVBoxLayout(self.inner_body)
+            ib_layout.setContentsMargins(14, 2, 14, 0)
+            ib_layout.setSpacing(10)
+
+            target_layout = ib_layout
+            main_layout.addWidget(self.container_card)
         else:
             # Standalone page header (Title, Desc, Back Button)
             self.head_widget = QWidget(self)
@@ -453,6 +461,7 @@ class CatalogPage(QWidget):
             self.back_btn.clicked.connect(self.backToDashboardRequested.emit)
             self.head_layout.addWidget(self.back_btn, 0, Qt.AlignmentFlag.AlignTop)
             main_layout.addWidget(self.head_widget)
+            target_layout = main_layout
 
         # 2. Subnav 5 Tab Kategori (Selalu 1 Baris Horizontal Scrollable)
         self.tabs_scroll = QScrollArea(self)
@@ -486,14 +495,14 @@ class CatalogPage(QWidget):
 
         self.subnav_layout.addStretch(1)
         self.tabs_scroll.setWidget(self.tabs_container)
-        main_layout.addWidget(self.tabs_scroll)
+        target_layout.addWidget(self.tabs_scroll)
 
-        # 3. Filter Controls (Pencarian, Tahun, Wilayah)
+        # 3. Filter Controls (Pencarian, Direktorat, Provinsi, Kabupaten)
         self.filter_card = QFrame(self)
         self.filter_card.setObjectName('filterCard')
         self.filter_card.setStyleSheet("""
             QFrame#filterCard {
-                background-color: #ffffff;
+                background-color: #f8fafc;
                 border: 1px solid #e2e8f0;
                 border-radius: 10px;
                 padding: 6px 10px;
@@ -516,39 +525,50 @@ class CatalogPage(QWidget):
         search_box.addWidget(self.search_input)
         self.fc_main_layout.addLayout(search_box)
 
-        # Dropdowns row (Tahun + Wilayah)
+        # Dropdowns row (Direktorat + Provinsi + Kabupaten)
         filter_row = QHBoxLayout()
         filter_row.setSpacing(8)
 
-        year_box = QVBoxLayout()
-        year_box.setSpacing(2)
-        y_lbl = QLabel('TAHUN', self.filter_card)
-        y_lbl.setStyleSheet("color: #64748b; font-size: 9px; font-weight: 800; letter-spacing: 0.5px;")
-        year_box.addWidget(y_lbl)
-        self.year_combo = QComboBox(self.filter_card)
-        self.year_combo.addItems(['Semua tahun', '2026', '2025', '2024', '2023', '2021', '2019'])
-        self.year_combo.currentIndexChanged.connect(self._on_filter_changed)
-        year_box.addWidget(self.year_combo)
-        filter_row.addLayout(year_box, 1)
+        # Direktorat Filter
+        dir_box = QVBoxLayout()
+        dir_box.setSpacing(2)
+        self.dir_lbl = QLabel('DIREKTORAT', self.filter_card)
+        self.dir_lbl.setStyleSheet("color: #64748b; font-size: 9px; font-weight: 800; letter-spacing: 0.5px;")
+        dir_box.addWidget(self.dir_lbl)
+        self.dir_combo = QComboBox(self.filter_card)
+        self.dir_combo.currentIndexChanged.connect(self._on_dir_changed)
+        dir_box.addWidget(self.dir_combo)
+        filter_row.addLayout(dir_box, 1)
 
-        reg_box = QVBoxLayout()
-        reg_box.setSpacing(2)
-        r_lbl = QLabel('WILAYAH', self.filter_card)
-        r_lbl.setStyleSheet("color: #64748b; font-size: 9px; font-weight: 800; letter-spacing: 0.5px;")
-        reg_box.addWidget(r_lbl)
-        self.reg_combo = QComboBox(self.filter_card)
-        self.reg_combo.addItems(['Semua Wilayah', 'Kab. Sleman', 'Kab. Bantul', 'Kab. Kulon Progo', 'Kab. Gunungkidul', 'Kota Yogyakarta', 'Nasional'])
-        self.reg_combo.currentIndexChanged.connect(self._on_filter_changed)
-        reg_box.addWidget(self.reg_combo)
-        filter_row.addLayout(reg_box, 1)
+        # Provinsi Filter
+        prov_box = QVBoxLayout()
+        prov_box.setSpacing(2)
+        self.prov_lbl = QLabel('PROVINSI', self.filter_card)
+        self.prov_lbl.setStyleSheet("color: #64748b; font-size: 9px; font-weight: 800; letter-spacing: 0.5px;")
+        prov_box.addWidget(self.prov_lbl)
+        self.prov_combo = QComboBox(self.filter_card)
+        self.prov_combo.currentIndexChanged.connect(self._on_prov_changed)
+        prov_box.addWidget(self.prov_combo)
+        filter_row.addLayout(prov_box, 1)
+
+        # Kabupaten Filter
+        kab_box = QVBoxLayout()
+        kab_box.setSpacing(2)
+        self.kab_lbl = QLabel('KABUPATEN / KOTA', self.filter_card)
+        self.kab_lbl.setStyleSheet("color: #64748b; font-size: 9px; font-weight: 800; letter-spacing: 0.5px;")
+        kab_box.addWidget(self.kab_lbl)
+        self.kab_combo = QComboBox(self.filter_card)
+        self.kab_combo.currentIndexChanged.connect(self._on_kab_changed)
+        kab_box.addWidget(self.kab_combo)
+        filter_row.addLayout(kab_box, 1)
 
         self.fc_main_layout.addLayout(filter_row)
-        main_layout.addWidget(self.filter_card)
+        target_layout.addWidget(self.filter_card)
 
         # 4. Count & Summary Info
         self.count_lbl = QLabel('', self)
         self.count_lbl.setStyleSheet("color: #475569; font-size: 11px; font-weight: 600;")
-        main_layout.addWidget(self.count_lbl)
+        target_layout.addWidget(self.count_lbl)
 
         # 5. Daftar Kartu Dataset (Langsung di layout jika embedded, atau dalam QScrollArea jika standalone)
         if self.embedded:
@@ -556,7 +576,7 @@ class CatalogPage(QWidget):
             self.list_layout = QVBoxLayout(self.list_content)
             self.list_layout.setContentsMargins(0, 2, 0, 4)
             self.list_layout.setSpacing(8)
-            main_layout.addWidget(self.list_content)
+            target_layout.addWidget(self.list_content)
         else:
             self.scroll = QScrollArea(self)
             self.scroll.setObjectName('catalogScroll')
@@ -569,7 +589,7 @@ class CatalogPage(QWidget):
             self.list_layout.setContentsMargins(0, 2, 6, 6)
             self.list_layout.setSpacing(8)
             self.scroll.setWidget(self.list_content)
-            main_layout.addWidget(self.scroll, 1)
+            target_layout.addWidget(self.scroll, 1)
 
         # 6. Pagination Bar Responsif
         self.pag_card = QFrame(self)
@@ -683,7 +703,7 @@ class CatalogPage(QWidget):
 
         self.pag_main_layout.addLayout(nav_group)
 
-        main_layout.addWidget(self.pag_card)
+        target_layout.addWidget(self.pag_card)
 
         # Inisialisasi kategori awal
         self.set_category(self.current_category)
@@ -697,15 +717,97 @@ class CatalogPage(QWidget):
                 self.back_btn.setText('← Kembali')
             else:
                 self.back_btn.setText('← Kembali ke Dashboard')
-        if hasattr(self, 'open_full_btn'):
-            if w < 440:
-                self.open_full_btn.setText('Buka Lengkap →')
-            else:
-                self.open_full_btn.setText('Buka Katalog Lengkap →')
         if hasattr(self, 'size_lbl'):
             self.size_lbl.setVisible(w >= 360)
 
     # ------------------------------------------------------------------ Kategori & Filter
+    def get_category_datasets(self, cat):
+        if cat == 'igt-pr':
+            return [d for d in DATASETS if d.get('category') in ('pertanahan', 'tata-ruang')]
+        return [d for d in DATASETS if d.get('category') == cat]
+
+    def _populate_dir_combo(self):
+        self.dir_combo.blockSignals(True)
+        curr = self.dir_combo.currentText()
+        self.dir_combo.clear()
+        is_lainnya = self.current_category == 'lainnya'
+        self.dir_lbl.setText('INSTANSI' if is_lainnya else 'DIREKTORAT')
+        default_opt = 'Semua Instansi' if is_lainnya else 'Semua Direktorat'
+        datasets = self.get_category_datasets(self.current_category)
+        dirs = set()
+        for d in datasets:
+            org = (d.get('direktorat') or d.get('satker') or d.get('ditjen') or d.get('instansi') or d.get('source') or '').strip()
+            if org:
+                dirs.add(org)
+        items = [default_opt] + sorted(list(dirs))
+        self.dir_combo.addItems(items)
+        if curr in items:
+            self.dir_combo.setCurrentText(curr)
+        else:
+            self.dir_combo.setCurrentIndex(0)
+        self.dir_combo.blockSignals(False)
+
+    def _populate_prov_combo(self):
+        self.prov_combo.blockSignals(True)
+        curr = self.prov_combo.currentText()
+        self.prov_combo.clear()
+        datasets = self.get_category_datasets(self.current_category)
+        provs = set()
+        for d in datasets:
+            p = d.get('prov')
+            if p:
+                provs.add(p)
+        items = ['Semua Provinsi'] + sorted(list(provs))
+        self.prov_combo.addItems(items)
+        if curr in items:
+            self.prov_combo.setCurrentText(curr)
+        else:
+            self.prov_combo.setCurrentIndex(0)
+        self.prov_combo.blockSignals(False)
+
+    def _populate_kab_combo(self):
+        self.kab_combo.blockSignals(True)
+        curr = self.kab_combo.currentText()
+        self.kab_combo.clear()
+        datasets = self.get_category_datasets(self.current_category)
+        sel_prov = self.prov_combo.currentText()
+        if sel_prov != 'Semua Provinsi':
+            datasets = [d for d in datasets if sel_prov.lower() in ((d.get('prov') or '') + ' ' + (d.get('scope') or '')).lower()]
+        kabs = set()
+        for d in datasets:
+            k = d.get('kab')
+            if k:
+                kabs.add(k)
+        items = ['Semua Kab / Kota'] + sorted(list(kabs))
+        self.kab_combo.addItems(items)
+        if curr in items:
+            self.kab_combo.setCurrentText(curr)
+        else:
+            self.kab_combo.setCurrentIndex(0)
+        self.kab_combo.blockSignals(False)
+
+    def set_year_filter(self, year_text):
+        self.selected_year = year_text
+        self.current_page = 1
+        self._render_page()
+
+    def _on_dir_changed(self):
+        self.current_page = 1
+        self._render_page()
+
+    def _on_prov_changed(self):
+        self._populate_kab_combo()
+        self.current_page = 1
+        self._render_page()
+
+    def _on_kab_changed(self):
+        self.current_page = 1
+        self._render_page()
+
+    def _on_filter_changed(self):
+        self.current_page = 1
+        self._render_page()
+
     def set_category(self, cat_key):
         if cat_key not in CATEGORY_KEYS:
             cat_key = 'igt-pr'
@@ -718,6 +820,10 @@ class CatalogPage(QWidget):
         if not self.embedded:
             self.title_lbl.setText(f"Katalog {cat_info['label']}")
             self.desc_lbl.setText(f"{cat_info['desc']} Memuat data WMS/WFS langsung ke kanvas QGIS.")
+
+        self._populate_dir_combo()
+        self._populate_prov_combo()
+        self._populate_kab_combo()
 
         # Update style tab aktif
         for key, btn in self.nav_buttons.items():
@@ -752,41 +858,46 @@ class CatalogPage(QWidget):
 
         self._render_page()
 
-    def _on_filter_changed(self):
-        self.current_page = 1
-        self._render_page()
-
     def _get_filtered_records(self):
         query = self.search_input.text().strip().lower()
-        selected_year = self.year_combo.currentText()
-        selected_reg = self.reg_combo.currentText()
+        selected_dir = self.dir_combo.currentText()
+        selected_prov = self.prov_combo.currentText()
+        selected_kab = self.kab_combo.currentText()
 
-        # Tab IGT-PR menampilkan IGT Pertanahan dan IGT Tata Ruang sekaligus
-        if self.current_category == 'igt-pr':
-            records = [d for d in DATASETS if d.get('category') in ('pertanahan', 'tata-ruang')]
-        else:
-            records = [d for d in DATASETS if d.get('category') == self.current_category]
+        records = self.get_category_datasets(self.current_category)
 
         filtered = []
         for d in records:
-            # Filter Tahun
-            if selected_year != 'Semua tahun':
-                match_p = selected_year in d.get('updated', '') or selected_year in d.get('date', '')
-                match_sub = any(selected_year in s.get('year', '') or selected_year in s.get('updated', '') for s in d.get('subLayers', []))
+            # 1. Filter Tahun dari top-right hero filter
+            if hasattr(self, 'selected_year') and self.selected_year != 'Semua tahun':
+                match_p = self.selected_year in (d.get('updated') or d.get('date') or '')
+                match_sub = any(self.selected_year in (s.get('year') or s.get('updated') or '') for s in d.get('subLayers', []))
                 if not (match_p or match_sub):
                     continue
 
-            # Filter Wilayah
-            if selected_reg != 'Semua Wilayah':
-                reg_haystack = (d.get('prov', '') + ' ' + d.get('kab', '') + ' ' + d.get('scope', '')).lower()
-                if selected_reg.lower() not in reg_haystack and 'nasional' not in d.get('prov', '').lower():
+            # 2. Filter Direktorat / Instansi
+            if selected_dir not in ('Semua Direktorat', 'Semua Instansi'):
+                org_val = (d.get('direktorat') or d.get('satker') or d.get('ditjen') or d.get('instansi') or d.get('source') or '').strip()
+                if org_val.lower() != selected_dir.lower():
                     continue
 
-            # Filter Pencarian
+            # 3. Filter Provinsi
+            if selected_prov != 'Semua Provinsi':
+                prov_haystack = ((d.get('prov') or '') + ' ' + (d.get('scope') or '')).lower()
+                if selected_prov.lower() not in prov_haystack:
+                    continue
+
+            # 4. Filter Kabupaten (mengikuti provinsi terpilih)
+            if selected_kab != 'Semua Kab / Kota':
+                kab_haystack = ((d.get('kab') or '') + ' ' + (d.get('scope') or '')).lower()
+                if selected_kab.lower() not in kab_haystack:
+                    continue
+
+            # 5. Filter Pencarian
             if query:
-                org_val = d.get('direktorat', '') or d.get('satker', '') or d.get('instansi', '')
+                org_val = d.get('direktorat', '') or d.get('satker', '') or d.get('ditjen', '') or d.get('instansi', '') or d.get('source', '')
                 subs_text = ' '.join([s.get('name', '') + ' ' + s.get('label', '') for s in d.get('subLayers', [])])
-                haystack = (d.get('name', '') + ' ' + org_val + ' ' + d.get('scope', '') + ' ' + subs_text).lower()
+                haystack = (d.get('name', '') + ' ' + org_val + ' ' + (d.get('prov') or '') + ' ' + (d.get('kab') or '') + ' ' + (d.get('scope') or '') + ' ' + subs_text).lower()
                 if query not in haystack:
                     continue
 
