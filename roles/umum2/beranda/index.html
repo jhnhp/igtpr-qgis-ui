@@ -607,9 +607,9 @@ button.hub-item {
     </div>
   </div>
 
-  <!-- 0. KATALOG IGT (CARD UI) -->
+  <!-- 0. KATALOG IGT (CARD UI & LIVE EMBEDDED) -->
   <section class="hub-card hub-card--catalog">
-    <div class="hub-card-head">
+    <div class="hub-card-head hub-card-head--interactive" onclick="location.href='../igt-pr/index.html'" style="cursor:pointer;" title="Klik untuk membuka halaman penuh katalog">
       <div class="hub-badge hub-badge--cyan">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
@@ -619,57 +619,16 @@ button.hub-item {
       </div>
       <div class="hub-card-text">
         <h2 class="hub-card-title">Katalog IGT</h2>
-        <p class="hub-card-desc">Pilih kategori untuk menjelajahi dataset dan memuat layer WMS/WFS ke QGIS.</p>
+        <p class="hub-card-desc">Katalog terpadu data IGT Pertanahan dan Tata Ruang Kementerian ATR/BPN.</p>
       </div>
-    </div>
-    <div class="hub-list" id="catalog-buttons">
-      <a class="hub-item" href="../igt-pertanahan/index.html">
-        <span class="hub-item-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
-            <circle cx="12" cy="10" r="3"/>
-          </svg>
-        </span>
-        <span class="hub-item-label">IGT Pertanahan</span>
-        <svg class="hub-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
-      </a>
-
-      <a class="hub-item" href="../igt-tata-ruang/index.html">
-        <span class="hub-item-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
-            <line x1="9" y1="3" x2="9" y2="18"/>
-            <line x1="15" y1="6" x2="15" y2="21"/>
-          </svg>
-        </span>
-        <span class="hub-item-label">IGT Tata Ruang</span>
-        <svg class="hub-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
-      </a>
-
-      <a class="hub-item" href="../igt-derivatif/index.html">
-        <span class="hub-item-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="m12 2 10 5.5-10 5.5L2 7.5 12 2Z"/>
-            <path d="m2 12.5 10 5.5 10-5.5"/>
-            <path d="m2 17 10 5.5 10-5.5"/>
-          </svg>
-        </span>
-        <span class="hub-item-label">IGT Derivatif Multiguna</span>
-        <svg class="hub-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
-      </a>
-
-      <a class="hub-item" href="../igt-lainnya/index.html">
-        <span class="hub-item-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="2" y1="12" x2="22" y2="12"/>
-            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-          </svg>
-        </span>
-        <span class="hub-item-label">IGT Lainnya</span>
-        <svg class="hub-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+      <a class="btn btn-soft btn-sm hub-card-action-btn" href="../igt-pr/index.html" onclick="event.stopPropagation();" title="Buka tampilan katalog terpisah penuh">
+        <span>Buka Katalog Lengkap</span>
+        <svg class="hub-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
       </a>
     </div>
+
+    <!-- Live Embedded Catalog: 5 Tab Kategori & Paginasi 8 Data Teratas -->
+    <div class="dash-cat-widget" id="dashboard-catalog-widget"></div>
   </section>
 
   <!-- 1 & 2. UNGGAH DATA & MANAJEMEN DATA -->
@@ -834,8 +793,12 @@ button.hub-item {
 </div>
 </div>
 <script src="../../../shared/igt-data.js"></script>
+<script src="../../../shared/igt-app.js"></script>
 <script src="../../../app.js"></script>
 <script>
+// Inisialisasi widget Katalog IGT langsung di dashboard utama (5 Tab, 8 data per halaman)
+IgtApp.dashboardCatalog('#dashboard-catalog-widget', 'umum2');
+
 const records = IgtData.loadRecords().filter((r) => IgtData.canView('umum2', r.category));
 const yearOf = (record) => {
   const match = String(record.updated || record.date || '').match(/(20[0-9]{2})/);

@@ -198,7 +198,10 @@ const IgtApp = (() => {
           ).join('') +
         '</nav>'
       : '';
-    const datasets = IgtData.loadRecords().filter((r) => r.category === category && IgtData.inCatalog(r));
+    const datasets = IgtData.loadRecords().filter((r) =>
+      (category === 'igt-pr' ? (r.category === 'pertanahan' || r.category === 'tata-ruang') : r.category === category) &&
+      IgtData.inCatalog(r)
+    );
     let query = '';
     let sortKey = '';
     let sortDirection = 1;
@@ -758,5 +761,350 @@ const IgtApp = (() => {
     render();
   }
 
-  return { dashboard, catalog, upload };
+  // ----------------------------------------------------------------- dashboardCatalog (V2 Live Embedded)
+  function dashboardCatalog(target, role = 'superadmin2') {
+    const rootEl = typeof target === 'string' ? document.querySelector(target) : target;
+    if (!rootEl) return;
+
+    let currentCategory = 'igt-pr';
+    let currentPage = 1;
+    const pageSize = 8;
+    let query = '';
+    let selectedYear = 'all';
+    let selectedReg = 'all';
+    const expandedIds = new Set();
+
+    const TABS = [
+      { key: 'igt-pr', label: 'IGT-PR' },
+      { key: 'pertanahan', label: 'IGT Pertanahan' },
+      { key: 'tata-ruang', label: 'IGT Tata Ruang' },
+      { key: 'derivatif', label: 'IGT Derivatif' },
+      { key: 'lainnya', label: 'IGT K/L Lainnya' },
+    ];
+
+    function getFiltered() {
+      const allRecords = IgtData.loadRecords();
+      let records = [];
+      if (currentCategory === 'igt-pr') {
+        records = allRecords.filter((r) => (r.category === 'pertanahan' || r.category === 'tata-ruang') && IgtData.inCatalog(r));
+      } else {
+        records = allRecords.filter((r) => r.category === currentCategory && IgtData.inCatalog(r));
+      }
+
+      const q = query.trim().toLowerCase();
+      return records.filter((d) => {
+        if (selectedYear !== 'all') {
+          const matchParent = (d.updated || d.date || '').includes(selectedYear);
+          const matchSub = d.subLayers && d.subLayers.some((s) => (s.year || s.updated || '').includes(selectedYear));
+          if (!matchParent && !matchSub) return false;
+        }
+        if (selectedReg !== 'all') {
+          const haystack = ((d.prov || '') + ' ' + (d.kab || '') + ' ' + (d.scope || '')).toLowerCase();
+          if (!haystack.includes(selectedReg.toLowerCase()) && !(d.prov && d.prov.toLowerCase().includes('nasional'))) {
+            return false;
+          }
+        }
+        if (q) {
+          const orgVal = d.direktorat || d.satker || d.ditjen || d.instansi || d.source || '';
+          const subText = d.subLayers ? d.subLayers.map((s) => s.name + ' ' + (s.label || '')).join(' ') : '';
+          const haystack = (d.name + ' ' + (d.scope || '') + ' ' + orgVal + ' ' + subText).toLowerCase();
+          if (!haystack.includes(q)) return false;
+        }
+        return true;
+      });
+    }
+
+    function renderPageNumbers(curr, total) {
+      const maxBtns = 5;
+      let startP = Math.max(1, curr - 2);
+      let endP = Math.min(total, startP + maxBtns - 1);
+      if (endP - startP < maxBtns - 1) {
+        startP = Math.max(1, endP - maxBtns + 1);
+      }
+      let html = '';
+      for (let p = startP; p <= endP; p++) {
+        html += `<button type="button" class="dash-pag-num ${p === curr ? 'active' : ''}" data-dash-page="${p}" aria-label="Halaman ${p}">${p}</button>`;
+      }
+      return html;
+    }
+
+    function render() {
+      const filtered = getFiltered();
+      const totalItems = filtered.length;
+      const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+      if (currentPage > totalPages) currentPage = totalPages;
+      if (currentPage < 1) currentPage = 1;
+
+      const startIdx = (currentPage - 1) * pageSize;
+      const endIdx = Math.min(startIdx + pageSize, totalItems);
+      const pageItems = filtered.slice(startIdx, endIdx);
+
+      const catInfo = CATEGORIES[currentCategory] || CATEGORIES['igt-pr'];
+
+      let html = '';
+
+      // 1. Subnav 5 Tabs
+      html += `
+        <div class="dash-cat-tabs" role="tablist" aria-label="Pilih Kategori IGT">
+          ${TABS.map((t) => `
+            <button type="button" class="dash-cat-tab ${t.key === currentCategory ? 'active' : ''}" data-dash-cat="${t.key}" role="tab" aria-selected="${t.key === currentCategory}">
+              ${t.label}
+            </button>
+          `).join('')}
+        </div>
+      `;
+
+      // 2. Filter Box (Pencarian, Tahun, Wilayah)
+      html += `
+        <div class="dash-cat-filter-box">
+          <div class="dash-cat-search-wrap">
+            <input type="search" class="dash-cat-search-input" id="dash-cat-search-field" placeholder="Cari nama IGT, sublayer, direktorat, wilayah..." value="${query.replace(/"/g, '&quot;')}">
+          </div>
+          <div class="dash-cat-dropdowns">
+            <select class="dash-cat-select" id="dash-cat-year-select" aria-label="Filter Tahun">
+              <option value="all" ${selectedYear === 'all' ? 'selected' : ''}>Semua tahun</option>
+              <option value="2026" ${selectedYear === '2026' ? 'selected' : ''}>2026</option>
+              <option value="2025" ${selectedYear === '2025' ? 'selected' : ''}>2025</option>
+              <option value="2024" ${selectedYear === '2024' ? 'selected' : ''}>2024</option>
+              <option value="2023" ${selectedYear === '2023' ? 'selected' : ''}>2023</option>
+              <option value="2021" ${selectedYear === '2021' ? 'selected' : ''}>2021</option>
+              <option value="2019" ${selectedYear === '2019' ? 'selected' : ''}>2019</option>
+            </select>
+            <select class="dash-cat-select" id="dash-cat-reg-select" aria-label="Filter Wilayah">
+              <option value="all" ${selectedReg === 'all' ? 'selected' : ''}>Semua Wilayah</option>
+              <option value="Kab. Sleman" ${selectedReg === 'Kab. Sleman' ? 'selected' : ''}>Kab. Sleman</option>
+              <option value="Kab. Bantul" ${selectedReg === 'Kab. Bantul' ? 'selected' : ''}>Kab. Bantul</option>
+              <option value="Kab. Kulon Progo" ${selectedReg === 'Kab. Kulon Progo' ? 'selected' : ''}>Kab. Kulon Progo</option>
+              <option value="Kab. Gunungkidul" ${selectedReg === 'Kab. Gunungkidul' ? 'selected' : ''}>Kab. Gunungkidul</option>
+              <option value="Kota Yogyakarta" ${selectedReg === 'Kota Yogyakarta' ? 'selected' : ''}>Kota Yogyakarta</option>
+              <option value="Nasional" ${selectedReg === 'Nasional' ? 'selected' : ''}>Nasional</option>
+            </select>
+          </div>
+        </div>
+      `;
+
+      // 3. Summary Count Label
+      html += `
+        <div class="dash-cat-summary">
+          ${totalItems > 0
+            ? `Menampilkan ${startIdx + 1}–${endIdx} dari ${totalItems} dataset · Halaman ${currentPage} dari ${totalPages} · Kategori ${catInfo.label}`
+            : `Tidak ada dataset yang cocok dengan kriteria filter atau pencarian · Kategori ${catInfo.label}`
+          }
+        </div>
+      `;
+
+      // 4. Cards List (8 Data Teratas)
+      html += '<div class="dash-cat-cards">';
+      if (pageItems.length === 0) {
+        html += `
+          <div class="dash-cat-empty">
+            <p>Tidak ada dataset yang cocok dengan kriteria filter atau pencarian.</p>
+          </div>
+        `;
+      } else {
+        pageItems.forEach((d) => {
+          const hasSubs = Boolean(d.subLayers && d.subLayers.length > 0);
+          const isExp = expandedIds.has(d.id) || Boolean(query && hasSubs && d.subLayers.some((s) => s.name.toLowerCase().includes(query.toLowerCase())));
+          const cat = d.category;
+          const badgeClass = cat === 'pertanahan' ? 'dash-cat-badge--pertanahan' :
+                             cat === 'tata-ruang' ? 'dash-cat-badge--tataruang' :
+                             cat === 'derivatif' ? 'dash-cat-badge--derivatif' :
+                             'dash-cat-badge--lainnya';
+          const badgeLabel = cat === 'pertanahan' ? 'Pertanahan' :
+                             cat === 'tata-ruang' ? 'Tata Ruang' :
+                             cat === 'derivatif' ? 'Derivatif' :
+                             'K/L Lainnya';
+          const org = d.direktorat || d.satker || d.ditjen || d.instansi || d.source || '—';
+          const date = d.updated || d.date || '—';
+          const iconHtml = cat === 'tata-ruang' ? ri('map-2-line') :
+                           cat === 'derivatif' ? ri('stack-line') :
+                           cat === 'lainnya' ? ri('global-line') :
+                           ri('map-pin-line');
+
+          html += `
+            <div class="dash-card" data-id="${d.id}">
+              <div class="dash-card-header">
+                <div class="dash-card-title-wrap">
+                  <span class="dash-card-icon dash-card-icon--${cat}">${iconHtml}</span>
+                  <span class="dash-card-title">${d.name}</span>
+                </div>
+                <span class="dash-cat-badge ${badgeClass}">${badgeLabel}</span>
+              </div>
+              <div class="dash-card-meta">
+                <span>${org}</span> · <span>${date}</span>
+              </div>
+              <div class="dash-card-actions">
+                ${hasSubs ? `
+                  <button type="button" class="igt-chip igt-chip--multi-layer dash-chip-toggle" data-dash-toggle="${d.id}" aria-expanded="${isExp}">
+                    <span class="igt-chip__text">Multi-Layer</span>
+                    <span class="igt-chip__count">${d.subLayers.length} Layer</span>
+                    <span class="igt-chip__caret" aria-hidden="true">${isExp ? '▴' : '▾'}</span>
+                  </button>
+                ` : `
+                  <button type="button" class="dash-btn-wms" data-action="wms" data-name="${d.name.replace(/"/g, '&quot;')}">WMS</button>
+                  <button type="button" class="dash-btn-wfs" data-action="wfs" data-name="${d.name.replace(/"/g, '&quot;')}">WFS</button>
+                `}
+              </div>
+              ${hasSubs ? `
+                <div class="dash-sub-container" style="${isExp ? '' : 'display:none;'}">
+                  ${d.subLayers.map((sub) => `
+                    <div class="dash-sub-item">
+                      <div class="dash-sub-left">
+                        <span class="dash-sub-branch">└─</span>
+                        <span class="dash-sub-title">${sub.name}</span>
+                      </div>
+                      <div class="dash-sub-actions">
+                        <button type="button" class="dash-sub-btn dash-sub-btn--wms" data-action="wms" data-name="${sub.name.replace(/"/g, '&quot;')}">WMS</button>
+                        <button type="button" class="dash-sub-btn dash-sub-btn--wfs" data-action="wfs" data-name="${sub.name.replace(/"/g, '&quot;')}">WFS</button>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              ` : ''}
+            </div>
+          `;
+        });
+      }
+      html += '</div>';
+
+      // 5. Pagination Bar (tampil jika dataset > pageSize atau totalPages > 1)
+      if (totalItems > pageSize || totalPages > 1) {
+        html += `
+          <div class="dash-cat-pag-box">
+            <div class="dash-cat-pag-row">
+              <button type="button" class="dash-pag-nav-btn dash-pag-prev" ${currentPage <= 1 ? 'disabled' : ''}>
+                ← Sebelumnya
+              </button>
+              <div class="dash-pag-select-wrap">
+                <label style="font-size:11px;font-weight:700;color:#64748b;margin-right:4px;">Halaman:</label>
+                <select class="dash-pag-select" id="dash-cat-page-select" aria-label="Pilih Halaman">
+                  ${Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => `
+                    <option value="${p}" ${p === currentPage ? 'selected' : ''}>${p} / ${totalPages}</option>
+                  `).join('')}
+                </select>
+              </div>
+              <button type="button" class="dash-pag-nav-btn dash-pag-next" ${currentPage >= totalPages ? 'disabled' : ''}>
+                Berikutnya →
+              </button>
+            </div>
+            <div class="dash-pag-numbers">
+              ${renderPageNumbers(currentPage, totalPages)}
+            </div>
+          </div>
+        `;
+      }
+
+      rootEl.innerHTML = html;
+
+      // Attach Event Listeners
+      rootEl.querySelectorAll('[data-dash-cat]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          currentCategory = btn.dataset.dashCat;
+          currentPage = 1;
+          render();
+        });
+      });
+
+      const searchInput = rootEl.querySelector('#dash-cat-search-field');
+      if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+          query = e.target.value;
+          currentPage = 1;
+          render();
+          const nextInput = rootEl.querySelector('#dash-cat-search-field');
+          if (nextInput) {
+            nextInput.focus();
+            nextInput.setSelectionRange(nextInput.value.length, nextInput.value.length);
+          }
+        });
+      }
+
+      const yearSelect = rootEl.querySelector('#dash-cat-year-select');
+      if (yearSelect) {
+        yearSelect.addEventListener('change', (e) => {
+          selectedYear = e.target.value;
+          currentPage = 1;
+          render();
+        });
+      }
+
+      const regSelect = rootEl.querySelector('#dash-cat-reg-select');
+      if (regSelect) {
+        regSelect.addEventListener('change', (e) => {
+          selectedReg = e.target.value;
+          currentPage = 1;
+          render();
+        });
+      }
+
+      const prevBtn = rootEl.querySelector('.dash-pag-prev');
+      if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+          if (currentPage > 1) {
+            currentPage -= 1;
+            render();
+          }
+        });
+      }
+
+      const nextBtn = rootEl.querySelector('.dash-pag-next');
+      if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+          if (currentPage < totalPages) {
+            currentPage += 1;
+            render();
+          }
+        });
+      }
+
+      const pageSelect = rootEl.querySelector('#dash-cat-page-select');
+      if (pageSelect) {
+        pageSelect.addEventListener('change', (e) => {
+          const val = parseInt(e.target.value, 10);
+          if (val && val !== currentPage) {
+            currentPage = val;
+            render();
+          }
+        });
+      }
+
+      rootEl.querySelectorAll('[data-dash-page]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const val = parseInt(btn.dataset.dashPage, 10);
+          if (val && val !== currentPage) {
+            currentPage = val;
+            render();
+          }
+        });
+      });
+
+      rootEl.querySelectorAll('[data-dash-toggle]').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const id = btn.dataset.dashToggle;
+          if (expandedIds.has(id)) expandedIds.delete(id);
+          else expandedIds.add(id);
+          render();
+        });
+      });
+
+      rootEl.querySelectorAll('[data-action]').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const act = btn.dataset.action;
+          const name = btn.dataset.name;
+          const msg = act === 'wms' ? WMS_MESSAGE(name) : WFS_MESSAGE(name);
+          if (typeof toast === 'function') {
+            toast(msg);
+          } else {
+            alert(msg);
+          }
+        });
+      });
+    }
+
+    render();
+  }
+
+  return { dashboard, catalog, upload, dashboardCatalog };
 })();

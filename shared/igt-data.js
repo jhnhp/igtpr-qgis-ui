@@ -14,15 +14,19 @@
 // - IGT Lainnya: everything uploaded (Superadmin only) is available immediately, status Tersedia.
 // A record enters its catalog when its status equals the category's `catalogStatus`.
 const IgtData = (() => {
-  const CATEGORY_ORDER = ['pertanahan', 'tata-ruang', 'derivatif', 'lainnya'];
+  const CATEGORY_ORDER = ['igt-pr', 'pertanahan', 'tata-ruang', 'derivatif', 'lainnya'];
 
   const CATEGORIES = {
+    'igt-pr': {
+      label: 'IGT-PR', shortLabel: 'IGT-PR', slug: 'igt-pr', kind: 'terpadu', detail: 'utama', integration: true,
+      catalogStatus: 'Terintegrasi', noun: 'dataset terpadu', rule: 'Menampilkan dataset IGT Pertanahan dan IGT Tata Ruang terpadu.',
+    },
     pertanahan: {
-      label: 'IGT Pertanahan', slug: 'igt-pertanahan', kind: 'bidang', detail: 'utama', integration: true,
+      label: 'IGT Pertanahan', shortLabel: 'IGT Pertanahan', slug: 'igt-pertanahan', kind: 'bidang', detail: 'utama', integration: true,
       catalogStatus: 'Terintegrasi', noun: 'dataset terintegrasi', rule: 'Menampilkan dataset yang sudah terintegrasi dan siap dimanfaatkan di QGIS.',
     },
     'tata-ruang': {
-      label: 'IGT Tata Ruang', slug: 'igt-tata-ruang', kind: 'kawasan', detail: 'utama', integration: true,
+      label: 'IGT Tata Ruang', shortLabel: 'IGT Tata Ruang', slug: 'igt-tata-ruang', kind: 'kawasan', detail: 'utama', integration: true,
       catalogStatus: 'Terintegrasi', noun: 'dataset terintegrasi', rule: 'Menampilkan dataset yang sudah terintegrasi dan siap dimanfaatkan di QGIS.',
     },
     derivatif: {
@@ -31,7 +35,7 @@ const IgtData = (() => {
       rule: 'Hanya layer berstatus Disetujui yang tampil; layer Diajukan, Ditolak, dan Kadaluwarsa tidak ditampilkan.',
     },
     lainnya: {
-      label: 'IGT Lainnya', slug: 'igt-lainnya',
+      label: 'IGT K/L Lainnya', shortLabel: 'IGT K/L Lainnya', slug: 'igt-lainnya',
       catalogStatus: 'Tersedia', noun: 'layer tersedia', rule: 'Semua layer eksternal yang diunggah langsung masuk katalog.',
     },
   };
@@ -144,7 +148,10 @@ const IgtData = (() => {
     { category: 'lainnya', id: 'IGT-EXT-001', name: 'Peta Risiko Bencana', instansi: 'Badan Nasional Penanggulangan Bencana', source: 'Badan Nasional Penanggulangan Bencana', scope: 'Multi-Area (D.I. Yogyakarta & Jawa Tengah)', prov: 'D.I. Yogyakarta & Jawa Tengah', kab: 'Multi-Area (Sleman, Magelang, Klaten)', date: '10 Okt 2026', updated: '10 Okt 2026', status: 'Tersedia' },
   ];
 
-  const canView = (role, category) => Boolean(ROLES[role] && ROLES[role].view.includes(category));
+  const canView = (role, category) => {
+    if (category === 'igt-pr') return Boolean(ROLES[role] && ROLES[role].view.includes('pertanahan') && ROLES[role].view.includes('tata-ruang'));
+    return Boolean(ROLES[role] && ROLES[role].view.includes(category));
+  };
   const canUpload = (role, category) => Boolean(ROLES[role] && ROLES[role].upload.includes(category));
   // Submissions a role may see in Upload Data: its upload categories, and only its own records for Umum.
   const submissionsFor = (role, records) => {
