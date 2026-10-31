@@ -46,14 +46,14 @@ const IgtData = (() => {
   // `derivatifWorkflow` marks the role that gets the Derivatif Bidang workflow page (Operator only).
   const ALL = ['pertanahan', 'tata-ruang', 'derivatif', 'lainnya'];
   const ROLES = {
-    superadmin: { label: 'Superadmin', avatar: 'SA', view: ALL, upload: ['lainnya'] },
-    superadmin2: { label: 'Superadmin', avatar: 'SA', view: ALL, upload: ALL, derivatifWorkflow: true, v2: true, baseRole: 'superadmin' },
-    admin: { label: 'Admin', avatar: 'AD', view: ALL, upload: ['pertanahan', 'tata-ruang', 'derivatif'] },
-    admin2: { label: 'Admin', avatar: 'AD', view: ALL, upload: ['pertanahan', 'tata-ruang', 'derivatif'], derivatifWorkflow: true, v2: true, baseRole: 'admin' },
-    operator: { label: 'Operator Pusat', avatar: 'JH', view: ALL, upload: ['pertanahan', 'tata-ruang', 'derivatif'], derivatifWorkflow: true },
-    operator2: { label: 'Operator Pusat', avatar: 'JH', view: ALL, upload: ['pertanahan', 'tata-ruang', 'derivatif'], derivatifWorkflow: true, v2: true, baseRole: 'operator' },
-    umum: { label: 'Umum', avatar: 'UM', view: ALL, upload: ['derivatif'], ownSubmissionsOnly: true },
-    umum2: { label: 'Umum', avatar: 'UM', view: ALL, upload: ['derivatif'], ownSubmissionsOnly: true, derivatifWorkflow: true, v2: true, baseRole: 'umum' },
+    superadmin: { label: 'Superadmin', avatar: 'SA', satker: 'Semua Satker', view: ALL, upload: ['lainnya'] },
+    superadmin2: { label: 'Superadmin', avatar: 'SA', satker: 'Semua Satker', view: ALL, upload: ALL, derivatifWorkflow: true, v2: true, baseRole: 'superadmin' },
+    admin: { label: 'Admin', avatar: 'AD', satker: 'Kantah Kab. Sleman', view: ALL, upload: ['pertanahan', 'tata-ruang', 'derivatif'] },
+    admin2: { label: 'Admin', avatar: 'AD', satker: 'Kantah Kab. Sleman', view: ALL, upload: ['pertanahan', 'tata-ruang', 'derivatif'], derivatifWorkflow: true, v2: true, baseRole: 'admin' },
+    operator: { label: 'Operator Pusat', avatar: 'JH', satker: 'Kantah Kab. Sleman', view: ALL, upload: ['pertanahan', 'tata-ruang', 'derivatif'], derivatifWorkflow: true },
+    operator2: { label: 'Operator Pusat', avatar: 'JH', satker: 'Kantah Kab. Sleman', view: ALL, upload: ['pertanahan', 'tata-ruang', 'derivatif'], derivatifWorkflow: true, v2: true, baseRole: 'operator' },
+    umum: { label: 'Umum', avatar: 'UM', satker: null, view: ALL, upload: ['derivatif'], ownSubmissionsOnly: true },
+    umum2: { label: 'Umum', avatar: 'UM', satker: null, view: ALL, upload: ['derivatif'], ownSubmissionsOnly: true, derivatifWorkflow: true, v2: true, baseRole: 'umum' },
   };
 
   // `n` is the record index understood by the shared detail pages (igt-utama-detail, layer-derivatif-detail).

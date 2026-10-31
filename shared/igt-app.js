@@ -166,6 +166,20 @@ const IgtApp = (() => {
     `Simulasi WFS: layanan fitur "${name}" akan dimuat sebagai layer vektor WFS di QGIS. ` +
     'Belum terhubung ke layanan nyata.';
 
+  // Verifikasi izin akses WFS berdasarkan role dan satker:
+  // - Superadmin: Bisa akses semua WFS
+  // - Admin & Operator: Bisa akses WFS sesuai satkernya (Kantah Kab. Sleman pada akun demo)
+  // - Umum: Hanya WMS (tidak dapat mengakses WFS)
+  function canAccessWfs(role, dataset) {
+    const r = (role || '').replace('2', '').toLowerCase();
+    if (r === 'superadmin') return true;
+    if (r === 'umum') return false;
+    const roleCfg = (typeof IgtData !== 'undefined' && IgtData.ROLES && IgtData.ROLES[role]) ? IgtData.ROLES[role] : null;
+    const userSatker = (roleCfg && roleCfg.satker) || 'Kantah Kab. Sleman';
+    const dsSatker = (dataset && (dataset.satker || dataset.direktorat || '')) ? String(dataset.satker || dataset.direktorat).trim() : '';
+    return dsSatker.toLowerCase().includes('sleman') || dsSatker.toLowerCase() === userSatker.toLowerCase();
+  }
+
   // Datasets of one category that are in its catalog (see CATEGORIES[...].catalogStatus); nothing can be edited here.
   function catalog(role, category) {
     const view = $('#view');
@@ -298,7 +312,7 @@ const IgtApp = (() => {
               '</button>' +
               '</td>'
             : '<td data-label="Tampilkan WMS">' + button('btn-soft', 'wms', d.id, ri('map-2-line') + '<span>WMS</span>') + '</td>' +
-              '<td data-label="Tampilkan WFS">' + button('btn-soft', 'wfs', d.id, ri('stack-line') + '<span>WFS</span>') + '</td>'
+              '<td data-label="Tampilkan WFS">' + (canAccessWfs(role, d) ? button('btn-soft', 'wfs', d.id, ri('stack-line') + '<span>WFS</span>') : '<span class="text-muted" style="color:var(--text-muted,#94a3b8); font-size:13px;" title="Akses WFS dibatasi untuk satker terkait">—</span>') + '</td>'
           ) +
           '</tr>'
         );
@@ -317,7 +331,7 @@ const IgtApp = (() => {
             '<td data-label="' + orgLabel + '"><span class="igt-sublayer-meta">' + (sub.scope || d.direktorat || '—') + '</span></td>' +
             '<td data-label="Tanggal"><span class="igt-sublayer-date">' + (sub.updated || sub.date || d.updated || '—') + '</span></td>' +
             '<td data-label="Tampilkan WMS"><button type="button" class="btn btn-soft btn-sm igt-sub-btn" data-action="wms-sub" data-sub-id="' + sub.id + '" data-sub-name="' + sub.name + '" data-parent-name="' + d.name + '">' + ri('map-2-line') + '<span>WMS</span></button></td>' +
-            '<td data-label="Tampilkan WFS"><button type="button" class="btn btn-soft btn-sm igt-sub-btn" data-action="wfs-sub" data-sub-id="' + sub.id + '" data-sub-name="' + sub.name + '" data-parent-name="' + d.name + '">' + ri('stack-line') + '<span>WFS</span></button></td>' +
+            '<td data-label="Tampilkan WFS">' + (canAccessWfs(role, d) ? '<button type="button" class="btn btn-soft btn-sm igt-sub-btn" data-action="wfs-sub" data-sub-id="' + sub.id + '" data-sub-name="' + sub.name + '" data-parent-name="' + d.name + '">' + ri('stack-line') + '<span>WFS</span></button>' : '<span class="text-muted" style="color:var(--text-muted,#94a3b8); font-size:13px;" title="Akses WFS dibatasi untuk satker terkait">—</span>') + '</td>' +
             '</tr>'
           );
         }).join('');
@@ -375,6 +389,11 @@ const IgtApp = (() => {
         return;
       }
       if (action === 'wfs-sub') {
+        const parentRecord = datasets.find((d) => d.name === parentName || (d.subLayers && d.subLayers.some((s) => s.id === subId)));
+        if (parentRecord && !canAccessWfs(role, parentRecord)) {
+          alert("Akses WFS dibatasi: Akun Anda tidak memiliki izin untuk mengakses layanan fitur WFS dataset ini.");
+          return;
+        }
         alert("Simulasi QGIS: Mengambil data fitur WFS untuk '" + subName + "' (sub-layer dari " + parentName + ").");
         return;
       }
@@ -388,6 +407,10 @@ const IgtApp = (() => {
           alert(WMS_MESSAGE(dataset.name));
         }
       } else if (action === 'wfs') {
+        if (!canAccessWfs(role, dataset)) {
+          alert("Akses WFS dibatasi: Akun Anda tidak memiliki izin untuk mengakses layanan fitur WFS dataset ini.");
+          return;
+        }
         if (dataset.subLayers && dataset.subLayers.length > 0) {
           alert("Simulasi QGIS: Mengambil fitur WFS seluruh sub-layer untuk '" + dataset.name + "' (" + dataset.subLayers.length + " layer).");
         } else {
@@ -770,7 +793,6 @@ const IgtApp = (() => {
     let currentPage = 1;
     let pageSize = 8;
     let query = '';
-    let selectedDir = 'all';
     let selectedProv = 'all';
     let selectedKab = 'all';
     const expandedIds = new Set();
@@ -793,12 +815,6 @@ const IgtApp = (() => {
         return allRecords.filter((r) => (r.category === 'pertanahan' || r.category === 'tata-ruang') && IgtData.inCatalog(r));
       }
       return allRecords.filter((r) => r.category === cat && IgtData.inCatalog(r));
-    }
-
-    function getDirOptions(cat) {
-      const records = getCategoryRecords(cat);
-      const dirs = records.map((r) => (r.direktorat || r.satker || r.ditjen || r.instansi || r.source || '').trim()).filter(Boolean);
-      return [...new Set(dirs)].sort();
     }
 
     function getProvOptions(cat) {
@@ -827,24 +843,30 @@ const IgtApp = (() => {
           const matchSub = d.subLayers && d.subLayers.some((s) => (s.year || s.updated || '').includes(selectedYear));
           if (!matchParent && !matchSub) return false;
         }
-        // 2. Filter Direktorat / Instansi
-        if (selectedDir !== 'all') {
-          const orgVal = (d.direktorat || d.satker || d.ditjen || d.instansi || d.source || '').trim();
-          if (orgVal.toLowerCase() !== selectedDir.toLowerCase()) {
-            return false;
-          }
-        }
-        // 3. Filter Provinsi
+        // 2. Filter Provinsi
         if (selectedProv !== 'all') {
           const provHaystack = ((d.prov || '') + ' ' + (d.scope || '')).toLowerCase();
           if (!provHaystack.includes(selectedProv.toLowerCase())) {
             return false;
           }
         }
-        // 4. Filter Kabupaten (mengikuti provinsi)
+        // 3. Filter Kabupaten (mengikuti provinsi)
         if (selectedKab !== 'all') {
           const kabHaystack = ((d.kab || '') + ' ' + (d.scope || '')).toLowerCase();
           if (!kabHaystack.includes(selectedKab.toLowerCase())) {
+            return false;
+          }
+        }
+        // 4. Pencarian
+        if (q) {
+          const orgVal = d.direktorat || d.satker || d.ditjen || d.instansi || d.source || '';
+          const subText = d.subLayers ? d.subLayers.map((s) => s.name + ' ' + (s.label || '')).join(' ') : '';
+          const haystack = (d.name + ' ' + (d.scope || '') + ' ' + orgVal + ' ' + (d.prov || '') + ' ' + (d.kab || '') + ' ' + subText).toLowerCase();
+          if (!haystack.includes(q)) return false;
+        }
+        return true;
+      });
+    }
             return false;
           }
         }
@@ -885,7 +907,6 @@ const IgtApp = (() => {
       const pageItems = filtered.slice(startIdx, endIdx);
 
       const catInfo = CATEGORIES[currentCategory] || CATEGORIES['igt-pr'];
-      const dirOptions = getDirOptions(currentCategory);
       const provOptions = getProvOptions(currentCategory);
       const kabOptions = getKabOptions(currentCategory, selectedProv);
 
@@ -902,19 +923,13 @@ const IgtApp = (() => {
         </div>
       `;
 
-      // 2. Filter Box (Pencarian, Direktorat, Provinsi, Kabupaten)
+      // 2. Filter Box (Pencarian, Provinsi, Kabupaten)
       html += `
         <div class="dash-cat-filter-box">
           <div class="dash-cat-search-wrap">
-            <input type="search" class="dash-cat-search-input" id="dash-cat-search-field" placeholder="Cari nama IGT, sublayer, direktorat, wilayah..." value="${query.replace(/"/g, '&quot;')}">
+            <input type="search" class="dash-cat-search-input" id="dash-cat-search-field" placeholder="Cari nama IGT, sublayer, wilayah..." value="${query.replace(/"/g, '&quot;')}">
           </div>
           <div class="dash-cat-dropdowns">
-            <select class="dash-cat-select" id="dash-cat-dir-select" aria-label="Filter Direktorat">
-              <option value="all" ${selectedDir === 'all' ? 'selected' : ''}>${currentCategory === 'lainnya' ? 'Semua Instansi' : 'Semua Direktorat'}</option>
-              ${dirOptions.map((dir) => `
-                <option value="${dir.replace(/"/g, '&quot;')}" ${selectedDir === dir ? 'selected' : ''}>${dir}</option>
-              `).join('')}
-            </select>
             <select class="dash-cat-select" id="dash-cat-prov-select" aria-label="Filter Provinsi">
               <option value="all" ${selectedProv === 'all' ? 'selected' : ''}>Semua Provinsi</option>
               ${provOptions.map((p) => `
@@ -953,6 +968,7 @@ const IgtApp = (() => {
         pageItems.forEach((d) => {
           const hasSubs = Boolean(d.subLayers && d.subLayers.length > 0);
           const isExp = expandedIds.has(d.id) || Boolean(query && hasSubs && d.subLayers.some((s) => s.name.toLowerCase().includes(query.toLowerCase())));
+          const allowWfs = canAccessWfs(role, d);
           const cat = d.category;
           const badgeClass = cat === 'pertanahan' ? 'dash-cat-badge--pertanahan' :
                              cat === 'tata-ruang' ? 'dash-cat-badge--tataruang' :
@@ -988,7 +1004,7 @@ const IgtApp = (() => {
                     </button>
                   ` : `
                     <button type="button" class="dash-btn-wms" data-action="wms" data-name="${d.name.replace(/"/g, '&quot;')}">WMS</button>
-                    <button type="button" class="dash-btn-wfs" data-action="wfs" data-name="${d.name.replace(/"/g, '&quot;')}">WFS</button>
+                    ${allowWfs ? `<button type="button" class="dash-btn-wfs" data-action="wfs" data-name="${d.name.replace(/"/g, '&quot;')}">WFS</button>` : ''}
                   `}
                 </div>
               </div>
@@ -1002,7 +1018,7 @@ const IgtApp = (() => {
                       </div>
                       <div class="dash-sub-actions">
                         <button type="button" class="dash-sub-btn dash-sub-btn--wms" data-action="wms" data-name="${sub.name.replace(/"/g, '&quot;')}">WMS</button>
-                        <button type="button" class="dash-sub-btn dash-sub-btn--wfs" data-action="wfs" data-name="${sub.name.replace(/"/g, '&quot;')}">WFS</button>
+                        ${allowWfs ? `<button type="button" class="dash-sub-btn dash-sub-btn--wfs" data-action="wfs" data-name="${sub.name.replace(/"/g, '&quot;')}">WFS</button>` : ''}
                       </div>
                     </div>
                   `).join('')}
@@ -1059,7 +1075,6 @@ const IgtApp = (() => {
         btn.addEventListener('click', () => {
           currentCategory = btn.dataset.dashCat;
           currentPage = 1;
-          selectedDir = 'all';
           selectedProv = 'all';
           selectedKab = 'all';
           render();
@@ -1077,15 +1092,6 @@ const IgtApp = (() => {
             nextInput.focus();
             nextInput.setSelectionRange(nextInput.value.length, nextInput.value.length);
           }
-        });
-      }
-
-      const dirSelect = rootEl.querySelector('#dash-cat-dir-select');
-      if (dirSelect) {
-        dirSelect.addEventListener('change', (e) => {
-          selectedDir = e.target.value;
-          currentPage = 1;
-          render();
         });
       }
 
@@ -1156,6 +1162,15 @@ const IgtApp = (() => {
           e.stopPropagation();
           const act = btn.dataset.action;
           const name = btn.dataset.name;
+          const cardEl = btn.closest('.dash-card');
+          const cardId = cardEl ? cardEl.dataset.id : null;
+          const ds = cardId ? IgtData.loadRecords().find((r) => r.id === cardId) : null;
+          if (act === 'wfs' && ds && !canAccessWfs(role, ds)) {
+            const warn = 'Akses WFS dibatasi untuk satker terkait.';
+            if (typeof toast === 'function') toast(warn);
+            else alert(warn);
+            return;
+          }
           const msg = act === 'wms' ? WMS_MESSAGE(name) : WFS_MESSAGE(name);
           if (typeof toast === 'function') {
             toast(msg);
