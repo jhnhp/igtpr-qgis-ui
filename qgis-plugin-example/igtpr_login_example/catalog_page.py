@@ -122,8 +122,8 @@ class DatasetCard(QFrame):
 
         self.icon_lbl = QLabel(self)
         cat = dataset.get('category', '')
-        icon_name = 'map' if cat == 'tata-ruang' else 'layers' if cat == 'derivatif' else 'pin'
-        icon_color = '#047857' if cat == 'tata-ruang' else '#7c3aed' if cat == 'derivatif' else '#1f6fd6'
+        icon_name = 'map' if cat == 'tata-ruang' else 'layers' if cat == 'derivatif' else 'globe' if cat == 'lainnya' else 'pin'
+        icon_color = '#047857' if cat == 'tata-ruang' else '#7c3aed' if cat == 'derivatif' else '#0284c7' if cat == 'lainnya' else '#1f6fd6'
         self.icon_lbl.setPixmap(svg_pixmap(ICONS.get(icon_name, ICONS['layers']).format(color=icon_color), QSize(16, 16)))
         title_row.addWidget(self.icon_lbl, 0, Qt.AlignmentFlag.AlignVCenter)
 
