@@ -950,13 +950,14 @@ class CatalogPage(QWidget):
 
         # Update Info Count
         cat_label = CATEGORIES[self.current_category]['label']
+        year_suffix = f" · Tahun {self.selected_year}" if getattr(self, 'selected_year', 'Semua tahun') != 'Semua tahun' else ""
         if total_items > 0:
             self.count_lbl.setText(
                 f"Menampilkan {start_idx + 1}–{end_idx} dari {total_items} dataset · "
-                f"Halaman {self.current_page} dari {total_pages} · Kategori {cat_label}"
+                f"Halaman {self.current_page} dari {total_pages} · Kategori {cat_label}{year_suffix}"
             )
         else:
-            self.count_lbl.setText(f"Tidak ada dataset yang cocok · Kategori {cat_label}")
+            self.count_lbl.setText(f"Tidak ada dataset yang cocok · Kategori {cat_label}{year_suffix}")
 
         # Render Kartu Dataset (8 data teratas untuk halaman aktif)
         if not page_items:
@@ -971,12 +972,17 @@ class CatalogPage(QWidget):
             self.list_layout.addWidget(empty_card)
         else:
             query = self.search_input.text().strip().lower()
+            sel_yr = getattr(self, 'selected_year', 'Semua tahun')
             for d in page_items:
                 d_id = d.get('id', '')
                 is_exp = self.expanded_states.get(d_id, False)
                 if query and d.get('subLayers'):
                     match_sub = any(query in s.get('name', '').lower() for s in d['subLayers'])
                     if match_sub:
+                        is_exp = True
+                if sel_yr != 'Semua tahun' and d.get('subLayers'):
+                    match_year_sub = any(sel_yr in (s.get('year') or s.get('updated') or '') for s in d['subLayers'])
+                    if match_year_sub:
                         is_exp = True
 
                 allow_wfs = can_access_wfs(self.current_role, d)

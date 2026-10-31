@@ -154,6 +154,8 @@ class IgtprDockWidget(QDockWidget):
         self.topbar.show()
         cat_info = CATEGORIES.get(category_key, CATEGORIES['igt-pr'])
         self.topbar.set_breadcrumbs(['Katalog IGT', cat_info['label']])
+        if hasattr(self.dashboard_page, 'year_combo'):
+            self.catalog_page.set_year_filter(self.dashboard_page.year_combo.currentText())
         self.catalog_page.set_category(category_key)
         self.stack.setCurrentWidget(self.catalog_page)
 

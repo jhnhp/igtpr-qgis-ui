@@ -17,6 +17,8 @@ bocor ke widget anak. Catatan penting: QLabel adalah turunan QFrame, jadi select
 tanpa properti/objectName akan ikut memberi border dan padding ke semua label di dalamnya.
 """
 
+import os
+
 from qgis.PyQt.QtCore import QPoint, QRect, QSize, Qt, pyqtSignal
 from qgis.PyQt.QtGui import QFontDatabase, QIcon
 from qgis.PyQt.QtWidgets import (
@@ -26,6 +28,9 @@ from qgis.PyQt.QtWidgets import (
 
 from .assets import ICONS
 from .login_page import svg_pixmap
+
+_DIR = os.path.dirname(__file__)
+_ARROW_SVG = os.path.join(_DIR, 'chevron_down_white.svg').replace('\\', '/')
 
 # Urutan font mengikuti mockup web (Inter, lalu font sistem).
 _FONT_CANDIDATES = ('Inter', 'Segoe UI', 'Noto Sans', 'Ubuntu', 'Cantarell', 'Helvetica Neue', 'Arial',
@@ -260,9 +265,19 @@ QLineEdit[field="true"], QComboBox[field="true"] {
 QLineEdit[field="true"]:focus, QComboBox[field="true"]:focus { border-color: #1f6fd6; background: #ffffff; }
 QComboBox[field="true"]::drop-down { border: none; width: 24px; }
 QComboBox[field="hero"] {
-    background: transparent; border: none; color: #ffffff; font-size: 13px; font-weight: 800; padding: 2px 0;
+    background: transparent; border: none; color: #ffffff; font-size: 13px; font-weight: 800; padding: 2px 18px 2px 0;
 }
-QComboBox[field="hero"]::drop-down { border: none; width: 20px; }
+QComboBox[field="hero"]::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: center right;
+    width: 16px;
+    border: none;
+}
+QComboBox[field="hero"]::down-arrow {
+    image: url(@ARROW_SVG@);
+    width: 10px;
+    height: 10px;
+}
 QComboBox QAbstractItemView {
     background: #ffffff; color: #0f294d; border: 1px solid #cbd5e1;
     selection-background-color: #eff6ff; selection-color: #1f6fd6;
@@ -271,7 +286,7 @@ QComboBox QAbstractItemView {
 
 
 def theme_qss():
-    return THEME_QSS.replace('@FONT@', ui_font_family())
+    return THEME_QSS.replace('@FONT@', ui_font_family()).replace('@ARROW_SVG@', _ARROW_SVG)
 
 
 def repolish(widget):
@@ -627,41 +642,65 @@ class ResponsivePage(QWidget):
 
 # ---------------------------------------------------------------- komponen berukuran sedang
 class HeroHeader(QFrame):
-    """Kartu hero berwarna: eyebrow, judul, deskripsi, dan widget samping (filter/tombol kembali)."""
+    """Kartu hero berwarna: eyebrow, judul, deskripsi, dan widget samping (filter tahun di kanan atas)."""
 
-    def __init__(self, eyebrow, title, desc, theme='blue', side_widget=None, breakpoint=640, parent=None):
+    def __init__(self, eyebrow, title, desc, theme='blue', side_widget=None, breakpoint=320, parent=None):
         super().__init__(parent)
         self.setProperty('hero', theme)
-        lay = QVBoxLayout(self)
-        lay.setContentsMargins(18, 16, 18, 16)
-        lay.setSpacing(0)
-        self.row = ResponsiveBox(breakpoint, 14, self)
-        texts = QWidget(self.row)
-        t_lay = QVBoxLayout(texts)
-        t_lay.setContentsMargins(0, 0, 0, 0)
-        t_lay.setSpacing(5)
-        self.eyebrow = label(eyebrow, 'eyebrow', False, texts)
+        self.breakpoint = breakpoint
+        self.main_lay = QVBoxLayout(self)
+        self.main_lay.setContentsMargins(16, 14, 16, 14)
+        self.main_lay.setSpacing(6)
+
+        # Baris atas: Kiri (Eyebrow + Judul), Kanan Atas (side_widget / filter tahun)
+        self.top_row = QHBoxLayout()
+        self.top_row.setContentsMargins(0, 0, 0, 0)
+        self.top_row.setSpacing(8)
+
+        self.left_box = QWidget(self)
+        self.left_lay = QVBoxLayout(self.left_box)
+        self.left_lay.setContentsMargins(0, 0, 0, 0)
+        self.left_lay.setSpacing(4)
+
+        self.eyebrow = label(eyebrow, 'eyebrow', False, self.left_box)
         self.eyebrow.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Fixed)
-        t_lay.addWidget(self.eyebrow, 0, Qt.AlignmentFlag.AlignLeft)
-        self.title = label(title, 'heroTitle', True, texts)
-        t_lay.addWidget(self.title)
-        self.desc = label(desc, 'heroDesc', True, texts)
-        t_lay.addWidget(self.desc)
-        texts.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
-        self.row.box.addWidget(texts, 1)
-        if side_widget is not None:
-            side_widget.setParent(self.row)
-            self.row.box.addWidget(side_widget, 0)
-        lay.addWidget(self.row)
+        self.left_lay.addWidget(self.eyebrow, 0, Qt.AlignmentFlag.AlignLeft)
+
+        self.title = label(title, 'heroTitle', True, self.left_box)
+        self.left_lay.addWidget(self.title)
+
+        self.top_row.addWidget(self.left_box, 1)
+
         self.side_widget = side_widget
+        if side_widget is not None:
+            side_widget.setParent(self)
+            self.top_row.addWidget(side_widget, 0, Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight)
+
+        self.main_lay.addLayout(self.top_row)
+
+        # Baris bawah: Deskripsi penuh lebar kartu
+        self.desc = label(desc, 'heroDesc', True, self)
+        self.desc.setWordWrap(True)
+        self.main_lay.addWidget(self.desc)
 
     def apply_width(self, width):
-        self.row.apply_width(width)
-        m = 10 if width < 280 else (14 if width < 380 else 18)
-        self.layout().setContentsMargins(m, 12 if width < 280 else 14, m, 12 if width < 280 else 14)
+        m = 10 if width < 280 else (14 if width < 380 else 16)
+        self.main_lay.setContentsMargins(m, 10 if width < 280 else 12, m, 10 if width < 280 else 12)
         if self.side_widget is not None:
-            # Di layar sempit tombol/filter mengisi selebar kartu (seperti web).
-            self.side_widget.setMinimumWidth(0 if not self.row.wide else 170)
+            if width < self.breakpoint:
+                # Bila layar sangat sempit (< 320px), posisikan filter selebar kartu di bawah judul/deskripsi
+                if self.top_row.indexOf(self.side_widget) != -1:
+                    self.top_row.removeWidget(self.side_widget)
+                if self.main_lay.indexOf(self.side_widget) == -1:
+                    self.main_lay.addWidget(self.side_widget)
+                self.side_widget.setMaximumWidth(16777215)
+            else:
+                # Pada lebar dock standar (>= 320px), posisikan di KANAN ATAS
+                if self.main_lay.indexOf(self.side_widget) != -1:
+                    self.main_lay.removeWidget(self.side_widget)
+                if self.top_row.indexOf(self.side_widget) == -1:
+                    self.top_row.addWidget(self.side_widget, 0, Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight)
+                self.side_widget.setMaximumWidth(140)
 
     def minimumSizeHint(self):
         return QSize(140, 60)

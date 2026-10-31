@@ -137,14 +137,15 @@ class DashboardPage(ResponsivePage):
         super().__init__('dashboardPage', parent)
         self.current_role = current_role
 
-        # 1. Hero + filter tahun
+        # 1. Hero + filter tahun (di kanan atas)
         year_box = card('heroFilter')
         yb = QVBoxLayout(year_box)
-        yb.setContentsMargins(14, 8, 12, 8)
+        yb.setContentsMargins(12, 6, 12, 6)
         yb.setSpacing(2)
         yb.addWidget(label('FILTER TAHUN', 'filterLabel', False, year_box))
         self.year_combo = QComboBox(year_box)
         self.year_combo.setProperty('field', 'hero')
+        self.year_combo.setCursor(Qt.CursorShape.PointingHandCursor)
         self.year_combo.addItems(['Semua tahun', '2026', '2025', '2024', '2023', '2021', '2019'])
         self.year_combo.currentIndexChanged.connect(self._update_counts)
         yb.addWidget(self.year_combo)
@@ -152,7 +153,7 @@ class DashboardPage(ResponsivePage):
         self.hero = self.responsive(HeroHeader(
             'SISTEM INFORMASI GEOSPASIAL', 'Dashboard IGT-PR',
             'Ringkasan status data geospasial, katalog layer, dan pintasan fitur kerja.',
-            'blue', year_box, 640, self.content))
+            'blue', year_box, 320, self.content))
         self.body.addWidget(self.hero)
 
         # 2. Statistik repositori (Pertanahan & Tata Ruang - 2 Kolom pada Tablet/Layar >= 460px)
@@ -251,7 +252,11 @@ class DashboardPage(ResponsivePage):
         integrated = [d for d in DATASETS if d.get('status') == 'Terintegrasi' and d.get('category') in utama]
         if year != 'Semua tahun':
             compiled = [s for s in compiled if year in s.get('date', '')]
-            integrated = [d for d in integrated if year in d.get('updated', '') or year in d.get('date', '')]
+            integrated = [
+                d for d in integrated
+                if year in (d.get('updated') or d.get('date') or '')
+                or (d.get('subLayers') and any(year in (s.get('year') or s.get('updated') or '') for s in d['subLayers']))
+            ]
         self.card_compiled.set_value(len(compiled))
         self.card_integrated.set_value(len(integrated))
         if hasattr(self, 'catalog_widget') and hasattr(self.catalog_widget, 'set_year_filter'):

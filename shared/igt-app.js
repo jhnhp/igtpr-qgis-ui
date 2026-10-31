@@ -157,7 +157,7 @@ const IgtApp = (() => {
       '</section>';
     const updateDashboard = () => {
       const year = $('#dashboard-year-filter').value;
-      const visible = records.filter((record) => year === 'all' || yearOf(record) === year);
+      const visible = records.filter((record) => year === 'all' || yearOf(record) === year || (record.subLayers && record.subLayers.some((s) => (s.year || s.updated || '').includes(year))));
       const staged = IgtData.integrationRecords(visible);
       setText('count-compiled', IgtData.countByStatus(staged, 'Terkompilasi'));
       setText('count-integrated', IgtData.countByStatus(staged, 'Terintegrasi'));

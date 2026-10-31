@@ -831,7 +831,7 @@ const yearOf = (record) => {
 const yearSelect = document.getElementById('dashboard-year-filter');
 const updateCounts = () => {
   const year = yearSelect.value;
-  const visible = records.filter((r) => year === 'all' || yearOf(r) === year);
+  const visible = records.filter((r) => year === 'all' || yearOf(r) === year || (r.subLayers && r.subLayers.some((s) => (s.year || s.updated || '').includes(year))));
   const staged = IgtData.integrationRecords(visible);
   document.getElementById('count-compiled').textContent = IgtData.countByStatus(staged, 'Terkompilasi');
   document.getElementById('count-integrated').textContent = IgtData.countByStatus(staged, 'Terintegrasi');
