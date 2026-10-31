@@ -37,11 +37,12 @@ class DatasetCard(QFrame):
     wmsClicked = pyqtSignal(dict, object)   # (dataset, sublayer or None)
     wfsClicked = pyqtSignal(dict, object)   # (dataset, sublayer or None)
 
-    def __init__(self, dataset, is_expanded=False, parent=None):
+    def __init__(self, dataset, is_expanded=False, show_metadata=True, parent=None):
         super().__init__(parent)
         self.dataset = dataset
         self.has_subs = bool(dataset.get('subLayers'))
         self.is_expanded = is_expanded
+        self.show_metadata = show_metadata
         self.setObjectName('datasetCard')
 
         self.setStyleSheet("""
@@ -101,8 +102,9 @@ class DatasetCard(QFrame):
         """)
 
         card_layout = QVBoxLayout(self)
-        card_layout.setContentsMargins(12, 10, 12, 10)
-        card_layout.setSpacing(6)
+        top_bot = 6 if not self.show_metadata else 10
+        card_layout.setContentsMargins(12, top_bot, 12, top_bot)
+        card_layout.setSpacing(4 if not self.show_metadata else 6)
 
         # 1. Baris Utama: Kolom Kiri (Judul, Walidata, Tanggal) & Kolom Kanan (Aksi Vertikal di Tengah)
         main_row = QHBoxLayout()
@@ -149,18 +151,18 @@ class DatasetCard(QFrame):
 
         left_col.addLayout(title_row)
 
-        # Baris 2: Nama Direktorat (1 baris lega, melipat dinamis saat sempit)
-        org_text = dataset.get('direktorat') or dataset.get('satker') or dataset.get('instansi') or '—'
-        self.org_lbl = QLabel(org_text, self)
-        self.org_lbl.setStyleSheet("color: #475569; font-size: 11.5px; margin-left: 22px;")
-        self.org_lbl.setWordWrap(True)
-        left_col.addWidget(self.org_lbl)
+        # Baris 2 & 3: Nama Direktorat & Tanggal (hanya jika show_metadata=True, disembunyikan di dashboard agar tidak ramai)
+        if self.show_metadata:
+            org_text = dataset.get('direktorat') or dataset.get('satker') or dataset.get('instansi') or '—'
+            self.org_lbl = QLabel(org_text, self)
+            self.org_lbl.setStyleSheet("color: #475569; font-size: 11.5px; margin-left: 22px;")
+            self.org_lbl.setWordWrap(True)
+            left_col.addWidget(self.org_lbl)
 
-        # Baris 3: Tanggal Terintegrasi
-        date_text = dataset.get('updated') or dataset.get('date') or '—'
-        self.date_lbl = QLabel(f"Terintegrasi: {date_text}", self)
-        self.date_lbl.setStyleSheet("color: #64748b; font-size: 11px; margin-left: 22px;")
-        left_col.addWidget(self.date_lbl)
+            date_text = dataset.get('updated') or dataset.get('date') or '—'
+            self.date_lbl = QLabel(f"Terintegrasi: {date_text}", self)
+            self.date_lbl.setStyleSheet("color: #64748b; font-size: 11px; margin-left: 22px;")
+            left_col.addWidget(self.date_lbl)
 
         main_row.addLayout(left_col, 1)
 
@@ -845,7 +847,7 @@ class CatalogPage(QWidget):
                     if match_sub:
                         is_exp = True
 
-                card = DatasetCard(d, is_expanded=is_exp, parent=self.list_content)
+                card = DatasetCard(d, is_expanded=is_exp, show_metadata=not self.embedded, parent=self.list_content)
                 card.wmsClicked.connect(lambda ds, sl: self.wmsRequested.emit(ds, sl))
                 card.wfsClicked.connect(lambda ds, sl: self.wfsRequested.emit(ds, sl))
                 self.list_layout.addWidget(card)

@@ -2418,7 +2418,6 @@ tr.igt-sublayer-row td {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 6px;
 }
 .dash-card-title-wrap {
   display: inline-flex;
@@ -2497,6 +2496,7 @@ tr.igt-sublayer-row td {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  margin-top: 4px;
   margin-bottom: 3px;
 }
 
