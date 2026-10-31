@@ -71,6 +71,9 @@ const IgtApp = (() => {
   };
   const yearFilterOptions = (records) => '<option value="all" selected>Semua tahun</option>' + yearOptions(records).map((year) => '<option value="' + year + '">' + year + '</option>').join('');
   const provOptions = (records) => {
+    if (typeof IgtData !== 'undefined' && IgtData.REGIONS) {
+      return Object.keys(IgtData.REGIONS).sort();
+    }
     const fromData = records.map((r) => r.prov).filter(Boolean);
     const defaults = ['D.I. Yogyakarta', 'Jawa Tengah', 'Kalimantan Barat', 'Nasional'];
     return [...new Set([...fromData, ...defaults])].sort();
@@ -78,14 +81,20 @@ const IgtApp = (() => {
   const provFilterOptions = (records) =>
     '<option value="all" selected>Semua Provinsi</option>' +
     provOptions(records).map((p) => '<option value="' + p + '">' + p + '</option>').join('');
-  const kabOptions = (records) => {
+  const kabOptions = (records, selectedProv = 'all') => {
+    if (typeof IgtData !== 'undefined' && IgtData.REGIONS) {
+      if (selectedProv && selectedProv !== 'all' && IgtData.REGIONS[selectedProv]) {
+        return IgtData.REGIONS[selectedProv];
+      }
+      return [];
+    }
     const fromData = records.map((r) => r.kab).filter(Boolean);
     const defaults = ['Kab. Sleman', 'Kab. Bantul', 'Kab. Kulon Progo', 'Kab. Gunungkidul', 'Kota Yogyakarta', 'Multi-Kabupaten', 'Seluruh Indonesia'];
     return [...new Set([...fromData, ...defaults])].sort();
   };
-  const kabFilterOptions = (records) =>
+  const kabFilterOptions = (records, selectedProv = 'all') =>
     '<option value="all" selected>Semua Kab / Kota</option>' +
-    kabOptions(records).map((k) => '<option value="' + k + '">' + k + '</option>').join('');
+    kabOptions(records, selectedProv).map((k) => '<option value="' + k + '">' + k + '</option>').join('');
   const statCard = (label, num, hint, icon, cls, id) =>
     `<div class="card stat"><div><div class="label">${label}</div><div class="num" id="${id}">${num}</div>` +
     `<div class="hint">${hint}</div></div><div class="stat-icon${cls ? ' ' + cls : ''}">${icon}</div></div>`;
@@ -250,17 +259,18 @@ const IgtApp = (() => {
         }
         if (prov !== 'all') {
           const provHaystack = ((d.prov || '') + ' ' + (d.scope || '')).toLowerCase();
-          if (prov !== 'Nasional' && d.prov === 'Nasional') {
-            // Data lingkup nasional mencakup semua provinsi
-          } else if (!provHaystack.includes(prov.toLowerCase())) {
+          const pLower = prov.toLowerCase();
+          const matchAlias = (pLower.includes('yogyakarta') && (provHaystack.includes('yogyakarta') || provHaystack.includes('d.i.'))) ||
+                             (pLower.includes('jakarta') && (provHaystack.includes('jakarta') || provHaystack.includes('dki'))) ||
+                             (pLower.includes('bangka belitung') && provHaystack.includes('bangka')) ||
+                             provHaystack.includes(pLower);
+          if (!matchAlias && !provHaystack.includes('nasional')) {
             return false;
           }
         }
         if (kab !== 'all') {
           const kabHaystack = ((d.kab || '') + ' ' + (d.scope || '')).toLowerCase();
-          if (d.kab === 'Seluruh Indonesia' || d.prov === 'Nasional') {
-            // Data nasional mencakup seluruh kabupaten
-          } else if (!kabHaystack.includes(kab.toLowerCase())) {
+          if (!kabHaystack.includes(kab.toLowerCase())) {
             return false;
           }
         }
@@ -346,7 +356,16 @@ const IgtApp = (() => {
     }
     $('#catalog-search').addEventListener('input', (event) => { query = event.target.value; render(); });
     $('#catalog-year-filter').addEventListener('change', render);
-    if ($('#catalog-prov-filter')) $('#catalog-prov-filter').addEventListener('change', render);
+    if ($('#catalog-prov-filter')) {
+      $('#catalog-prov-filter').addEventListener('change', (e) => {
+        const selP = e.target.value;
+        if ($('#catalog-kab-filter')) {
+          $('#catalog-kab-filter').innerHTML = kabFilterOptions(datasets, selP);
+          $('#catalog-kab-filter').value = 'all';
+        }
+        render();
+      });
+    }
     if ($('#catalog-kab-filter')) $('#catalog-kab-filter').addEventListener('change', render);
     document.querySelectorAll('.sort-header').forEach((btn) => btn.addEventListener('click', () => {
       if (sortKey === btn.dataset.sort) sortDirection *= -1;
@@ -817,15 +836,25 @@ const IgtApp = (() => {
       return allRecords.filter((r) => r.category === cat && IgtData.inCatalog(r));
     }
 
-    function getProvOptions(cat) {
-      const records = getCategoryRecords(cat);
+    function getProvOptions() {
+      if (typeof IgtData !== 'undefined' && IgtData.REGIONS) {
+        return Object.keys(IgtData.REGIONS).sort();
+      }
+      const records = getCategoryRecords(currentCategory);
       const provs = records.map((r) => r.prov).filter(Boolean);
       return [...new Set(provs)].sort();
     }
 
-    function getKabOptions(cat, prov) {
-      let records = getCategoryRecords(cat);
-      if (prov !== 'all') {
+    function getKabOptions(provOrCat, maybeProv) {
+      const prov = maybeProv !== undefined ? maybeProv : provOrCat;
+      if (typeof IgtData !== 'undefined' && IgtData.REGIONS) {
+        if (prov && prov !== 'all' && IgtData.REGIONS[prov]) {
+          return IgtData.REGIONS[prov];
+        }
+        return [];
+      }
+      let records = getCategoryRecords(currentCategory);
+      if (prov && prov !== 'all') {
         records = records.filter((r) => ((r.prov || '') + ' ' + (r.scope || '')).toLowerCase().includes(prov.toLowerCase()));
       }
       const kabs = records.map((r) => r.kab).filter(Boolean);
@@ -846,7 +875,12 @@ const IgtApp = (() => {
         // 2. Filter Provinsi
         if (selectedProv !== 'all') {
           const provHaystack = ((d.prov || '') + ' ' + (d.scope || '')).toLowerCase();
-          if (!provHaystack.includes(selectedProv.toLowerCase())) {
+          const pLower = selectedProv.toLowerCase();
+          const matchAlias = (pLower.includes('yogyakarta') && (provHaystack.includes('yogyakarta') || provHaystack.includes('d.i.'))) ||
+                             (pLower.includes('jakarta') && (provHaystack.includes('jakarta') || provHaystack.includes('dki'))) ||
+                             (pLower.includes('bangka belitung') && provHaystack.includes('bangka')) ||
+                             provHaystack.includes(pLower);
+          if (!matchAlias && !provHaystack.includes('nasional')) {
             return false;
           }
         }
@@ -894,8 +928,8 @@ const IgtApp = (() => {
       const pageItems = filtered.slice(startIdx, endIdx);
 
       const catInfo = CATEGORIES[currentCategory] || CATEGORIES['igt-pr'];
-      const provOptions = getProvOptions(currentCategory);
-      const kabOptions = getKabOptions(currentCategory, selectedProv);
+      const provOptions = getProvOptions();
+      const kabOptions = getKabOptions(selectedProv);
 
       let html = '';
 
@@ -1086,7 +1120,7 @@ const IgtApp = (() => {
       if (provSelect) {
         provSelect.addEventListener('change', (e) => {
           selectedProv = e.target.value;
-          const validKabs = getKabOptions(currentCategory, selectedProv);
+          const validKabs = getKabOptions(selectedProv);
           if (!validKabs.includes(selectedKab)) {
             selectedKab = 'all';
           }

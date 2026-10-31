@@ -23,7 +23,7 @@ from qgis.PyQt.QtWidgets import (
 )
 
 from .assets import ICONS
-from .data import CATEGORIES, DATASETS, can_access_wfs
+from .data import CATEGORIES, DATASETS, INDONESIA_REGIONS, can_access_wfs
 from .login_page import svg_pixmap
 from .ui_kit import FlowLayout, icon_badge
 
@@ -782,13 +782,7 @@ class CatalogPage(QWidget):
         self.prov_combo.blockSignals(True)
         curr = self.prov_combo.currentText()
         self.prov_combo.clear()
-        datasets = self.get_category_datasets(self.current_category)
-        provs = set()
-        for d in datasets:
-            p = d.get('prov')
-            if p:
-                provs.add(p)
-        items = ['Semua Provinsi'] + sorted(list(provs))
+        items = ['Semua Provinsi'] + sorted(list(INDONESIA_REGIONS.keys()))
         self.prov_combo.addItems(items)
         if curr in items:
             self.prov_combo.setCurrentText(curr)
@@ -800,16 +794,12 @@ class CatalogPage(QWidget):
         self.kab_combo.blockSignals(True)
         curr = self.kab_combo.currentText()
         self.kab_combo.clear()
-        datasets = self.get_category_datasets(self.current_category)
         sel_prov = self.prov_combo.currentText()
-        if sel_prov != 'Semua Provinsi':
-            datasets = [d for d in datasets if sel_prov.lower() in ((d.get('prov') or '') + ' ' + (d.get('scope') or '')).lower()]
-        kabs = set()
-        for d in datasets:
-            k = d.get('kab')
-            if k:
-                kabs.add(k)
-        items = ['Semua Kab / Kota'] + sorted(list(kabs))
+        if sel_prov in INDONESIA_REGIONS:
+            kabs = INDONESIA_REGIONS[sel_prov]
+        else:
+            kabs = []
+        items = ['Semua Kab / Kota'] + kabs
         self.kab_combo.addItems(items)
         if curr in items:
             self.kab_combo.setCurrentText(curr)
@@ -907,7 +897,14 @@ class CatalogPage(QWidget):
             # 2. Filter Provinsi
             if selected_prov != 'Semua Provinsi':
                 prov_haystack = ((d.get('prov') or '') + ' ' + (d.get('scope') or '')).lower()
-                if selected_prov.lower() not in prov_haystack:
+                p_lower = selected_prov.lower()
+                match_alias = (
+                    ('yogyakarta' in p_lower and ('yogyakarta' in prov_haystack or 'd.i.' in prov_haystack))
+                    or ('jakarta' in p_lower and ('jakarta' in prov_haystack or 'dki' in prov_haystack))
+                    or ('bangka belitung' in p_lower and 'bangka' in prov_haystack)
+                    or (p_lower in prov_haystack)
+                )
+                if not match_alias and 'nasional' not in prov_haystack:
                     continue
 
             # 3. Filter Kabupaten (mengikuti provinsi terpilih)
