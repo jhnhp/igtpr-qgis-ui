@@ -930,9 +930,12 @@ const IgtApp = (() => {
                   <span class="dash-cat-badge ${badgeClass}">${badgeLabel}</span>
                 </div>
               </div>
-              <div class="dash-card-body">
-                <div class="dash-card-org" title="${org.replace(/"/g, '&quot;')}">${org}</div>
-                <div class="dash-card-date">${date}</div>
+              <div class="dash-card-org" title="${org.replace(/"/g, '&quot;')}">${org}</div>
+              <div class="dash-card-footer">
+                <div class="dash-card-date">
+                  <span class="dash-card-date-label">Terintegrasi:</span>
+                  <span class="dash-card-date-val">${date}</span>
+                </div>
                 <div class="dash-card-actions">
                   ${hasSubs ? `
                     <button type="button" class="igt-chip igt-chip--multi-layer dash-chip-toggle" data-dash-toggle="${d.id}" aria-expanded="${isExp}">
