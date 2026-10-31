@@ -770,9 +770,14 @@ const IgtApp = (() => {
     let currentPage = 1;
     let pageSize = 8;
     let query = '';
-    let selectedYear = 'all';
-    let selectedReg = 'all';
+    let selectedDir = 'all';
+    let selectedProv = 'all';
+    let selectedKab = 'all';
     const expandedIds = new Set();
+
+    // Sinkronisasi dengan filter tahun kanan atas (Dashboard)
+    const topYearSelect = document.getElementById('dashboard-year-filter');
+    let selectedYear = topYearSelect ? topYearSelect.value : 'all';
 
     const TABS = [
       { key: 'igt-pr', label: 'IGT-PR' },
@@ -782,32 +787,72 @@ const IgtApp = (() => {
       { key: 'lainnya', label: 'IGT K/L Lainnya' },
     ];
 
-    function getFiltered() {
+    function getCategoryRecords(cat) {
       const allRecords = IgtData.loadRecords();
-      let records = [];
-      if (currentCategory === 'igt-pr') {
-        records = allRecords.filter((r) => (r.category === 'pertanahan' || r.category === 'tata-ruang') && IgtData.inCatalog(r));
-      } else {
-        records = allRecords.filter((r) => r.category === currentCategory && IgtData.inCatalog(r));
+      if (cat === 'igt-pr') {
+        return allRecords.filter((r) => (r.category === 'pertanahan' || r.category === 'tata-ruang') && IgtData.inCatalog(r));
       }
+      return allRecords.filter((r) => r.category === cat && IgtData.inCatalog(r));
+    }
 
+    function getDirOptions(cat) {
+      const records = getCategoryRecords(cat);
+      const dirs = records.map((r) => (r.direktorat || r.satker || r.ditjen || r.instansi || r.source || '').trim()).filter(Boolean);
+      return [...new Set(dirs)].sort();
+    }
+
+    function getProvOptions(cat) {
+      const records = getCategoryRecords(cat);
+      const provs = records.map((r) => r.prov).filter(Boolean);
+      return [...new Set(provs)].sort();
+    }
+
+    function getKabOptions(cat, prov) {
+      let records = getCategoryRecords(cat);
+      if (prov !== 'all') {
+        records = records.filter((r) => ((r.prov || '') + ' ' + (r.scope || '')).toLowerCase().includes(prov.toLowerCase()));
+      }
+      const kabs = records.map((r) => r.kab).filter(Boolean);
+      return [...new Set(kabs)].sort();
+    }
+
+    function getFiltered() {
+      const records = getCategoryRecords(currentCategory);
       const q = query.trim().toLowerCase();
+
       return records.filter((d) => {
+        // 1. Filter Tahun dari filter kanan atas
         if (selectedYear !== 'all') {
           const matchParent = (d.updated || d.date || '').includes(selectedYear);
           const matchSub = d.subLayers && d.subLayers.some((s) => (s.year || s.updated || '').includes(selectedYear));
           if (!matchParent && !matchSub) return false;
         }
-        if (selectedReg !== 'all') {
-          const haystack = ((d.prov || '') + ' ' + (d.kab || '') + ' ' + (d.scope || '')).toLowerCase();
-          if (!haystack.includes(selectedReg.toLowerCase()) && !(d.prov && d.prov.toLowerCase().includes('nasional'))) {
+        // 2. Filter Direktorat / Instansi
+        if (selectedDir !== 'all') {
+          const orgVal = (d.direktorat || d.satker || d.ditjen || d.instansi || d.source || '').trim();
+          if (orgVal.toLowerCase() !== selectedDir.toLowerCase()) {
             return false;
           }
         }
+        // 3. Filter Provinsi
+        if (selectedProv !== 'all') {
+          const provHaystack = ((d.prov || '') + ' ' + (d.scope || '')).toLowerCase();
+          if (!provHaystack.includes(selectedProv.toLowerCase())) {
+            return false;
+          }
+        }
+        // 4. Filter Kabupaten (mengikuti provinsi)
+        if (selectedKab !== 'all') {
+          const kabHaystack = ((d.kab || '') + ' ' + (d.scope || '')).toLowerCase();
+          if (!kabHaystack.includes(selectedKab.toLowerCase())) {
+            return false;
+          }
+        }
+        // 5. Pencarian
         if (q) {
           const orgVal = d.direktorat || d.satker || d.ditjen || d.instansi || d.source || '';
           const subText = d.subLayers ? d.subLayers.map((s) => s.name + ' ' + (s.label || '')).join(' ') : '';
-          const haystack = (d.name + ' ' + (d.scope || '') + ' ' + orgVal + ' ' + subText).toLowerCase();
+          const haystack = (d.name + ' ' + (d.scope || '') + ' ' + orgVal + ' ' + (d.prov || '') + ' ' + (d.kab || '') + ' ' + subText).toLowerCase();
           if (!haystack.includes(q)) return false;
         }
         return true;
@@ -840,6 +885,9 @@ const IgtApp = (() => {
       const pageItems = filtered.slice(startIdx, endIdx);
 
       const catInfo = CATEGORIES[currentCategory] || CATEGORIES['igt-pr'];
+      const dirOptions = getDirOptions(currentCategory);
+      const provOptions = getProvOptions(currentCategory);
+      const kabOptions = getKabOptions(currentCategory, selectedProv);
 
       let html = '';
 
@@ -854,30 +902,30 @@ const IgtApp = (() => {
         </div>
       `;
 
-      // 2. Filter Box (Pencarian, Tahun, Wilayah)
+      // 2. Filter Box (Pencarian, Direktorat, Provinsi, Kabupaten)
       html += `
         <div class="dash-cat-filter-box">
           <div class="dash-cat-search-wrap">
             <input type="search" class="dash-cat-search-input" id="dash-cat-search-field" placeholder="Cari nama IGT, sublayer, direktorat, wilayah..." value="${query.replace(/"/g, '&quot;')}">
           </div>
           <div class="dash-cat-dropdowns">
-            <select class="dash-cat-select" id="dash-cat-year-select" aria-label="Filter Tahun">
-              <option value="all" ${selectedYear === 'all' ? 'selected' : ''}>Semua tahun</option>
-              <option value="2026" ${selectedYear === '2026' ? 'selected' : ''}>2026</option>
-              <option value="2025" ${selectedYear === '2025' ? 'selected' : ''}>2025</option>
-              <option value="2024" ${selectedYear === '2024' ? 'selected' : ''}>2024</option>
-              <option value="2023" ${selectedYear === '2023' ? 'selected' : ''}>2023</option>
-              <option value="2021" ${selectedYear === '2021' ? 'selected' : ''}>2021</option>
-              <option value="2019" ${selectedYear === '2019' ? 'selected' : ''}>2019</option>
+            <select class="dash-cat-select" id="dash-cat-dir-select" aria-label="Filter Direktorat">
+              <option value="all" ${selectedDir === 'all' ? 'selected' : ''}>${currentCategory === 'lainnya' ? 'Semua Instansi' : 'Semua Direktorat'}</option>
+              ${dirOptions.map((dir) => `
+                <option value="${dir.replace(/"/g, '&quot;')}" ${selectedDir === dir ? 'selected' : ''}>${dir}</option>
+              `).join('')}
             </select>
-            <select class="dash-cat-select" id="dash-cat-reg-select" aria-label="Filter Wilayah">
-              <option value="all" ${selectedReg === 'all' ? 'selected' : ''}>Semua Wilayah</option>
-              <option value="Kab. Sleman" ${selectedReg === 'Kab. Sleman' ? 'selected' : ''}>Kab. Sleman</option>
-              <option value="Kab. Bantul" ${selectedReg === 'Kab. Bantul' ? 'selected' : ''}>Kab. Bantul</option>
-              <option value="Kab. Kulon Progo" ${selectedReg === 'Kab. Kulon Progo' ? 'selected' : ''}>Kab. Kulon Progo</option>
-              <option value="Kab. Gunungkidul" ${selectedReg === 'Kab. Gunungkidul' ? 'selected' : ''}>Kab. Gunungkidul</option>
-              <option value="Kota Yogyakarta" ${selectedReg === 'Kota Yogyakarta' ? 'selected' : ''}>Kota Yogyakarta</option>
-              <option value="Nasional" ${selectedReg === 'Nasional' ? 'selected' : ''}>Nasional</option>
+            <select class="dash-cat-select" id="dash-cat-prov-select" aria-label="Filter Provinsi">
+              <option value="all" ${selectedProv === 'all' ? 'selected' : ''}>Semua Provinsi</option>
+              ${provOptions.map((p) => `
+                <option value="${p.replace(/"/g, '&quot;')}" ${selectedProv === p ? 'selected' : ''}>${p}</option>
+              `).join('')}
+            </select>
+            <select class="dash-cat-select" id="dash-cat-kab-select" aria-label="Filter Kabupaten">
+              <option value="all" ${selectedKab === 'all' ? 'selected' : ''}>Semua Kab / Kota</option>
+              ${kabOptions.map((k) => `
+                <option value="${k.replace(/"/g, '&quot;')}" ${selectedKab === k ? 'selected' : ''}>${k}</option>
+              `).join('')}
             </select>
           </div>
         </div>
@@ -887,8 +935,8 @@ const IgtApp = (() => {
       html += `
         <div class="dash-cat-summary">
           ${totalItems > 0
-            ? `Menampilkan ${startIdx + 1}–${endIdx} dari ${totalItems} dataset · Halaman ${currentPage} dari ${totalPages} · Kategori ${catInfo.label}`
-            : `Tidak ada dataset yang cocok dengan kriteria filter atau pencarian · Kategori ${catInfo.label}`
+            ? `Menampilkan ${startIdx + 1}–${endIdx} dari ${totalItems} dataset · Halaman ${currentPage} dari ${totalPages} · Kategori ${catInfo.label}${selectedYear !== 'all' ? ' · Tahun ' + selectedYear : ''}`
+            : `Tidak ada dataset yang cocok dengan kriteria filter atau pencarian · Kategori ${catInfo.label}${selectedYear !== 'all' ? ' · Tahun ' + selectedYear : ''}`
           }
         </div>
       `;
@@ -914,8 +962,6 @@ const IgtApp = (() => {
                              cat === 'tata-ruang' ? 'Tata Ruang' :
                              cat === 'derivatif' ? 'Derivatif' :
                              'K/L Lainnya';
-          const org = d.direktorat || d.satker || d.ditjen || d.instansi || d.source || '—';
-          const date = d.updated || d.date || '—';
           const iconHtml = cat === 'tata-ruang' ? ri('map-2-line') :
                            cat === 'derivatif' ? ri('stack-line') :
                            cat === 'lainnya' ? ri('global-line') :
@@ -1013,6 +1059,9 @@ const IgtApp = (() => {
         btn.addEventListener('click', () => {
           currentCategory = btn.dataset.dashCat;
           currentPage = 1;
+          selectedDir = 'all';
+          selectedProv = 'all';
+          selectedKab = 'all';
           render();
         });
       });
@@ -1031,19 +1080,32 @@ const IgtApp = (() => {
         });
       }
 
-      const yearSelect = rootEl.querySelector('#dash-cat-year-select');
-      if (yearSelect) {
-        yearSelect.addEventListener('change', (e) => {
-          selectedYear = e.target.value;
+      const dirSelect = rootEl.querySelector('#dash-cat-dir-select');
+      if (dirSelect) {
+        dirSelect.addEventListener('change', (e) => {
+          selectedDir = e.target.value;
           currentPage = 1;
           render();
         });
       }
 
-      const regSelect = rootEl.querySelector('#dash-cat-reg-select');
-      if (regSelect) {
-        regSelect.addEventListener('change', (e) => {
-          selectedReg = e.target.value;
+      const provSelect = rootEl.querySelector('#dash-cat-prov-select');
+      if (provSelect) {
+        provSelect.addEventListener('change', (e) => {
+          selectedProv = e.target.value;
+          const validKabs = getKabOptions(currentCategory, selectedProv);
+          if (!validKabs.includes(selectedKab)) {
+            selectedKab = 'all';
+          }
+          currentPage = 1;
+          render();
+        });
+      }
+
+      const kabSelect = rootEl.querySelector('#dash-cat-kab-select');
+      if (kabSelect) {
+        kabSelect.addEventListener('change', (e) => {
+          selectedKab = e.target.value;
           currentPage = 1;
           render();
         });
@@ -1105,6 +1167,15 @@ const IgtApp = (() => {
     }
 
     render();
+
+    return {
+      setYear: (y) => {
+        selectedYear = y;
+        currentPage = 1;
+        render();
+      },
+      render,
+    };
   }
 
   return { dashboard, catalog, upload, dashboardCatalog };

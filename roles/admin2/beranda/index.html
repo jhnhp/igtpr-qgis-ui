@@ -573,6 +573,8 @@ button.hub-item {
         <option value="2025">2025</option>
         <option value="2024">2024</option>
         <option value="2023">2023</option>
+        <option value="2021">2021</option>
+        <option value="2019">2019</option>
       </select>
     </div>
   </div>
@@ -611,7 +613,7 @@ button.hub-item {
 
   <!-- 0. KATALOG IGT (CARD UI & LIVE EMBEDDED) -->
   <section class="hub-card hub-card--catalog">
-    <div class="hub-card-head hub-card-head--interactive" onclick="location.href='../igt-pr/index.html'" style="cursor:pointer;" title="Klik untuk membuka halaman penuh katalog">
+    <div class="hub-card-head">
       <div class="hub-badge hub-badge--cyan">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
@@ -623,10 +625,6 @@ button.hub-item {
         <h2 class="hub-card-title">Katalog IGT</h2>
         <p class="hub-card-desc">Katalog terpadu data IGT Pertanahan dan Tata Ruang Kementerian ATR/BPN.</p>
       </div>
-      <a class="btn btn-soft btn-sm hub-card-action-btn" href="../igt-pr/index.html" onclick="event.stopPropagation();" title="Buka tampilan katalog terpisah penuh">
-        <span>Buka Katalog Lengkap</span>
-        <svg class="hub-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
-      </a>
     </div>
 
     <!-- Live Embedded Catalog: 5 Tab Kategori & Paginasi 8 Data Teratas -->
@@ -823,7 +821,7 @@ button.hub-item {
 <script src="../../../app.js"></script>
 <script>
 // Inisialisasi widget Katalog IGT langsung di dashboard utama (5 Tab, 8 data per halaman)
-IgtApp.dashboardCatalog('#dashboard-catalog-widget', 'admin2');
+const catWidget = IgtApp.dashboardCatalog('#dashboard-catalog-widget', 'admin2');
 
 const records = IgtData.loadRecords().filter((r) => IgtData.canView('admin2', r.category));
 const yearOf = (record) => {
@@ -837,6 +835,9 @@ const updateCounts = () => {
   const staged = IgtData.integrationRecords(visible);
   document.getElementById('count-compiled').textContent = IgtData.countByStatus(staged, 'Terkompilasi');
   document.getElementById('count-integrated').textContent = IgtData.countByStatus(staged, 'Terintegrasi');
+  if (catWidget && catWidget.setYear) {
+    catWidget.setYear(year);
+  }
 };
 yearSelect.addEventListener('change', updateCounts);
 updateCounts();

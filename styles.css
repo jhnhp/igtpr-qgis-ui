@@ -2367,8 +2367,13 @@ tr.igt-sublayer-row td {
 }
 .dash-cat-dropdowns {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
+}
+@media (max-width: 640px) {
+  .dash-cat-dropdowns {
+    grid-template-columns: 1fr;
+  }
 }
 .dash-cat-select {
   width: 100%;
