@@ -2476,6 +2476,18 @@ tr.igt-sublayer-row td {
   border: 1px solid #bae6fd;
 }
 
+/* Card Layout: Kolom Kiri (Judul, Walidata, Tanggal) & Kolom Kanan (Aksi Vertikal di Tengah) */
+.dash-card-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+.dash-card-left {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
 /* Baris 2: Nama Direktorat (1 baris di desktop/normal, dinamis wrap max 2 baris jika layar mengecil) */
 .dash-card-org {
   font-size: 11.5px;
@@ -2485,23 +2497,17 @@ tr.igt-sublayer-row td {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
 }
 
-/* Baris 3: Tanggal Terintegrasi (kiri) | Tombol Aksi (kanan) */
-.dash-card-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding-left: 26px;
-}
+/* Baris 3: Tanggal Terintegrasi */
 .dash-card-date {
   font-size: 11px;
   display: inline-flex;
   align-items: center;
   gap: 4px;
   white-space: nowrap;
+  padding-left: 26px;
 }
 .dash-card-date-label {
   font-weight: 500;
@@ -2511,12 +2517,27 @@ tr.igt-sublayer-row td {
   font-weight: 600;
   color: #475569;
 }
+
+/* Kolom Kanan: Tombol Aksi (Tepat di Tengah Vertikal) */
 .dash-card-actions {
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 6px;
-  flex: none;
+  flex: 0 0 auto;
+}
+
+@media (max-width: 360px) {
+  .dash-card-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .dash-card-actions {
+    width: 100%;
+    justify-content: flex-end;
+    padding-left: 26px;
+    margin-top: 2px;
+  }
 }
 
 @media (max-width: 680px) {

@@ -923,18 +923,20 @@ const IgtApp = (() => {
 
           html += `
             <div class="dash-card" data-id="${d.id}">
-              <div class="dash-card-header">
-                <div class="dash-card-title-wrap">
-                  <span class="dash-card-icon dash-card-icon--${cat}">${iconHtml}</span>
-                  <span class="dash-card-title">${d.name}</span>
-                  <span class="dash-cat-badge ${badgeClass}">${badgeLabel}</span>
-                </div>
-              </div>
-              <div class="dash-card-org" title="${org.replace(/"/g, '&quot;')}">${org}</div>
-              <div class="dash-card-footer">
-                <div class="dash-card-date">
-                  <span class="dash-card-date-label">Terintegrasi:</span>
-                  <span class="dash-card-date-val">${date}</span>
+              <div class="dash-card-row">
+                <div class="dash-card-left">
+                  <div class="dash-card-header">
+                    <div class="dash-card-title-wrap">
+                      <span class="dash-card-icon dash-card-icon--${cat}">${iconHtml}</span>
+                      <span class="dash-card-title">${d.name}</span>
+                      <span class="dash-cat-badge ${badgeClass}">${badgeLabel}</span>
+                    </div>
+                  </div>
+                  <div class="dash-card-org" title="${org.replace(/"/g, '&quot;')}">${org}</div>
+                  <div class="dash-card-date">
+                    <span class="dash-card-date-label">Terintegrasi:</span>
+                    <span class="dash-card-date-val">${date}</span>
+                  </div>
                 </div>
                 <div class="dash-card-actions">
                   ${hasSubs ? `
