@@ -21,7 +21,8 @@ from qgis.PyQt.QtWidgets import (
 )
 
 from qgis.core import (
-    QgsFeature, QgsField, QgsGeometry, QgsProject, QgsVectorLayer,
+    QgsFeature, QgsField, QgsFillSymbol, QgsGeometry, QgsProject,
+    QgsSingleSymbolRenderer, QgsVectorLayer,
 )
 
 from .assets import ICONS, Q_ICON
@@ -304,54 +305,133 @@ class IgtprLoginExample:
             return
         self._load_simulated_layer(dataset, sublayer, is_wms=False)
 
+    def _get_geojson_path(self):
+        """Mendapatkan path ke berkas batas administrasi kabupaten Indonesia."""
+        candidates = [
+            os.path.join(PLUGIN_DIR, 'indonesia-kabupaten.geojson'),
+            '/home/jhn/projects/SPPR/Mitraeka/IGTPR-UI-mockup/assets/data/indonesia-kabupaten.geojson',
+            os.path.abspath(os.path.join(PLUGIN_DIR, '..', '..', '..', 'IGTPR-UI-mockup', 'assets', 'data', 'indonesia-kabupaten.geojson')),
+        ]
+        for p in candidates:
+            if os.path.isfile(p):
+                return p
+        return None
+
     def _load_simulated_layer(self, dataset, sublayer=None, is_wms=True):
-        """Membuat memory vector layer simulasi di QGIS dan menampilkannya pada kanvas peta."""
+        """Membuat layer di QGIS dari berkas geojson kabupaten Indonesia dan menampilkannya pada kanvas peta."""
         service_type = 'WMS' if is_wms else 'WFS'
         layer_title = dataset['name']
         if sublayer:
             layer_title = f"{dataset['name']} ({sublayer.get('label') or sublayer.get('name')})"
 
         layer_name = f"[{service_type}] {layer_title}"
+        geojson_path = self._get_geojson_path()
 
-        # Buat memory layer polygon di area D.I. Yogyakarta (EPSG:4326)
-        mem_layer = QgsVectorLayer("Polygon?crs=EPSG:4326", layer_name, "memory")
-        if not mem_layer.isValid():
-            if hasattr(self.iface, 'messageBar') and self.iface.messageBar():
-                self.iface.messageBar().pushWarning('Geoportal IGT-PR', f"Gagal menginisialisasi layer {layer_name}")
-            return
+        layer = None
+        if geojson_path and os.path.isfile(geojson_path):
+            layer = QgsVectorLayer(geojson_path, layer_name, "ogr")
 
-        pr = mem_layer.dataProvider()
-        pr.addAttributes([
-            QgsField("nama_igt"),
-            QgsField("kategori"),
-            QgsField("direktorat"),
-            QgsField("satker"),
-            QgsField("tahun"),
-            QgsField("layanan"),
-        ])
-        mem_layer.updateFields()
+        if layer and layer.isValid():
+            try:
+                if is_wms:
+                    sym = QgsFillSymbol.createSimple({
+                        'color': '191,219,254,110',        # #bfdbfe dengan transparansi
+                        'outline_color': '31,111,214,255',  # #1f6fd6 biru tegas
+                        'outline_width': '0.5',
+                    })
+                else:
+                    sym = QgsFillSymbol.createSimple({
+                        'color': '237,233,254,110',        # #ede9fe dengan transparansi
+                        'outline_color': '124,58,237,255',  # #7c3aed ungu tegas
+                        'outline_width': '0.5',
+                    })
+                layer.setRenderer(QgsSingleSymbolRenderer(sym))
+                layer.triggerRepaint()
+            except Exception:
+                pass
 
-        # Polygon simulasi di wilayah Sleman / Yogyakarta
-        feat = QgsFeature()
-        feat.setGeometry(QgsGeometry.fromWkt(
-            "POLYGON((110.33 -7.73, 110.42 -7.73, 110.42 -7.82, 110.33 -7.82, 110.33 -7.73))"
-        ))
-        feat.setAttributes([
-            layer_title,
-            dataset.get('category', 'IGT'),
-            dataset.get('direktorat', 'Ditjen SPPR'),
-            dataset.get('satker', 'Kantah Kab. Sleman'),
-            dataset.get('updated', '2026'),
-            service_type,
-        ])
-        pr.addFeatures([feat])
-        mem_layer.updateExtents()
+            for old_layer in QgsProject.instance().mapLayersByName(layer_name):
+                QgsProject.instance().removeMapLayer(old_layer.id())
 
-        QgsProject.instance().addMapLayer(mem_layer)
+            QgsProject.instance().addMapLayer(layer)
 
-        if hasattr(self.iface, 'mapCanvas') and self.iface.mapCanvas():
-            self.iface.mapCanvas().setExtent(mem_layer.extent())
-            self.iface.mapCanvas().refresh()
+            # Arahkan zoom kanvas ke wilayah dataset yang sesuai jika ada
+            target_extent = None
+            if hasattr(self.iface, 'mapCanvas') and self.iface.mapCanvas():
+                kab_name = (dataset.get('kab') or '').lower().replace('kab.', '').replace('kota', '').strip()
+                if kab_name and kab_name not in ('seluruh indonesia', 'multi-kabupaten', 'semua kab / kota'):
+                    for f in layer.getFeatures():
+                        f_kab = (f['kabupaten'] or '').lower()
+                        if kab_name in f_kab or f_kab in kab_name:
+                            target_extent = f.geometry().boundingBox()
+                            target_extent.scale(1.3)
+                            break
+
+                if not target_extent:
+                    prov_name = (dataset.get('prov') or '').lower().strip()
+                    if 'yogyakarta' in prov_name or 'd.i.' in prov_name:
+                        prov_name = 'yogyakarta'
+                    elif 'jakarta' in prov_name or 'dki' in prov_name:
+                        prov_name = 'jakarta'
+                    if prov_name and prov_name not in ('nasional', 'semua provinsi'):
+                        for f in layer.getFeatures():
+                            f_prov = (f['provinsi'] or '').lower()
+                            if prov_name in f_prov:
+                                if target_extent is None:
+                                    target_extent = f.geometry().boundingBox()
+                                else:
+                                    target_extent.combineExtentWith(f.geometry().boundingBox())
+                        if target_extent:
+                            target_extent.scale(1.15)
+
+                if target_extent:
+                    self.iface.mapCanvas().setExtent(target_extent)
+                else:
+                    self.iface.mapCanvas().setExtent(layer.extent())
+                self.iface.mapCanvas().refresh()
+
+        else:
+            # Fallback jika berkas geojson tidak ditemukan
+            mem_layer = QgsVectorLayer("Polygon?crs=EPSG:4326", layer_name, "memory")
+            if not mem_layer.isValid():
+                if hasattr(self.iface, 'messageBar') and self.iface.messageBar():
+                    self.iface.messageBar().pushWarning('Geoportal IGT-PR', f"Gagal menginisialisasi layer {layer_name}")
+                return
+
+            pr = mem_layer.dataProvider()
+            pr.addAttributes([
+                QgsField("nama_igt"),
+                QgsField("kategori"),
+                QgsField("direktorat"),
+                QgsField("satker"),
+                QgsField("tahun"),
+                QgsField("layanan"),
+            ])
+            mem_layer.updateFields()
+
+            feat = QgsFeature()
+            feat.setGeometry(QgsGeometry.fromWkt(
+                "POLYGON((110.33 -7.73, 110.42 -7.73, 110.42 -7.82, 110.33 -7.82, 110.33 -7.73))"
+            ))
+            feat.setAttributes([
+                layer_title,
+                dataset.get('category', 'IGT'),
+                dataset.get('direktorat', 'Ditjen SPPR'),
+                dataset.get('satker', 'Kantah Kab. Sleman'),
+                dataset.get('updated', '2026'),
+                service_type,
+            ])
+            pr.addFeatures([feat])
+            mem_layer.updateExtents()
+
+            for old_layer in QgsProject.instance().mapLayersByName(layer_name):
+                QgsProject.instance().removeMapLayer(old_layer.id())
+
+            QgsProject.instance().addMapLayer(mem_layer)
+
+            if hasattr(self.iface, 'mapCanvas') and self.iface.mapCanvas():
+                self.iface.mapCanvas().setExtent(mem_layer.extent())
+                self.iface.mapCanvas().refresh()
 
         sub_msg = f" (Sub-layer: {sublayer['name']})" if sublayer else ""
         if hasattr(self.iface, 'messageBar') and self.iface.messageBar():
@@ -364,26 +444,69 @@ class IgtprLoginExample:
         """Menampilkan layer data pengajuan ke kanvas QGIS."""
         layer_title = record.get('name') or record.get('layer', 'Layer')
         layer_name = f"[Pengajuan] {layer_title}"
-        mem_layer = QgsVectorLayer("Polygon?crs=EPSG:4326", layer_name, "memory")
-        if mem_layer.isValid():
-            pr = mem_layer.dataProvider()
-            pr.addAttributes([QgsField("id_pengajuan"), QgsField("status"), QgsField("satker")])
-            mem_layer.updateFields()
-            feat = QgsFeature()
-            feat.setGeometry(QgsGeometry.fromWkt(
-                "POLYGON((110.35 -7.75, 110.40 -7.75, 110.40 -7.80, 110.35 -7.80, 110.35 -7.75))"
-            ))
-            feat.setAttributes([record.get('id', ''), record.get('status', ''), record.get('satker', '')])
-            pr.addFeatures([feat])
-            mem_layer.updateExtents()
-            QgsProject.instance().addMapLayer(mem_layer)
+        geojson_path = self._get_geojson_path()
+
+        layer = None
+        if geojson_path and os.path.isfile(geojson_path):
+            layer = QgsVectorLayer(geojson_path, layer_name, "ogr")
+
+        if layer and layer.isValid():
+            try:
+                sym = QgsFillSymbol.createSimple({
+                    'color': '254,243,199,120',        # Amber lembut
+                    'outline_color': '217,119,6,255',   # #d97706 oranye tua
+                    'outline_width': '0.5',
+                })
+                layer.setRenderer(QgsSingleSymbolRenderer(sym))
+                layer.triggerRepaint()
+            except Exception:
+                pass
+
+            for old_layer in QgsProject.instance().mapLayersByName(layer_name):
+                QgsProject.instance().removeMapLayer(old_layer.id())
+
+            QgsProject.instance().addMapLayer(layer)
+
+            target_extent = None
             if hasattr(self.iface, 'mapCanvas') and self.iface.mapCanvas():
-                self.iface.mapCanvas().setExtent(mem_layer.extent())
+                satker = (record.get('satker') or '').lower()
+                for f in layer.getFeatures():
+                    f_kab = (f['kabupaten'] or '').lower()
+                    if f_kab and f_kab in satker:
+                        target_extent = f.geometry().boundingBox()
+                        target_extent.scale(1.3)
+                        break
+
+                if target_extent:
+                    self.iface.mapCanvas().setExtent(target_extent)
+                else:
+                    self.iface.mapCanvas().setExtent(layer.extent())
                 self.iface.mapCanvas().refresh()
+        else:
+            mem_layer = QgsVectorLayer("Polygon?crs=EPSG:4326", layer_name, "memory")
+            if mem_layer.isValid():
+                pr = mem_layer.dataProvider()
+                pr.addAttributes([QgsField("id_pengajuan"), QgsField("status"), QgsField("satker")])
+                mem_layer.updateFields()
+                feat = QgsFeature()
+                feat.setGeometry(QgsGeometry.fromWkt(
+                    "POLYGON((110.35 -7.75, 110.40 -7.75, 110.40 -7.80, 110.35 -7.80, 110.35 -7.75))"
+                ))
+                feat.setAttributes([record.get('id', ''), record.get('status', ''), record.get('satker', '')])
+                pr.addFeatures([feat])
+                mem_layer.updateExtents()
+                for old_layer in QgsProject.instance().mapLayersByName(layer_name):
+                    QgsProject.instance().removeMapLayer(old_layer.id())
+                QgsProject.instance().addMapLayer(mem_layer)
+                if hasattr(self.iface, 'mapCanvas') and self.iface.mapCanvas():
+                    self.iface.mapCanvas().setExtent(mem_layer.extent())
+                    self.iface.mapCanvas().refresh()
 
         if hasattr(self.iface, 'messageBar') and self.iface.messageBar():
             self.iface.messageBar().pushInfo(
-                'Tampilkan Layer', f"Layer pengajuan '{layer_title}' (Status: {record['status']}) dimuat ke kanvas.")
+                'Layer Pengajuan Dimuat',
+                f"Data pengajuan '{layer_title}' berhasil ditampilkan pada kanvas peta QGIS."
+            )
 
     def on_management_action(self, action, record):
         if not (hasattr(self.iface, 'messageBar') and self.iface.messageBar()):
