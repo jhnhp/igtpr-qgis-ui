@@ -927,23 +927,24 @@ const IgtApp = (() => {
                 <div class="dash-card-title-wrap">
                   <span class="dash-card-icon dash-card-icon--${cat}">${iconHtml}</span>
                   <span class="dash-card-title">${d.name}</span>
+                  <span class="dash-cat-badge ${badgeClass}">${badgeLabel}</span>
                 </div>
-                <span class="dash-cat-badge ${badgeClass}">${badgeLabel}</span>
               </div>
-              <div class="dash-card-meta">
-                <span>${org}</span> · <span>${date}</span>
-              </div>
-              <div class="dash-card-actions">
-                ${hasSubs ? `
-                  <button type="button" class="igt-chip igt-chip--multi-layer dash-chip-toggle" data-dash-toggle="${d.id}" aria-expanded="${isExp}">
-                    <span class="igt-chip__text">Multi-Layer</span>
-                    <span class="igt-chip__count">${d.subLayers.length} Layer</span>
-                    <span class="igt-chip__caret" aria-hidden="true">${isExp ? '▴' : '▾'}</span>
-                  </button>
-                ` : `
-                  <button type="button" class="dash-btn-wms" data-action="wms" data-name="${d.name.replace(/"/g, '&quot;')}">WMS</button>
-                  <button type="button" class="dash-btn-wfs" data-action="wfs" data-name="${d.name.replace(/"/g, '&quot;')}">WFS</button>
-                `}
+              <div class="dash-card-body">
+                <div class="dash-card-org" title="${org.replace(/"/g, '&quot;')}">${org}</div>
+                <div class="dash-card-date">${date}</div>
+                <div class="dash-card-actions">
+                  ${hasSubs ? `
+                    <button type="button" class="igt-chip igt-chip--multi-layer dash-chip-toggle" data-dash-toggle="${d.id}" aria-expanded="${isExp}">
+                      <span class="igt-chip__text">Multi-Layer</span>
+                      <span class="igt-chip__count">${d.subLayers.length} Layer</span>
+                      <span class="igt-chip__caret" aria-hidden="true">${isExp ? '▴' : '▾'}</span>
+                    </button>
+                  ` : `
+                    <button type="button" class="dash-btn-wms" data-action="wms" data-name="${d.name.replace(/"/g, '&quot;')}">WMS</button>
+                    <button type="button" class="dash-btn-wfs" data-action="wfs" data-name="${d.name.replace(/"/g, '&quot;')}">WFS</button>
+                  `}
+                </div>
               </div>
               ${hasSubs ? `
                 <div class="dash-sub-container" style="${isExp ? '' : 'display:none;'}">
