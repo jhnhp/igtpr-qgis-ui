@@ -574,26 +574,37 @@ class CatalogPage(QWidget):
         self.pag_card.setObjectName('pagCard')
         self.pag_card.setStyleSheet("""
             QFrame#pagCard {
-                background-color: #ffffff;
+                background-color: #f8fafc;
                 border: 1px solid #e2e8f0;
                 border-radius: 10px;
-                padding: 6px 8px;
+                padding: 6px 10px;
+            }
+            QComboBox#sizeCombo {
+                border: 1px solid #cbd5e1;
+                border-radius: 6px;
+                padding: 3px 6px;
+                font-size: 11px;
+                font-weight: 600;
+                color: #0f294d;
+                background-color: #ffffff;
             }
             QPushButton#prevBtn, QPushButton#nextBtn {
                 background-color: #ffffff;
                 color: #1f6fd6;
                 border: 1px solid #cbd5e1;
                 border-radius: 6px;
-                padding: 4px 10px;
-                font-size: 11px;
-                font-weight: 700;
+                min-width: 28px;
+                max-width: 28px;
+                min-height: 28px;
+                max-height: 28px;
+                padding: 0;
             }
             QPushButton#prevBtn:hover, QPushButton#nextBtn:hover {
                 background-color: #eff6ff;
                 border-color: #93c5fd;
             }
             QPushButton#prevBtn:disabled, QPushButton#nextBtn:disabled {
-                background-color: #f8fafc;
+                background-color: #f1f5f9;
                 color: #94a3b8;
                 border-color: #e2e8f0;
             }
@@ -602,9 +613,11 @@ class CatalogPage(QWidget):
                 color: #334155;
                 border: 1px solid #cbd5e1;
                 border-radius: 6px;
-                min-width: 24px;
+                min-width: 28px;
                 max-width: 32px;
-                padding: 3px 5px;
+                min-height: 28px;
+                max-height: 28px;
+                padding: 0;
                 font-size: 11px;
                 font-weight: 700;
             }
@@ -619,51 +632,54 @@ class CatalogPage(QWidget):
             }
         """)
 
-        self.pag_main_layout = QVBoxLayout(self.pag_card)
-        self.pag_main_layout.setContentsMargins(2, 2, 2, 2)
-        self.pag_main_layout.setSpacing(4)
+        self.pag_main_layout = QHBoxLayout(self.pag_card)
+        self.pag_main_layout.setContentsMargins(4, 2, 4, 2)
+        self.pag_main_layout.setSpacing(8)
 
-        # Baris 1: Prev, Halaman Selector, Next
-        nav_row = QHBoxLayout()
-        nav_row.setContentsMargins(0, 0, 0, 0)
-        nav_row.setSpacing(6)
+        # Bagian Kiri Bawah: Pilihan menampilkan berapa card
+        size_wrap = QHBoxLayout()
+        size_wrap.setSpacing(6)
+        self.size_lbl = QLabel('Tampilkan:', self.pag_card)
+        self.size_lbl.setStyleSheet("color: #64748b; font-size: 11px; font-weight: 700;")
+        size_wrap.addWidget(self.size_lbl)
 
-        self.prev_btn = QPushButton('Sebelumnya', self.pag_card)
+        self.size_combo = QComboBox(self.pag_card)
+        self.size_combo.setObjectName('sizeCombo')
+        for count in [4, 8, 12, 16, 24]:
+            self.size_combo.addItem(f"{count} card", count)
+        self.size_combo.setCurrentIndex(1)  # Default 8 card
+        self.size_combo.currentIndexChanged.connect(self._on_page_size_changed)
+        size_wrap.addWidget(self.size_combo)
+        self.pag_main_layout.addLayout(size_wrap)
+
+        self.pag_main_layout.addStretch(1)
+
+        # Bagian Kanan Bawah: Seluruh navigasi page disatukan [←] [1] [2] [3] [4] [→]
+        nav_group = QHBoxLayout()
+        nav_group.setSpacing(4)
+
+        self.prev_btn = QPushButton(self.pag_card)
         self.prev_btn.setObjectName('prevBtn')
-        self.prev_btn.setIcon(QIcon(svg_pixmap(ICONS['arrow-left'].format(color='#1f6fd6'), QSize(13, 13))))
+        self.prev_btn.setIcon(QIcon(svg_pixmap(ICONS['arrow-left'].format(color='#1f6fd6'), QSize(14, 14))))
+        self.prev_btn.setToolTip('Halaman sebelumnya')
         self.prev_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.prev_btn.clicked.connect(self._on_prev_page)
-        nav_row.addWidget(self.prev_btn)
+        nav_group.addWidget(self.prev_btn)
 
-        # Direct Page Selector ComboBox
-        jump_layout = QHBoxLayout()
-        jump_layout.setSpacing(3)
-        self.jump_lbl = QLabel('Halaman:', self.pag_card)
-        self.jump_lbl.setStyleSheet("color: #475569; font-size: 11px; font-weight: 600;")
-        jump_layout.addWidget(self.jump_lbl)
-
-        self.page_selector = QComboBox(self.pag_card)
-        self.page_selector.setStyleSheet("font-size: 11px; padding: 2px 4px; min-width: 58px;")
-        self.page_selector.currentIndexChanged.connect(self._on_page_selected)
-        jump_layout.addWidget(self.page_selector)
-        nav_row.addLayout(jump_layout)
-
-        self.next_btn = QPushButton('Berikutnya', self.pag_card)
-        self.next_btn.setObjectName('nextBtn')
-        self.next_btn.setIcon(QIcon(svg_pixmap(ICONS['chevron-right'].format(color='#1f6fd6'), QSize(13, 13))))
-        self.next_btn.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
-        self.next_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.next_btn.clicked.connect(self._on_next_page)
-        nav_row.addWidget(self.next_btn)
-
-        self.pag_main_layout.addLayout(nav_row)
-
-        # Baris 2: Tombol Nomor Halaman
         self.page_numbers_layout = QHBoxLayout()
         self.page_numbers_layout.setContentsMargins(0, 0, 0, 0)
         self.page_numbers_layout.setSpacing(4)
-        self.page_numbers_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.pag_main_layout.addLayout(self.page_numbers_layout)
+        nav_group.addLayout(self.page_numbers_layout)
+
+        self.next_btn = QPushButton(self.pag_card)
+        self.next_btn.setObjectName('nextBtn')
+        self.next_btn.setIcon(QIcon(svg_pixmap(ICONS['chevron-right'].format(color='#1f6fd6'), QSize(14, 14))))
+        self.next_btn.setToolTip('Halaman berikutnya')
+        self.next_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.next_btn.clicked.connect(self._on_next_page)
+        nav_group.addWidget(self.next_btn)
+
+        self.pag_main_layout.addLayout(nav_group)
 
         main_layout.addWidget(self.pag_card)
 
@@ -684,14 +700,8 @@ class CatalogPage(QWidget):
                 self.open_full_btn.setText('Buka Lengkap →')
             else:
                 self.open_full_btn.setText('Buka Katalog Lengkap →')
-        if w < 380:
-            self.prev_btn.setText('Prev')
-            self.next_btn.setText('Next')
-            self.jump_lbl.setVisible(False)
-        else:
-            self.prev_btn.setText('Sebelumnya')
-            self.next_btn.setText('Berikutnya')
-            self.jump_lbl.setVisible(True)
+        if hasattr(self, 'size_lbl'):
+            self.size_lbl.setVisible(w >= 360)
 
     # ------------------------------------------------------------------ Kategori & Filter
     def set_category(self, cat_key):
@@ -871,16 +881,16 @@ class CatalogPage(QWidget):
             btn.clicked.connect(lambda checked, page_num=p: self._go_to_page(page_num))
             self.page_numbers_layout.addWidget(btn)
 
-        # Update Dropdown Selector
-        self.page_selector.blockSignals(True)
-        self.page_selector.clear()
-        for p in range(1, total_pages + 1):
-            self.page_selector.addItem(f"{p} / {total_pages}", p)
-        self.page_selector.setCurrentIndex(self.current_page - 1)
-        self.page_selector.blockSignals(False)
-
-        # Sembunyikan pagination jika dataset <= 8 dan hanya 1 halaman
+        # Sembunyikan pagination jika dataset <= page_size dan hanya 1 halaman
         self.pag_card.setVisible(total_items > self.page_size or total_pages > 1)
+
+    def _on_page_size_changed(self, index):
+        if index >= 0:
+            sz = self.size_combo.itemData(index)
+            if sz and sz != self.page_size:
+                self.page_size = sz
+                self.current_page = 1
+                self._render_page()
 
     def _on_prev_page(self):
         if self.current_page > 1:
@@ -893,13 +903,6 @@ class CatalogPage(QWidget):
         if self.current_page < total_pages:
             self.current_page += 1
             self._render_page()
-
-    def _on_page_selected(self, index):
-        if index >= 0:
-            target_page = self.page_selector.itemData(index)
-            if target_page and target_page != self.current_page:
-                self.current_page = target_page
-                self._render_page()
 
     def _go_to_page(self, page_num):
         if page_num != self.current_page:

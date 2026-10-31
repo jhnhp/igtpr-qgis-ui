@@ -768,7 +768,7 @@ const IgtApp = (() => {
 
     let currentCategory = 'igt-pr';
     let currentPage = 1;
-    const pageSize = 8;
+    let pageSize = 8;
     let query = '';
     let selectedYear = 'all';
     let selectedReg = 'all';
@@ -977,24 +977,26 @@ const IgtApp = (() => {
       if (totalItems > pageSize || totalPages > 1) {
         html += `
           <div class="dash-cat-pag-box">
-            <div class="dash-cat-pag-row">
-              <button type="button" class="dash-pag-nav-btn dash-pag-prev" ${currentPage <= 1 ? 'disabled' : ''}>
-                ← Sebelumnya
-              </button>
-              <div class="dash-pag-select-wrap">
-                <label style="font-size:11px;font-weight:700;color:#64748b;margin-right:4px;">Halaman:</label>
-                <select class="dash-pag-select" id="dash-cat-page-select" aria-label="Pilih Halaman">
-                  ${Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => `
-                    <option value="${p}" ${p === currentPage ? 'selected' : ''}>${p} / ${totalPages}</option>
-                  `).join('')}
-                </select>
-              </div>
-              <button type="button" class="dash-pag-nav-btn dash-pag-next" ${currentPage >= totalPages ? 'disabled' : ''}>
-                Berikutnya →
-              </button>
+            <div class="dash-cat-pagesize-wrap">
+              <label for="dash-cat-pagesize-select" class="dash-cat-pagesize-label">Tampilkan:</label>
+              <select class="dash-cat-pagesize-select" id="dash-cat-pagesize-select" aria-label="Jumlah card per halaman">
+                <option value="4" ${pageSize === 4 ? 'selected' : ''}>4 card</option>
+                <option value="8" ${pageSize === 8 ? 'selected' : ''}>8 card</option>
+                <option value="12" ${pageSize === 12 ? 'selected' : ''}>12 card</option>
+                <option value="16" ${pageSize === 16 ? 'selected' : ''}>16 card</option>
+                <option value="24" ${pageSize === 24 ? 'selected' : ''}>24 card</option>
+              </select>
             </div>
-            <div class="dash-pag-numbers">
-              ${renderPageNumbers(currentPage, totalPages)}
+            <div class="dash-pag-nav-group">
+              <button type="button" class="dash-pag-nav-btn dash-pag-prev" ${currentPage <= 1 ? 'disabled' : ''} aria-label="Sebelumnya" title="Halaman sebelumnya">
+                ←
+              </button>
+              <div class="dash-pag-numbers">
+                ${renderPageNumbers(currentPage, totalPages)}
+              </div>
+              <button type="button" class="dash-pag-nav-btn dash-pag-next" ${currentPage >= totalPages ? 'disabled' : ''} aria-label="Berikutnya" title="Halaman berikutnya">
+                →
+              </button>
             </div>
           </div>
         `;
@@ -1003,6 +1005,15 @@ const IgtApp = (() => {
       rootEl.innerHTML = html;
 
       // Attach Event Listeners
+      const pageSizeSelect = rootEl.querySelector('#dash-cat-pagesize-select');
+      if (pageSizeSelect) {
+        pageSizeSelect.addEventListener('change', (e) => {
+          pageSize = parseInt(e.target.value, 10) || 8;
+          currentPage = 1;
+          render();
+        });
+      }
+
       rootEl.querySelectorAll('[data-dash-cat]').forEach((btn) => {
         btn.addEventListener('click', () => {
           currentCategory = btn.dataset.dashCat;
@@ -1058,17 +1069,6 @@ const IgtApp = (() => {
         nextBtn.addEventListener('click', () => {
           if (currentPage < totalPages) {
             currentPage += 1;
-            render();
-          }
-        });
-      }
-
-      const pageSelect = rootEl.querySelector('#dash-cat-page-select');
-      if (pageSelect) {
-        pageSelect.addEventListener('change', (e) => {
-          const val = parseInt(e.target.value, 10);
-          if (val && val !== currentPage) {
-            currentPage = val;
             render();
           }
         });
