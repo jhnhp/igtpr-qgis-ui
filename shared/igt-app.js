@@ -867,19 +867,6 @@ const IgtApp = (() => {
         return true;
       });
     }
-            return false;
-          }
-        }
-        // 5. Pencarian
-        if (q) {
-          const orgVal = d.direktorat || d.satker || d.ditjen || d.instansi || d.source || '';
-          const subText = d.subLayers ? d.subLayers.map((s) => s.name + ' ' + (s.label || '')).join(' ') : '';
-          const haystack = (d.name + ' ' + (d.scope || '') + ' ' + orgVal + ' ' + (d.prov || '') + ' ' + (d.kab || '') + ' ' + subText).toLowerCase();
-          if (!haystack.includes(q)) return false;
-        }
-        return true;
-      });
-    }
 
     function renderPageNumbers(curr, total) {
       const maxBtns = 5;
