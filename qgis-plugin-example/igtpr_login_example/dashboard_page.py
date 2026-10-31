@@ -180,7 +180,7 @@ class DashboardPage(ResponsivePage):
     def set_role(self, role_id):
         self.current_role = role_id
         if hasattr(self, 'catalog_widget'):
-            self.catalog_widget.current_role = role_id
+            self.catalog_widget.set_role(role_id)
         self._build_workflow()
         self._update_counts()
 

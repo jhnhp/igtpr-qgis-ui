@@ -27,7 +27,7 @@ from qgis.core import (
 from .assets import ICONS, Q_ICON
 from .catalog_page import CatalogPage
 from .dashboard_page import DashboardPage
-from .data import CATEGORIES, DATASETS, ROLES, SUBMISSIONS
+from .data import CATEGORIES, DATASETS, ROLES, SUBMISSIONS, can_access_wfs
 from .login_page import LoginPage, svg_pixmap
 from .management_page import ManagementPage
 from .model_builder_page import ModelBuilderPage
@@ -177,6 +177,7 @@ class IgtprDockWidget(QDockWidget):
         self.current_role = role_id
         self.topbar.set_role(role_id)
         self.dashboard_page.set_role(role_id)
+        self.catalog_page.set_role(role_id)
         self.management_page.set_role(role_id)
 
 
@@ -293,6 +294,13 @@ class IgtprLoginExample:
         self._load_simulated_layer(dataset, sublayer, is_wms=True)
 
     def on_load_wfs(self, dataset, sublayer=None):
+        if not can_access_wfs(self.dock.current_role, dataset):
+            if hasattr(self.iface, 'messageBar') and self.iface.messageBar():
+                self.iface.messageBar().pushWarning(
+                    'Akses WFS Dibatasi',
+                    f"Akses fitur WFS dibatasi untuk satker terkait ({dataset.get('satker') or 'Satker Terkait'})."
+                )
+            return
         self._load_simulated_layer(dataset, sublayer, is_wms=False)
 
     def _load_simulated_layer(self, dataset, sublayer=None, is_wms=True):

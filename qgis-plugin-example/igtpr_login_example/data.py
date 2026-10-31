@@ -6,6 +6,7 @@ ROLES = {
         'id': 'superadmin',
         'label': 'Superadmin',
         'avatar': 'SA',
+        'satker': 'Semua Satker',
         'color': '#1e40af',
         'bg': '#dbeafe',
         'desc': 'Akses penuh seluruh katalog, verifikasi, manajemen pengajuan, dan konfigurasi data.',
@@ -14,6 +15,7 @@ ROLES = {
         'id': 'admin',
         'label': 'Admin',
         'avatar': 'AD',
+        'satker': 'Kantah Kab. Sleman',
         'color': '#6b21a8',
         'bg': '#ede9fe',
         'desc': 'Verifikasi & persetujuan pengajuan IGT Utama & Derivatif, serta Model Builder.',
@@ -22,6 +24,7 @@ ROLES = {
         'id': 'operator',
         'label': 'Operator Pusat',
         'avatar': 'JH',
+        'satker': 'Kantah Kab. Sleman',
         'color': '#166534',
         'bg': '#dcfce7',
         'desc': 'Unggah data IGT Utama & Derivatif, perbaikan revisi, dan pemantauan proses kompilasi.',
@@ -30,11 +33,33 @@ ROLES = {
         'id': 'umum',
         'label': 'Pengguna Umum',
         'avatar': 'UM',
+        'satker': None,
         'color': '#334155',
         'bg': '#f1f5f9',
         'desc': 'Akses katalog terintegrasi, unggah derivatif multiguna, dan pemodelan spasial.',
     },
 }
+
+
+def can_access_wfs(role_id, dataset):
+    """Cek apakah role yang aktif memiliki izin untuk mengakses layer fitur WFS:
+    - Superadmin: Bisa akses semua WFS.
+    - Admin: Bisa akses WFS sesuai satkernya (Kantah Kab. Sleman).
+    - Operator: Bisa akses WFS sesuai satkernya (Kantah Kab. Sleman).
+    - Umum: Hanya WMS (tidak dapat mengakses WFS).
+    """
+    if not role_id:
+        return False
+    r = str(role_id).replace('2', '').lower()
+    if r == 'superadmin':
+        return True
+    if r == 'umum':
+        return False
+    role_cfg = ROLES.get(r, {})
+    user_satker = role_cfg.get('satker') or 'Kantah Kab. Sleman'
+    ds_satker = str(dataset.get('satker') or dataset.get('direktorat') or '').strip().lower()
+    return 'sleman' in ds_satker or ds_satker == user_satker.lower()
+
 
 CATEGORIES = {
     'igt-pr': {

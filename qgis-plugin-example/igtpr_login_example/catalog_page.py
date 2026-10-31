@@ -23,7 +23,7 @@ from qgis.PyQt.QtWidgets import (
 )
 
 from .assets import ICONS
-from .data import CATEGORIES, DATASETS
+from .data import CATEGORIES, DATASETS, can_access_wfs
 from .login_page import svg_pixmap
 from .ui_kit import FlowLayout, icon_badge
 
@@ -37,12 +37,13 @@ class DatasetCard(QFrame):
     wmsClicked = pyqtSignal(dict, object)   # (dataset, sublayer or None)
     wfsClicked = pyqtSignal(dict, object)   # (dataset, sublayer or None)
 
-    def __init__(self, dataset, is_expanded=False, show_metadata=True, parent=None):
+    def __init__(self, dataset, is_expanded=False, show_metadata=True, allow_wfs=True, parent=None):
         super().__init__(parent)
         self.dataset = dataset
         self.has_subs = bool(dataset.get('subLayers'))
         self.is_expanded = is_expanded
         self.show_metadata = show_metadata
+        self.allow_wfs = allow_wfs
         self.setObjectName('datasetCard')
 
         self.setStyleSheet("""
@@ -186,11 +187,12 @@ class DatasetCard(QFrame):
             self.btn_wms.clicked.connect(lambda: self.wmsClicked.emit(self.dataset, None))
             action_wrap.addWidget(self.btn_wms)
 
-            self.btn_wfs = QPushButton('WFS', self)
-            self.btn_wfs.setObjectName('actionWfs')
-            self.btn_wfs.setCursor(Qt.CursorShape.PointingHandCursor)
-            self.btn_wfs.clicked.connect(lambda: self.wfsClicked.emit(self.dataset, None))
-            action_wrap.addWidget(self.btn_wfs)
+            if self.allow_wfs:
+                self.btn_wfs = QPushButton('WFS', self)
+                self.btn_wfs.setObjectName('actionWfs')
+                self.btn_wfs.setCursor(Qt.CursorShape.PointingHandCursor)
+                self.btn_wfs.clicked.connect(lambda: self.wfsClicked.emit(self.dataset, None))
+                action_wrap.addWidget(self.btn_wfs)
 
         main_row.addLayout(action_wrap, 0)
         main_row.setAlignment(action_wrap, Qt.AlignmentFlag.AlignVCenter)
@@ -249,25 +251,26 @@ class DatasetCard(QFrame):
                 btn_sub_wms.clicked.connect(lambda checked, s=sub: self.wmsClicked.emit(self.dataset, s))
                 sr_layout.addWidget(btn_sub_wms)
 
-                btn_sub_wfs = QPushButton('WFS', sub_row)
-                btn_sub_wfs.setCursor(Qt.CursorShape.PointingHandCursor)
-                btn_sub_wfs.setStyleSheet("""
-                    QPushButton {
-                        background-color: #ffffff;
-                        color: #7c3aed;
-                        border: 1px solid #ddd6fe;
-                        border-radius: 5px;
-                        font-size: 10px;
-                        font-weight: 600;
-                        padding: 2px 7px;
-                    }
-                    QPushButton:hover {
-                        background-color: #f5f3ff;
-                        border-color: #7c3aed;
-                    }
-                """)
-                btn_sub_wfs.clicked.connect(lambda checked, s=sub: self.wfsClicked.emit(self.dataset, s))
-                sr_layout.addWidget(btn_sub_wfs)
+                if self.allow_wfs:
+                    btn_sub_wfs = QPushButton('WFS', sub_row)
+                    btn_sub_wfs.setCursor(Qt.CursorShape.PointingHandCursor)
+                    btn_sub_wfs.setStyleSheet("""
+                        QPushButton {
+                            background-color: #ffffff;
+                            color: #7c3aed;
+                            border: 1px solid #ddd6fe;
+                            border-radius: 5px;
+                            font-size: 10px;
+                            font-weight: 600;
+                            padding: 2px 7px;
+                        }
+                        QPushButton:hover {
+                            background-color: #f5f3ff;
+                            border-color: #7c3aed;
+                        }
+                    """)
+                    btn_sub_wfs.clicked.connect(lambda checked, s=sub: self.wfsClicked.emit(self.dataset, s))
+                    sr_layout.addWidget(btn_sub_wfs)
 
                 subs_layout.addWidget(sub_row)
 
@@ -520,25 +523,14 @@ class CatalogPage(QWidget):
         search_box.addWidget(s_lbl)
         self.search_input = QLineEdit(self.filter_card)
         self.search_input.setObjectName('searchInput')
-        self.search_input.setPlaceholderText('Cari nama IGT, sublayer, direktorat, wilayah...')
+        self.search_input.setPlaceholderText('Cari nama IGT, sublayer, wilayah...')
         self.search_input.textChanged.connect(self._on_filter_changed)
         search_box.addWidget(self.search_input)
         self.fc_main_layout.addLayout(search_box)
 
-        # Dropdowns row (Direktorat + Provinsi + Kabupaten)
+        # Dropdowns row (Provinsi + Kabupaten)
         filter_row = QHBoxLayout()
         filter_row.setSpacing(8)
-
-        # Direktorat Filter
-        dir_box = QVBoxLayout()
-        dir_box.setSpacing(2)
-        self.dir_lbl = QLabel('DIREKTORAT', self.filter_card)
-        self.dir_lbl.setStyleSheet("color: #64748b; font-size: 9px; font-weight: 800; letter-spacing: 0.5px;")
-        dir_box.addWidget(self.dir_lbl)
-        self.dir_combo = QComboBox(self.filter_card)
-        self.dir_combo.currentIndexChanged.connect(self._on_dir_changed)
-        dir_box.addWidget(self.dir_combo)
-        filter_row.addLayout(dir_box, 1)
 
         # Provinsi Filter
         prov_box = QVBoxLayout()
@@ -726,27 +718,6 @@ class CatalogPage(QWidget):
             return [d for d in DATASETS if d.get('category') in ('pertanahan', 'tata-ruang')]
         return [d for d in DATASETS if d.get('category') == cat]
 
-    def _populate_dir_combo(self):
-        self.dir_combo.blockSignals(True)
-        curr = self.dir_combo.currentText()
-        self.dir_combo.clear()
-        is_lainnya = self.current_category == 'lainnya'
-        self.dir_lbl.setText('INSTANSI' if is_lainnya else 'DIREKTORAT')
-        default_opt = 'Semua Instansi' if is_lainnya else 'Semua Direktorat'
-        datasets = self.get_category_datasets(self.current_category)
-        dirs = set()
-        for d in datasets:
-            org = (d.get('direktorat') or d.get('satker') or d.get('ditjen') or d.get('instansi') or d.get('source') or '').strip()
-            if org:
-                dirs.add(org)
-        items = [default_opt] + sorted(list(dirs))
-        self.dir_combo.addItems(items)
-        if curr in items:
-            self.dir_combo.setCurrentText(curr)
-        else:
-            self.dir_combo.setCurrentIndex(0)
-        self.dir_combo.blockSignals(False)
-
     def _populate_prov_combo(self):
         self.prov_combo.blockSignals(True)
         curr = self.prov_combo.currentText()
@@ -791,8 +762,8 @@ class CatalogPage(QWidget):
         self.current_page = 1
         self._render_page()
 
-    def _on_dir_changed(self):
-        self.current_page = 1
+    def set_role(self, role_id):
+        self.current_role = role_id
         self._render_page()
 
     def _on_prov_changed(self):
@@ -821,7 +792,6 @@ class CatalogPage(QWidget):
             self.title_lbl.setText(f"Katalog {cat_info['label']}")
             self.desc_lbl.setText(f"{cat_info['desc']} Memuat data WMS/WFS langsung ke kanvas QGIS.")
 
-        self._populate_dir_combo()
         self._populate_prov_combo()
         self._populate_kab_combo()
 
@@ -860,7 +830,6 @@ class CatalogPage(QWidget):
 
     def _get_filtered_records(self):
         query = self.search_input.text().strip().lower()
-        selected_dir = self.dir_combo.currentText()
         selected_prov = self.prov_combo.currentText()
         selected_kab = self.kab_combo.currentText()
 
@@ -875,25 +844,19 @@ class CatalogPage(QWidget):
                 if not (match_p or match_sub):
                     continue
 
-            # 2. Filter Direktorat / Instansi
-            if selected_dir not in ('Semua Direktorat', 'Semua Instansi'):
-                org_val = (d.get('direktorat') or d.get('satker') or d.get('ditjen') or d.get('instansi') or d.get('source') or '').strip()
-                if org_val.lower() != selected_dir.lower():
-                    continue
-
-            # 3. Filter Provinsi
+            # 2. Filter Provinsi
             if selected_prov != 'Semua Provinsi':
                 prov_haystack = ((d.get('prov') or '') + ' ' + (d.get('scope') or '')).lower()
                 if selected_prov.lower() not in prov_haystack:
                     continue
 
-            # 4. Filter Kabupaten (mengikuti provinsi terpilih)
+            # 3. Filter Kabupaten (mengikuti provinsi terpilih)
             if selected_kab != 'Semua Kab / Kota':
                 kab_haystack = ((d.get('kab') or '') + ' ' + (d.get('scope') or '')).lower()
                 if selected_kab.lower() not in kab_haystack:
                     continue
 
-            # 5. Filter Pencarian
+            # 4. Filter Pencarian
             if query:
                 org_val = d.get('direktorat', '') or d.get('satker', '') or d.get('ditjen', '') or d.get('instansi', '') or d.get('source', '')
                 subs_text = ' '.join([s.get('name', '') + ' ' + s.get('label', '') for s in d.get('subLayers', [])])
@@ -912,6 +875,7 @@ class CatalogPage(QWidget):
             item = self.list_layout.takeAt(0)
             w = item.widget()
             if w:
+                w.setParent(None)
                 w.deleteLater()
 
         all_cat_records, filtered = self._get_filtered_records()
@@ -958,7 +922,8 @@ class CatalogPage(QWidget):
                     if match_sub:
                         is_exp = True
 
-                card = DatasetCard(d, is_expanded=is_exp, show_metadata=not self.embedded, parent=self.list_content)
+                allow_wfs = can_access_wfs(self.current_role, d)
+                card = DatasetCard(d, is_expanded=is_exp, show_metadata=not self.embedded, allow_wfs=allow_wfs, parent=self.list_content)
                 card.wmsClicked.connect(lambda ds, sl: self.wmsRequested.emit(ds, sl))
                 card.wfsClicked.connect(lambda ds, sl: self.wfsRequested.emit(ds, sl))
                 self.list_layout.addWidget(card)
