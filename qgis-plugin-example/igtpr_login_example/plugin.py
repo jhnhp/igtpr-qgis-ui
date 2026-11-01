@@ -29,12 +29,14 @@ from .assets import ICONS, Q_ICON
 from .catalog_page import CatalogPage
 from .dashboard_page import DashboardPage
 from .data import CATEGORIES, DATASETS, ROLES, SUBMISSIONS, can_access_wfs
+from .derivatif_dialog import DerivatifBidangDialog
 from .login_page import LoginPage, svg_pixmap
 from .management_page import ManagementPage
 from .model_builder_page import ModelBuilderPage
 from .role_dialog import RoleDialog
 from .topbar import TopbarWidget
-from .upload_dialog import UploadPage
+from .topology_dialog import TopologyCheckDialog
+from .upload_dialog import UploadIgtUtamaDialog, UploadPage
 
 PLUGIN_DIR = os.path.dirname(__file__)
 MENU_TITLE = '&Geoportal IGT-PR'
@@ -130,6 +132,7 @@ class IgtprDockWidget(QDockWidget):
         self.dashboard_page.openCatalogRequested.connect(self.show_catalog)
         self.dashboard_page.openManagementRequested.connect(self.show_management)
         self.dashboard_page.openUploadRequested.connect(self.show_upload)
+        self.dashboard_page.openKustomDerivatifRequested.connect(self.show_kustom_derivatif)
         self.dashboard_page.openModelBuilderRequested.connect(self.show_model_builder)
         self.dashboard_page.logoutRequested.connect(self.show_login)
 
@@ -167,10 +170,18 @@ class IgtprDockWidget(QDockWidget):
         self.stack.setCurrentWidget(self.management_page)
 
     def show_upload(self, category_key='pertanahan'):
-        self.topbar.show()
-        self.topbar.set_breadcrumbs(['Unggah Data'])
-        self.upload_page.set_category(category_key)
-        self.stack.setCurrentWidget(self.upload_page)
+        # Menampilkan modal popup Unggah Data langsung sesuai mockup V2
+        main_win = self.window()
+        dlg = UploadIgtUtamaDialog(current_category=category_key, iface=self.iface, parent=main_win)
+        dlg.uploadSubmitted.connect(self.upload_page.uploadSubmitted.emit)
+        dlg.exec_()
+
+    def show_kustom_derivatif(self):
+        # Menampilkan dialog Derivatif Per Bidang langsung sesuai review Lutfi
+        main_win = self.window()
+        dlg = DerivatifBidangDialog(iface=self.iface, parent=main_win)
+        dlg.derivatifSaved.connect(self.upload_page.uploadSubmitted.emit)
+        dlg.exec_()
 
     def show_model_builder(self):
         self.topbar.show()
@@ -539,10 +550,21 @@ class IgtprLoginExample:
                 f"Data '{rec_name}' ({rec_id}) berhasil dikompilasi ke sistem integrasi."
             )
         elif action == 'topology':
-            self.iface.messageBar().pushInfo(
-                'Verifikasi Topologi Selesai',
-                f"Hasil verifikasi topologi '{rec_name}': 0 gap error, 0 overlap error. Topologi VALID."
-            )
+            self.on_show_submission_layer(record)
+            main_win = self.iface.mainWindow() if hasattr(self.iface, 'mainWindow') else (self.dock.window() if self.dock else None)
+            dlg = TopologyCheckDialog(record, parent=main_win)
+            if dlg.exec_() == TopologyCheckDialog.DialogCode.Accepted:
+                if hasattr(self.iface, 'messageBar') and self.iface.messageBar():
+                    self.iface.messageBar().pushSuccess(
+                        'Verifikasi Topologi Selesai',
+                        f"Hasil verifikasi topologi '{rec_name}': 0 gap error, 0 overlap error. Topologi VALID."
+                    )
+            else:
+                if hasattr(self.iface, 'messageBar') and self.iface.messageBar():
+                    self.iface.messageBar().pushInfo(
+                        'Pemeriksaan Topologi Ditutup',
+                        f"Pemeriksaan topologi '{rec_name}' selesai ditinjau."
+                    )
         elif action == 'approve-integration':
             self.iface.messageBar().pushSuccess(
                 'Integrasi Disetujui',

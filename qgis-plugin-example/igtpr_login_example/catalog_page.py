@@ -37,9 +37,10 @@ class DatasetCard(QFrame):
     wmsClicked = pyqtSignal(dict, object)   # (dataset, sublayer or None)
     wfsClicked = pyqtSignal(dict, object)   # (dataset, sublayer or None)
 
-    def __init__(self, dataset, is_expanded=False, show_metadata=True, allow_wfs=True, parent=None):
+    def __init__(self, dataset, seq_no=1, is_expanded=False, show_metadata=True, allow_wfs=True, parent=None):
         super().__init__(parent)
         self.dataset = dataset
+        self.seq_no = seq_no
         self.has_subs = bool(dataset.get('subLayers'))
         self.is_expanded = is_expanded
         self.show_metadata = show_metadata
@@ -65,8 +66,8 @@ class DatasetCard(QFrame):
                 border-radius: 6px;
                 font-size: 11px;
                 font-weight: 700;
-                padding: 4px 10px;
-                min-width: 48px;
+                padding: 4px 8px;
+                min-width: 44px;
             }
             QPushButton#actionWms:hover {
                 background-color: #1f6fd6;
@@ -79,11 +80,25 @@ class DatasetCard(QFrame):
                 border-radius: 6px;
                 font-size: 11px;
                 font-weight: 700;
-                padding: 4px 10px;
-                min-width: 48px;
+                padding: 4px 8px;
+                min-width: 44px;
             }
             QPushButton#actionWfs:hover {
                 background-color: #7c3aed;
+                color: #ffffff;
+            }
+            QPushButton#actionBoth {
+                background-color: #ecfdf5;
+                color: #047857;
+                border: 1px solid #a7f3d0;
+                border-radius: 6px;
+                font-size: 11px;
+                font-weight: 700;
+                padding: 4px 8px;
+                min-width: 58px;
+            }
+            QPushButton#actionBoth:hover {
+                background-color: #047857;
                 color: #ffffff;
             }
             QPushButton#multiChip {
@@ -107,7 +122,7 @@ class DatasetCard(QFrame):
         card_layout.setContentsMargins(12, top_bot, 12, top_bot)
         card_layout.setSpacing(4 if not self.show_metadata else 6)
 
-        # 1. Baris Utama: Kolom Kiri (Judul, Walidata, Tanggal) & Kolom Kanan (Aksi Vertikal di Tengah)
+        # 1. Baris Utama: Kolom Kiri (Nomor, Ikon Kategori, Judul, Walidata, Tanggal) & Kolom Kanan (Aksi Vertikal di Tengah)
         self.main_row = QBoxLayout(QBoxLayout.Direction.LeftToRight)
         self.main_row.setContentsMargins(0, 0, 0, 0)
         self.main_row.setSpacing(10)
@@ -116,10 +131,24 @@ class DatasetCard(QFrame):
         left_col.setContentsMargins(0, 0, 0, 0)
         left_col.setSpacing(3)
 
-        # Baris 1: Icon + Judul IGT + Chip Kategori
+        # Baris 1: Nomor Urut + Ikon Kategori Ringkas + Judul IGT (tidak di-bold)
         title_row = QHBoxLayout()
         title_row.setContentsMargins(0, 0, 0, 0)
         title_row.setSpacing(6)
+
+        self.num_lbl = QLabel(str(self.seq_no), self)
+        self.num_lbl.setStyleSheet("""
+            background-color: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 6px;
+            min-width: 16px;
+        """)
+        self.num_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        title_row.addWidget(self.num_lbl, 0, Qt.AlignmentFlag.AlignVCenter)
 
         self.icon_lbl = QLabel(self)
         cat = dataset.get('category', '')
@@ -129,27 +158,10 @@ class DatasetCard(QFrame):
         title_row.addWidget(self.icon_lbl, 0, Qt.AlignmentFlag.AlignVCenter)
 
         self.title_lbl = QLabel(dataset.get('name', ''), self)
-        self.title_lbl.setStyleSheet("color: #0f294d; font-size: 13px; font-weight: 700;")
+        self.title_lbl.setStyleSheet("color: #0f294d; font-size: 13px; font-weight: 500;")
         self.title_lbl.setWordWrap(True)
         self.title_lbl.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         title_row.addWidget(self.title_lbl, 1, Qt.AlignmentFlag.AlignVCenter)
-
-        # Kategori Tag (Berdampingan di kanan nama IGT)
-        cat_badge = QLabel(self)
-        cat_badge.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        if cat == 'pertanahan':
-            cat_badge.setText('Pertanahan')
-            cat_badge.setStyleSheet("background-color: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; border-radius: 4px; font-size: 9.5px; font-weight: 700; padding: 1px 6px;")
-        elif cat == 'tata-ruang':
-            cat_badge.setText('Tata Ruang')
-            cat_badge.setStyleSheet("background-color: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; border-radius: 4px; font-size: 9.5px; font-weight: 700; padding: 1px 6px;")
-        elif cat == 'derivatif':
-            cat_badge.setText('Derivatif')
-            cat_badge.setStyleSheet("background-color: #f5f3ff; color: #7c3aed; border: 1px solid #ddd6fe; border-radius: 4px; font-size: 9.5px; font-weight: 700; padding: 1px 6px;")
-        else:
-            cat_badge.setText('K/L Lainnya')
-            cat_badge.setStyleSheet("background-color: #f0f9ff; color: #0284c7; border: 1px solid #bae6fd; border-radius: 4px; font-size: 9.5px; font-weight: 700; padding: 1px 6px;")
-        title_row.addWidget(cat_badge, 0, Qt.AlignmentFlag.AlignVCenter)
 
         left_col.addLayout(title_row)
 
@@ -194,6 +206,13 @@ class DatasetCard(QFrame):
                 self.btn_wfs.setCursor(Qt.CursorShape.PointingHandCursor)
                 self.btn_wfs.clicked.connect(lambda: self.wfsClicked.emit(self.dataset, None))
                 self.action_wrap.addWidget(self.btn_wfs)
+
+                self.btn_both = QPushButton('Keduanya', self)
+                self.btn_both.setObjectName('actionBoth')
+                self.btn_both.setToolTip('Muat layer WMS dan WFS sekaligus ke kanvas peta QGIS')
+                self.btn_both.setCursor(Qt.CursorShape.PointingHandCursor)
+                self.btn_both.clicked.connect(self._load_both)
+                self.action_wrap.addWidget(self.btn_both)
 
         self.main_row.addLayout(self.action_wrap, 0)
         self.main_row.setAlignment(self.action_wrap, Qt.AlignmentFlag.AlignVCenter)
@@ -273,10 +292,35 @@ class DatasetCard(QFrame):
                     btn_sub_wfs.clicked.connect(lambda checked, s=sub: self.wfsClicked.emit(self.dataset, s))
                     sr_layout.addWidget(btn_sub_wfs)
 
+                    btn_sub_both = QPushButton('Keduanya', sub_row)
+                    btn_sub_both.setToolTip('Muat layer WMS dan WFS sekaligus ke kanvas peta QGIS')
+                    btn_sub_both.setCursor(Qt.CursorShape.PointingHandCursor)
+                    btn_sub_both.setStyleSheet("""
+                        QPushButton {
+                            background-color: #ffffff;
+                            color: #047857;
+                            border: 1px solid #a7f3d0;
+                            border-radius: 5px;
+                            font-size: 10px;
+                            font-weight: 600;
+                            padding: 2px 7px;
+                        }
+                        QPushButton:hover {
+                            background-color: #ecfdf5;
+                            border-color: #047857;
+                        }
+                    """)
+                    btn_sub_both.clicked.connect(lambda checked, s=sub: (self.wmsClicked.emit(self.dataset, s), self.wfsClicked.emit(self.dataset, s)))
+                    sr_layout.addWidget(btn_sub_both)
+
                 subs_layout.addWidget(sub_row)
 
             self.subs_container.setVisible(self.is_expanded)
             card_layout.addWidget(self.subs_container)
+
+    def _load_both(self):
+        self.wmsClicked.emit(self.dataset, None)
+        self.wfsClicked.emit(self.dataset, None)
 
     def toggle_expand(self):
         if not self.has_subs:
@@ -535,26 +579,48 @@ class CatalogPage(QWidget):
         self.fc_main_layout.setContentsMargins(4, 4, 4, 4)
         self.fc_main_layout.setSpacing(6)
 
-        # Search box
-        search_box = QVBoxLayout()
-        search_box.setSpacing(2)
-        s_lbl = QLabel('PENCARIAN DATASET', self.filter_card)
-        s_lbl.setStyleSheet("color: #64748b; font-size: 9px; font-weight: 800; letter-spacing: 0.5px;")
-        search_box.addWidget(s_lbl)
+        # Search & Filter Row (Pencarian di kiri, tombol Filter di kanan)
+        filter_top_row = QHBoxLayout()
+        filter_top_row.setContentsMargins(0, 0, 0, 0)
+        filter_top_row.setSpacing(6)
+
         self.search_input = QLineEdit(self.filter_card)
         self.search_input.setObjectName('searchInput')
         self.search_input.setPlaceholderText('Cari nama IGT, sublayer, wilayah...')
         self.search_input.textChanged.connect(self._on_filter_changed)
-        search_box.addWidget(self.search_input)
-        self.fc_main_layout.addLayout(search_box)
+        filter_top_row.addWidget(self.search_input, 1)
 
-        # Dropdowns row (Provinsi + Kabupaten)
-        self.filter_box_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
-        self.filter_box_layout.setContentsMargins(0, 0, 0, 0)
+        self.filter_toggle_btn = QPushButton('Filter', self.filter_card)
+        self.filter_toggle_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.filter_toggle_btn.setIcon(QIcon(svg_pixmap(ICONS.get('filter', ICONS['layers']).format(color='#1f6fd6'), QSize(14, 14))))
+        self.filter_toggle_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #ffffff;
+                color: #1f6fd6;
+                border: 1.5px solid #cbd5e1;
+                border-radius: 8px;
+                padding: 6px 12px;
+                font-size: 11.5px;
+                font-weight: 700;
+            }
+            QPushButton:hover {
+                background-color: #eff6ff;
+                border-color: #93c5fd;
+            }
+        """)
+        self.filter_toggle_btn.clicked.connect(self._toggle_filter_dropdowns)
+        filter_top_row.addWidget(self.filter_toggle_btn)
+        self.fc_main_layout.addLayout(filter_top_row)
+
+        # Dropdowns container (Provinsi + Kabupaten) - Toggleable / Collapsible
+        self.filter_dropdowns_container = QWidget(self.filter_card)
+        self.filter_dropdowns_container.setVisible(False)
+        self.filter_box_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight, self.filter_dropdowns_container)
+        self.filter_box_layout.setContentsMargins(0, 4, 0, 0)
         self.filter_box_layout.setSpacing(8)
 
         # Provinsi Filter
-        prov_box = QWidget(self.filter_card)
+        prov_box = QWidget(self.filter_dropdowns_container)
         prov_box_layout = QVBoxLayout(prov_box)
         prov_box_layout.setContentsMargins(0, 0, 0, 0)
         prov_box_layout.setSpacing(2)
@@ -568,7 +634,7 @@ class CatalogPage(QWidget):
         self.filter_box_layout.addWidget(prov_box, 1)
 
         # Kabupaten Filter
-        kab_box = QWidget(self.filter_card)
+        kab_box = QWidget(self.filter_dropdowns_container)
         kab_box_layout = QVBoxLayout(kab_box)
         kab_box_layout.setContentsMargins(0, 0, 0, 0)
         kab_box_layout.setSpacing(2)
@@ -581,7 +647,7 @@ class CatalogPage(QWidget):
         kab_box_layout.addWidget(self.kab_combo)
         self.filter_box_layout.addWidget(kab_box, 1)
 
-        self.fc_main_layout.addLayout(self.filter_box_layout)
+        self.fc_main_layout.addWidget(self.filter_dropdowns_container)
         target_layout.addWidget(self.filter_card)
 
         # 4. Count & Summary Info
@@ -816,6 +882,40 @@ class CatalogPage(QWidget):
         self.current_role = role_id
         self._render_page()
 
+    def _toggle_filter_dropdowns(self):
+        is_vis = not self.filter_dropdowns_container.isVisible()
+        self.filter_dropdowns_container.setVisible(is_vis)
+        if is_vis:
+            self.filter_toggle_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #1f6fd6;
+                    color: #ffffff;
+                    border: 1.5px solid #1f6fd6;
+                    border-radius: 8px;
+                    padding: 6px 12px;
+                    font-size: 11.5px;
+                    font-weight: 700;
+                }
+            """)
+            self.filter_toggle_btn.setIcon(QIcon(svg_pixmap(ICONS.get('filter', ICONS['layers']).format(color='#ffffff'), QSize(14, 14))))
+        else:
+            self.filter_toggle_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #ffffff;
+                    color: #1f6fd6;
+                    border: 1.5px solid #cbd5e1;
+                    border-radius: 8px;
+                    padding: 6px 12px;
+                    font-size: 11.5px;
+                    font-weight: 700;
+                }
+                QPushButton:hover {
+                    background-color: #eff6ff;
+                    border-color: #93c5fd;
+                }
+            """)
+            self.filter_toggle_btn.setIcon(QIcon(svg_pixmap(ICONS.get('filter', ICONS['layers']).format(color='#1f6fd6'), QSize(14, 14))))
+
     def _on_prov_changed(self):
         self._populate_kab_combo()
         self.current_page = 1
@@ -973,7 +1073,7 @@ class CatalogPage(QWidget):
         else:
             query = self.search_input.text().strip().lower()
             sel_yr = getattr(self, 'selected_year', 'Semua tahun')
-            for d in page_items:
+            for idx, d in enumerate(page_items):
                 d_id = d.get('id', '')
                 is_exp = self.expanded_states.get(d_id, False)
                 if query and d.get('subLayers'):
@@ -986,7 +1086,7 @@ class CatalogPage(QWidget):
                         is_exp = True
 
                 allow_wfs = can_access_wfs(self.current_role, d)
-                card = DatasetCard(d, is_expanded=is_exp, show_metadata=not self.embedded, allow_wfs=allow_wfs, parent=self.list_content)
+                card = DatasetCard(d, seq_no=start_idx + idx + 1, is_expanded=is_exp, show_metadata=not self.embedded, allow_wfs=allow_wfs, parent=self.list_content)
                 card.apply_width(self.width())
                 card.wmsClicked.connect(lambda ds, sl: self.wmsRequested.emit(ds, sl))
                 card.wfsClicked.connect(lambda ds, sl: self.wfsRequested.emit(ds, sl))

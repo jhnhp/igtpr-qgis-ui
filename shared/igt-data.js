@@ -52,7 +52,7 @@ const IgtData = (() => {
     admin2: { label: 'Admin', avatar: 'AD', satker: 'Kantah Kab. Sleman', view: ALL, upload: ['pertanahan', 'tata-ruang', 'derivatif'], derivatifWorkflow: true, v2: true, baseRole: 'admin' },
     operator: { label: 'Operator Pusat', avatar: 'JH', satker: 'Kantah Kab. Sleman', view: ALL, upload: ['pertanahan', 'tata-ruang', 'derivatif'], derivatifWorkflow: true },
     operator2: { label: 'Operator Pusat', avatar: 'JH', satker: 'Kantah Kab. Sleman', view: ALL, upload: ['pertanahan', 'tata-ruang', 'derivatif'], derivatifWorkflow: true, v2: true, baseRole: 'operator' },
-    umum: { label: 'Umum', avatar: 'UM', satker: null, view: ALL, upload: ['derivatif'], ownSubmissionsOnly: true },
+    umum: { label: 'Umum', avatar: 'UM', satker: null, view: ALL, upload: ['derivatif'], ownSubmissionsOnly: true, derivatifWorkflow: true },
     umum2: { label: 'Umum', avatar: 'UM', satker: null, view: ALL, upload: ['derivatif'], ownSubmissionsOnly: true, derivatifWorkflow: true, v2: true, baseRole: 'umum' },
   };
 

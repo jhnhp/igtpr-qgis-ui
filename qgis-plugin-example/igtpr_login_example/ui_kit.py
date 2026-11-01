@@ -406,7 +406,6 @@ class HubItem(ClickableCard):
         lay.addWidget(icon_label(icon_key, color, 18, self))
         lbl = label(text, 'hubItem' if bold else 'body', True, self)
         lay.addWidget(lbl, 1)
-        lay.addWidget(icon_label('chevron-right', '#64748b', 14, self))
 
     def minimumSizeHint(self):
         return QSize(80, 32)

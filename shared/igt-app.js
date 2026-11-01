@@ -110,13 +110,8 @@ const IgtApp = (() => {
 
   function managementCategories(role) {
     const base = baseRoleOf(role);
-    const availableCategories = CATEGORY_ORDER.filter((key) => IgtData.canUpload(base, key));
-    // Superadmin can review IGT Utama and derivatif, but may only upload IGT Lainnya.
-    if (base === 'superadmin') return ['igt-utama', 'derivatif', ...availableCategories.filter((key) => key === 'lainnya')];
-    return [
-      ...(availableCategories.some((key) => key === 'pertanahan' || key === 'tata-ruang') ? ['igt-utama'] : []),
-      ...availableCategories.filter((key) => key !== 'pertanahan' && key !== 'tata-ruang'),
-    ];
+    if (base === 'umum') return ['derivatif'];
+    return ['igt-utama', 'derivatif'];
   }
 
   const managementLabel = (key) => (key === 'semua' ? 'Semua Kategori' : key === 'igt-utama' ? 'IGT Utama' : CATEGORIES[key].label);
@@ -518,7 +513,7 @@ const IgtApp = (() => {
         extras.push(button('btn-primary', 'compile', r.id, ri('check-line') + '<span>Kompilasi</span>'));
       }
       if (reviewer && r.status === 'Terkompilasi') {
-        extras.push(button('btn-primary', 'topology', r.id, ri('focus-3-line') + '<span>Verifikasi Topologi</span>'));
+        extras.push(button('btn-primary', 'topology', r.id, ri('focus-3-line') + '<span>Cek Topologi</span>'));
         if (isSuper) extras.push(button('btn-primary', 'approve-integration', r.id, ri('check-line') + '<span>Setujui Integrasi</span>'));
       }
       if ((base === 'operator' || isV2Role(role)) && r.status === 'Revisi') extras.push(button('btn-soft', 'revision', r.id, ri('edit-line') + '<span>Revisi</span>'));
@@ -549,7 +544,7 @@ const IgtApp = (() => {
     }
     let tab = normalizedRequested && categories.includes(normalizedRequested) ? normalizedRequested : categories[0];
     // Default to the leftmost status tab for the initially selected category.
-    let statusTab = params.get('status') || (tab === 'igt-utama' ? (base === 'operator' ? 'Revisi' : 'Diajukan') : tab === 'derivatif' && (base === 'operator' || base === 'umum') ? 'Semua' : tab === 'derivatif' ? 'Diproses' : 'Semua');
+    let statusTab = params.get('status') || (tab === 'igt-utama' ? (base === 'operator' ? 'Revisi' : 'Cek Topologi') : tab === 'derivatif' && (base === 'operator' || base === 'umum') ? 'Semua' : tab === 'derivatif' ? 'Diproses' : 'Semua');
     let nextDerivative = 9;
 
     const isMainInit = tab === 'igt-utama';
@@ -585,7 +580,6 @@ const IgtApp = (() => {
       statCard('Total pengajuan', '', pageTitle, MANAGEMENT_ICON[tab] || ri('database-2-line'), '', 'count-total') +
       statCard('Dalam proses', '', 'Proses atau Diajukan', ri('time-line'), 'amber', 'count-process') +
       statCard('Menunggu integrasi', '', 'Terkompilasi', ri('folder-line'), '', 'count-waiting') +
-      statCard('Perlu perhatian', '', 'Revisi, Ditolak, atau Kadaluwarsa', ri('error-warning-line'), 'red', 'count-attention') +
       `</div><section class="card">` +
       (noUploadMenu
         ? `<div class="card-head"><div><h2 id="tab-heading"></h2><p id="tab-description"></p></div></div>`
@@ -603,7 +597,6 @@ const IgtApp = (() => {
       setText('count-total', ownRecords.length);
       setText('count-process', count('Proses', 'Diajukan'));
       setText('count-waiting', count('Terkompilasi'));
-      setText('count-attention', count('Revisi', 'Ditolak', 'Kadaluwarsa'));
     }
 
     function render() {
@@ -639,7 +632,9 @@ const IgtApp = (() => {
       }
       const own = records.filter((r) => isMain ? (r.category === 'pertanahan' || r.category === 'tata-ruang') : r.category === tab);
       const statusOptions = isMain
-        ? ['Revisi', 'Diajukan', 'Terkompilasi', 'Terintegrasi', 'Semua']
+        ? (base === 'operator'
+            ? ['Revisi', 'Diajukan', 'Terkompilasi', 'Terintegrasi', 'Semua']
+            : ['Cek Topologi', 'Diajukan', 'Revisi'])
         : tab === 'derivatif'
           ? (base === 'operator' || base === 'umum'
             ? ['Semua', 'Diproses', 'Disetujui']
@@ -659,6 +654,7 @@ const IgtApp = (() => {
       const statusMatches = (r) => {
         if (!showStatusTabs || statusTab === 'Semua') return true;
         if (isMain) {
+          if (statusTab === 'Cek Topologi') return r.status === 'Terkompilasi';
           if (statusTab === 'Revisi') return r.status === 'Revisi';
           if (statusTab === 'Diajukan') return r.status === 'Diajukan' || r.status === 'Proses';
           if (statusTab === 'Terkompilasi') return r.status === 'Terkompilasi';
@@ -759,7 +755,7 @@ const IgtApp = (() => {
         render();
       }
       else if (action === 'topology') {
-        alert('Simulasi verifikasi topologi untuk ' + id + '. Pada implementasi QGIS, aksi ini menjalankan pemeriksaan topologi pada layer terkait.');
+        alert('Membuka layer ' + (record ? record.name : id) + ' di QGIS Plugin untuk Cek Topologi. Silakan periksa topologi dan verifikasi dataset di kanvas peta QGIS.');
         record.status = 'Terkompilasi';
         render();
       } else if (action === 'approve-integration') {

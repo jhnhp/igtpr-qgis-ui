@@ -148,13 +148,12 @@ class ModelBuilderPage(QWidget):
 
         # Table
         self.table = QTableWidget(self)
-        self.table.setColumnCount(3)
-        self.table.setHorizontalHeaderLabels(['Model Analisis Spasial', 'Kategori', 'Aksi'])
+        self.table.setColumnCount(2)
+        self.table.setHorizontalHeaderLabels(['Model Analisis Spasial', 'Aksi'])
         header = self.table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-        header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
-        header.setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)
-        self.table.setColumnWidth(2, 125)
+        header.setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
+        self.table.setColumnWidth(1, 125)
         self.table.verticalHeader().setVisible(False)
         self.table.setShowGrid(False)
 
@@ -184,12 +183,7 @@ class ModelBuilderPage(QWidget):
             nw_layout.addWidget(desc_lbl)
             self.table.setCellWidget(row, 0, name_widget)
 
-            # Col 1: Category
-            cat_lbl = QLabel(m['category'])
-            cat_lbl.setStyleSheet("color: #6d28d9; font-weight: 600; font-size: 11px;")
-            self.table.setCellWidget(row, 1, cat_lbl)
-
-            # Col 2: Run button
+            # Col 1: Run button
             btn_run = QPushButton('▶ Jalankan')
             btn_run.setCursor(Qt.CursorShape.PointingHandCursor)
             btn_run.setStyleSheet("""
@@ -207,7 +201,7 @@ class ModelBuilderPage(QWidget):
                 }
             """)
             btn_run.clicked.connect(lambda checked, model=m: self.runModelRequested.emit(model))
-            self.table.setCellWidget(row, 2, btn_run)
+            self.table.setCellWidget(row, 1, btn_run)
 
             self.table.setRowHeight(row, 62)
 

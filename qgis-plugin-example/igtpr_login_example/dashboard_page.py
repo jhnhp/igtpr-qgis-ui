@@ -74,7 +74,6 @@ class HubCard(QFrame):
             top = QHBoxLayout()
             top.addWidget(badge)
             top.addStretch(1)
-            top.addWidget(icon_label('chevron-right', icon_color, 16, self.head))
             h_lay.addLayout(top)
             h_lay.addLayout(texts)
         else:
@@ -116,7 +115,6 @@ class WideCard(ClickableCard):
         texts.addWidget(label(title, title_cls, True, self))
         texts.addWidget(label(desc, desc_cls, True, self))
         lay.addLayout(texts, 1)
-        lay.addWidget(icon_label('chevron-right', icon_color, 16, self), 0, Qt.AlignmentFlag.AlignVCenter)
 
     def minimumSizeHint(self):
         return QSize(100, 48)
@@ -128,6 +126,7 @@ class DashboardPage(ResponsivePage):
     openCatalogRequested = pyqtSignal(str)       # 'pertanahan', 'tata-ruang', 'derivatif', 'lainnya'
     openManagementRequested = pyqtSignal(str)    # 'igt-utama', 'derivatif', 'lainnya'
     openUploadRequested = pyqtSignal(str)        # kategori unggah
+    openKustomDerivatifRequested = pyqtSignal()  # buka Derivatif Per Bidang
     openModelBuilderRequested = pyqtSignal()
     logoutRequested = pyqtSignal()
     wmsRequested = pyqtSignal(dict, object)      # (dataset, sublayer or None)
@@ -151,8 +150,8 @@ class DashboardPage(ResponsivePage):
         yb.addWidget(self.year_combo)
         year_box.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         self.hero = self.responsive(HeroHeader(
-            'SISTEM INFORMASI GEOSPASIAL', 'Dashboard IGT-PR',
-            'Ringkasan status data geospasial, katalog layer, dan pintasan fitur kerja.',
+            'SISTEM INFORMASI GEOSPASIAL', 'IGT-PR Plugin',
+            'Integrasi data geospasial tematik pertanahan dan tata ruang.',
             'blue', year_box, 320, self.content))
         self.body.addWidget(self.hero)
 
@@ -202,8 +201,7 @@ class DashboardPage(ResponsivePage):
         self._update_counts()
 
     def _build_workflow(self):
-        """Umum hanya boleh mengunggah IGT Derivatif dan tidak punya Model Builder;
-        manajemen IGT Lainnya hanya untuk Superadmin (lihat CLAUDE.md)."""
+        """Katalog Unggah & Manajemen Data sesuai role pengguna."""
         role = self.current_role
         is_umum = role == 'umum'
 
@@ -211,17 +209,12 @@ class DashboardPage(ResponsivePage):
         if not is_umum:
             upload_items.append(('upload:pertanahan', 'database', 'Unggah IGT Utama', '#1f6fd6'))
         upload_items.append(('upload:derivatif', 'layers', 'Unggah IGT Derivatif Multiguna', '#1f6fd6'))
-        if not is_umum:
-            upload_items.append(('model', 'gear', 'Kustom Tematik Derivatif', '#1f6fd6'))
-        if role == 'superadmin':
-            upload_items.append(('upload:lainnya', 'globe', 'Unggah IGT Lainnya', '#1f6fd6'))
+        upload_items.append(('kustom-derivatif', 'gear', 'Kustom Tematik Derivatif', '#1f6fd6'))
 
         manage_items = []
         if not is_umum:
             manage_items.append(('manage:igt-utama', 'database', 'IGT Utama', '#047857'))
         manage_items.append(('manage:derivatif', 'layers', 'IGT Derivatif Multiguna', '#047857'))
-        if role == 'superadmin':
-            manage_items.append(('manage:lainnya', 'globe', 'IGT Lainnya', '#047857'))
 
         self.workflow.clear()
         upload = HubCard('plain', 'headBlue', 'cloud-upload', '#1f6fd6', '#dceafe', 'Unggah Data',
@@ -234,10 +227,12 @@ class DashboardPage(ResponsivePage):
         manage.itemClicked.connect(self._on_workflow_item)
         self.workflow.add(upload)
         self.workflow.add(manage)
-        self.mb_card.setVisible(not is_umum)
+        self.mb_card.setVisible(True)
 
     def _on_workflow_item(self, key):
-        if key == 'model':
+        if key == 'kustom-derivatif':
+            self.openKustomDerivatifRequested.emit()
+        elif key == 'model':
             self.openModelBuilderRequested.emit()
         elif key.startswith('upload:'):
             self.openUploadRequested.emit(key.split(':', 1)[1])

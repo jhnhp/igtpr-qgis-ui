@@ -125,30 +125,16 @@ class ManagementPage(QWidget):
 
         layout.addLayout(head_layout)
 
-        # 2. Category Tabs (IGT Utama, IGT Derivatif, IGT Lainnya)
+        # 2. Category Tabs (IGT Utama, IGT Derivatif Multiguna)
         self.cat_nav_layout = QHBoxLayout()
         self.cat_nav_layout.setSpacing(8)
         self.cat_buttons = {}
-
-        cats = [
-            ('igt-utama', 'IGT Utama'),
-            ('derivatif', 'IGT Derivatif Multiguna'),
-            ('lainnya', 'IGT Lainnya'),
-        ]
-        for c_id, c_lbl in cats:
-            btn = QPushButton(c_lbl, self)
-            btn.setCursor(Qt.CursorShape.PointingHandCursor)
-            btn.clicked.connect(lambda checked, k=c_id: self.set_category(k))
-            self.cat_nav_layout.addWidget(btn)
-            self.cat_buttons[c_id] = btn
-
-        self.cat_nav_layout.addStretch()
         layout.addLayout(self.cat_nav_layout)
 
         # 3. Stats Summary Cards
         self._build_stats_summary(layout)
 
-        # 4. Status Filter Tabs (Revisi, Diajukan, Terkompilasi, Terintegrasi, Semua)
+        # 4. Status Filter Tabs
         self.status_nav_layout = QHBoxLayout()
         self.status_nav_layout.setSpacing(6)
         self.status_buttons = {}
@@ -175,7 +161,8 @@ class ManagementPage(QWidget):
 
         layout.addWidget(self.table, 1)
 
-        self.set_category(current_category)
+        self._update_category_nav()
+        self.set_category('derivatif' if current_role == 'umum' else current_category)
 
     def _build_stats_summary(self, parent_layout):
         grid = QGridLayout()
@@ -186,7 +173,6 @@ class ManagementPage(QWidget):
             ('total', 'Total Pengajuan', '#1e293b', '#f1f5f9', '#cbd5e1'),
             ('process', 'Dalam Proses', '#1d4ed8', '#eff6ff', '#bfdbfe'),
             ('waiting', 'Menunggu Integrasi', '#b45309', '#fffbeb', '#fde68a'),
-            ('attention', 'Perlu Perhatian', '#b91c1c', '#fef2f2', '#fecaca'),
         ]
 
         for col, (k, title, color, bg, border) in enumerate(labels):
@@ -218,15 +204,36 @@ class ManagementPage(QWidget):
 
     def set_role(self, role_id):
         self.current_role = role_id
-        self._update_status_nav()
-        self._render_table()
+        self._update_category_nav()
+        if self.current_role == 'umum' and self.current_category != 'derivatif':
+            self.current_category = 'derivatif'
+        self.set_category(self.current_category)
 
-    def set_category(self, cat_id):
-        self.current_category = cat_id
+    def _update_category_nav(self):
+        while self.cat_nav_layout.count():
+            item = self.cat_nav_layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+        self.cat_buttons.clear()
 
-        # Update category buttons styles
+        cats = []
+        if self.current_role != 'umum':
+            cats.append(('igt-utama', 'IGT Utama'))
+        cats.append(('derivatif', 'IGT Derivatif Multiguna'))
+
+        for c_id, c_lbl in cats:
+            btn = QPushButton(c_lbl, self)
+            btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            btn.clicked.connect(lambda checked, k=c_id: self.set_category(k))
+            self.cat_nav_layout.addWidget(btn)
+            self.cat_buttons[c_id] = btn
+
+        self.cat_nav_layout.addStretch()
+        self._style_category_nav()
+
+    def _style_category_nav(self):
         for cid, btn in self.cat_buttons.items():
-            if cid == cat_id:
+            if cid == self.current_category:
                 btn.setStyleSheet("""
                     QPushButton {
                         background-color: #1f6fd6;
@@ -255,20 +262,26 @@ class ManagementPage(QWidget):
                     }
                 """)
 
+    def set_category(self, cat_id):
+        if self.current_role == 'umum':
+            cat_id = 'derivatif'
+        elif cat_id not in ('igt-utama', 'derivatif'):
+            cat_id = 'igt-utama'
+
+        self.current_category = cat_id
+        self._style_category_nav()
+
         # Update Titles
         if cat_id == 'igt-utama':
             self.title_lbl.setText('Manajemen IGT Utama')
-            self.desc_lbl.setText('Pantau status kompilasi, revisi, dan persetujuan integrasi IGT Pertanahan & IGT Tata Ruang.')
-        elif cat_id == 'derivatif':
+            self.desc_lbl.setText('Pantau status kompilasi, revisi, dan verifikasi integrasi IGT Pertanahan & IGT Tata Ruang.')
+        else:
             self.title_lbl.setText('Manajemen IGT Derivatif Multiguna')
             self.desc_lbl.setText('Pantau pengajuan dan persetujuan layer IGT Derivatif Multiguna hasil analisis spasial.')
-        else:
-            self.title_lbl.setText('Manajemen IGT Lainnya')
-            self.desc_lbl.setText('Kelola layer IGT dari kementerian dan lembaga eksternal yang tersedia di katalog.')
 
         # Reset status tab for selected category
         if cat_id == 'igt-utama':
-            self.current_status_tab = 'Diajukan' if self.current_role in ('superadmin', 'admin') else 'Semua'
+            self.current_status_tab = 'Cek Topologi' if self.current_role in ('superadmin', 'admin') else 'Revisi'
         elif cat_id == 'derivatif':
             self.current_status_tab = 'Diproses' if self.current_role in ('superadmin', 'admin') else 'Semua'
         else:
@@ -286,7 +299,10 @@ class ManagementPage(QWidget):
         self.status_buttons.clear()
 
         if self.current_category == 'igt-utama':
-            tabs = ['Revisi', 'Diajukan', 'Terkompilasi', 'Terintegrasi', 'Semua']
+            if self.current_role in ('superadmin', 'admin'):
+                tabs = ['Cek Topologi', 'Diajukan', 'Revisi']
+            else:
+                tabs = ['Revisi', 'Diajukan', 'Terkompilasi', 'Terintegrasi', 'Semua']
         elif self.current_category == 'derivatif':
             tabs = ['Diproses', 'Disetujui', 'Semua']
         else:
@@ -300,6 +316,7 @@ class ManagementPage(QWidget):
             self.status_buttons[tab_name] = btn
 
         self.status_nav_layout.addStretch()
+        self._style_status_nav()
         self._style_status_nav()
 
     def _set_status_tab(self, tab_name):
@@ -350,17 +367,19 @@ class ManagementPage(QWidget):
         total = len(recs)
         process = len([r for r in recs if r.get('status') in ('Diajukan', 'Proses', 'Diproses')])
         waiting = len([r for r in recs if r.get('status') == 'Terkompilasi'])
-        attention = len([r for r in recs if r.get('status') in ('Revisi', 'Ditolak')])
 
         self.stat_boxes['total'].setText(str(total))
         self.stat_boxes['process'].setText(str(process))
         self.stat_boxes['waiting'].setText(str(waiting))
-        self.stat_boxes['attention'].setText(str(attention))
 
         # Filter records by status tab
         if self.current_status_tab != 'Semua':
-            if self.current_status_tab == 'Diproses':
+            if self.current_status_tab == 'Cek Topologi':
+                filtered = [r for r in recs if r.get('status') == 'Terkompilasi']
+            elif self.current_status_tab == 'Diproses':
                 filtered = [r for r in recs if r.get('status') in ('Diajukan', 'Proses', 'Diproses')]
+            elif self.current_status_tab == 'Diajukan':
+                filtered = [r for r in recs if r.get('status') in ('Diajukan', 'Proses')]
             else:
                 filtered = [r for r in recs if r.get('status') == self.current_status_tab]
         else:
@@ -431,30 +450,9 @@ class ManagementPage(QWidget):
         role = self.current_role
         is_reviewer = role in ('superadmin', 'admin')
 
-        # Action: Kompilasi (for Diajukan by reviewer)
-        if is_reviewer and status == 'Diajukan':
-            btn = QPushButton('Kompilasi')
-            btn.setCursor(Qt.CursorShape.PointingHandCursor)
-            btn.setStyleSheet("""
-                QPushButton {
-                    background-color: #1f6fd6;
-                    color: #ffffff;
-                    border: none;
-                    border-radius: 6px;
-                    font-size: 11px;
-                    font-weight: 700;
-                    padding: 4px 8px;
-                }
-                QPushButton:hover {
-                    background-color: #1a63c7;
-                }
-            """)
-            btn.clicked.connect(lambda checked, rec=record: self._on_compile(rec))
-            layout.addWidget(btn)
-
-        # Action: Verifikasi Topologi (for Terkompilasi by reviewer)
+        # Action: Cek Topologi (for Terkompilasi by reviewer)
         if is_reviewer and status == 'Terkompilasi':
-            btn = QPushButton('Verifikasi Topologi')
+            btn = QPushButton('Cek Topologi')
             btn.setCursor(Qt.CursorShape.PointingHandCursor)
             btn.setStyleSheet("""
                 QPushButton {
@@ -464,7 +462,7 @@ class ManagementPage(QWidget):
                     border-radius: 6px;
                     font-size: 10.5px;
                     font-weight: 700;
-                    padding: 4px 8px;
+                    padding: 4px 10px;
                 }
                 QPushButton:hover {
                     background-color: #dbeafe;
@@ -472,27 +470,6 @@ class ManagementPage(QWidget):
             """)
             btn.clicked.connect(lambda checked, rec=record: self._on_verify_topology(rec))
             layout.addWidget(btn)
-
-            # Action: Setujui Integrasi (only Superadmin)
-            if role == 'superadmin':
-                btn_appr = QPushButton('Setujui Integrasi')
-                btn_appr.setCursor(Qt.CursorShape.PointingHandCursor)
-                btn_appr.setStyleSheet("""
-                    QPushButton {
-                        background-color: #047857;
-                        color: #ffffff;
-                        border: none;
-                        border-radius: 6px;
-                        font-size: 10.5px;
-                        font-weight: 700;
-                        padding: 4px 8px;
-                    }
-                    QPushButton:hover {
-                        background-color: #065f46;
-                    }
-                """)
-                btn_appr.clicked.connect(lambda checked, rec=record: self._on_approve_integration(rec))
-                layout.addWidget(btn_appr)
 
         # Action: Revisi (for Operator / any when status == Revisi)
         if status == 'Revisi':
