@@ -39,7 +39,7 @@ from .topology_dialog import TopologyCheckDialog
 from .upload_dialog import UploadIgtUtamaDialog, UploadPage
 
 PLUGIN_DIR = os.path.dirname(__file__)
-MENU_TITLE = '&Geoportal IGT-PR'
+MENU_TITLE = '&IGT-PR Plugin'
 
 
 class DynamicStackedWidget(QStackedWidget):
@@ -72,7 +72,7 @@ class IgtprDockWidget(QDockWidget):
     """Panel dock terpadu yang memuat seluruh alur Mockup V2 dalam QStackedWidget."""
 
     def __init__(self, iface, bpn_logo=None, igtpr_logo=None, qgis_icon=None, parent=None):
-        super().__init__('Geoportal IGT-PR', parent)
+        super().__init__('IGT-PR Plugin', parent)
         self.iface = iface
         self.setObjectName('IgtprV2DockWidget')
         self.current_role = 'superadmin'
@@ -234,7 +234,7 @@ class IgtprLoginExample:
         icon_path = self._asset_path('icon.png')
         icon = QIcon(icon_path) if os.path.isfile(icon_path) else QIcon(
             svg_pixmap(Q_ICON.format(color='#1f6fd6'), QSize(24, 24)))
-        self.action = QAction(icon, 'Geoportal IGT-PR (V2)', self.iface.mainWindow())
+        self.action = QAction(icon, 'IGT-PR Plugin', self.iface.mainWindow())
         self.action.setCheckable(True)
         self.action.toggled.connect(self.toggle_dock)
         self.iface.addToolBarIcon(self.action)

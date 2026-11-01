@@ -1,8 +1,8 @@
 [general]
-name=Geoportal IGT-PR (Mockup V2)
+name=IGT-PR Plugin
 qgisMinimumVersion=3.16
 supportsQt6=True
-description=Plugin Geoportal IGT-PR Mockup V2 (Card UI & Hierarchical Tree Table)
+description=Plugin IGT-PR Mockup V2 (Card UI & Hierarchical Tree Table)
 version=2.0
 author=Kementerian ATR/BPN
 email=studio.exium@gmail.com

@@ -531,9 +531,14 @@ class ManagementPage(QWidget):
         self._render_table()
 
     def _on_repair_revision(self, record):
-        record['status'] = 'Diajukan'
-        self.actionPerformed.emit('revision-submitted', record)
-        self._render_table()
+        from .upload_dialog import UploadIgtUtamaDialog
+        cat = record.get('category', 'pertanahan')
+        main_win = self.window()
+        dlg = UploadIgtUtamaDialog(current_category=cat, iface=self.iface, record_to_revise=record, parent=main_win)
+        if dlg.exec_() == QDialog.DialogCode.Accepted:
+            record['status'] = 'Diajukan'
+            self.actionPerformed.emit('revision-submitted', record)
+            self._render_table()
 
     def minimumSizeHint(self):
         return QSize(200, 120)

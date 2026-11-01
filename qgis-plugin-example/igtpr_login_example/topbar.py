@@ -135,7 +135,7 @@ class TopbarWidget(QFrame):
         self._crumbs = list(crumbs)
         clear_layout(self.crumb_layout)
 
-        self._base_btn = QPushButton('Geoportal IGT-PR', self)
+        self._base_btn = QPushButton('IGT-PR Plugin', self)
         self._base_btn.setObjectName('crumbBase')
         self._base_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self._base_btn.clicked.connect(self.homeRequested.emit)

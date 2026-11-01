@@ -452,15 +452,21 @@ class UploadIgtUtamaDialog(QDialog):
 
     uploadSubmitted = pyqtSignal(dict)
 
-    def __init__(self, current_category='pertanahan', iface=None, parent=None):
+    def __init__(self, current_category='pertanahan', iface=None, record_to_revise=None, parent=None):
         super().__init__(parent)
         self.current_category = current_category
         self.iface = iface
+        self.record_to_revise = record_to_revise
+        self.is_revision = record_to_revise is not None
         self.selected_file_path = None
         self.is_attribute_verified = False
 
         is_derivatif = current_category == 'derivatif'
-        self.dialog_title = 'Upload Data IGT Derivatif Multiguna' if is_derivatif else 'Upload Data IGT Utama'
+        if self.is_revision:
+            rec_title = record_to_revise.get('name') or record_to_revise.get('layer', 'Layer')
+            self.dialog_title = f"Perbaikan Revisi: {rec_title}"
+        else:
+            self.dialog_title = 'Upload Data IGT Derivatif Multiguna' if is_derivatif else 'Upload Data IGT Utama'
         self.setWindowTitle(self.dialog_title)
         self.resize(560, 720)
         self.setObjectName('uploadIgtUtamaDialog')
@@ -557,7 +563,10 @@ class UploadIgtUtamaDialog(QDialog):
         head_title.setStyleSheet("color: #0f294d; font-size: 16px; font-weight: 800;")
         head_texts.addWidget(head_title)
 
-        head_sub = QLabel("Unggah dataset spasial terkompilasi, mapping atribut, terapkan SLD, dan sesuaikan metadata.", self)
+        if self.is_revision:
+            head_sub = QLabel("Perbarui berkas spasial, verifikasi atribut, dan kirim ulang pengajuan ke antrean validasi.", self)
+        else:
+            head_sub = QLabel("Unggah dataset spasial terkompilasi, mapping atribut, terapkan SLD, dan sesuaikan metadata.", self)
         head_sub.setStyleSheet("color: #64748b; font-size: 11px;")
         head_sub.setWordWrap(True)
         head_texts.addWidget(head_sub)
@@ -783,13 +792,23 @@ class UploadIgtUtamaDialog(QDialog):
         batal_btn.clicked.connect(self.reject)
         footer.addWidget(batal_btn)
 
-        submit_btn = QPushButton("Kirim Pengajuan", self)
+        submit_text = "Kirim Ulang Pengajuan Revisi" if self.is_revision else "Kirim Pengajuan"
+        submit_btn = QPushButton(submit_text, self)
         submit_btn.setObjectName("submitBtn")
         submit_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         submit_btn.clicked.connect(self._on_submit)
         footer.addWidget(submit_btn)
 
         layout.addLayout(footer)
+
+        if self.is_revision and self.record_to_revise:
+            r_name = self.record_to_revise.get('name') or self.record_to_revise.get('layer', '')
+            idx = self.jenis_combo.findText(r_name)
+            if idx >= 0:
+                self.jenis_combo.setCurrentIndex(idx)
+            else:
+                self.jenis_combo.insertItem(0, r_name)
+                self.jenis_combo.setCurrentIndex(0)
 
         self._refresh_layers()
 
@@ -853,6 +872,15 @@ class UploadIgtUtamaDialog(QDialog):
     def _on_submit(self):
         jenis = self.jenis_combo.currentText()
         keterangan = self.keterangan_input.text().strip() or "Pengajuan data kompilasi"
+
+        if self.is_revision and self.record_to_revise:
+            self.record_to_revise['status'] = 'Diajukan'
+            self.record_to_revise['date'] = QDate.currentDate().toString('dd MMM yyyy')
+            if keterangan:
+                self.record_to_revise['note'] = f"Perbaikan revisi: {keterangan}"
+            self.uploadSubmitted.emit(self.record_to_revise)
+            self.accept()
+            return
 
         submission = {
             'id': f"AJU-2026-{200 + len(DATASETS)}",
