@@ -2851,6 +2851,21 @@ tr.igt-sublayer-row td {
   vertical-align: middle;
   margin-right: 2px;
 }
+.igt-cat-inline-icon.is-pertanahan {
+  color: #1f6fd6;
+}
+.igt-cat-inline-icon.is-tata-ruang {
+  color: #047857;
+}
+.igt-cat-inline-icon.is-derivatif {
+  color: #7c3aed;
+}
+.igt-cat-inline-icon.is-lainnya {
+  color: #0284c7;
+}
+.igt-cat-inline-icon.is-igt-pr {
+  color: #0f294d;
+}
 .igt-cat-inline-icon svg {
   width: 16px;
   height: 16px;

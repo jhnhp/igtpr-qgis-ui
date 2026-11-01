@@ -13,6 +13,8 @@ const IgtApp = (() => {
   // RemixIcon paths used in IGTPR-UI-mockup (assets/lib/remixicon & assets/js/core/layout.js)
   const RI_PATHS = {
     'map-pin-line': 'M12 20.9l4.95-4.95a7 7 0 1 0-9.9 0L12 20.9zm0 2.828l-6.364-6.364a9 9 0 1 1 12.728 0L12 23.728zM12 13a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 2a4 4 0 1 1 0-8 4 4 0 0 1 0 8z',
+    'building-line': 'M21 19h2v2H1v-2h2V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v15h4v-8h-2V9h3a1 1 0 0 1 1 1v9zM5 5v14h8V5H5zm2 6h4v2H7v-2zm0-4h4v2H7V7z',
+    'building-2-line': 'M3 19V5.7a1 1 0 0 1 .658-.94l9.671-3.516a.5.5 0 0 1 .671.47v4.953l6.316 2.105a1 1 0 0 1 .684.949V19h2v2H1v-2h2zm2 0h7V3.855L5 6.401V19zm14 0v-8.558l-5-1.667V19h5z',
     'map-2-line': 'M2 5l7-3 6 3 6.303-2.701a.5.5 0 0 1 .697.46V19l-7 3-6-3-6.303 2.701a.5.5 0 0 1-.697-.46V5zm14 14.395l4-1.714V5.033l-4 1.714v12.648zm-2-.131V6.736l-4-2v12.528l4 2zm-6-2.011V4.605L4 6.319v12.648l4-1.714z',
     'stack-line': 'M20.083 15.2l1.202.721a.5.5 0 0 1 0 .858l-8.77 5.262a1 1 0 0 1-1.03 0l-8.77-5.262a.5.5 0 0 1 0-.858l1.202-.721L12 20.05l8.083-4.85zm0-4.7l1.202.721a.5.5 0 0 1 0 .858L12 17.65l-9.285-5.571a.5.5 0 0 1 0-.858l1.202-.721L12 15.35l8.083-4.85zm-7.569-9.191l8.771 5.262a.5.5 0 0 1 0 .858L12 13 2.715 7.429a.5.5 0 0 1 0-.858l8.77-5.262a1 1 0 0 1 1.03 0zM12 3.332L5.887 7 12 10.668 18.113 7 12 3.332z',
     'global-line': 'M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm-2.29-2.333A17.9 17.9 0 0 1 8.027 13H4.062a8.008 8.008 0 0 0 5.648 6.667zM10.03 13c.151 2.439.848 4.73 1.97 6.752A15.905 15.905 0 0 0 13.97 13h-3.94zm9.908 0h-3.965a17.9 17.9 0 0 1-1.683 6.667A8.008 8.008 0 0 0 19.938 13zM4.062 11h3.965A17.9 17.9 0 0 1 9.71 4.333 8.008 8.008 0 0 0 4.062 11zm5.969 0h3.938A15.905 15.905 0 0 0 12 4.248 15.905 15.905 0 0 0 10.03 11zm4.259-6.667A17.9 17.9 0 0 1 15.973 11h3.965a8.008 8.008 0 0 0-5.648-6.667z',
@@ -33,7 +35,7 @@ const IgtApp = (() => {
     'notification-3-line': 'M20 17h2v2H2v-2h2v-7a8 8 0 1 1 16 0v7zm-2 0v-7a6 6 0 1 0-12 0v7h12zm-9 4h6v2H9v-2z',
   };
 
-  const ri = (name) => `<svg class="ri-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="${RI_PATHS[name] || RI_PATHS['stack-line']}"/></svg>`;
+  const ri = (name) => `<svg class="ri-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="${RI_PATHS[name] || RI_PATHS['map-pin-line']}"/></svg>`;
 
   const notifBtn = document.querySelector('.icon-btn[aria-label="Notifikasi"]');
   if (notifBtn) notifBtn.innerHTML = ri('notification-3-line');
@@ -117,11 +119,21 @@ const IgtApp = (() => {
   const managementLabel = (key) => (key === 'semua' ? 'Semua Kategori' : key === 'igt-utama' ? 'IGT Utama' : CATEGORIES[key].label);
   const managementShortLabel = (key) => (key === 'semua' ? 'Semua Kategori' : key === 'igt-utama' ? 'IGT Utama' : (CATEGORIES[key].shortLabel || CATEGORIES[key].label));
   const CATALOG_ICON = {
+    'igt-pr': ri('database-2-line'),
     pertanahan: ri('map-pin-line'),
     'tata-ruang': ri('map-2-line'),
     derivatif: ri('stack-line'),
     lainnya: ri('global-line'),
   };
+
+  const categoryIcon = (cat) => {
+    if (cat === 'tata-ruang') return ri('map-2-line');
+    if (cat === 'derivatif') return ri('stack-line');
+    if (cat === 'lainnya') return ri('global-line');
+    if (cat === 'igt-pr') return ri('database-2-line');
+    return ri('map-pin-line');
+  };
+
   const MANAGEMENT_ICON = {
     'igt-utama': ri('database-2-line'),
     derivatif: ri('upload-cloud-2-line'),
@@ -134,7 +146,7 @@ const IgtApp = (() => {
   function dashboard(role) {
     const records = IgtData.loadRecords().filter((r) => IgtData.canView(role, r.category));
     const categories = CATEGORY_ORDER.filter((key) => IgtData.canView(role, key));
-    const catalogButtons = categories.map((key) => '<a class="btn btn-soft menu-btn" href="../' + CATEGORIES[key].slug + '/index.html">' + (CATALOG_ICON[key] || ri('stack-line')) + '<span>' + (CATEGORIES[key].shortLabel || CATEGORIES[key].label) + '</span></a>').join('');
+    const catalogButtons = categories.map((key) => '<a class="btn btn-soft menu-btn" href="../' + CATEGORIES[key].slug + '/index.html">' + (CATALOG_ICON[key] || categoryIcon(key)) + '<span>' + (CATEGORIES[key].shortLabel || CATEGORIES[key].label) + '</span></a>').join('');
     const manageButtons = managementCategories(role)
       .map((key) => '<a class="btn btn-primary menu-btn" id="upload-button-' + key + '" href="../upload-data/index.html?tab=' + key + '">' + (MANAGEMENT_ICON[key] || ri('database-2-line')) + '<span>' + managementShortLabel(key) + '</span></a>')
       .join('');
@@ -212,7 +224,7 @@ const IgtApp = (() => {
         CATEGORY_ORDER.filter((key) => IgtData.canView(role, key))
           .map((key) =>
             '<a class="' + (key === category ? 'active' : '') + '" href="../' + CATEGORIES[key].slug + '/index.html">' +
-            (CATALOG_ICON[key] || ri('stack-line')) + '<span>' + (CATEGORIES[key].shortLabel || CATEGORIES[key].label) + '</span></a>'
+            (CATALOG_ICON[key] || categoryIcon(key)) + '<span>' + (CATEGORIES[key].shortLabel || CATEGORIES[key].label) + '</span></a>'
           ).join('') +
         '</nav>'
       : '';
@@ -301,10 +313,7 @@ const IgtApp = (() => {
         const hasSubs = Boolean(d.subLayers && d.subLayers.length > 0);
         const autoExpand = Boolean(q && d.subLayers && d.subLayers.some((s) => (s.name + ' ' + (s.label || '') + ' ' + (s.year || '') + ' ' + (s.skala || '')).toLowerCase().includes(q)));
         const isExp = autoExpand;
-        const catIcon = d.category === 'tata-ruang' ? ri('map-2-line') :
-                        d.category === 'derivatif' ? ri('stack-line') :
-                        d.category === 'lainnya' ? ri('global-line') :
-                        ri('building-line');
+        const catIcon = categoryIcon(d.category);
         const parentRow = (
           '<tr class="' + (hasSubs ? 'has-sublayers' : '') + (isExp ? ' is-expanded' : '') + '" data-record-id="' + d.id + '">' +
           '<td class="igt-col-no" data-label="No."><span class="igt-catalog-num">' + (idx + 1) + '</span></td>' +
@@ -316,7 +325,7 @@ const IgtApp = (() => {
               '<span class="igt-tree-icon" aria-hidden="true">' + (isExp ? '▼' : '▶') + '</span>' +
               '</button>'
             : '') +
-          '<span class="igt-cat-inline-icon" title="' + d.category + '">' + catIcon + '</span>' +
+          '<span class="igt-cat-inline-icon is-' + d.category + '" title="' + d.category + '">' + catIcon + '</span>' +
           '<span class="igt-catalog-name">' + d.name + '</span>' +
           '</div></div></td>' +
           '<td data-label="' + orgLabel + '">' + (d.direktorat || d.satker || d.ditjen || d.instansi || d.source || '—') + '</td>' +
@@ -1162,10 +1171,7 @@ const IgtApp = (() => {
           const isExp = expandedIds.has(d.id) || Boolean(query && hasSubs && d.subLayers.some((s) => s.name.toLowerCase().includes(query.toLowerCase())));
           const allowWfs = canAccessWfs(role, d);
           const cat = d.category;
-          const iconHtml = cat === 'tata-ruang' ? ri('map-2-line') :
-                           cat === 'derivatif' ? ri('stack-line') :
-                           cat === 'lainnya' ? ri('global-line') :
-                           ri('building-line');
+          const iconHtml = categoryIcon(cat);
 
           html += `
             <div class="dash-card" data-id="${d.id}">
@@ -1174,7 +1180,7 @@ const IgtApp = (() => {
                   <div class="dash-card-header">
                     <div class="dash-card-title-wrap">
                       <span class="igt-catalog-num">${startIdx + idx + 1}</span>
-                      <span class="igt-cat-inline-icon" title="${cat}">${iconHtml}</span>
+                      <span class="igt-cat-inline-icon is-${cat}" title="${cat}">${iconHtml}</span>
                       <span class="dash-card-title igt-catalog-name">${d.name}</span>
                     </div>
                   </div>

@@ -154,7 +154,7 @@ class DatasetCard(QFrame):
         cat = dataset.get('category', '')
         icon_name = 'map' if cat == 'tata-ruang' else 'layers' if cat == 'derivatif' else 'globe' if cat == 'lainnya' else 'pin'
         icon_color = '#047857' if cat == 'tata-ruang' else '#7c3aed' if cat == 'derivatif' else '#0284c7' if cat == 'lainnya' else '#1f6fd6'
-        self.icon_lbl.setPixmap(svg_pixmap(ICONS.get(icon_name, ICONS['layers']).format(color=icon_color), QSize(16, 16)))
+        self.icon_lbl.setPixmap(svg_pixmap(ICONS.get(icon_name, ICONS['pin']).format(color=icon_color), QSize(16, 16)))
         title_row.addWidget(self.icon_lbl, 0, Qt.AlignmentFlag.AlignVCenter)
 
         self.title_lbl = QLabel(dataset.get('name', ''), self)
@@ -545,20 +545,22 @@ class CatalogPage(QWidget):
         self.subnav_layout.setContentsMargins(0, 0, 0, 0)
         self.subnav_layout.setSpacing(6)
         self.nav_buttons = {}
+        self.tab_meta = {}
 
         tabs_data = [
-            ('igt-pr', 'IGT-PR'),
-            ('pertanahan', 'IGT Pertanahan'),
-            ('tata-ruang', 'IGT Tata Ruang'),
-            ('derivatif', 'IGT Derivatif'),
-            ('lainnya', 'IGT K/L Lainnya'),
+            ('igt-pr', 'IGT-PR', 'database', '#0f294d'),
+            ('pertanahan', 'IGT Pertanahan', 'pin', '#1f6fd6'),
+            ('tata-ruang', 'IGT Tata Ruang', 'map', '#047857'),
+            ('derivatif', 'IGT Derivatif', 'layers', '#7c3aed'),
+            ('lainnya', 'IGT K/L Lainnya', 'globe', '#0284c7'),
         ]
-        for cat_key, tab_title in tabs_data:
+        for cat_key, tab_title, icon_key, color in tabs_data:
             btn = QPushButton(tab_title, self.tabs_container)
             btn.setCursor(Qt.CursorShape.PointingHandCursor)
             btn.clicked.connect(lambda checked, k=cat_key: self.set_category(k))
             self.subnav_layout.addWidget(btn)
             self.nav_buttons[cat_key] = btn
+            self.tab_meta[cat_key] = (icon_key, color)
 
         self.subnav_layout.addStretch(1)
         self.tabs_scroll.setWidget(self.tabs_container)
@@ -947,7 +949,9 @@ class CatalogPage(QWidget):
 
         # Update style tab aktif
         for key, btn in self.nav_buttons.items():
+            icon_key, icon_color = self.tab_meta.get(key, ('pin', '#1f6fd6'))
             if key == cat_key:
+                btn.setIcon(QIcon(svg_pixmap(ICONS.get(icon_key, ICONS['pin']).format(color='#ffffff'), QSize(12, 12))))
                 btn.setStyleSheet("""
                     QPushButton {
                         background-color: #1f6fd6;
@@ -960,6 +964,7 @@ class CatalogPage(QWidget):
                     }
                 """)
             else:
+                btn.setIcon(QIcon(svg_pixmap(ICONS.get(icon_key, ICONS['pin']).format(color=icon_color), QSize(12, 12))))
                 btn.setStyleSheet("""
                     QPushButton {
                         background-color: #ffffff;

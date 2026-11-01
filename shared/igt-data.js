@@ -19,24 +19,24 @@ const IgtData = (() => {
   const CATEGORIES = {
     'igt-pr': {
       label: 'IGT-PR', shortLabel: 'IGT-PR', slug: 'igt-pr', kind: 'terpadu', detail: 'utama', integration: true,
-      catalogStatus: 'Terintegrasi', noun: 'dataset terpadu', rule: 'Menampilkan dataset IGT Pertanahan dan IGT Tata Ruang terpadu.',
+      icon: 'database-2-line', catalogStatus: 'Terintegrasi', noun: 'dataset terpadu', rule: 'Menampilkan dataset IGT Pertanahan dan IGT Tata Ruang terpadu.',
     },
     pertanahan: {
       label: 'IGT Pertanahan', shortLabel: 'IGT Pertanahan', slug: 'igt-pertanahan', kind: 'bidang', detail: 'utama', integration: true,
-      catalogStatus: 'Terintegrasi', noun: 'dataset terintegrasi', rule: 'Menampilkan dataset yang sudah terintegrasi dan siap dimanfaatkan di QGIS.',
+      icon: 'map-pin-line', catalogStatus: 'Terintegrasi', noun: 'dataset terintegrasi', rule: 'Menampilkan dataset yang sudah terintegrasi dan siap dimanfaatkan di QGIS.',
     },
     'tata-ruang': {
       label: 'IGT Tata Ruang', shortLabel: 'IGT Tata Ruang', slug: 'igt-tata-ruang', kind: 'kawasan', detail: 'utama', integration: true,
-      catalogStatus: 'Terintegrasi', noun: 'dataset terintegrasi', rule: 'Menampilkan dataset yang sudah terintegrasi dan siap dimanfaatkan di QGIS.',
+      icon: 'map-2-line', catalogStatus: 'Terintegrasi', noun: 'dataset terintegrasi', rule: 'Menampilkan dataset yang sudah terintegrasi dan siap dimanfaatkan di QGIS.',
     },
     derivatif: {
       label: 'IGT Derivatif Multiguna', shortLabel: 'IGT Derivatif', slug: 'igt-derivatif', detail: 'derivatif',
-      catalogStatus: 'Disetujui', noun: 'layer disetujui',
+      icon: 'stack-line', catalogStatus: 'Disetujui', noun: 'layer disetujui',
       rule: 'Hanya layer berstatus Disetujui yang tampil; layer Diajukan, Ditolak, dan Kadaluwarsa tidak ditampilkan.',
     },
     lainnya: {
       label: 'IGT K/L Lainnya', shortLabel: 'IGT K/L Lainnya', slug: 'igt-lainnya',
-      catalogStatus: 'Tersedia', noun: 'layer tersedia', rule: 'Semua layer eksternal yang diunggah langsung masuk katalog.',
+      icon: 'global-line', catalogStatus: 'Tersedia', noun: 'layer tersedia', rule: 'Semua layer eksternal yang diunggah langsung masuk katalog.',
     },
   };
 
