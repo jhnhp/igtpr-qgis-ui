@@ -287,28 +287,6 @@ class IgtDetailDialog(QDialog):
 
             body_layout.addWidget(subs_card)
 
-        # Card: Deskripsi & Abstrak
-        desc_card = QFrame(body_widget)
-        desc_card.setProperty('class', 'infoCard')
-        dc_layout = QVBoxLayout(desc_card)
-        dc_layout.setContentsMargins(14, 12, 14, 12)
-        dc_layout.setSpacing(6)
-
-        d_head = QLabel("Abstrak & Keterangan Dataset", desc_card)
-        d_head.setStyleSheet("color: #0f294d; font-size: 13px; font-weight: 800;")
-        dc_layout.addWidget(d_head)
-
-        abstrak = (
-            f"Dataset '{d_name}' merupakan Informasi Geospasial Tematik (IGT) resmi yang diproduksi dan dikelola "
-            f"oleh {direktorat_val}. Data ini telah melewati tahapan validasi atribut, penjaminan kualitas spasial, "
-            f"dan verifikasi topologi sehingga siap untuk diintegrasikan dan dimanfaatkan pada sistem GIS Kementerian ATR/BPN."
-        )
-        d_text = QLabel(abstrak, desc_card)
-        d_text.setStyleSheet("color: #334155; font-size: 11.5px; line-height: 1.4;")
-        d_text.setWordWrap(True)
-        dc_layout.addWidget(d_text)
-        body_layout.addWidget(desc_card)
-
         scroll.setWidget(body_widget)
         layout.addWidget(scroll, 1)
 

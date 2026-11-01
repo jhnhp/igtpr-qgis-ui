@@ -323,14 +323,6 @@ const IgtApp = (() => {
           <!-- Sub-layer bila multi-layer -->
           ${subLayersHtml}
 
-          <!-- Abstrak / Deskripsi Data -->
-          <div class="igt-detail-box">
-            <div class="igt-detail-box-title">Abstrak & Keterangan Dataset</div>
-            <p style="font-size:12px;color:#475569;margin:0;line-height:1.5;">
-              Dataset '${dataset.name}' merupakan Informasi Geospasial Tematik (IGT) resmi yang diproduksi dan dikelola oleh ${direktoratVal}. Data ini telah melewati tahapan validasi atribut, penjaminan kualitas spasial, dan verifikasi topologi sehingga siap untuk diintegrasikan dan dimanfaatkan pada sistem GIS Kementerian ATR/BPN.
-            </p>
-          </div>
-
           <!-- Toolbar Muat Layer -->
           <div class="toolbar" style="margin-top:16px;justify-content:space-between;padding-top:12px;border-top:1px solid #e2e8f0;">
             <button type="button" class="btn btn-soft" data-close-detail-modal>Tutup</button>
