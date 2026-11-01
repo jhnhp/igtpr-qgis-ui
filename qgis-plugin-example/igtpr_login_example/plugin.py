@@ -99,15 +99,11 @@ class IgtprDockWidget(QDockWidget):
         login_scroll.setWidget(self.login_page)
         self.stack.addWidget(login_scroll)
 
-        # Page 1: Dashboard V2
+        # Page 1: Dashboard V2 (Katalog IGT sudah ditampilkan langsung di depan/dashboard)
         self.dashboard_page = DashboardPage(current_role=self.current_role, parent=self.stack)
         self.stack.addWidget(self.dashboard_page)
 
-        # Page 2: Catalog Data V2
-        self.catalog_page = CatalogPage(current_category='igt-pr', current_role=self.current_role, parent=self.stack)
-        self.stack.addWidget(self.catalog_page)
-
-        # Page 3: Management Data V2
+        # Page 2: Management Data V2
         self.management_page = ManagementPage(current_category='igt-utama', current_role=self.current_role, parent=self.stack)
         self.stack.addWidget(self.management_page)
 
@@ -125,7 +121,7 @@ class IgtprDockWidget(QDockWidget):
 
         # Connect Topbar Navigation
         self.topbar.homeRequested.connect(self.show_dashboard)
-        self.topbar.catalogRequested.connect(lambda: self.show_catalog('igt-pr'))
+        self.topbar.catalogRequested.connect(self.show_dashboard)
         self.topbar.logoutRequested.connect(self.show_login)
 
         # Connect Dashboard Navigation
@@ -137,7 +133,6 @@ class IgtprDockWidget(QDockWidget):
         self.dashboard_page.logoutRequested.connect(self.show_login)
 
         # Connect Sub-Pages Back to Dashboard
-        self.catalog_page.backToDashboardRequested.connect(self.show_dashboard)
         self.management_page.backToDashboardRequested.connect(self.show_dashboard)
         self.upload_page.backToDashboardRequested.connect(self.show_dashboard)
         self.model_builder_page.backToDashboardRequested.connect(self.show_dashboard)
@@ -154,13 +149,10 @@ class IgtprDockWidget(QDockWidget):
         self.stack.setCurrentWidget(self.dashboard_page)
 
     def show_catalog(self, category_key='igt-pr'):
-        self.topbar.show()
-        cat_info = CATEGORIES.get(category_key, CATEGORIES['igt-pr'])
-        self.topbar.set_breadcrumbs(['Katalog IGT', cat_info['label']])
-        if hasattr(self.dashboard_page, 'year_combo'):
-            self.catalog_page.set_year_filter(self.dashboard_page.year_combo.currentText())
-        self.catalog_page.set_category(category_key)
-        self.stack.setCurrentWidget(self.catalog_page)
+        # Katalog IGT sudah ditampilkan di depan (dashboard), navigasi mengarahkan ke dashboard
+        self.show_dashboard()
+        if hasattr(self.dashboard_page, 'catalog_widget') and hasattr(self.dashboard_page.catalog_widget, 'set_category'):
+            self.dashboard_page.catalog_widget.set_category(category_key)
 
     def show_management(self, tab_key='igt-utama'):
         self.topbar.show()
@@ -192,7 +184,6 @@ class IgtprDockWidget(QDockWidget):
         self.current_role = role_id
         self.topbar.set_role(role_id)
         self.dashboard_page.set_role(role_id)
-        self.catalog_page.set_role(role_id)
         self.management_page.set_role(role_id)
 
     def resizeEvent(self, event):
@@ -203,7 +194,6 @@ class IgtprDockWidget(QDockWidget):
         for widget in (
             getattr(self, 'topbar', None),
             getattr(self, 'dashboard_page', None),
-            getattr(self, 'catalog_page', None),
             getattr(self, 'management_page', None),
             getattr(self, 'upload_page', None),
             getattr(self, 'model_builder_page', None),
@@ -264,9 +254,7 @@ class IgtprLoginExample:
             # Connect Role Switching
             self.dock.topbar.switchRoleRequested.connect(self.on_switch_role_clicked)
 
-            # Connect Catalog & Dashboard Layer Load Actions
-            self.dock.catalog_page.wmsRequested.connect(self.on_load_wms)
-            self.dock.catalog_page.wfsRequested.connect(self.on_load_wfs)
+            # Connect Dashboard Layer Load Actions (Katalog IGT terpasang langsung di dashboard)
             self.dock.dashboard_page.wmsRequested.connect(self.on_load_wms)
             self.dock.dashboard_page.wfsRequested.connect(self.on_load_wfs)
 

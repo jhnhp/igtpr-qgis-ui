@@ -167,7 +167,6 @@ class DashboardPage(ResponsivePage):
 
         # 3. Live Embedded Katalog IGT (Langsung aktif di dashboard)
         self.catalog_widget = self.responsive(CatalogPage(current_category='igt-pr', current_role=self.current_role, embedded=True, parent=self.content))
-        self.catalog_widget.openFullCatalogRequested.connect(self.openCatalogRequested.emit)
         self.catalog_widget.wmsRequested.connect(self.wmsRequested.emit)
         self.catalog_widget.wfsRequested.connect(self.wfsRequested.emit)
         self.body.addWidget(self.catalog_widget)

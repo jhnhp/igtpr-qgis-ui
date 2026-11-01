@@ -145,8 +145,6 @@ const IgtApp = (() => {
   // Repository overview: how many datasets are compiled and integrated. No upload controls here.
   function dashboard(role) {
     const records = IgtData.loadRecords().filter((r) => IgtData.canView(role, r.category));
-    const categories = CATEGORY_ORDER.filter((key) => IgtData.canView(role, key));
-    const catalogButtons = categories.map((key) => '<a class="btn btn-soft menu-btn" href="../' + CATEGORIES[key].slug + '/index.html">' + (CATALOG_ICON[key] || categoryIcon(key)) + '<span>' + (CATEGORIES[key].shortLabel || CATEGORIES[key].label) + '</span></a>').join('');
     const manageButtons = managementCategories(role)
       .map((key) => '<a class="btn btn-primary menu-btn" id="upload-button-' + key + '" href="../upload-data/index.html?tab=' + key + '">' + (MANAGEMENT_ICON[key] || ri('database-2-line')) + '<span>' + managementShortLabel(key) + '</span></a>')
       .join('');
@@ -156,18 +154,25 @@ const IgtApp = (() => {
       statCard('Terkompilasi', '0', 'Menunggu integrasi', ri('folder-line'), 'amber', 'count-compiled') +
       statCard('Terintegrasi', '0', 'Pertanahan dan Tata Ruang', ri('checkbox-circle-line'), 'green', 'count-integrated') +
       '</div>' +
-      '<section class="card"><div class="card-head"><div><h2>Katalog IGT</h2><p>Pilih kategori untuk melihat dataset.</p></div></div>' +
-      '<div class="menu-buttons" id="catalog-buttons">' + catalogButtons + '</div>' +
+      '<section class="card" style="margin-bottom:16px;">' +
+      '<div class="card-head"><div><h2>Katalog IGT</h2><p>Katalog terpadu data IGT Pertanahan dan Tata Ruang Kementerian ATR/BPN.</p></div></div>' +
+      '<div class="dash-cat-widget" id="dashboard-catalog-widget"></div>' +
+      '</section>' +
+      '<section class="card">' +
       '<div class="card-head menu-upload-head"><div><h2>Kelola data</h2><p>Unggah data baru dan pantau status pengajuan.</p></div></div>' +
       '<div class="menu-buttons' + (role === 'superadmin' ? ' menu-buttons-superadmin' : '') + '" id="upload-buttons">' + manageButtons + '</div>' +
       '<div class="menu-buttons model-builder-buttons"><a class="btn btn-primary menu-btn" id="model-builder-button" href="../../../shared/model-builder/index.html?role=' + role + '">' + ri('node-tree') + '<span>Model Builder</span></a></div>' +
       '</section>';
+    const catWidget = dashboardCatalog('#dashboard-catalog-widget', role);
     const updateDashboard = () => {
       const year = $('#dashboard-year-filter').value;
       const visible = records.filter((record) => year === 'all' || yearOf(record) === year || (record.subLayers && record.subLayers.some((s) => (s.year || s.updated || '').includes(year))));
       const staged = IgtData.integrationRecords(visible);
       setText('count-compiled', IgtData.countByStatus(staged, 'Terkompilasi'));
       setText('count-integrated', IgtData.countByStatus(staged, 'Terintegrasi'));
+      if (catWidget && catWidget.setYear) {
+        catWidget.setYear(year);
+      }
     };
     $('#dashboard-year-filter').addEventListener('change', updateDashboard);
     updateDashboard();
@@ -198,6 +203,11 @@ const IgtApp = (() => {
 
   // Datasets of one category that are in its catalog (see CATEGORIES[...].catalogStatus); nothing can be edited here.
   function catalog(role, category) {
+    // Karena Katalog IGT sudah ditampilkan di depan (dashboard), page khusus dialihkan ke dashboard utama
+    if (typeof window !== 'undefined' && window.location) {
+      window.location.replace('../beranda/index.html#dashboard-catalog-widget');
+      return;
+    }
     const view = $('#view');
     const isV2 = isV2Role(role);
     if (isV2) {
@@ -211,7 +221,7 @@ const IgtApp = (() => {
     if (isV2) {
       const crumb = document.querySelector('.topbar .crumb');
       if (crumb) {
-        crumb.innerHTML = 'Geoportal IGT-PR　/　<a href="../beranda/index.html">Katalog IGT</a>　/　<strong>' + config.label + '</strong>';
+        crumb.innerHTML = 'Geoportal IGT-PR　/　<a href="../beranda/index.html">Dashboard</a>　/　<strong>' + config.label + '</strong>';
       }
       const eyebrow = document.querySelector('.page-head .eyebrow');
       if (eyebrow) eyebrow.textContent = 'Katalog IGT Geospasial';
@@ -223,7 +233,7 @@ const IgtApp = (() => {
       ? '<nav class="v2-subnav" aria-label="Kategori Katalog IGT">' +
         CATEGORY_ORDER.filter((key) => IgtData.canView(role, key))
           .map((key) =>
-            '<a class="' + (key === category ? 'active' : '') + '" href="../' + CATEGORIES[key].slug + '/index.html">' +
+            '<a class="' + (key === category ? 'active' : '') + '" href="../beranda/index.html#dashboard-catalog-widget">' +
             (CATALOG_ICON[key] || categoryIcon(key)) + '<span>' + (CATEGORIES[key].shortLabel || CATEGORIES[key].label) + '</span></a>'
           ).join('') +
         '</nav>'
@@ -664,7 +674,7 @@ const IgtApp = (() => {
       document.body.classList.add('v2-page', 'v2-theme-manage');
       const crumb = document.querySelector('.topbar .crumb');
       if (crumb) {
-        crumb.innerHTML = 'Geoportal IGT-PR　/　<a href="../beranda/index.html">Manajemen Data</a>　/　<strong>' + pageTitle + '</strong>';
+        crumb.innerHTML = 'Geoportal IGT-PR　/　<a href="../beranda/index.html">Dashboard</a>　/　<strong>' + pageTitle + '</strong>';
       }
       const eyebrow = document.querySelector('.page-head .eyebrow');
       if (eyebrow) eyebrow.textContent = 'Manajemen Data Geospasial';

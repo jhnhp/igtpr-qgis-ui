@@ -350,7 +350,7 @@ class CatalogPage(QWidget):
     wmsRequested = pyqtSignal(dict, object)   # (dataset, sublayer or None)
     wfsRequested = pyqtSignal(dict, object)   # (dataset, sublayer or None)
 
-    def __init__(self, current_category='igt-pr', current_role='superadmin', embedded=False, parent=None):
+    def __init__(self, current_category='igt-pr', current_role='superadmin', embedded=True, parent=None):
         super().__init__(parent)
         self.embedded = embedded
         self.current_category = current_category if current_category in CATEGORY_KEYS else 'igt-pr'

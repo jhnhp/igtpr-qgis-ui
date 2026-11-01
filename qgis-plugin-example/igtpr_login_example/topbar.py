@@ -154,10 +154,7 @@ class TopbarWidget(QFrame):
                 btn.setCursor(Qt.CursorShape.PointingHandCursor)
                 if text.startswith('Manajemen'):
                     btn.setProperty('tone', 'green')
-                if text in ('Katalog IGT', 'Katalog Data'):
-                    btn.clicked.connect(self.catalogRequested.emit)
-                else:
-                    btn.clicked.connect(self.homeRequested.emit)
+                btn.clicked.connect(self.homeRequested.emit)
                 self.crumb_layout.addWidget(btn)
                 self.crumb_layout.addWidget(self._sep())
         self._apply_compact(self.width())
