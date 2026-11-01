@@ -331,17 +331,20 @@ const IgtApp = (() => {
           '<td data-label="' + orgLabel + '">' + (d.direktorat || d.satker || d.ditjen || d.instansi || d.source || '—') + '</td>' +
           '<td data-label="Tanggal">' + (d.updated || d.date || '—') + '</td>' +
           (hasSubs
-            ? '<td class="igt-action-cell-multilayer" data-label="Sub-layer">' +
+            ? '<td class="igt-action-cell-multilayer" data-label="Sub-layer"><div class="toolbar-inline">' +
               '<button type="button" class="igt-chip igt-chip--multi-layer" data-toggle-sub="' + d.id + '" aria-expanded="' + (isExp ? 'true' : 'false') + '" title="Dataset Multi-Layer. Klik untuk membuka/menutup sub-layer">' +
               '<span class="igt-chip__text">Multi-Layer</span>' +
               '<span class="igt-chip__count">' + d.subLayers.length + ' Layer</span>' +
               '<span class="igt-chip__caret" aria-hidden="true">' + (isExp ? '▴' : '▾') + '</span>' +
               '</button>' +
-              '</td>'
+              '<button type="button" class="btn btn-soft btn-both btn-sm" data-action="load-all-subs" data-id="' + d.id + '" title="' + (d.subLayers.length === 2 ? 'Muat kedua sub-IGT sekaligus ke kanvas peta QGIS' : 'Muat seluruh ' + d.subLayers.length + ' sub-IGT sekaligus ke kanvas peta QGIS') + '">' +
+              ri('checkbox-multiple-line') +
+              '<span>' + (d.subLayers.length === 2 ? 'Load Keduanya' : 'Load Semua') + '</span>' +
+              '</button>' +
+              '</div></td>'
             : '<td data-label="Aksi Muat Layer"><div class="toolbar-inline">' +
               button('btn-soft btn-sm', 'wms', d.id, ri('map-2-line') + '<span>WMS</span>') +
               (canAccessWfs(role, d) ? button('btn-soft btn-sm', 'wfs', d.id, ri('stack-line') + '<span>WFS</span>') : '') +
-              '<button type="button" class="btn btn-soft btn-both btn-sm" data-action="both" data-id="' + d.id + '">' + ri('checkbox-multiple-line') + '<span>Keduanya</span></button>' +
               '</div></td>'
           ) +
           '</tr>'
@@ -364,7 +367,6 @@ const IgtApp = (() => {
             '<td data-label="Aksi Muat Layer"><div class="toolbar-inline">' +
             '<button type="button" class="btn btn-soft btn-sm igt-sub-btn" data-action="wms-sub" data-sub-id="' + sub.id + '" data-sub-name="' + sub.name + '" data-parent-name="' + d.name + '">' + ri('map-2-line') + '<span>WMS</span></button>' +
             (canAccessWfs(role, d) ? '<button type="button" class="btn btn-soft btn-sm igt-sub-btn" data-action="wfs-sub" data-sub-id="' + sub.id + '" data-sub-name="' + sub.name + '" data-parent-name="' + d.name + '">' + ri('stack-line') + '<span>WFS</span></button>' : '') +
-            '<button type="button" class="btn btn-soft btn-both btn-sm igt-sub-btn" data-action="both-sub" data-sub-id="' + sub.id + '" data-sub-name="' + sub.name + '" data-parent-name="' + d.name + '">' + ri('checkbox-multiple-line') + '<span>Keduanya</span></button>' +
             '</div></td>' +
             '</tr>'
           );
@@ -450,8 +452,13 @@ const IgtApp = (() => {
         alert("Simulasi QGIS: Mengambil data fitur WFS untuk '" + subName + "' (sub-layer dari " + parentName + ").");
         return;
       }
-      if (action === 'both-sub') {
-        alert("Simulasi QGIS: Memuat sekaligus layer WMS dan WFS untuk sub-layer '" + subName + "' (bagian dari " + parentName + ") ke dalam kanvas peta QGIS.");
+      if (action === 'load-all-subs') {
+        const d = datasets.find((x) => x.id === id);
+        if (d && d.subLayers) {
+          const count = d.subLayers.length;
+          const subNames = d.subLayers.map((s) => s.name).join(', ');
+          alert("Simulasi QGIS: Memuat " + (count === 2 ? "kedua" : "seluruh " + count) + " sub-IGT untuk '" + d.name + "' (" + subNames + ") sekaligus ke dalam kanvas peta QGIS.");
+        }
         return;
       }
 
@@ -1192,10 +1199,10 @@ const IgtApp = (() => {
                       <span class="igt-chip__count">${d.subLayers.length} Layer</span>
                       <span class="igt-chip__caret" aria-hidden="true">${isExp ? '▴' : '▾'}</span>
                     </button>
+                    <button type="button" class="dash-btn-wms btn-both" data-dash-load-all="${d.id}" title="${d.subLayers.length === 2 ? 'Muat kedua sub-IGT sekaligus ke kanvas peta QGIS' : 'Muat seluruh ' + d.subLayers.length + ' sub-IGT sekaligus ke kanvas peta QGIS'}">${d.subLayers.length === 2 ? 'Load Keduanya' : 'Load Semua'}</button>
                   ` : `
                     <button type="button" class="dash-btn-wms" data-action="wms" data-name="${d.name.replace(/"/g, '&quot;')}">WMS</button>
                     ${allowWfs ? `<button type="button" class="dash-btn-wfs" data-action="wfs" data-name="${d.name.replace(/"/g, '&quot;')}">WFS</button>` : ''}
-                    <button type="button" class="dash-btn-wms btn-both" data-action="both" data-name="${d.name.replace(/"/g, '&quot;')}">Keduanya</button>
                   `}
                 </div>
               </div>
@@ -1210,7 +1217,6 @@ const IgtApp = (() => {
                       <div class="dash-sub-actions">
                         <button type="button" class="dash-sub-btn dash-sub-btn--wms" data-action="wms" data-name="${sub.name.replace(/"/g, '&quot;')}">WMS</button>
                         ${allowWfs ? `<button type="button" class="dash-sub-btn dash-sub-btn--wfs" data-action="wfs" data-name="${sub.name.replace(/"/g, '&quot;')}">WFS</button>` : ''}
-                        <button type="button" class="dash-sub-btn btn-both" data-action="both" data-name="${sub.name.replace(/"/g, '&quot;')}">Keduanya</button>
                       </div>
                     </div>
                   `).join('')}
@@ -1346,6 +1352,20 @@ const IgtApp = (() => {
           if (expandedIds.has(id)) expandedIds.delete(id);
           else expandedIds.add(id);
           render();
+        });
+      });
+
+      rootEl.querySelectorAll('[data-dash-load-all]').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const dId = btn.dataset.dashLoadAll;
+          const ds = allRecords.find((x) => x.id === dId);
+          if (!ds || !ds.subLayers) return;
+          const count = ds.subLayers.length;
+          const subNames = ds.subLayers.map((s) => s.name).join(', ');
+          const msg = "Simulasi QGIS: Memuat " + (count === 2 ? "kedua" : "seluruh " + count) + " sub-IGT untuk '" + ds.name + "' (" + subNames + ") sekaligus ke dalam kanvas peta QGIS.";
+          if (typeof toast === 'function') toast(msg);
+          else alert(msg);
         });
       });
 

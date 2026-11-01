@@ -193,6 +193,14 @@ class DatasetCard(QFrame):
             self.chip_btn.setCursor(Qt.CursorShape.PointingHandCursor)
             self.chip_btn.clicked.connect(self.toggle_expand)
             self.action_wrap.addWidget(self.chip_btn)
+
+            btn_label = 'Load Keduanya' if sub_count == 2 else f"Load Semua ({sub_count})"
+            self.btn_load_all = QPushButton(btn_label, self)
+            self.btn_load_all.setObjectName('actionBoth')
+            self.btn_load_all.setToolTip(f"Muat {'kedua' if sub_count == 2 else 'seluruh ' + str(sub_count)} sub-IGT sekaligus ke kanvas peta QGIS")
+            self.btn_load_all.setCursor(Qt.CursorShape.PointingHandCursor)
+            self.btn_load_all.clicked.connect(self._load_all_sublayers)
+            self.action_wrap.addWidget(self.btn_load_all)
         else:
             self.btn_wms = QPushButton('WMS', self)
             self.btn_wms.setObjectName('actionWms')
@@ -206,13 +214,6 @@ class DatasetCard(QFrame):
                 self.btn_wfs.setCursor(Qt.CursorShape.PointingHandCursor)
                 self.btn_wfs.clicked.connect(lambda: self.wfsClicked.emit(self.dataset, None))
                 self.action_wrap.addWidget(self.btn_wfs)
-
-                self.btn_both = QPushButton('Keduanya', self)
-                self.btn_both.setObjectName('actionBoth')
-                self.btn_both.setToolTip('Muat layer WMS dan WFS sekaligus ke kanvas peta QGIS')
-                self.btn_both.setCursor(Qt.CursorShape.PointingHandCursor)
-                self.btn_both.clicked.connect(self._load_both)
-                self.action_wrap.addWidget(self.btn_both)
 
         self.main_row.addLayout(self.action_wrap, 0)
         self.main_row.setAlignment(self.action_wrap, Qt.AlignmentFlag.AlignVCenter)
@@ -292,35 +293,17 @@ class DatasetCard(QFrame):
                     btn_sub_wfs.clicked.connect(lambda checked, s=sub: self.wfsClicked.emit(self.dataset, s))
                     sr_layout.addWidget(btn_sub_wfs)
 
-                    btn_sub_both = QPushButton('Keduanya', sub_row)
-                    btn_sub_both.setToolTip('Muat layer WMS dan WFS sekaligus ke kanvas peta QGIS')
-                    btn_sub_both.setCursor(Qt.CursorShape.PointingHandCursor)
-                    btn_sub_both.setStyleSheet("""
-                        QPushButton {
-                            background-color: #ffffff;
-                            color: #047857;
-                            border: 1px solid #a7f3d0;
-                            border-radius: 5px;
-                            font-size: 10px;
-                            font-weight: 600;
-                            padding: 2px 7px;
-                        }
-                        QPushButton:hover {
-                            background-color: #ecfdf5;
-                            border-color: #047857;
-                        }
-                    """)
-                    btn_sub_both.clicked.connect(lambda checked, s=sub: (self.wmsClicked.emit(self.dataset, s), self.wfsClicked.emit(self.dataset, s)))
-                    sr_layout.addWidget(btn_sub_both)
-
                 subs_layout.addWidget(sub_row)
 
             self.subs_container.setVisible(self.is_expanded)
             card_layout.addWidget(self.subs_container)
 
-    def _load_both(self):
-        self.wmsClicked.emit(self.dataset, None)
-        self.wfsClicked.emit(self.dataset, None)
+    def _load_all_sublayers(self):
+        """Muat seluruh sub-IGT (2 atau lebih) sekaligus ke kanvas peta QGIS."""
+        if not self.has_subs:
+            return
+        for s in self.dataset.get('subLayers', []):
+            self.wmsClicked.emit(self.dataset, s)
 
     def toggle_expand(self):
         if not self.has_subs:
