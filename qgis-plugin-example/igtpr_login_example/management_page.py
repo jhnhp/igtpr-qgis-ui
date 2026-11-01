@@ -389,6 +389,13 @@ class ManagementPage(QWidget):
         org_header = 'Instansi' if self.current_category == 'lainnya' else 'Direktorat' if self.current_status_tab == 'Terintegrasi' else 'Satker'
         self.table.horizontalHeaderItem(2).setText(org_header)
 
+        # Hapus (sembunyikan) kolom tanggal pada manajemen data IGT Utama untuk admin dan superadmin
+        is_reviewer_main = (self.current_category == 'igt-utama' and self.current_role in ('superadmin', 'admin'))
+        self.table.setColumnHidden(3, is_reviewer_main)
+        if not is_reviewer_main:
+            date_header = 'Tanggal Terintegrasi' if self.current_status_tab == 'Terintegrasi' else 'Tanggal Disetujui' if self.current_category == 'derivatif' else 'Tanggal Unggah'
+            self.table.horizontalHeaderItem(3).setText(date_header)
+
         self.table.setRowCount(len(filtered))
         for row, r in enumerate(filtered):
             # Col 0: ID Pengajuan

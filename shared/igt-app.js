@@ -897,7 +897,7 @@ const IgtApp = (() => {
       `<button type="button" class="btn btn-primary" id="btn-confirm-topol">${ri('checkbox-circle-line')}<span>Konfirmasi Hasil Topologi</span></button></div></div></section></div>` +
       `<div id="submission-status-tabs" class="tabs" data-status-tabs></div>` +
       `<div class="card-head submissions-head"><div><h2>Daftar Pengajuan</h2><p id="submission-count"></p></div></div>` +
-      `<div class="table-wrap"><table class="stack"><thead><tr><th>ID Pengajuan</th><th>Layer Target</th><th id="submission-org-heading">Satker</th><th id="submission-date-heading">Tanggal Unggah</th><th>Status</th><th>Aksi</th></tr></thead>` +
+      `<div class="table-wrap"><table class="stack"><thead id="submission-thead"><tr><th>ID Pengajuan</th><th>Layer Target</th><th id="submission-org-heading">Satker</th><th id="submission-date-heading">Tanggal Unggah</th><th>Status</th><th>Aksi</th></tr></thead>` +
       `<tbody id="submission-rows"></tbody></table></div><div class="empty-state" id="empty-state" hidden>Belum ada pengajuan pada kategori ini.</div></section>`;
 
     function renderCounts(ownRecords) {
@@ -918,8 +918,29 @@ const IgtApp = (() => {
           : tab === 'semua'
             ? 'Satker / Direktorat / Instansi'
             : 'Satker';
-      setText('submission-org-heading', orgLabel);
-      setText('submission-date-heading', isMain ? 'Tanggal Terintegrasi' : tab === 'derivatif' ? 'Tanggal Disetujui' : 'Tanggal Unggah');
+      const isReviewerMain = isMain && (base === 'admin' || base === 'superadmin');
+      const dateLabel = (isMain && isIntegratedTab)
+        ? 'Tanggal Terintegrasi'
+        : tab === 'derivatif'
+          ? 'Tanggal Disetujui'
+          : 'Tanggal Unggah';
+
+      const theadEl = $('#submission-thead');
+      if (theadEl) {
+        theadEl.innerHTML = `<tr>` +
+          `<th>ID Pengajuan</th>` +
+          `<th>Layer Target</th>` +
+          `<th id="submission-org-heading">${orgLabel}</th>` +
+          (isReviewerMain ? '' : `<th id="submission-date-heading">${dateLabel}</th>`) +
+          `<th>Status</th>` +
+          `<th>Aksi</th>` +
+          `</tr>`;
+      } else {
+        setText('submission-org-heading', orgLabel);
+        if (!isReviewerMain) {
+          setText('submission-date-heading', dateLabel);
+        }
+      }
       if (noUploadMenu) {
         document.title = label + ' · Manajemen Data · IGT-PR';
         if (crumbStrong) crumbStrong.textContent = label;
@@ -988,12 +1009,12 @@ const IgtApp = (() => {
           const orgVal = (r.status === 'Terintegrasi' && r.direktorat)
             ? r.direktorat
             : (r.satker || r.direktorat || r.ditjen || r.instansi || r.source || '—');
-          const dateLabel = isMain ? 'Tanggal Terintegrasi' : tab === 'derivatif' ? 'Tanggal Disetujui' : 'Tanggal Unggah';
-          const dateVal = isMain || tab === 'derivatif' ? (r.updated || "—") : r.date;
+          const dateVal = (isMain && isIntegratedTab) || tab === 'derivatif' ? (r.updated || "—") : r.date;
           return (
             `<tr data-category="${r.category}"><td data-label="ID Pengajuan">${id}</td><td data-label="Layer Target">${r.name}</td>` +
             `<td data-label="${orgLabel}">${orgVal}</td>` +
-            `<td data-label="${dateLabel}">${dateVal}</td><td data-label="Status">${badge(r.status)}</td>` +
+            (isReviewerMain ? '' : `<td data-label="${dateLabel}">${dateVal}</td>`) +
+            `<td data-label="Status">${badge(r.status)}</td>` +
             `<td data-label="Aksi" class="action-cell">${rowActions(role, r)}</td></tr>`
           );
         })
