@@ -620,16 +620,12 @@ const IgtApp = (() => {
       return toolbar(...extras);
     }
     if (kind === 'utama') {
-      if (reviewer && r.status === 'Diajukan') {
-        extras.push(button('btn-primary', 'compile', r.id, ri('check-line') + '<span>Kompilasi</span>'));
-      }
       if (reviewer && r.status === 'Terkompilasi') {
         extras.push(button('btn-primary', 'topology', r.id, ri('focus-3-line') + '<span>Cek Topologi</span>'));
-        if (isSuper) extras.push(button('btn-primary', 'approve-integration', r.id, ri('check-line') + '<span>Setujui Integrasi</span>'));
       }
-      if ((base === 'operator' || isV2Role(role)) && r.status === 'Revisi') extras.push(button('btn-soft', 'revision', r.id, ri('edit-line') + '<span>Revisi</span>'));
-    } else if (reviewer && r.status === 'Diajukan') {
-      extras.push(button('btn-primary', 'approve', r.id, ri('check-line') + '<span>Setujui</span>'), button('btn-soft', 'reject', r.id, ri('close-line') + '<span>Tolak</span>'));
+      if (base === 'operator' && r.status === 'Revisi') {
+        extras.push(button('btn-soft', 'revision', r.id, ri('edit-line') + '<span>Revisi</span>'));
+      }
     }
     return toolbar(...extras);
   }

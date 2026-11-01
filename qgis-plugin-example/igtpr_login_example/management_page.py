@@ -471,8 +471,8 @@ class ManagementPage(QWidget):
             btn.clicked.connect(lambda checked, rec=record: self._on_verify_topology(rec))
             layout.addWidget(btn)
 
-        # Action: Revisi (for Operator / any when status == Revisi)
-        if status == 'Revisi':
+        # Action: Perbaiki Revisi (hanya untuk operator saat status Revisi; superadmin & admin fokus cuma Cek Topologi)
+        if role == 'operator' and status == 'Revisi':
             btn = QPushButton('Perbaiki Revisi')
             btn.setCursor(Qt.CursorShape.PointingHandCursor)
             btn.setStyleSheet("""

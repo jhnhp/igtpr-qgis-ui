@@ -83,17 +83,7 @@ const reviseButton=document.getElementById("revise-igt"),topologyButton=document
 reviseButton.hidden=!(isOperator&&d.status==="Revisi");
 topologyButton.hidden=!((isSuperadmin||isAdmin)&&d.status==="Terkompilasi");
 if(approveIntButton){
-  approveIntButton.hidden=!(isSuperadmin&&d.status==="Terkompilasi");
-  approveIntButton.addEventListener("click",()=>{
-    if(!confirm("Setujui integrasi IGT Utama "+d.id+"?"))return;
-    d.status="Terintegrasi";
-    document.getElementById("igt-status").textContent=d.status;
-    badge.textContent=d.status;
-    badge.className="status ok";
-    topologyButton.hidden=true;
-    approveIntButton.hidden=true;
-    alert("Integrasi IGT Utama "+d.id+" telah disetujui.");
-  });
+  approveIntButton.hidden=true;
 }
 document.getElementById("show-canvas").addEventListener("click",()=>alert("Simulasi plugin QGIS: layer "+d.id+" akan ditampilkan pada kanvas peta QGIS."));
 topologyButton.addEventListener("click",()=>alert("Simulasi verifikasi topologi untuk "+d.id+". Pada implementasi QGIS, aksi ini menjalankan pemeriksaan topologi pada layer terkait."));
