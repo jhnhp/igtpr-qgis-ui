@@ -27,7 +27,6 @@ igtpr_login_example/
    - Dialog pemilihan peran interaktif: **Superadmin (SA)**, **Admin (AD)**, **Operator Pusat (JH)**, dan **Pengguna Umum (UM)**.
 2. **Topbar Persisten**:
    - Breadcrumb navigation (`Geoportal IGT-PR / Katalog IGT / IGT Pertanahan`) dengan tautan kembali.
-   - Status koneksi QGIS aktif (`● QGIS Aktif`).
    - Chip profil peran dengan menu ganti peran dan tombol keluar (logout).
 3. **Dashboard / Beranda (Card UI)**:
    - Kartu hero gradien biru tua ATR/BPN dengan filter tahun dinamis (`Semua tahun`, `2026`, `2025`, `2024`, `2023`).

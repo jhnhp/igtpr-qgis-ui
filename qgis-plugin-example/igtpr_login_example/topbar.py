@@ -2,7 +2,7 @@
 """Topbar (header) Geoportal IGT-PR Mockup V2, responsif terhadap lebar dock.
 
 Di dock sempit, bagian yang kurang penting disembunyikan bertahap:
-< 560 px badge "QGIS Aktif", < 460 px nama peran dan crumb dasar, crumb terakhir dipotong '…'.
+< 460 px nama peran dan crumb dasar, crumb terakhir dipotong '…'.
 """
 
 from qgis.PyQt.QtCore import QSize, Qt, pyqtSignal
@@ -63,19 +63,6 @@ class TopbarWidget(QFrame):
         self.crumb_layout = QHBoxLayout()
         self.crumb_layout.setSpacing(6)
         layout.addLayout(self.crumb_layout, 1)
-
-        self.status_badge = QFrame(self)
-        self.status_badge.setObjectName('statusBadge')
-        sb = QHBoxLayout(self.status_badge)
-        sb.setContentsMargins(8, 3, 10, 3)
-        sb.setSpacing(5)
-        dot = QLabel('●', self.status_badge)
-        dot.setObjectName('statusDot')
-        sb.addWidget(dot)
-        txt = QLabel('QGIS Aktif', self.status_badge)
-        txt.setObjectName('statusText')
-        sb.addWidget(txt)
-        layout.addWidget(self.status_badge)
 
         self.user_chip = QPushButton(self)
         self.user_chip.setObjectName('userChip')
@@ -173,7 +160,6 @@ class TopbarWidget(QFrame):
         self._apply_compact(event.size().width())
 
     def _apply_compact(self, width):
-        self.status_badge.setVisible(width >= 560)
         compact = width < 460
         self.user_chip.setText('' if compact else f"{self.role_info['label']}  ▾")
         self.user_chip.setProperty('compact', 'true' if compact else 'false')
