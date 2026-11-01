@@ -159,9 +159,19 @@ class DatasetCard(QFrame):
 
         self.title_lbl = QLabel(dataset.get('name', ''), self)
         self.title_lbl.setStyleSheet("color: #0f294d; font-size: 13px; font-weight: 500;")
-        self.title_lbl.setWordWrap(True)
-        self.title_lbl.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        title_row.addWidget(self.title_lbl, 1, Qt.AlignmentFlag.AlignVCenter)
+        self.title_lbl.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        title_row.addWidget(self.title_lbl, 0, Qt.AlignmentFlag.AlignVCenter)
+
+        if self.has_subs:
+            sub_count = len(dataset['subLayers'])
+            caret = '▴' if self.is_expanded else '▾'
+            self.chip_btn = QPushButton(f"Multi-layer ({sub_count}) {caret}", self)
+            self.chip_btn.setObjectName('multiChip')
+            self.chip_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            self.chip_btn.clicked.connect(self.toggle_expand)
+            title_row.addWidget(self.chip_btn, 0, Qt.AlignmentFlag.AlignVCenter)
+
+        title_row.addStretch(1)
 
         left_col.addLayout(title_row)
 
@@ -180,40 +190,35 @@ class DatasetCard(QFrame):
 
         self.main_row.addLayout(left_col, 1)
 
-        # Kolom Kanan: Tombol Aksi (Tepat di Tengah Vertikal)
+        # Kolom Kanan: Tombol Aksi WMS dan WFS (Tepat di Tengah Vertikal)
         self.action_wrap = QHBoxLayout()
         self.action_wrap.setContentsMargins(0, 0, 0, 0)
         self.action_wrap.setSpacing(6)
 
+        self.btn_wms = QPushButton('WMS', self)
+        self.btn_wms.setObjectName('actionWms')
+        self.btn_wms.setCursor(Qt.CursorShape.PointingHandCursor)
         if self.has_subs:
             sub_count = len(dataset['subLayers'])
-            caret = '▴' if self.is_expanded else '▾'
-            self.chip_btn = QPushButton(f"Multi-Layer · {sub_count} Layer {caret}", self)
-            self.chip_btn.setObjectName('multiChip')
-            self.chip_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-            self.chip_btn.clicked.connect(self.toggle_expand)
-            self.action_wrap.addWidget(self.chip_btn)
-
-            btn_label = 'Load Keduanya' if sub_count == 2 else f"Load Semua ({sub_count})"
-            self.btn_load_all = QPushButton(btn_label, self)
-            self.btn_load_all.setObjectName('actionBoth')
-            self.btn_load_all.setToolTip(f"Muat {'kedua' if sub_count == 2 else 'seluruh ' + str(sub_count)} sub-IGT sekaligus ke kanvas peta QGIS")
-            self.btn_load_all.setCursor(Qt.CursorShape.PointingHandCursor)
-            self.btn_load_all.clicked.connect(self._load_all_sublayers)
-            self.action_wrap.addWidget(self.btn_load_all)
+            self.btn_wms.setToolTip(f"Muat seluruh ({sub_count}) sub-IGT sekaligus sebagai layer WMS ke kanvas peta QGIS")
+            self.btn_wms.clicked.connect(lambda: self._load_all_sublayers('wms'))
         else:
-            self.btn_wms = QPushButton('WMS', self)
-            self.btn_wms.setObjectName('actionWms')
-            self.btn_wms.setCursor(Qt.CursorShape.PointingHandCursor)
+            self.btn_wms.setToolTip("Muat layer WMS ke kanvas peta QGIS")
             self.btn_wms.clicked.connect(lambda: self.wmsClicked.emit(self.dataset, None))
-            self.action_wrap.addWidget(self.btn_wms)
+        self.action_wrap.addWidget(self.btn_wms)
 
-            if self.allow_wfs:
-                self.btn_wfs = QPushButton('WFS', self)
-                self.btn_wfs.setObjectName('actionWfs')
-                self.btn_wfs.setCursor(Qt.CursorShape.PointingHandCursor)
+        if self.allow_wfs:
+            self.btn_wfs = QPushButton('WFS', self)
+            self.btn_wfs.setObjectName('actionWfs')
+            self.btn_wfs.setCursor(Qt.CursorShape.PointingHandCursor)
+            if self.has_subs:
+                sub_count = len(dataset['subLayers'])
+                self.btn_wfs.setToolTip(f"Muat seluruh ({sub_count}) sub-IGT sekaligus sebagai layer WFS ke kanvas peta QGIS")
+                self.btn_wfs.clicked.connect(lambda: self._load_all_sublayers('wfs'))
+            else:
+                self.btn_wfs.setToolTip("Muat layer vektor WFS ke kanvas peta QGIS")
                 self.btn_wfs.clicked.connect(lambda: self.wfsClicked.emit(self.dataset, None))
-                self.action_wrap.addWidget(self.btn_wfs)
+            self.action_wrap.addWidget(self.btn_wfs)
 
         self.main_row.addLayout(self.action_wrap, 0)
         self.main_row.setAlignment(self.action_wrap, Qt.AlignmentFlag.AlignVCenter)
@@ -298,12 +303,15 @@ class DatasetCard(QFrame):
             self.subs_container.setVisible(self.is_expanded)
             card_layout.addWidget(self.subs_container)
 
-    def _load_all_sublayers(self):
-        """Muat seluruh sub-IGT (2 atau lebih) sekaligus ke kanvas peta QGIS."""
+    def _load_all_sublayers(self, mode='wms'):
+        """Muat seluruh sub-IGT (2 atau lebih) sekaligus ke kanvas peta QGIS sebagai WMS atau WFS."""
         if not self.has_subs:
             return
         for s in self.dataset.get('subLayers', []):
-            self.wmsClicked.emit(self.dataset, s)
+            if mode == 'wfs':
+                self.wfsClicked.emit(self.dataset, s)
+            else:
+                self.wmsClicked.emit(self.dataset, s)
 
     def toggle_expand(self):
         if not self.has_subs:
@@ -312,7 +320,7 @@ class DatasetCard(QFrame):
         self.subs_container.setVisible(self.is_expanded)
         sub_count = len(self.dataset['subLayers'])
         caret = '▴' if self.is_expanded else '▾'
-        self.chip_btn.setText(f"Multi-Layer · {sub_count} Layer {caret}")
+        self.chip_btn.setText(f"Multi-layer ({sub_count}) {caret}")
 
     def set_expanded(self, expanded):
         if not self.has_subs or self.is_expanded == expanded:
@@ -321,7 +329,7 @@ class DatasetCard(QFrame):
         self.subs_container.setVisible(self.is_expanded)
         sub_count = len(self.dataset['subLayers'])
         caret = '▴' if self.is_expanded else '▾'
-        self.chip_btn.setText(f"Multi-Layer · {sub_count} Layer {caret}")
+        self.chip_btn.setText(f"Multi-layer ({sub_count}) {caret}")
 
     def apply_width(self, width):
         is_narrow = width < 280

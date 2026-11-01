@@ -2126,6 +2126,16 @@ body.v2-page .history-item {
   color: #047857;
 }
 
+.igt-chip--compact {
+  padding: 2px 7px;
+  font-size: 10px;
+  border-radius: 6px;
+  margin-left: 6px;
+  display: inline-flex;
+  vertical-align: middle;
+  gap: 4px;
+}
+
 .igt-action-cell-multilayer {
   text-align: center;
   vertical-align: middle;
