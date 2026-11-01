@@ -226,20 +226,27 @@ const IgtApp = (() => {
     const orgLabel = category === 'lainnya' ? 'Instansi' : 'Direktorat';
     view.innerHTML =
       v2CatalogNav +
-      '<div class="notice"><strong>Isi katalog</strong>' + config.rule + ' Tombol WMS dan WFS adalah simulasi; belum ada layanan nyata yang terhubung.</div>' +
-      '<div class="catalog-controls">' +
-      '<div class="field catalog-search"><label for="catalog-search">PENCARIAN</label><input id="catalog-search" type="search" placeholder="Cari nama IGT, ID..."></div>' +
+      '<div class="notice"><strong>Isi katalog</strong>' + config.rule + ' Tombol WMS, WFS, dan Keduanya adalah simulasi integrasi QGIS.</div>' +
+      '<div class="catalog-controls-v2">' +
+      '<div class="catalog-search-row">' +
+      '<div class="field catalog-search catalog-search-input-wrap"><input id="catalog-search" type="search" placeholder="Cari nama IGT, ID, atau kata kunci..."></div>' +
+      '<button type="button" class="catalog-filter-toggle" id="catalog-filter-toggle" aria-expanded="false" title="Buka / tutup filter wilayah">' +
+      ri('filter-3-line') + ' <span>Filter</span></button>' +
+      '</div>' +
+      '<div class="catalog-filter-drawer" id="catalog-filter-drawer" hidden>' +
       '<div class="field year-filter"><label for="catalog-year-filter">TAHUN</label><select id="catalog-year-filter">' + yearFilterOptions(datasets) + '</select></div>' +
       '<div class="field prov-filter"><label for="catalog-prov-filter">PROVINSI</label><select id="catalog-prov-filter">' + provFilterOptions(datasets) + '</select></div>' +
       '<div class="field kab-filter"><label for="catalog-kab-filter">KABUPATEN / KOTA</label><select id="catalog-kab-filter">' + kabFilterOptions(datasets) + '</select></div>' +
       '</div>' +
+      '</div>' +
       '<section class="card"><div class="card-head"><div><h2>' + config.noun.charAt(0).toUpperCase() + config.noun.slice(1) + '</h2><p id="catalog-count"></p></div></div>' +
       '<div class="table-wrap"><table class="stack"><thead><tr>' +
+      '<th class="igt-col-no">No.</th>' +
       '<th><button type="button" class="sort-header" data-sort="name">Nama IGT <span aria-hidden="true">↕</span></button></th>' +
       '<th><button type="button" class="sort-header" data-sort="direktorat">' + orgLabel + ' <span aria-hidden="true">↕</span></button></th>' +
       '<th><button type="button" class="sort-header" data-sort="updated">' +
       (config.integration ? 'Tanggal Pembaruan' : category === 'derivatif' ? 'Tanggal Disetujui' : 'Tanggal Unggah') +
-      ' <span aria-hidden="true">↕</span></button></th><th>Tampilkan WMS</th><th>Tampilkan WFS</th></tr></thead><tbody id="catalog-rows"></tbody></table></div><div class="empty-state" id="empty-state" hidden></div></section>';
+      ' <span aria-hidden="true">↕</span></button></th><th style="min-width:180px">Aksi Muat Layer</th></tr></thead><tbody id="catalog-rows"></tbody></table></div><div class="empty-state" id="empty-state" hidden></div></section>';
     function render() {
       const q = query.toLowerCase();
       const year = $('#catalog-year-filter').value;
@@ -290,12 +297,17 @@ const IgtApp = (() => {
         btn.setAttribute('aria-sort', active ? (sortDirection === 1 ? 'ascending' : 'descending') : 'none');
         btn.querySelector('span').textContent = active ? (sortDirection === 1 ? '↑' : '↓') : '↕';
       });
-      $('#catalog-rows').innerHTML = shown.map((d) => {
+      $('#catalog-rows').innerHTML = shown.map((d, idx) => {
         const hasSubs = Boolean(d.subLayers && d.subLayers.length > 0);
         const autoExpand = Boolean(q && d.subLayers && d.subLayers.some((s) => (s.name + ' ' + (s.label || '') + ' ' + (s.year || '') + ' ' + (s.skala || '')).toLowerCase().includes(q)));
         const isExp = autoExpand;
+        const catIcon = d.category === 'tata-ruang' ? ri('map-2-line') :
+                        d.category === 'derivatif' ? ri('stack-line') :
+                        d.category === 'lainnya' ? ri('global-line') :
+                        ri('building-line');
         const parentRow = (
           '<tr class="' + (hasSubs ? 'has-sublayers' : '') + (isExp ? ' is-expanded' : '') + '" data-record-id="' + d.id + '">' +
+          '<td class="igt-col-no" data-label="No."><span class="igt-catalog-num">' + (idx + 1) + '</span></td>' +
           '<td data-label="Nama IGT">' +
           '<div class="igt-catalog-item">' +
           '<div class="igt-catalog-header">' +
@@ -304,20 +316,24 @@ const IgtApp = (() => {
               '<span class="igt-tree-icon" aria-hidden="true">' + (isExp ? '▼' : '▶') + '</span>' +
               '</button>'
             : '') +
-          '<strong class="igt-catalog-name">' + d.name + '</strong>' +
+          '<span class="igt-cat-inline-icon" title="' + d.category + '">' + catIcon + '</span>' +
+          '<span class="igt-catalog-name">' + d.name + '</span>' +
           '</div></div></td>' +
           '<td data-label="' + orgLabel + '">' + (d.direktorat || d.satker || d.ditjen || d.instansi || d.source || '—') + '</td>' +
           '<td data-label="Tanggal">' + (d.updated || d.date || '—') + '</td>' +
           (hasSubs
-            ? '<td colspan="2" class="igt-action-cell-multilayer" data-label="Sub-layer">' +
+            ? '<td class="igt-action-cell-multilayer" data-label="Sub-layer">' +
               '<button type="button" class="igt-chip igt-chip--multi-layer" data-toggle-sub="' + d.id + '" aria-expanded="' + (isExp ? 'true' : 'false') + '" title="Dataset Multi-Layer. Klik untuk membuka/menutup sub-layer">' +
               '<span class="igt-chip__text">Multi-Layer</span>' +
               '<span class="igt-chip__count">' + d.subLayers.length + ' Layer</span>' +
               '<span class="igt-chip__caret" aria-hidden="true">' + (isExp ? '▴' : '▾') + '</span>' +
               '</button>' +
               '</td>'
-            : '<td data-label="Tampilkan WMS">' + button('btn-soft', 'wms', d.id, ri('map-2-line') + '<span>WMS</span>') + '</td>' +
-              '<td data-label="Tampilkan WFS">' + (canAccessWfs(role, d) ? button('btn-soft', 'wfs', d.id, ri('stack-line') + '<span>WFS</span>') : '<span class="text-muted" style="color:var(--text-muted,#94a3b8); font-size:13px;" title="Akses WFS dibatasi untuk satker terkait">—</span>') + '</td>'
+            : '<td data-label="Aksi Muat Layer"><div class="toolbar-inline">' +
+              button('btn-soft btn-sm', 'wms', d.id, ri('map-2-line') + '<span>WMS</span>') +
+              (canAccessWfs(role, d) ? button('btn-soft btn-sm', 'wfs', d.id, ri('stack-line') + '<span>WFS</span>') : '') +
+              '<button type="button" class="btn btn-soft btn-both btn-sm" data-action="both" data-id="' + d.id + '">' + ri('checkbox-multiple-line') + '<span>Keduanya</span></button>' +
+              '</div></td>'
           ) +
           '</tr>'
         );
@@ -327,6 +343,7 @@ const IgtApp = (() => {
         const subRows = d.subLayers.map((sub) => {
           return (
             '<tr class="igt-sublayer-row igt-sublayer-for-' + d.id + '" data-parent-id="' + d.id + '" style="' + (isExp ? '' : 'display:none;') + '"' + (isExp ? '' : ' hidden') + '>' +
+            '<td class="igt-col-no" data-label="No."></td>' +
             '<td class="igt-sublayer-cell" data-label="Nama Sub-layer">' +
             '<div class="igt-sublayer-branch">' +
             '<span class="igt-tree-branch-line" aria-hidden="true">└─</span>' +
@@ -335,8 +352,11 @@ const IgtApp = (() => {
             '</div></div></td>' +
             '<td data-label="' + orgLabel + '"><span class="igt-sublayer-meta">' + (sub.scope || d.direktorat || '—') + '</span></td>' +
             '<td data-label="Tanggal"><span class="igt-sublayer-date">' + (sub.updated || sub.date || d.updated || '—') + '</span></td>' +
-            '<td data-label="Tampilkan WMS"><button type="button" class="btn btn-soft btn-sm igt-sub-btn" data-action="wms-sub" data-sub-id="' + sub.id + '" data-sub-name="' + sub.name + '" data-parent-name="' + d.name + '">' + ri('map-2-line') + '<span>WMS</span></button></td>' +
-            '<td data-label="Tampilkan WFS">' + (canAccessWfs(role, d) ? '<button type="button" class="btn btn-soft btn-sm igt-sub-btn" data-action="wfs-sub" data-sub-id="' + sub.id + '" data-sub-name="' + sub.name + '" data-parent-name="' + d.name + '">' + ri('stack-line') + '<span>WFS</span></button>' : '<span class="text-muted" style="color:var(--text-muted,#94a3b8); font-size:13px;" title="Akses WFS dibatasi untuk satker terkait">—</span>') + '</td>' +
+            '<td data-label="Aksi Muat Layer"><div class="toolbar-inline">' +
+            '<button type="button" class="btn btn-soft btn-sm igt-sub-btn" data-action="wms-sub" data-sub-id="' + sub.id + '" data-sub-name="' + sub.name + '" data-parent-name="' + d.name + '">' + ri('map-2-line') + '<span>WMS</span></button>' +
+            (canAccessWfs(role, d) ? '<button type="button" class="btn btn-soft btn-sm igt-sub-btn" data-action="wfs-sub" data-sub-id="' + sub.id + '" data-sub-name="' + sub.name + '" data-parent-name="' + d.name + '">' + ri('stack-line') + '<span>WFS</span></button>' : '') +
+            '<button type="button" class="btn btn-soft btn-both btn-sm igt-sub-btn" data-action="both-sub" data-sub-id="' + sub.id + '" data-sub-name="' + sub.name + '" data-parent-name="' + d.name + '">' + ri('checkbox-multiple-line') + '<span>Keduanya</span></button>' +
+            '</div></td>' +
             '</tr>'
           );
         }).join('');
@@ -350,6 +370,16 @@ const IgtApp = (() => {
       empty.textContent = datasets.length === 0 ? 'Belum ada ' + config.noun + ' pada ' + config.label + '.' : 'Tidak ada dataset yang cocok dengan kriteria filter atau pencarian.';
     }
     $('#catalog-search').addEventListener('input', (event) => { query = event.target.value; render(); });
+    const catFilterToggle = $('#catalog-filter-toggle');
+    const catFilterDrawer = $('#catalog-filter-drawer');
+    if (catFilterToggle && catFilterDrawer) {
+      catFilterToggle.addEventListener('click', () => {
+        const isHidden = catFilterDrawer.hidden;
+        catFilterDrawer.hidden = !isHidden;
+        catFilterToggle.classList.toggle('active', isHidden);
+        catFilterToggle.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+      });
+    }
     $('#catalog-year-filter').addEventListener('change', render);
     if ($('#catalog-prov-filter')) {
       $('#catalog-prov-filter').addEventListener('change', (e) => {
@@ -411,6 +441,10 @@ const IgtApp = (() => {
         alert("Simulasi QGIS: Mengambil data fitur WFS untuk '" + subName + "' (sub-layer dari " + parentName + ").");
         return;
       }
+      if (action === 'both-sub') {
+        alert("Simulasi QGIS: Memuat sekaligus layer WMS dan WFS untuk sub-layer '" + subName + "' (bagian dari " + parentName + ") ke dalam kanvas peta QGIS.");
+        return;
+      }
 
       const dataset = datasets.find((d) => d.id === id);
       if (!dataset) return;
@@ -430,6 +464,12 @@ const IgtApp = (() => {
         } else {
           alert(WFS_MESSAGE(dataset.name));
         }
+      } else if (action === 'both') {
+        if (dataset.subLayers && dataset.subLayers.length > 0) {
+          alert("Simulasi QGIS: Memuat sekaligus layer WMS dan WFS untuk seluruh sub-layer '" + dataset.name + "' (" + dataset.subLayers.length + " layer) ke dalam kanvas peta QGIS.");
+        } else {
+          alert("Simulasi QGIS: Memuat sekaligus layer WMS dan WFS untuk '" + dataset.name + "' ke dalam kanvas peta QGIS.");
+        }
       }
     });
     render();
@@ -446,26 +486,71 @@ const IgtApp = (() => {
 
   const LEGACY = '../../../legacy/';
 
+  function uploadIgtUtamaPanel(role, category, recordToRevise = null) {
+    const isRev = Boolean(recordToRevise);
+    const catLabel = category === 'tata-ruang' ? 'IGT Tata Ruang' : 'IGT Pertanahan';
+    const initName = isRev ? recordToRevise.name : (category === 'tata-ruang' ? 'Kawasan RTRW Sleman 2026' : 'Bidang Tanah Sleman 2026');
+    const initSatker = isRev ? (recordToRevise.satker || recordToRevise.direktorat || 'Kantah Kab. Sleman') : 'Kantah Kab. Sleman';
+
+    return (
+      `<div class="upload-modal-v2">` +
+      (isRev ? `<div class="notice" style="background:#fff7ed;border-color:#fdba74;color:#9a3412;margin-bottom:12px"><strong>Mode Perbaikan Revisi</strong>Silakan perbarui berkas spasial dan catatan tindak lanjut untuk pengajuan <strong>${recordToRevise.id}</strong>.</div>` : '') +
+      `<div class="form-section">` +
+      `<h3>1. Informasi Dasar Layer</h3>` +
+      `<div class="form-grid">` +
+      `<div class="field"><label for="u-nama">NAMA LAYER IGT</label><input id="u-nama" type="text" value="${initName}" placeholder="Masukkan nama layer IGT"></div>` +
+      `<div class="field"><label for="u-kategori">KATEGORI / SUB-ELEMEN</label><select id="u-kategori">` +
+      (category === 'tata-ruang'
+        ? `<option selected>Rencana Pola Ruang (RTRW/RDTR)</option><option>Rencana Struktur Ruang</option><option>Kesesuaian Kegiatan Pemanfaatan Ruang (KKPR)</option><option>Lahan Pertanian Pangan Berkelanjutan (LP2B)</option>`
+        : `<option selected>Bidang Tanah (Baseline Hak Atas Tanah)</option><option>Penguasaan Tanah</option><option>Pemanfaatan Tanah</option><option>Zona Nilai Tanah</option>`) +
+      `</select></div>` +
+      `<div class="field"><label for="u-satker">SATKER / INSTANSI PENGUNGGAH</label><select id="u-satker">` +
+      `<option ${initSatker.includes('Sleman') ? 'selected' : ''}>Kantah Kab. Sleman</option><option>Kantah Kab. Bantul</option><option>Ditjen Survei dan Pemetaan Pertanahan dan Ruang</option><option>Ditjen Tata Ruang</option>` +
+      `</select></div>` +
+      `<div class="field"><label for="u-tahun">TAHUN PEMBUATAN</label><select id="u-tahun"><option selected>2026</option><option>2025</option><option>2024</option></select></div>` +
+      `</div></div>` +
+      `<div class="form-section">` +
+      `<h3>2. Pilih Berkas Geospasial</h3>` +
+      `<div class="dropzone" style="padding:16px 12px;margin:0">` +
+      `<div class="big" style="font-size:24px;margin-bottom:4px">📁</div>` +
+      `<strong>${isRev ? 'Unggah Berkas Geospasial Hasil Revisi' : 'Tarik & Letakkan Berkas di Sini'}</strong>` +
+      `<p style="margin:2px 0 8px 0;font-size:12px">Mendukung GeoPackage (.gpkg), Shapefile (.zip), atau GeoJSON (.geojson)</p>` +
+      `<input type="file" id="u-file-input" style="display:none" accept=".gpkg,.zip,.shp,.geojson">` +
+      `<button type="button" class="btn btn-soft btn-sm" id="u-file-browse-btn" onclick="document.getElementById('u-file-input').click()">Pilih Berkas Komputer</button>` +
+      `<div id="u-file-name" style="font-size:12px;color:#047857;margin-top:6px;font-weight:600">${isRev ? 'berkas_revisi_' + recordToRevise.id.toLowerCase() + '.gpkg' : 'peta_geospasial_sleman_2026.gpkg (14.2 MB)'}</div>` +
+      `</div></div>` +
+      `<div class="form-section">` +
+      `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px"><h3 style="margin:0">3. Pengecekan Atribut Standar</h3><span class="badge-valid">✓ 5 Kolom Sesuai Standar</span></div>` +
+      `<p style="font-size:11.5px;color:#64748b;margin:0 0 8px 0">Struktur skema atribut telah divalidasi terhadap standar data geospasial ATR/BPN.</p>` +
+      `<div style="max-height:110px;overflow:auto;border:1px solid #e2e8f0;border-radius:6px"><table class="stack" style="font-size:11px;margin:0;width:100%">` +
+      `<thead><tr style="background:#f8fafc"><th style="padding:4px 8px">Kolom</th><th style="padding:4px 8px">Tipe Data</th><th style="padding:4px 8px">Keterangan</th><th style="padding:4px 8px">Status</th></tr></thead>` +
+      `<tbody>` +
+      `<tr><td style="padding:4px 8px"><code>KODE_UNIK</code></td><td style="padding:4px 8px">String (32)</td><td style="padding:4px 8px">NIB / ID Objek</td><td style="padding:4px 8px;color:#047857;font-weight:700">Valid</td></tr>` +
+      `<tr><td style="padding:4px 8px"><code>NAMA_OBJEK</code></td><td style="padding:4px 8px">String (100)</td><td style="padding:4px 8px">Penggunaan / Zonasi</td><td style="padding:4px 8px;color:#047857;font-weight:700">Valid</td></tr>` +
+      `<tr><td style="padding:4px 8px"><code>LUAS_HA</code></td><td style="padding:4px 8px">Float (10,2)</td><td style="padding:4px 8px">Luas Hektar</td><td style="padding:4px 8px;color:#047857;font-weight:700">Valid</td></tr>` +
+      `<tr><td style="padding:4px 8px"><code>TAHUN</code></td><td style="padding:4px 8px">Integer (4)</td><td style="padding:4px 8px">Tahun Penetapan</td><td style="padding:4px 8px;color:#047857;font-weight:700">Valid</td></tr>` +
+      `<tr><td style="padding:4px 8px"><code>TEMA</code></td><td style="padding:4px 8px">String (50)</td><td style="padding:4px 8px">Tema IGT</td><td style="padding:4px 8px;color:#047857;font-weight:700">Valid</td></tr>` +
+      `</tbody></table></div></div>` +
+      `<div class="form-section">` +
+      `<h3>4. Simbologi &amp; Visualisasi (SLD / QML)</h3>` +
+      `<div style="display:flex;align-items:center;gap:12px"><span style="display:inline-block;width:24px;height:24px;border-radius:4px;background:#3b82f6;border:2px solid #1d4ed8" title="Warna Standar ATR/BPN"></span><div style="flex:1;font-size:12px;color:#475569">Gaya visual bawaan: <strong>ATR/BPN Standard Thematic Style (.sld)</strong></div><button type="button" class="btn btn-soft btn-sm" onclick="alert('Simulasi: Berkas SLD khusus berhasil dipilih.')">Ganti SLD</button></div>` +
+      `</div>` +
+      `<div class="form-section">` +
+      `<h3>5. Metadata Standar (ISO 19115)</h3>` +
+      `<div style="font-size:11.5px;color:#475569;background:#f8fafc;padding:8px;border-radius:6px;border:1px solid #e2e8f0;line-height:1.5"><div><strong>Sistem Proyeksi (CRS):</strong> EPSG:3857 (WGS 84 / Pseudo-Mercator)</div><div><strong>Cakupan Spasial:</strong> Kab. Sleman, D.I. Yogyakarta</div><div><strong>Status Metadata:</strong> Lengkap (Pratinjau XML Valid)</div></div>` +
+      `</div>` +
+      `<div class="toolbar" style="margin-top:16px;justify-content:flex-end;gap:8px">` +
+      `<button type="button" class="btn btn-soft" data-close-upload-modal>Batal</button>` +
+      `<button type="button" class="btn btn-soft" onclick="alert('Draf pengajuan disimpan.'); document.getElementById('igt-upload-modal').hidden = true; document.getElementById('igt-upload-modal').style.display = 'none';">Simpan Draf</button>` +
+      `<button type="button" class="btn btn-primary" id="u-submit-btn" data-modal-submit="${isRev ? 'revision' : 'new'}" data-record-id="${isRev ? recordToRevise.id : ''}">${ri('upload-cloud-2-line')}<span>${isRev ? 'Kirim Ulang Pengajuan Revisi' : 'Kirim Pengajuan'}</span></button>` +
+      `</div></div>`
+    );
+  }
+
   // Upload controls differ per category and role. Baseline exists only for IGT Pertanahan.
   function uploadPanel(role, category) {
-    if (category === 'pertanahan') {
-      return (
-        `<div class="dropzone"><div class="big">⇧</div><strong>Unggah data atribut bidang</strong>` +
-        `<p>Unggah tabel atribut yang terhubung dengan ID bidang.</p><button class="btn btn-primary" data-action="upload">Pilih berkas</button></div>` +
-        `<div class="notice"><strong>Catatan</strong>Geometri bidang berasal dari baseline. Pastikan ID bidang cocok sebelum mengirim atribut.</div>`
-      );
-    }
-    if (category === 'tata-ruang') {
-      return (
-        `<div class="dropzone"><div class="big">⇧</div><strong>Tarik dan letakkan berkas di sini</strong>` +
-        `<p>Shapefile (.zip) atau GeoPackage (.gpkg), maksimal 500 MB</p><button class="btn btn-primary" data-action="upload">Pilih berkas</button></div>` +
-        `<div class="form-grid" style="margin-top:18px"><div class="field"><label for="f-tema">TEMA IGT</label><select id="f-tema"><option>Pilih tema...</option>` +
-        `<option>Lingkungan</option><option>Infrastruktur</option><option>Administrasi</option></select></div>` +
-        `<div class="field"><label for="f-nama">NAMA LAYER</label><input id="f-nama" placeholder="Masukkan nama layer"></div>` +
-        `<div class="field"><label for="f-wilayah">WILAYAH</label><input id="f-wilayah" placeholder="Provinsi / Kabupaten / Kota"></div>` +
-        `<div class="field"><label for="f-deskripsi">DESKRIPSI</label><input id="f-deskripsi" placeholder="Deskripsi singkat"></div></div>` +
-        `<div class="toolbar"><button class="btn btn-primary" data-action="validate">Validasi dan lanjutkan</button></div>`
-      );
+    if (category === 'pertanahan' || category === 'tata-ruang') {
+      return uploadIgtUtamaPanel(role, category);
     }
     if (category === 'derivatif') {
       if (role === 'admin') {
@@ -581,12 +666,22 @@ const IgtApp = (() => {
       statCard('Dalam proses', '', 'Proses atau Diajukan', ri('time-line'), 'amber', 'count-process') +
       statCard('Menunggu integrasi', '', 'Terkompilasi', ri('folder-line'), '', 'count-waiting') +
       `</div><section class="card">` +
-      (noUploadMenu
-        ? `<div class="card-head"><div><h2 id="tab-heading"></h2><p id="tab-description"></p></div></div>`
-        : `<div class="card-head"><div><h2 id="tab-heading"></h2><p id="tab-description"></p></div></div>` +
-          `<div id="upload-panel"></div>` +
-          `<div id="igt-upload-modal" class="modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="igt-upload-modal-title" style="position:fixed;inset:0;z-index:1000;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;padding:20px;overflow:auto">` +
-          `<section class="card" style="width:min(760px,100%);max-height:90vh;overflow:auto;margin:auto"><div class="card-head"><div><h2 id="igt-upload-modal-title">Unggah IGT</h2><p id="igt-upload-modal-description"></p></div><button type="button" class="btn btn-soft" data-close-upload-modal>✕ Tutup</button></div><div id="igt-upload-modal-content"></div></section></div>`) +
+      `<div class="card-head"><div><h2 id="tab-heading"></h2><p id="tab-description"></p></div></div>` +
+      `<div id="upload-panel"></div>` +
+      `<div id="igt-upload-modal" class="modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="igt-upload-modal-title" style="position:fixed;inset:0;z-index:1000;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;padding:20px;overflow:auto">` +
+      `<section class="card" style="width:min(760px,100%);max-height:90vh;overflow:auto;margin:auto"><div class="card-head"><div><h2 id="igt-upload-modal-title">Unggah IGT</h2><p id="igt-upload-modal-description"></p></div><button type="button" class="btn btn-soft" data-close-upload-modal>✕ Tutup</button></div><div id="igt-upload-modal-content" style="padding:16px 20px"></div></section></div>` +
+      `<div id="topology-modal" class="modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="topol-modal-title" style="position:fixed;inset:0;z-index:1000;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;padding:20px;overflow:auto">` +
+      `<section class="card" style="width:min(640px,100%);max-height:90vh;overflow:auto;margin:auto"><div class="card-head"><div><h2 id="topol-modal-title">Cek Topologi Geospasial</h2><p id="topol-modal-subtitle">Hasil verifikasi aturan topologi dataset IGT Utama</p></div><button type="button" class="btn btn-soft" data-close-topol-modal>✕ Tutup</button></div>` +
+      `<div style="padding:16px 20px"><div id="topol-dataset-info" style="margin-bottom:14px;padding:10px 14px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;font-size:12.5px;color:#334155"></div>` +
+      `<div class="topol-rules-container">` +
+      `<div class="rule-card-web"><strong>1. Must Not Have Gaps (Tidak Ada Celah Antar Poligon)</strong><p>Memastikan seluruh bidang poligon berhimpit rapi tanpa celah tak beraturan.</p><span class="badge-valid">✓ Valid · 0 Celah</span></div>` +
+      `<div class="rule-card-web"><strong>2. Must Not Overlap (Tidak Ada Tumpang Tindih Poligon)</strong><p>Mencegah poligon ganda atau tumpang tindih kepemilikan spasial.</p><span class="badge-valid">✓ Valid · 0 Tumpang Tindih</span></div>` +
+      `<div class="rule-card-web"><strong>3. Must Not Have Dangles (Tidak Ada Garis Menggantung)</strong><p>Memastikan seluruh segmen batas tertutup dan membentuk poligon utuh.</p><span class="badge-valid">✓ Valid · 0 Dangle</span></div>` +
+      `<div class="rule-card-web"><strong>4. Must Be Inside Administrative Boundary (Batas Administrasi)</strong><p>Memastikan seluruh objek spasial berada di dalam yurisdiksi Satker.</p><span class="badge-valid">✓ Valid · 100% Di Dalam Batas</span></div>` +
+      `<div class="rule-card-web"><strong>5. No Duplicate Geometries (Tidak Ada Geometri Duplikat)</strong><p>Memeriksa ketiadaan data redundant pada tingkat geometri.</p><span class="badge-valid">✓ Valid · 0 Duplikasi</span></div>` +
+      `</div><div class="notice" style="margin-top:14px"><strong>Pemeriksaan Topologi Selesai</strong>Semua aturan topologi memenuhi standar ketetapan ATR/BPN. Data siap untuk proses integrasi data geospasial.</div>` +
+      `<div class="toolbar" style="margin-top:16px;justify-content:flex-end;gap:8px"><button type="button" class="btn btn-soft" data-close-topol-modal>Tutup</button>` +
+      `<button type="button" class="btn btn-primary" id="btn-confirm-topol">${ri('checkbox-circle-line')}<span>Konfirmasi Hasil Topologi</span></button></div></div></section></div>` +
       `<div id="submission-status-tabs" class="tabs" data-status-tabs></div>` +
       `<div class="card-head submissions-head"><div><h2>Daftar Pengajuan</h2><p id="submission-count"></p></div></div>` +
       `<div class="table-wrap"><table class="stack"><thead><tr><th>ID Pengajuan</th><th>Layer Target</th><th id="submission-org-heading">Satker</th><th id="submission-date-heading">Tanggal Unggah</th><th>Status</th><th>Aksi</th></tr></thead>` +
@@ -621,6 +716,11 @@ const IgtApp = (() => {
         if (firstStatHint) firstStatHint.textContent = label;
         setText('tab-heading', 'Manajemen ' + label);
         setText('tab-description', v2DescFor(tab));
+        $('#upload-panel').innerHTML = isMain
+          ? (base === 'superadmin'
+            ? `<div class="notice"><strong>Catatan</strong>Superadmin berfokus pada pemeriksaan topologi dan persetujuan integrasi IGT Utama. Unggah data dilakukan oleh Satker/Operator terkait.</div>`
+            : `<div class="toolbar"><button class="btn btn-primary" data-open-upload-modal="pertanahan">${ri('upload-cloud-2-line')}<span>Unggah Data Pertanahan</span></button><button class="btn btn-primary" data-open-upload-modal="tata-ruang">${ri('upload-cloud-2-line')}<span>Unggah Data Tata Ruang</span></button></div>`)
+          : uploadPanel(role, tab);
       } else {
         setText('tab-heading', isMain ? 'IGT Utama' : CATEGORIES[tab].label);
         setText('tab-description', isMain ? 'Kelola pengajuan IGT Pertanahan dan IGT Tata Ruang dari satu halaman.' : UPLOAD_TEXT[tab]);
@@ -708,11 +808,54 @@ const IgtApp = (() => {
     });
 
     document.addEventListener('click', (event) => {
-      const target = event.target.closest('[data-action], [data-open-upload-modal], [data-close-upload-modal], #igt-upload-modal');
+      const target = event.target.closest('[data-action], [data-open-upload-modal], [data-close-upload-modal], [data-close-topol-modal], [data-modal-submit], #btn-confirm-topol, #igt-upload-modal, #topology-modal');
       if (!target) return;
-      const { action, id } = target.dataset;
+      const { action, id } = target.dataset || {};
       const record = records.find((r) => r.id === id);
-      if (target.dataset.openUploadModal) {
+
+      if (target.dataset && target.dataset.modalSubmit) {
+        const isRev = target.dataset.modalSubmit === 'revision';
+        if (isRev) {
+          const recId = target.dataset.recordId;
+          const targetRec = records.find((r) => r.id === recId);
+          if (targetRec) {
+            targetRec.status = 'Diajukan';
+            targetRec.updated = '20 Okt 2026';
+            alert('Pengajuan revisi untuk ' + recId + ' berhasil dikirim ulang. Status kini kembali menjadi Diajukan untuk diverifikasi.');
+          }
+        } else {
+          const inputName = $('#u-nama') ? $('#u-nama').value : 'Dataset Baru 2026';
+          const inputSatker = $('#u-satker') ? $('#u-satker').value : 'Kantah Kab. Sleman';
+          records.unshift({
+            id: 'PRT-2026-' + String(Math.floor(Math.random() * 899 + 100)),
+            name: inputName,
+            category: tab === 'igt-utama' ? 'pertanahan' : tab,
+            satker: inputSatker,
+            date: '20 Okt 2026',
+            status: 'Diajukan',
+          });
+          alert('Pengajuan baru "' + inputName + '" berhasil dikirim dengan status Diajukan.');
+        }
+        const m = $('#igt-upload-modal');
+        if (m) { m.hidden = true; m.style.display = 'none'; }
+        render();
+        return;
+      }
+
+      if (target.hasAttribute('data-close-topol-modal') || (target.id === 'topology-modal' && event.target === target)) {
+        const modal = $('#topology-modal');
+        if (modal) { modal.hidden = true; modal.style.display = 'none'; }
+        return;
+      }
+
+      if (target.id === 'btn-confirm-topol') {
+        alert('Hasil Cek Topologi telah diverifikasi valid. Semua aturan topologi terpenuhi.');
+        const modal = $('#topology-modal');
+        if (modal) { modal.hidden = true; modal.style.display = 'none'; }
+        return;
+      }
+
+      if (target.dataset && target.dataset.openUploadModal) {
         const category = target.dataset.openUploadModal;
         if (role === 'superadmin' && (category === 'pertanahan' || category === 'tata-ruang')) {
           alert('Superadmin tidak memiliki akses untuk mengunggah IGT Utama.');
@@ -747,7 +890,18 @@ const IgtApp = (() => {
         alert('Parameter valid. Proses ini masih berupa prototipe UI.');
       }
       else if (action === 'upload-lainnya') alert('Unggah layer dan konfigurasi data dilakukan langsung melalui QGIS.');
-      else if (action === 'revision') alert('Simulasi: buka formulir revisi untuk pengajuan ' + id + '.');
+      else if (action === 'revision') {
+        const modal = $('#igt-upload-modal');
+        if (modal && record) {
+          $('#igt-upload-modal-title').textContent = 'Perbaikan Revisi — ' + record.name;
+          $('#igt-upload-modal-description').textContent = 'Perbarui berkas spasial dan kirim ulang pengajuan.';
+          $('#igt-upload-modal-content').innerHTML = uploadIgtUtamaPanel(role, record.category || 'pertanahan', record);
+          modal.hidden = false;
+          modal.style.display = 'flex';
+        } else {
+          alert('Simulasi: buka formulir revisi untuk pengajuan ' + id + '.');
+        }
+      }
       else if (action === 'show-qgis') alert('Simulasi: layer ' + (record ? record.name : id) + ' akan ditampilkan di QGIS. Integrasi QGIS belum aktif pada prototipe ini.');
       else if (action === 'compile') {
         alert('Simulasi: proses kompilasi IGT Utama ' + id + ' berhasil. Status diperbarui menjadi Terkompilasi.');
@@ -755,7 +909,16 @@ const IgtApp = (() => {
         render();
       }
       else if (action === 'topology') {
-        alert('Membuka layer ' + (record ? record.name : id) + ' di QGIS Plugin untuk Cek Topologi. Silakan periksa topologi dan verifikasi dataset di kanvas peta QGIS.');
+        const topolModal = $('#topology-modal');
+        if (topolModal) {
+          const recName = record ? record.name : id;
+          const recSatker = record ? (record.satker || record.direktorat || 'Kantah Kab. Sleman') : 'Kantah Kab. Sleman';
+          $('#topol-dataset-info').innerHTML = '<strong>ID Pengajuan:</strong> ' + id + ' &nbsp;·&nbsp; <strong>Layer:</strong> ' + recName + ' &nbsp;·&nbsp; <strong>Satker:</strong> ' + recSatker;
+          topolModal.hidden = false;
+          topolModal.style.display = 'flex';
+        } else {
+          alert('Membuka layer ' + (record ? record.name : id) + ' di QGIS Plugin untuk Cek Topologi.');
+        }
         record.status = 'Terkompilasi';
         render();
       } else if (action === 'approve-integration') {
@@ -810,6 +973,7 @@ const IgtApp = (() => {
     let query = '';
     let selectedProv = 'all';
     let selectedKab = 'all';
+    let filterExpanded = false;
     const expandedIds = new Set();
 
     // Sinkronisasi dengan filter tahun kanan atas (Dashboard)
@@ -942,23 +1106,34 @@ const IgtApp = (() => {
 
       // 2. Filter Box (Pencarian, Provinsi, Kabupaten)
       html += `
-        <div class="dash-cat-filter-box">
-          <div class="dash-cat-search-wrap">
-            <input type="search" class="dash-cat-search-input" id="dash-cat-search-field" placeholder="Cari nama IGT, sublayer, wilayah..." value="${query.replace(/"/g, '&quot;')}">
+        <div class="dash-cat-filter-box catalog-controls-v2">
+          <div class="catalog-search-row">
+            <div class="dash-cat-search-wrap catalog-search-input-wrap">
+              <input type="search" class="dash-cat-search-input" id="dash-cat-search-field" placeholder="Cari nama IGT, sublayer, wilayah..." value="${query.replace(/"/g, '&quot;')}">
+            </div>
+            <button type="button" class="catalog-filter-toggle ${filterExpanded ? 'active' : ''}" id="dash-cat-filter-btn" aria-expanded="${filterExpanded}">
+              ${ri('filter-3-line')}<span>Filter</span>
+            </button>
           </div>
-          <div class="dash-cat-dropdowns">
-            <select class="dash-cat-select" id="dash-cat-prov-select" aria-label="Filter Provinsi">
-              <option value="all" ${selectedProv === 'all' ? 'selected' : ''}>Semua Provinsi</option>
-              ${provOptions.map((p) => `
-                <option value="${p.replace(/"/g, '&quot;')}" ${selectedProv === p ? 'selected' : ''}>${p}</option>
-              `).join('')}
-            </select>
-            <select class="dash-cat-select" id="dash-cat-kab-select" aria-label="Filter Kabupaten">
-              <option value="all" ${selectedKab === 'all' ? 'selected' : ''}>Semua Kab / Kota</option>
-              ${kabOptions.map((k) => `
-                <option value="${k.replace(/"/g, '&quot;')}" ${selectedKab === k ? 'selected' : ''}>${k}</option>
-              `).join('')}
-            </select>
+          <div class="catalog-filter-drawer dash-cat-dropdowns" id="dash-cat-drawer" ${filterExpanded ? '' : 'hidden'}>
+            <div class="field prov-filter">
+              <label for="dash-cat-prov-select">PROVINSI</label>
+              <select class="dash-cat-select" id="dash-cat-prov-select" aria-label="Filter Provinsi">
+                <option value="all" ${selectedProv === 'all' ? 'selected' : ''}>Semua Provinsi</option>
+                ${provOptions.map((p) => `
+                  <option value="${p.replace(/"/g, '&quot;')}" ${selectedProv === p ? 'selected' : ''}>${p}</option>
+                `).join('')}
+              </select>
+            </div>
+            <div class="field kab-filter">
+              <label for="dash-cat-kab-select">KABUPATEN / KOTA</label>
+              <select class="dash-cat-select" id="dash-cat-kab-select" aria-label="Filter Kabupaten">
+                <option value="all" ${selectedKab === 'all' ? 'selected' : ''}>Semua Kab / Kota</option>
+                ${kabOptions.map((k) => `
+                  <option value="${k.replace(/"/g, '&quot;')}" ${selectedKab === k ? 'selected' : ''}>${k}</option>
+                `).join('')}
+              </select>
+            </div>
           </div>
         </div>
       `;
@@ -982,23 +1157,15 @@ const IgtApp = (() => {
           </div>
         `;
       } else {
-        pageItems.forEach((d) => {
+        pageItems.forEach((d, idx) => {
           const hasSubs = Boolean(d.subLayers && d.subLayers.length > 0);
           const isExp = expandedIds.has(d.id) || Boolean(query && hasSubs && d.subLayers.some((s) => s.name.toLowerCase().includes(query.toLowerCase())));
           const allowWfs = canAccessWfs(role, d);
           const cat = d.category;
-          const badgeClass = cat === 'pertanahan' ? 'dash-cat-badge--pertanahan' :
-                             cat === 'tata-ruang' ? 'dash-cat-badge--tataruang' :
-                             cat === 'derivatif' ? 'dash-cat-badge--derivatif' :
-                             'dash-cat-badge--lainnya';
-          const badgeLabel = cat === 'pertanahan' ? 'Pertanahan' :
-                             cat === 'tata-ruang' ? 'Tata Ruang' :
-                             cat === 'derivatif' ? 'Derivatif' :
-                             'K/L Lainnya';
           const iconHtml = cat === 'tata-ruang' ? ri('map-2-line') :
                            cat === 'derivatif' ? ri('stack-line') :
                            cat === 'lainnya' ? ri('global-line') :
-                           ri('map-pin-line');
+                           ri('building-line');
 
           html += `
             <div class="dash-card" data-id="${d.id}">
@@ -1006,9 +1173,9 @@ const IgtApp = (() => {
                 <div class="dash-card-left">
                   <div class="dash-card-header">
                     <div class="dash-card-title-wrap">
-                      <span class="dash-card-icon dash-card-icon--${cat}">${iconHtml}</span>
-                      <span class="dash-card-title">${d.name}</span>
-                      <span class="dash-cat-badge ${badgeClass}">${badgeLabel}</span>
+                      <span class="igt-catalog-num">${startIdx + idx + 1}</span>
+                      <span class="igt-cat-inline-icon" title="${cat}">${iconHtml}</span>
+                      <span class="dash-card-title igt-catalog-name">${d.name}</span>
                     </div>
                   </div>
                 </div>
@@ -1022,6 +1189,7 @@ const IgtApp = (() => {
                   ` : `
                     <button type="button" class="dash-btn-wms" data-action="wms" data-name="${d.name.replace(/"/g, '&quot;')}">WMS</button>
                     ${allowWfs ? `<button type="button" class="dash-btn-wfs" data-action="wfs" data-name="${d.name.replace(/"/g, '&quot;')}">WFS</button>` : ''}
+                    <button type="button" class="dash-btn-wms btn-both" data-action="both" data-name="${d.name.replace(/"/g, '&quot;')}">Keduanya</button>
                   `}
                 </div>
               </div>
@@ -1036,6 +1204,7 @@ const IgtApp = (() => {
                       <div class="dash-sub-actions">
                         <button type="button" class="dash-sub-btn dash-sub-btn--wms" data-action="wms" data-name="${sub.name.replace(/"/g, '&quot;')}">WMS</button>
                         ${allowWfs ? `<button type="button" class="dash-sub-btn dash-sub-btn--wfs" data-action="wfs" data-name="${sub.name.replace(/"/g, '&quot;')}">WFS</button>` : ''}
+                        <button type="button" class="dash-sub-btn btn-both" data-action="both" data-name="${sub.name.replace(/"/g, '&quot;')}">Keduanya</button>
                       </div>
                     </div>
                   `).join('')}
@@ -1174,6 +1343,17 @@ const IgtApp = (() => {
         });
       });
 
+      const dashFilterBtn = rootEl.querySelector('#dash-cat-filter-btn');
+      const dashDrawer = rootEl.querySelector('#dash-cat-drawer');
+      if (dashFilterBtn && dashDrawer) {
+        dashFilterBtn.addEventListener('click', () => {
+          filterExpanded = !filterExpanded;
+          dashDrawer.hidden = !filterExpanded;
+          dashFilterBtn.classList.toggle('active', filterExpanded);
+          dashFilterBtn.setAttribute('aria-expanded', filterExpanded ? 'true' : 'false');
+        });
+      }
+
       rootEl.querySelectorAll('[data-action]').forEach((btn) => {
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
@@ -1186,6 +1366,12 @@ const IgtApp = (() => {
             const warn = 'Akses WFS dibatasi untuk satker terkait.';
             if (typeof toast === 'function') toast(warn);
             else alert(warn);
+            return;
+          }
+          if (act === 'both') {
+            const bothMsg = "Simulasi QGIS: Memuat sekaligus WMS dan WFS untuk layer '" + name + "' ke dalam kanvas peta QGIS.";
+            if (typeof toast === 'function') toast(bothMsg);
+            else alert(bothMsg);
             return;
           }
           const msg = act === 'wms' ? WMS_MESSAGE(name) : WFS_MESSAGE(name);

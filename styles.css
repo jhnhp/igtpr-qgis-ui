@@ -2775,3 +2775,153 @@ tr.igt-sublayer-row td {
   font-size: 12px;
   font-weight: 600;
 }
+
+/* ------------------------------------------------------------- Catalog Controls V2 */
+.catalog-controls-v2 {
+  margin-bottom: 16px;
+}
+.catalog-search-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.catalog-search-input-wrap {
+  flex: 1;
+  margin: 0;
+}
+.catalog-search-input-wrap input {
+  width: 100%;
+}
+.catalog-filter-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  font-weight: 700;
+  border-radius: 8px;
+  border: 1.5px solid #cbd5e1;
+  background: #ffffff;
+  color: #1f6fd6;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.catalog-filter-toggle:hover, .catalog-filter-toggle.active {
+  background: #eff6ff;
+  border-color: #1f6fd6;
+}
+.catalog-filter-drawer {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  padding: 12px 14px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+.catalog-filter-drawer[hidden] {
+  display: none !important;
+}
+
+/* ------------------------------------------------------------- Catalog Number & Inline Category Icon */
+.igt-col-no {
+  width: 44px;
+  text-align: center;
+}
+.igt-catalog-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 4px;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+.igt-cat-inline-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #1f6fd6;
+  vertical-align: middle;
+  margin-right: 2px;
+}
+.igt-cat-inline-icon svg {
+  width: 16px;
+  height: 16px;
+}
+.igt-catalog-name {
+  color: #0f294d;
+  font-size: 13.5px;
+  font-weight: 500 !important;
+  line-height: 1.35;
+}
+
+/* ------------------------------------------------------------- Keduanya (Both) Action Button */
+.btn-both {
+  background-color: #ffffff !important;
+  color: #047857 !important;
+  border: 1px solid #a7f3d0 !important;
+}
+.btn-both:hover {
+  background-color: #ecfdf5 !important;
+  border-color: #059669 !important;
+}
+.toolbar-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* ------------------------------------------------------------- Upload Modal V2 & Topology Rule Cards */
+.upload-modal-v2 .form-section {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+}
+.upload-modal-v2 .form-section h3 {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #0f294d;
+  margin: 0 0 8px 0;
+}
+.rule-card-web {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  position: relative;
+}
+.rule-card-web strong {
+  font-size: 12px;
+  color: #0f294d;
+}
+.rule-card-web p {
+  font-size: 11px;
+  color: #64748b;
+  margin: 0;
+}
+.rule-card-web .badge-valid {
+  align-self: flex-start;
+  margin-top: 4px;
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+  border-radius: 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 8px;
+}
+

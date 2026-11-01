@@ -28,7 +28,7 @@
     <div>
       <div class="eyebrow">Unggah Data Geospasial</div>
       <h1>Unggah IGT Utama</h1>
-      <p>Unggah data atribut bidang IGT Pertanahan, geometri kawasan IGT Tata Ruang, atau layer IGT Lainnya.</p>
+      <p>Unggah data atribut bidang IGT Pertanahan atau geometri kawasan IGT Tata Ruang.</p>
     </div>
     <a class="btn btn-soft" href="../beranda/index.html">← Kembali ke Dashboard</a>
   </div>
@@ -38,7 +38,6 @@
     <div class="tabs" id="utama-type-tabs" role="tablist">
       <button type="button" class="tab active" data-type-tab="pertanahan" role="tab" aria-selected="true">IGT Pertanahan (Bidang)</button>
       <button type="button" class="tab" data-type-tab="tata-ruang" role="tab" aria-selected="false">IGT Tata Ruang (Kawasan)</button>
-      <button type="button" class="tab" data-type-tab="lainnya" role="tab" aria-selected="false">IGT Lainnya (Eksternal)</button>
     </div>
 
     <!-- Pane 1: IGT Pertanahan -->
@@ -150,38 +149,6 @@
       <div class="toolbar">
         <button type="button" class="btn btn-primary" data-submit="IGT Tata Ruang">Validasi &amp; Kirim Pengajuan</button>
         <a class="btn btn-soft" href="../upload-data/index.html?tab=igt-utama">Lihat Status di Manajemen Data →</a>
-      </div>
-    </div>
-
-    <!-- Pane 3: IGT Lainnya -->
-    <div class="cat-pane" data-pane="lainnya" hidden>
-      <div class="card-head">
-        <div>
-          <h2>Unggah Layer IGT Lainnya (Eksternal)</h2>
-          <p>Tambahkan layer referensi dari instansi eksternal. Data yang diunggah Superadmin langsung berstatus Tersedia.</p>
-        </div>
-      </div>
-      <div class="dropzone">
-        <div class="big"><svg class="ri-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 12.586l4.243 4.242-1.415 1.415L13 16.415V22h-2v-5.587l-1.828 1.83-1.415-1.415L12 12.586zM12 2a7.001 7.001 0 0 1 6.954 6.194 5.5 5.5 0 0 1-.953 10.784v-2.014a3.5 3.5 0 1 0-1.112-6.91 5 5 0 1 0-9.777 0 3.5 3.5 0 0 0-1.292 6.88l.18.03v2.014a5.5 5.5 0 0 1-.954-10.784A7 7 0 0 1 12 2z"/></svg></div>
-        <strong>Unggah layer eksternal atau koneksikan layanan melalui QGIS</strong>
-        <p>GeoPackage (.gpkg), Shapefile (.zip), atau koneksi layanan WMS/WFS eksternal</p>
-        <input id="file-lainnya" type="file" hidden accept=".zip,.gpkg">
-        <button type="button" class="btn btn-primary" data-pick="file-lainnya">Pilih Berkas Layer</button>
-        <div id="name-lainnya" class="secondary-cell" style="margin-top:8px"></div>
-      </div>
-      <div class="form-grid" style="margin-top:16px">
-        <div class="field">
-          <label for="ln-nama">NAMA LAYER EKSTERNAL</label>
-          <input id="ln-nama" placeholder="Contoh: Batas Kawasan Hutan KLHK">
-        </div>
-        <div class="field">
-          <label for="ln-sumber">INSTANSI / SUMBER DATA</label>
-          <input id="ln-sumber" placeholder="Contoh: BIG / KLHK / BNPB">
-        </div>
-      </div>
-      <div class="toolbar">
-        <button type="button" class="btn btn-primary" data-submit="IGT Lainnya">Simpan &amp; Publikasikan Layer</button>
-        <a class="btn btn-soft" href="../upload-data/index.html?tab=lainnya">Kelola di Manajemen Data →</a>
       </div>
     </div>
   </section>
