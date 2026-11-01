@@ -20,7 +20,7 @@ tanpa properti/objectName akan ikut memberi border dan padding ke semua label di
 import os
 
 from qgis.PyQt.QtCore import QPoint, QRect, QSize, Qt, pyqtSignal
-from qgis.PyQt.QtGui import QFontDatabase, QIcon
+from qgis.PyQt.QtGui import QFontDatabase, QIcon, QPixmap
 from qgis.PyQt.QtWidgets import (
     QApplication, QBoxLayout, QFrame, QGridLayout, QHBoxLayout, QLabel, QLayout, QPushButton,
     QScrollArea, QSizePolicy, QVBoxLayout, QWidget,
@@ -31,6 +31,7 @@ from .login_page import svg_pixmap
 
 _DIR = os.path.dirname(__file__)
 _ARROW_SVG = os.path.join(_DIR, 'chevron_down_white.svg').replace('\\', '/')
+_ARROW_DARK_SVG = os.path.join(_DIR, 'chevron_down_dark.svg').replace('\\', '/')
 
 # Urutan font mengikuti mockup web (Inter, lalu font sistem).
 _FONT_CANDIDATES = ('Inter', 'Segoe UI', 'Noto Sans', 'Ubuntu', 'Cantarell', 'Helvetica Neue', 'Arial',
@@ -177,7 +178,7 @@ QFrame[card="subRow"] { background: #f8fbff; border: none; border-bottom: 1px so
 QFrame[card="kvCard"] { background: #ffffff; border: none; border-bottom: 1px solid #e5edf6; }
 QFrame[card="subCard"] { background: #f8fbff; border: 1px solid #e2ecf7; border-radius: 10px; }
 QFrame[card="heroFilter"] {
-    background: rgba(255, 255, 255, 30); border: 1px solid rgba(255, 255, 255, 60); border-radius: 12px;
+    background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px;
 }
 QFrame[card="modelCard"] { background: #ffffff; border: 1px solid #e4dcfd; border-radius: 14px; }
 QFrame[card="chipMulti"] { background: #ecfdf5; border: 1px solid #6ee7b7; border-radius: 8px; }
@@ -186,7 +187,16 @@ QFrame[card="chipMulti"][open="true"] { background: #d1fae5; border-color: #10b9
 QFrame[card="divider"] { background: #e5edf6; border: none; max-height: 1px; min-height: 1px; }
 
 QFrame[hero="blue"] {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #10306a, stop:1 #1e4f9c); border-radius: 16px;
+    background: #ffffff; border: 1px solid #dce4ef; border-radius: 16px;
+}
+QFrame[hero="blue"] QLabel[cls="eyebrow"] {
+    background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; color: #1d4ed8; font-size: 9px; font-weight: 800; padding: 2px 7px;
+}
+QFrame[hero="blue"] QLabel[cls="heroTitle"] {
+    color: #080b12; font-size: 18px; font-weight: 800; letter-spacing: -0.3px;
+}
+QFrame[hero="blue"] QLabel[cls="heroDesc"] {
+    color: #475569; font-size: 11.5px; line-height: 1.4;
 }
 QFrame[hero="catalog"] {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #0b4a7f, stop:1 #0479b7); border-radius: 16px;
@@ -265,7 +275,7 @@ QLineEdit[field="true"], QComboBox[field="true"] {
 QLineEdit[field="true"]:focus, QComboBox[field="true"]:focus { border-color: #1f6fd6; background: #ffffff; }
 QComboBox[field="true"]::drop-down { border: none; width: 24px; }
 QComboBox[field="hero"] {
-    background: transparent; border: none; color: #ffffff; font-size: 13px; font-weight: 800; padding: 2px 18px 2px 0;
+    background: transparent; border: none; color: #0f294d; font-size: 12px; font-weight: 700; padding: 2px 18px 2px 0;
 }
 QComboBox[field="hero"]::drop-down {
     subcontrol-origin: padding;
@@ -274,7 +284,7 @@ QComboBox[field="hero"]::drop-down {
     border: none;
 }
 QComboBox[field="hero"]::down-arrow {
-    image: url(@ARROW_SVG@);
+    image: url(@ARROW_DARK_SVG@);
     width: 10px;
     height: 10px;
 }
@@ -286,7 +296,10 @@ QComboBox QAbstractItemView {
 
 
 def theme_qss():
-    return THEME_QSS.replace('@FONT@', ui_font_family()).replace('@ARROW_SVG@', _ARROW_SVG)
+    return (THEME_QSS
+            .replace('@FONT@', ui_font_family())
+            .replace('@ARROW_SVG@', _ARROW_SVG)
+            .replace('@ARROW_DARK_SVG@', _ARROW_DARK_SVG))
 
 
 def repolish(widget):
@@ -641,25 +654,55 @@ class ResponsivePage(QWidget):
 
 # ---------------------------------------------------------------- komponen berukuran sedang
 class HeroHeader(QFrame):
-    """Kartu hero berwarna: eyebrow, judul, deskripsi, dan widget samping (filter tahun di kanan atas)."""
+    """Kartu hero branding: logo BPN & IGT-PR, eyebrow, judul, accent bar, deskripsi, dan widget samping (filter tahun)."""
 
-    def __init__(self, eyebrow, title, desc, theme='blue', side_widget=None, breakpoint=320, parent=None):
+    def __init__(self, eyebrow, title, desc, theme='blue', side_widget=None, breakpoint=320, bpn_logo_path=None, igtpr_logo_path=None, parent=None):
         super().__init__(parent)
         self.setProperty('hero', theme)
         self.breakpoint = breakpoint
         self.main_lay = QVBoxLayout(self)
         self.main_lay.setContentsMargins(16, 14, 16, 14)
-        self.main_lay.setSpacing(6)
+        self.main_lay.setSpacing(8)
 
-        # Baris atas: Kiri (Eyebrow + Judul), Kanan Atas (side_widget / filter tahun)
+        # Baris atas: Kiri (Brand: Logos + Eyebrow/Title), Kanan Atas (side_widget / filter tahun)
         self.top_row = QHBoxLayout()
         self.top_row.setContentsMargins(0, 0, 0, 0)
-        self.top_row.setSpacing(8)
+        self.top_row.setSpacing(12)
 
-        self.left_box = QWidget(self)
+        self.brand_container = QWidget(self)
+        self.brand_lay = QHBoxLayout(self.brand_container)
+        self.brand_lay.setContentsMargins(0, 0, 0, 0)
+        self.brand_lay.setSpacing(10)
+
+        # Logos BPN & IGT-PR
+        plugin_dir = os.path.dirname(__file__)
+        bpn_path = bpn_logo_path or os.path.join(plugin_dir, 'logo-bpn.png')
+        igtpr_path = igtpr_logo_path or os.path.join(plugin_dir, 'logo-igtpr.png')
+
+        self.logos_box = QWidget(self.brand_container)
+        self.logos_lay = QHBoxLayout(self.logos_box)
+        self.logos_lay.setContentsMargins(0, 0, 0, 0)
+        self.logos_lay.setSpacing(8)
+
+        if os.path.isfile(bpn_path):
+            self.bpn_lbl = QLabel(self.logos_box)
+            pm_bpn = QPixmap(bpn_path).scaled(38, 38, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+            self.bpn_lbl.setPixmap(pm_bpn)
+            self.logos_lay.addWidget(self.bpn_lbl)
+
+        if os.path.isfile(igtpr_path):
+            self.igtpr_lbl = QLabel(self.logos_box)
+            pm_igt = QPixmap(igtpr_path).scaled(38, 38, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+            self.igtpr_lbl.setPixmap(pm_igt)
+            self.logos_lay.addWidget(self.igtpr_lbl)
+
+        self.brand_lay.addWidget(self.logos_box, 0, Qt.AlignmentFlag.AlignVCenter)
+
+        # Texts: Eyebrow + Title
+        self.left_box = QWidget(self.brand_container)
         self.left_lay = QVBoxLayout(self.left_box)
         self.left_lay.setContentsMargins(0, 0, 0, 0)
-        self.left_lay.setSpacing(4)
+        self.left_lay.setSpacing(2)
 
         self.eyebrow = label(eyebrow, 'eyebrow', False, self.left_box)
         self.eyebrow.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Fixed)
@@ -668,7 +711,8 @@ class HeroHeader(QFrame):
         self.title = label(title, 'heroTitle', True, self.left_box)
         self.left_lay.addWidget(self.title)
 
-        self.top_row.addWidget(self.left_box, 1)
+        self.brand_lay.addWidget(self.left_box, 1, Qt.AlignmentFlag.AlignVCenter)
+        self.top_row.addWidget(self.brand_container, 1)
 
         self.side_widget = side_widget
         if side_widget is not None:
@@ -676,6 +720,17 @@ class HeroHeader(QFrame):
             self.top_row.addWidget(side_widget, 0, Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight)
 
         self.main_lay.addLayout(self.top_row)
+
+        # Accent Bar (Dua Warna: Hijau + Biru, persis seperti login page)
+        self.accent_bar = QFrame(self)
+        self.accent_bar.setFixedHeight(3)
+        self.accent_bar.setFixedWidth(70)
+        self.accent_bar.setStyleSheet("""
+            border: none;
+            border-radius: 1.5px;
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #10b981, stop:0.42 #10b981, stop:0.43 #1f6fd6, stop:1 #1f6fd6);
+        """)
+        self.main_lay.addWidget(self.accent_bar)
 
         # Baris bawah: Deskripsi penuh lebar kartu
         self.desc = label(desc, 'heroDesc', True, self)

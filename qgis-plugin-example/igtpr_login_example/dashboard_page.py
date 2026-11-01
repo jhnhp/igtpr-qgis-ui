@@ -132,14 +132,16 @@ class DashboardPage(ResponsivePage):
     wmsRequested = pyqtSignal(dict, object)      # (dataset, sublayer or None)
     wfsRequested = pyqtSignal(dict, object)      # (dataset, sublayer or None)
 
-    def __init__(self, current_role='superadmin', parent=None):
+    def __init__(self, current_role='superadmin', bpn_logo=None, igtpr_logo=None, parent=None):
         super().__init__('dashboardPage', parent)
         self.current_role = current_role
+        self.bpn_logo = bpn_logo
+        self.igtpr_logo = igtpr_logo
 
         # 1. Hero + filter tahun (di kanan atas)
         year_box = card('heroFilter')
         yb = QVBoxLayout(year_box)
-        yb.setContentsMargins(12, 6, 12, 6)
+        yb.setContentsMargins(10, 5, 10, 5)
         yb.setSpacing(2)
         yb.addWidget(label('FILTER TAHUN', 'filterLabel', False, year_box))
         self.year_combo = QComboBox(year_box)
@@ -150,9 +152,9 @@ class DashboardPage(ResponsivePage):
         yb.addWidget(self.year_combo)
         year_box.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         self.hero = self.responsive(HeroHeader(
-            'SISTEM INFORMASI GEOSPASIAL', 'IGT-PR Plugin',
-            'Integrasi data geospasial tematik pertanahan dan tata ruang.',
-            'blue', year_box, 320, self.content))
+            'SISTEM INFORMASI GEOSPASIAL', 'GEOPORTAL IGT-PR',
+            'Integrasi data geospasial tematik pertanahan dan tata ruang Kementerian ATR/BPN.',
+            'blue', year_box, 320, self.bpn_logo, self.igtpr_logo, self.content))
         self.body.addWidget(self.hero)
 
         # 2. Statistik repositori (Pertanahan & Tata Ruang - 2 Kolom pada Tablet/Layar >= 460px)

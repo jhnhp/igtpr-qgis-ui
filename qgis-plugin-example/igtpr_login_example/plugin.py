@@ -100,7 +100,7 @@ class IgtprDockWidget(QDockWidget):
         self.stack.addWidget(login_scroll)
 
         # Page 1: Dashboard V2 (Katalog IGT sudah ditampilkan langsung di depan/dashboard)
-        self.dashboard_page = DashboardPage(current_role=self.current_role, parent=self.stack)
+        self.dashboard_page = DashboardPage(current_role=self.current_role, bpn_logo=bpn_logo, igtpr_logo=igtpr_logo, parent=self.stack)
         self.stack.addWidget(self.dashboard_page)
 
         # Page 2: Management Data V2

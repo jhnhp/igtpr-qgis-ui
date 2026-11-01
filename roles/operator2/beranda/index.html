@@ -11,62 +11,96 @@ body {
 }
 .v2-header-card {
   display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 20px;
+  border-radius: 16px;
+  background: #ffffff;
+  border: 1px solid #dce4ef;
+  color: #1e293b;
+  box-shadow: 0 10px 26px rgba(15, 41, 77, 0.07);
+  margin-bottom: 14px;
+}
+.v2-header-top {
+  display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 18px 20px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #102b59 0%, #1b4588 100%);
-  color: #ffffff;
-  box-shadow: 0 8px 24px rgba(16, 43, 89, 0.14);
-  margin-bottom: 14px;
+}
+.v2-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.v2-brand-logos {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+.v2-header-logo {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  display: block;
 }
 .v2-header-text .v2-eyebrow {
   display: inline-block;
-  padding: 3px 9px;
+  padding: 2px 8px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.14);
-  color: #bfdbfe;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
   font-size: 9px;
   font-weight: 800;
-  letter-spacing: 1px;
+  letter-spacing: 0.8px;
   text-transform: uppercase;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 .v2-header-text h1 {
-  margin: 0 0 4px;
-  font-size: 21px;
-  font-weight: 800;
-  letter-spacing: -0.4px;
-  color: #ffffff;
-}
-.v2-header-text p {
   margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: #080b12;
+  letter-spacing: -0.3px;
+  line-height: 1.2;
+}
+.v2-accent-bar {
+  display: block;
+  width: 70px;
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #10b981 0%, #10b981 42%, #1f6fd6 42%, #1f6fd6 100%);
+}
+.v2-header-desc {
+  margin: 0;
+  color: #475569;
   font-size: 12px;
-  color: #cbd5e1;
+  line-height: 1.45;
 }
 .v2-year-box {
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  min-width: 155px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 8px 12px;
-  border-radius: 12px;
+  gap: 3px;
+  min-width: 140px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  padding: 6px 12px;
+  border-radius: 10px;
+  flex: none;
 }
 .v2-year-box label {
-  font-size: 9px;
+  font-size: 8.5px;
   font-weight: 800;
   letter-spacing: 0.8px;
-  color: #bfdbfe;
+  color: #64748b;
 }
 .v2-year-box select {
   border: 0;
   background: transparent;
-  color: #ffffff;
+  color: #0f294d;
   font: inherit;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   outline: none;
   cursor: pointer;
@@ -410,9 +444,12 @@ body {
   flex: none;
 }
 @media (max-width: 680px) {
-  .v2-header-card {
+  .v2-header-top {
     flex-direction: column;
-    align-items: stretch;
+    align-items: flex-start;
+  }
+  .v2-year-box {
+    width: 100%;
   }
 }
 @media (max-width: 480px) {
@@ -560,23 +597,32 @@ button.hub-item {
 <main class="main">
   <!-- V2 HERO HEADER + YEAR FILTER -->
   <div class="v2-header-card">
-    <div class="v2-header-text">
-      <span class="v2-eyebrow">Sistem Informasi Geospasial</span>
-      <h1>Dashboard IGT-PR</h1>
-      <p>Ringkasan status data geospasial, katalog layer, dan pintasan fitur kerja.</p>
+    <div class="v2-header-top">
+      <div class="v2-header-brand">
+        <div class="v2-brand-logos">
+          <img src="../../../shared/logo-bpn.png" alt="Logo Badan Pertanahan Nasional" class="v2-header-logo">
+          <img src="../../../shared/logo-igtpr.png" alt="Logo IGT-PR" class="v2-header-logo">
+        </div>
+        <div class="v2-header-text">
+          <span class="v2-eyebrow">Sistem Informasi Geospasial</span>
+          <h1>GEOPORTAL IGT-PR</h1>
+        </div>
+      </div>
+      <div class="v2-year-box">
+        <label for="dashboard-year-filter">FILTER TAHUN</label>
+        <select id="dashboard-year-filter">
+          <option value="all" selected>Semua tahun</option>
+          <option value="2026">2026</option>
+          <option value="2025">2025</option>
+          <option value="2024">2024</option>
+          <option value="2023">2023</option>
+          <option value="2021">2021</option>
+          <option value="2019">2019</option>
+        </select>
+      </div>
     </div>
-    <div class="v2-year-box">
-      <label for="dashboard-year-filter">FILTER TAHUN</label>
-      <select id="dashboard-year-filter">
-        <option value="all" selected>Semua tahun</option>
-        <option value="2026">2026</option>
-        <option value="2025">2025</option>
-        <option value="2024">2024</option>
-        <option value="2023">2023</option>
-        <option value="2021">2021</option>
-        <option value="2019">2019</option>
-      </select>
-    </div>
+    <span class="v2-accent-bar" aria-hidden="true"></span>
+    <p class="v2-header-desc">Integrasi data geospasial tematik pertanahan dan tata ruang Kementerian ATR/BPN.</p>
   </div>
 
   <!-- V2 STAT CARDS -->
