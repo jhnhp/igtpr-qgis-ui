@@ -21,6 +21,16 @@ STATUS_COLORS = {
     'Ditolak':      {'bg': '#fef2f2', 'border': '#fecaca', 'color': '#b91c1c'},
 }
 
+# Definisi skema kolom tabel manajemen data untuk perulangan (looping) dinamis
+MANAGEMENT_TABLE_COLUMNS = [
+    {'key': 'id',      'title': 'ID Pengajuan',       'resize': QHeaderView.ResizeMode.ResizeToContents},
+    {'key': 'layer',   'title': 'Layer Target',       'resize': QHeaderView.ResizeMode.Stretch},
+    {'key': 'org',     'title': 'Satker / Direktorat','resize': QHeaderView.ResizeMode.Interactive, 'width': 220},
+    {'key': 'date',    'title': 'Tanggal',            'resize': QHeaderView.ResizeMode.ResizeToContents},
+    {'key': 'status',  'title': 'Status',             'resize': QHeaderView.ResizeMode.Fixed, 'width': 110},
+    {'key': 'actions', 'title': 'Aksi',               'resize': QHeaderView.ResizeMode.Fixed, 'width': 200},
+]
+
 
 class StatusBadge(QLabel):
     """Badge status pengajuan data."""
@@ -140,22 +150,15 @@ class ManagementPage(QWidget):
         self.status_buttons = {}
         layout.addLayout(self.status_nav_layout)
 
-        # 5. Table Submissions
+        # 5. Table Submissions (Konfigurasi kolom menggunakan looping dari MANAGEMENT_TABLE_COLUMNS)
         self.table = QTableWidget(self)
-        self.table.setColumnCount(6)
-        self.table.setHorizontalHeaderLabels([
-            'ID Pengajuan', 'Layer Target', 'Satker / Direktorat', 'Tanggal', 'Status', 'Aksi',
-        ])
+        self.table.setColumnCount(len(MANAGEMENT_TABLE_COLUMNS))
+        self.table.setHorizontalHeaderLabels([col['title'] for col in MANAGEMENT_TABLE_COLUMNS])
         header = self.table.horizontalHeader()
-        header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
-        header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
-        header.setSectionResizeMode(2, QHeaderView.ResizeMode.Interactive)
-        header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
-        header.setSectionResizeMode(4, QHeaderView.ResizeMode.Fixed)
-        header.setSectionResizeMode(5, QHeaderView.ResizeMode.Fixed)
-        self.table.setColumnWidth(2, 220)
-        self.table.setColumnWidth(4, 110)
-        self.table.setColumnWidth(5, 200)
+        for idx, col in enumerate(MANAGEMENT_TABLE_COLUMNS):
+            header.setSectionResizeMode(idx, col['resize'])
+            if 'width' in col:
+                self.table.setColumnWidth(idx, col['width'])
         self.table.verticalHeader().setVisible(False)
         self.table.setShowGrid(False)
 
@@ -398,52 +401,56 @@ class ManagementPage(QWidget):
 
         self.table.setRowCount(len(filtered))
         for row, r in enumerate(filtered):
-            # Col 0: ID Pengajuan
-            id_item = QTableWidgetItem(r.get('id', ''))
-            id_item.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
-            id_item.setTextAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
-            self.table.setItem(row, 0, id_item)
+            # LOOPING KOLOM: Memetakan setiap kolom secara dinamis dari definisi skema
+            for col_idx, col_def in enumerate(MANAGEMENT_TABLE_COLUMNS):
+                col_key = col_def['key']
 
-            # Col 1: Layer Target
-            name_widget = QWidget()
-            nw_layout = QVBoxLayout(name_widget)
-            nw_layout.setContentsMargins(6, 4, 6, 4)
-            nw_layout.setSpacing(2)
-            layer_name = r.get('name') or r.get('layer', '')
-            n_lbl = QLabel(layer_name)
-            n_lbl.setStyleSheet("color: #0f294d; font-weight: 700; font-size: 12px;")
-            nw_layout.addWidget(n_lbl)
-            if r.get('note'):
-                note_lbl = QLabel(r['note'])
-                note_lbl.setStyleSheet("color: #64748b; font-size: 10.5px;")
-                nw_layout.addWidget(note_lbl)
-            self.table.setCellWidget(row, 1, name_widget)
+                if col_key == 'id':
+                    id_item = QTableWidgetItem(r.get('id', ''))
+                    id_item.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
+                    id_item.setTextAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
+                    self.table.setItem(row, col_idx, id_item)
 
-            # Col 2: Satker / Direktorat / Instansi
-            org_text = (r.get('direktorat') if self.current_status_tab == 'Terintegrasi' else r.get('satker')) or r.get('instansi') or r.get('source') or '—'
-            org_lbl = QLabel(org_text)
-            org_lbl.setWordWrap(True)
-            org_lbl.setStyleSheet("color: #334155; font-size: 11px;")
-            self.table.setCellWidget(row, 2, org_lbl)
+                elif col_key == 'layer':
+                    name_widget = QWidget()
+                    nw_layout = QVBoxLayout(name_widget)
+                    nw_layout.setContentsMargins(6, 4, 6, 4)
+                    nw_layout.setSpacing(2)
+                    layer_name = r.get('name') or r.get('layer', '')
+                    n_lbl = QLabel(layer_name)
+                    n_lbl.setStyleSheet("color: #0f294d; font-weight: 700; font-size: 12px;")
+                    nw_layout.addWidget(n_lbl)
+                    if r.get('note'):
+                        note_lbl = QLabel(r['note'])
+                        note_lbl.setStyleSheet("color: #64748b; font-size: 10.5px;")
+                        nw_layout.addWidget(note_lbl)
+                    self.table.setCellWidget(row, col_idx, name_widget)
 
-            # Col 3: Tanggal
-            date_item = QTableWidgetItem(r.get('date', ''))
-            date_item.setTextAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
-            date_item.setForeground(QColor('#64748b'))
-            self.table.setItem(row, 3, date_item)
+                elif col_key == 'org':
+                    org_text = (r.get('direktorat') if self.current_status_tab == 'Terintegrasi' else r.get('satker')) or r.get('instansi') or r.get('source') or '—'
+                    org_lbl = QLabel(org_text)
+                    org_lbl.setWordWrap(True)
+                    org_lbl.setStyleSheet("color: #334155; font-size: 11px;")
+                    self.table.setCellWidget(row, col_idx, org_lbl)
 
-            # Col 4: Status
-            status_widget = QWidget()
-            sw_layout = QHBoxLayout(status_widget)
-            sw_layout.setContentsMargins(4, 4, 4, 4)
-            badge = StatusBadge(r.get('status', ''))
-            sw_layout.addWidget(badge)
-            sw_layout.addStretch()
-            self.table.setCellWidget(row, 4, status_widget)
+                elif col_key == 'date':
+                    date_item = QTableWidgetItem(r.get('date', ''))
+                    date_item.setTextAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
+                    date_item.setForeground(QColor('#64748b'))
+                    self.table.setItem(row, col_idx, date_item)
 
-            # Col 5: Actions
-            actions_widget = self._create_actions_widget(r)
-            self.table.setCellWidget(row, 5, actions_widget)
+                elif col_key == 'status':
+                    status_widget = QWidget()
+                    sw_layout = QHBoxLayout(status_widget)
+                    sw_layout.setContentsMargins(4, 4, 4, 4)
+                    badge = StatusBadge(r.get('status', ''))
+                    sw_layout.addWidget(badge)
+                    sw_layout.addStretch()
+                    self.table.setCellWidget(row, col_idx, status_widget)
+
+                elif col_key == 'actions':
+                    actions_widget = self._create_actions_widget(r)
+                    self.table.setCellWidget(row, col_idx, actions_widget)
 
             self.table.setRowHeight(row, 54)
 
