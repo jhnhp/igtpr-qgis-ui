@@ -77,7 +77,7 @@ class HubCard(QFrame):
             h_lay.addLayout(top)
             h_lay.addLayout(texts)
         else:
-            h_lay.addWidget(badge, 0, Qt.AlignmentFlag.AlignTop)
+            h_lay.addWidget(badge, 0, Qt.AlignmentFlag.AlignVCenter)
             h_lay.addLayout(texts, 1)
         lay.addWidget(self.head)
 
@@ -218,10 +218,10 @@ class DashboardPage(ResponsivePage):
         self.workflow.clear()
         upload = HubCard('plain', 'headBlue', 'cloud-upload', '#1f6fd6', '#dceafe', 'Unggah Data',
                          'Kelola dan unggah data geospasial ke dalam sistem.', upload_items,
-                         'hub', [(0, 1)], True)
+                         'hub', [(0, 1)], False)
         manage = HubCard('green', 'headGreen', 'database', '#047857', '#cdf3dd', 'Manajemen Data',
                          'Kelola proses, revisi, dan status data geospasial per kategori IGT.', manage_items,
-                         'hubGreen', [(0, 1)], True)
+                         'hubGreen', [(0, 1)], False)
         upload.itemClicked.connect(self._on_workflow_item)
         manage.itemClicked.connect(self._on_workflow_item)
         self.workflow.add(upload)
