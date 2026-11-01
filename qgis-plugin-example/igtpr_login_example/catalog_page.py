@@ -394,6 +394,26 @@ class DatasetCard(QFrame):
         return QSize(160, 36)
 
 
+class DynamicTabButton(QPushButton):
+    """Tombol tab kategori katalog dinamis yang dapat mengecil fleksibel dan mempertahankan icon."""
+
+    def __init__(self, key, full_text, short_text, icon_key, color, parent=None):
+        super().__init__(full_text, parent)
+        self.key = key
+        self.full_text = full_text
+        self.short_text = short_text
+        self.icon_key = icon_key
+        self.color = color
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.setMinimumWidth(20)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setIcon(QIcon(svg_pixmap(ICONS.get(icon_key, ICONS['pin']).format(color=color), QSize(13, 13))))
+        self.setIconSize(QSize(13, 13))
+
+    def minimumSizeHint(self):
+        return QSize(22, 28)
+
+
 class CatalogPage(QWidget):
     """Halaman / Widget Katalog Data V2 dengan 5 Tab Kategori, Paginasi 8 Data, dan Desain Responsif."""
 
@@ -565,41 +585,30 @@ class CatalogPage(QWidget):
             main_layout.addWidget(self.head_widget)
             target_layout = main_layout
 
-        # 2. Subnav 5 Tab Kategori (Selalu 1 Baris Horizontal Scrollable)
-        self.tabs_scroll = QScrollArea(self)
-        self.tabs_scroll.setObjectName('tabsScroll')
-        self.tabs_scroll.setWidgetResizable(True)
-        self.tabs_scroll.setFixedHeight(40)
-        self.tabs_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.tabs_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.tabs_scroll.setStyleSheet("QScrollArea#tabsScroll { background: transparent; border: none; }")
-
-        self.tabs_container = QWidget(self.tabs_scroll)
+        # 2. Subnav 5 Tab Kategori (Dinamis, Stretch sampai ujung, Responsif)
+        self.tabs_container = QWidget(self)
+        self.tabs_container.setObjectName('tabsContainer')
         self.tabs_container.setStyleSheet("background: transparent;")
         self.subnav_layout = QHBoxLayout(self.tabs_container)
         self.subnav_layout.setContentsMargins(0, 0, 0, 0)
-        self.subnav_layout.setSpacing(6)
+        self.subnav_layout.setSpacing(4)
         self.nav_buttons = {}
         self.tab_meta = {}
 
-        tabs_data = [
-            ('igt-pr', 'IGT-PR', 'database', '#0f294d'),
-            ('pertanahan', 'IGT Pertanahan', 'pin', '#1f6fd6'),
-            ('tata-ruang', 'IGT Tata Ruang', 'map', '#047857'),
-            ('derivatif', 'IGT Derivatif', 'layers', '#7c3aed'),
-            ('lainnya', 'IGT K/L Lainnya', 'globe', '#0284c7'),
-        ]
-        for cat_key, tab_title, icon_key, color in tabs_data:
-            btn = QPushButton(tab_title, self.tabs_container)
-            btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        # Memuat tab kategori secara dinamis dari CATEGORIES dengan stretch merata sampai ujung
+        for cat_key, cat_info in CATEGORIES.items():
+            full_title = cat_info.get('label', cat_key)
+            short_title = cat_info.get('shortLabel', full_title)
+            icon_key = cat_info.get('icon', 'pin')
+            color = cat_info.get('color', '#1f6fd6')
+
+            btn = DynamicTabButton(cat_key, full_title, short_title, icon_key, color, self.tabs_container)
             btn.clicked.connect(lambda checked, k=cat_key: self.set_category(k))
-            self.subnav_layout.addWidget(btn)
+            self.subnav_layout.addWidget(btn, 1)  # Stretch factor 1: membagi rata sampai ujung
             self.nav_buttons[cat_key] = btn
             self.tab_meta[cat_key] = (icon_key, color)
 
-        self.subnav_layout.addStretch(1)
-        self.tabs_scroll.setWidget(self.tabs_container)
-        target_layout.addWidget(self.tabs_scroll)
+        target_layout.addWidget(self.tabs_container)
 
         # 3. Filter Controls (Pencarian, Direktorat, Provinsi, Kabupaten)
         self.filter_card = QFrame(self)
@@ -837,6 +846,7 @@ class CatalogPage(QWidget):
 
     # ------------------------------------------------------------------ Responsivitas
     def apply_width(self, width):
+        self._update_tab_labels(width)
         is_narrow = width < 280
         if hasattr(self, 'filter_box_layout'):
             self.filter_box_layout.setDirection(
@@ -861,6 +871,41 @@ class CatalogPage(QWidget):
             self._last_is_narrow = is_narrow
             if hasattr(self, '_last_total_pages'):
                 self._update_pagination_ui(self._last_total_pages, self._last_total_items)
+
+    def _update_tab_labels(self, width=None):
+        if not hasattr(self, 'nav_buttons') or not self.nav_buttons:
+            return
+        if width is None:
+            width = self.width() if self.width() > 0 else 400
+
+        tab_count = max(1, len(self.nav_buttons))
+        # Total lebar yang tersedia untuk baris tab (dikurangi padding kontainer)
+        avail_w = max(60, width - 28)
+        tab_w = avail_w / tab_count
+
+        for key, btn in self.nav_buttons.items():
+            full_title = getattr(btn, 'full_text', btn.text())
+            short_title = getattr(btn, 'short_text', full_title)
+
+            # Sisa ruang untuk teks setelah dikurangi icon (13px) + gap (4px) + padding (~12px)
+            avail_text = tab_w - 29
+            fm = btn.fontMetrics()
+            adv = getattr(fm, 'horizontalAdvance', fm.width)
+
+            if tab_w < 50:
+                # Bila pas dikecilin sangat sempit: teks disembunyikan agar icon tetap terlihat jelas
+                btn.setText('')
+            elif tab_w < 84:
+                # Bila sempit: teks di-elide dari short_title
+                btn.setText(fm.elidedText(short_title, Qt.TextElideMode.ElideRight, int(avail_text)))
+            elif adv(full_title) <= avail_text:
+                btn.setText(full_title)
+            elif adv(short_title) <= avail_text:
+                btn.setText(short_title)
+            else:
+                btn.setText(fm.elidedText(short_title, Qt.TextElideMode.ElideRight, int(avail_text)))
+
+            btn.setToolTip(full_title)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -986,27 +1031,27 @@ class CatalogPage(QWidget):
         for key, btn in self.nav_buttons.items():
             icon_key, icon_color = self.tab_meta.get(key, ('pin', '#1f6fd6'))
             if key == cat_key:
-                btn.setIcon(QIcon(svg_pixmap(ICONS.get(icon_key, ICONS['pin']).format(color='#ffffff'), QSize(12, 12))))
+                btn.setIcon(QIcon(svg_pixmap(ICONS.get(icon_key, ICONS['pin']).format(color='#ffffff'), QSize(13, 13))))
                 btn.setStyleSheet("""
                     QPushButton {
                         background-color: #1f6fd6;
                         color: #ffffff;
                         border: none;
                         border-radius: 16px;
-                        padding: 5px 12px;
+                        padding: 5px 6px;
                         font-weight: 700;
                         font-size: 11px;
                     }
                 """)
             else:
-                btn.setIcon(QIcon(svg_pixmap(ICONS.get(icon_key, ICONS['pin']).format(color=icon_color), QSize(12, 12))))
+                btn.setIcon(QIcon(svg_pixmap(ICONS.get(icon_key, ICONS['pin']).format(color=icon_color), QSize(13, 13))))
                 btn.setStyleSheet("""
                     QPushButton {
                         background-color: #ffffff;
                         color: #475569;
                         border: 1px solid #cbd5e1;
                         border-radius: 16px;
-                        padding: 5px 12px;
+                        padding: 5px 6px;
                         font-weight: 600;
                         font-size: 11px;
                     }
@@ -1016,6 +1061,7 @@ class CatalogPage(QWidget):
                     }
                 """)
 
+        self._update_tab_labels()
         self._render_page()
 
     def _get_filtered_records(self):

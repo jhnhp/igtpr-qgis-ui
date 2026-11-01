@@ -2305,38 +2305,48 @@ tr.igt-sublayer-row td {
   height: 14px;
 }
 
-/* 5 Tabs Bar (Selalu 1 Baris Horizontal Scrollable) */
+/* 5 Tabs Bar (Dinamis, Stretch sampai ujung, Responsif) */
 .dash-cat-tabs {
   display: flex;
   flex-wrap: nowrap;
-  gap: 7px;
+  width: 100%;
+  gap: 6px;
   margin-bottom: 14px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding-bottom: 2px;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE / Edge */
-}
-.dash-cat-tabs::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Edge */
 }
 .dash-cat-tab {
-  flex: 0 0 auto;
-  white-space: nowrap;
+  flex: 1 1 0; /* Stretch sampai ujung, membagi rata 100% lebar */
+  min-width: 0; /* Memungkinkan tab mengecil di bawah lebar konten teks */
   border: 1px solid #cbd5e1;
   background: #ffffff;
   color: #475569;
   border-radius: 20px;
-  padding: 6px 13px;
+  padding: 6px 8px;
   font-size: 11.5px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.16s ease;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  gap: 5px;
   font-family: inherit;
+  text-decoration: none;
+}
+.dash-cat-tab .tab-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0; /* Icon TIDAK PERNAH terpotong atau gepeng */
+}
+.dash-cat-tab .tab-icon svg {
+  width: 13px;
+  height: 13px;
+}
+.dash-cat-tab .tab-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 .dash-cat-tab:hover {
   background: #f1f5f9;
@@ -2348,6 +2358,18 @@ tr.igt-sublayer-row td {
   border-color: #1f6fd6;
   color: #ffffff;
   box-shadow: 0 3px 10px rgba(31, 111, 214, 0.28);
+}
+@media (max-width: 540px) {
+  .dash-cat-tab {
+    padding: 6px 4px;
+    font-size: 10.5px;
+    gap: 4px;
+  }
+}
+@media (max-width: 380px) {
+  .dash-cat-tab .tab-label {
+    display: none; /* Pas sempit, teks sembunyi dan icon tetap kelihatan jelas */
+  }
 }
 
 /* Filter Box */

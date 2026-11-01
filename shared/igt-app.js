@@ -1206,13 +1206,13 @@ const IgtApp = (() => {
     const topYearSelect = document.getElementById('dashboard-year-filter');
     let selectedYear = topYearSelect ? topYearSelect.value : 'all';
 
-    const TABS = [
-      { key: 'igt-pr', label: 'IGT-PR' },
-      { key: 'pertanahan', label: 'IGT Pertanahan' },
-      { key: 'tata-ruang', label: 'IGT Tata Ruang' },
-      { key: 'derivatif', label: 'IGT Derivatif' },
-      { key: 'lainnya', label: 'IGT K/L Lainnya' },
-    ];
+    // Memuat daftar tab kategori secara dinamis dari CATEGORIES
+    const TABS = Object.keys(CATEGORIES).map((k) => ({
+      key: k,
+      label: CATEGORIES[k].label,
+      shortLabel: CATEGORIES[k].shortLabel || CATEGORIES[k].label,
+      icon: CATEGORIES[k].icon || 'database-2-line',
+    }));
 
     function getCategoryRecords(cat) {
       const allRecords = IgtData.loadRecords();
@@ -1319,12 +1319,13 @@ const IgtApp = (() => {
 
       let html = '';
 
-      // 1. Subnav 5 Tabs
+      // 1. Subnav 5 Tabs (Dinamis, Stretch sampai ujung, Responsif)
       html += `
         <div class="dash-cat-tabs" role="tablist" aria-label="Pilih Kategori IGT">
           ${TABS.map((t) => `
-            <button type="button" class="dash-cat-tab ${t.key === currentCategory ? 'active' : ''}" data-dash-cat="${t.key}" role="tab" aria-selected="${t.key === currentCategory}">
-              ${t.label}
+            <button type="button" class="dash-cat-tab ${t.key === currentCategory ? 'active' : ''}" data-dash-cat="${t.key}" role="tab" aria-selected="${t.key === currentCategory}" title="${t.label}">
+              <span class="tab-icon">${ri(t.icon)}</span>
+              <span class="tab-label">${t.label}</span>
             </button>
           `).join('')}
         </div>
