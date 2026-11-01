@@ -33,6 +33,9 @@ const IgtApp = (() => {
     'edit-line': 'M6.414 16L16.556 5.858l-1.414-1.414L5 14.586V16h1.414zm.829 2H3v-4.243L14.435 2.322a1 1 0 0 1 1.414 0l2.829 2.829a1 1 0 0 1 0 1.414L7.243 18zM3 20h18v2H3v-2z',
     'delete-bin-line': 'M17 6h5v2h-2v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V8H2V6h5V3a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v3zm1 2H6v12h12V8zm-9 3h2v6H9v-6zm4 0h2v6h-2v-6zM9 4v2h6V4H9z',
     'notification-3-line': 'M20 17h2v2H2v-2h2v-7a8 8 0 1 1 16 0v7zm-2 0v-7a6 6 0 1 0-12 0v7h12zm-9 4h6v2H9v-2z',
+    'information-line': 'M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM11 7h2v2h-2V7zm0 4h2v6h-2v-6z',
+    'external-link-line': 'M10 6v2H5v11h11v-5h2v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6zm11-3v8h-2V6.413l-7.793 7.794-1.414-1.414L17.585 5H13V3h8z',
+    'shape-line': 'M2 3.993A1 1 0 0 1 2.992 3h18.016c.548 0 .992.445.992.993v16.014a1 1 0 0 1-.992.993H2.992A.993.993 0 0 1 2 20.007V3.993zM4 5v14h16V5H4z',
   };
 
   const ri = (name) => `<svg class="ri-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="${RI_PATHS[name] || RI_PATHS['map-pin-line']}"/></svg>`;
@@ -201,6 +204,176 @@ const IgtApp = (() => {
     return dsSatker.toLowerCase().includes('sleman') || dsSatker.toLowerCase() === userSatker.toLowerCase();
   }
 
+  function showIgtDetailModal(dataset, role) {
+    if (!dataset) return;
+    let modal = document.getElementById('igt-detail-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'igt-detail-modal';
+      modal.className = 'modal-backdrop';
+      modal.setAttribute('role', 'dialog');
+      modal.setAttribute('aria-modal', 'true');
+      modal.style.cssText = 'position:fixed;inset:0;z-index:1000;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;padding:20px;overflow:auto;';
+      document.body.appendChild(modal);
+
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal || e.target.closest('[data-close-detail-modal]')) {
+          modal.style.display = 'none';
+          modal.hidden = true;
+        }
+      });
+    }
+
+    const cat = dataset.category || 'pertanahan';
+    let jenisIgt = 'IGT Pertanahan (Berbasis Bidang Tanah)';
+    if (cat === 'tata-ruang') jenisIgt = 'IGT Tata Ruang (Berbasis Rencana & Pola Kawasan)';
+    else if (cat === 'derivatif') jenisIgt = 'IGT Derivatif Multiguna (Analisis Tematik Lanjutan)';
+    else if (cat === 'lainnya') jenisIgt = 'IGT K/L Lainnya (Data Tematik Eksternal)';
+
+    const direktoratVal = dataset.direktorat || dataset.satker || dataset.instansi || 'Direktorat Pengukuran dan Pemetaan Kadastral';
+    const satkerVal = dataset.satker || dataset.direktorat || dataset.instansi || 'Kantah Kab. Sleman';
+    const tglVal = dataset.updated || dataset.date || '18 Okt 2026';
+    const lingkupVal = dataset.scope || `${dataset.kab || 'Kab. Sleman'}, ${dataset.prov || 'D.I. Yogyakarta'}`;
+    const metaUrl = `https://geoportal.atrbpn.go.id/metadata/${dataset.id.toLowerCase()}`;
+    const hasSubs = Boolean(dataset.subLayers && dataset.subLayers.length > 0);
+    const allowWfs = canAccessWfs(role, dataset);
+
+    const subLayersHtml = hasSubs ? `
+      <div class="igt-detail-box" style="border-color:#bbf7d0;background:#f0fdf4;">
+        <div class="igt-detail-box-title" style="color:#047857;">Daftar Sub-Layer (${dataset.subLayers.length} Sub-IGT Terintegrasi)</div>
+        ${dataset.subLayers.map((s) => `
+          <div class="igt-detail-sub-item">
+            <div>
+              <div class="igt-detail-sub-title">• ${s.name}</div>
+              <div class="igt-detail-sub-meta">ID: ${s.id || '—'} · Update: ${s.updated || s.year || '—'} · Cakupan: ${s.scope || lingkupVal}</div>
+            </div>
+            <div style="display:flex;gap:6px;">
+              <button type="button" class="btn btn-soft btn-sm" data-action="wms" data-name="${s.name.replace(/"/g, '&quot;')}">WMS</button>
+              ${allowWfs ? `<button type="button" class="btn btn-soft btn-sm" data-action="wfs" data-name="${s.name.replace(/"/g, '&quot;')}">WFS</button>` : ''}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    ` : '';
+
+    const modalInner = `
+      <section class="card" style="width:min(640px,100%);max-height:92vh;overflow:auto;margin:auto;box-shadow:0 20px 48px rgba(15,23,42,.25);border-radius:12px;">
+        <div class="card-head" style="background:linear-gradient(135deg, #102b59 0%, #1858b8 100%);color:#fff;border-bottom:none;padding:16px 20px;border-radius:12px 12px 0 0;">
+          <div>
+            <div style="font-size:10px;font-weight:800;color:#bfdbfe;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:4px;">
+              Sistem Informasi Geospasial ATR/BPN · Detail IGT
+            </div>
+            <h2 id="igt-detail-modal-title" style="font-size:16px;color:#fff;margin:0 0 4px 0;line-height:1.3;">${dataset.name}</h2>
+            <div style="font-size:11.5px;color:#cbd5e1;">ID Dataset: <strong>${dataset.id}</strong> · Status: <span class="status integrated">${dataset.status || 'Terintegrasi'}</span></div>
+          </div>
+          <button type="button" class="btn btn-soft" data-close-detail-modal style="background:rgba(255,255,255,0.15);color:#fff;border:none;border-radius:8px;font-weight:700;">✕ Tutup</button>
+        </div>
+
+        <div style="padding:18px 20px;">
+          <!-- Detail Grid -->
+          <div class="igt-detail-box">
+            <div class="igt-detail-box-title">Metadata Pokok Dataset</div>
+            <div class="igt-detail-grid">
+              <div class="igt-detail-item">
+                <span class="igt-detail-label">Direktorat Pembina</span>
+                <span class="igt-detail-val">${direktoratVal}</span>
+              </div>
+              <div class="igt-detail-item">
+                <span class="igt-detail-label">Satuan Kerja (Satker)</span>
+                <span class="igt-detail-val">${satkerVal}</span>
+              </div>
+              <div class="igt-detail-item">
+                <span class="igt-detail-label">Tanggal Integrasi</span>
+                <span class="igt-detail-val">${tglVal}</span>
+              </div>
+              <div class="igt-detail-item">
+                <span class="igt-detail-label">Jenis IGT</span>
+                <span class="igt-detail-val">${jenisIgt}</span>
+              </div>
+              <div class="igt-detail-item">
+                <span class="igt-detail-label">Ruang Lingkup / Wilayah</span>
+                <span class="igt-detail-val">${lingkupVal}</span>
+              </div>
+              <div class="igt-detail-item">
+                <span class="igt-detail-label">Sistem Koordinat (CRS)</span>
+                <span class="igt-detail-val">EPSG:4326 (WGS 84) / EPSG:3857 (Web Mercator)</span>
+              </div>
+              <div class="igt-detail-item">
+                <span class="igt-detail-label">Format Layanan</span>
+                <span class="igt-detail-val">WMS (Web Map Service), WFS (Web Feature Service)</span>
+              </div>
+              <div class="igt-detail-item">
+                <span class="igt-detail-label">Skala Geospasial</span>
+                <span class="igt-detail-val">1:5.000 / 1:25.000 (Sesuai Standar IGT Nasional)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Link Dokumen Metadata Resmi -->
+          <div class="igt-detail-box" style="border-color:#bfdbfe;background:#eff6ff;">
+            <div class="igt-detail-box-title" style="color:#1d4ed8;">Dokumen & Spesifikasi Metadata (ISO 19115)</div>
+            <p style="font-size:11.5px;color:#334155;margin:0 0 10px 0;line-height:1.4;">
+              Metadata geospasial resmi berstandar ISO 19115 / SNI ISO 19115 lengkap dengan informasi riwayat pengolahan (lineage), batas spasial (bounding box), dan kamus data tersedia pada Geoportal ATR/BPN:
+            </p>
+            <a href="${metaUrl}" target="_blank" rel="noopener noreferrer" class="igt-metadata-link" onclick="event.preventDefault(); alert('Simulasi membuka dokumen metadata ISO 19115:\\n' + this.href);">
+              ${ri('external-link-line')} <span>Lihat Metadata Geospasial (${metaUrl})</span>
+            </a>
+          </div>
+
+          <!-- Sub-layer bila multi-layer -->
+          ${subLayersHtml}
+
+          <!-- Abstrak / Deskripsi Data -->
+          <div class="igt-detail-box">
+            <div class="igt-detail-box-title">Abstrak & Keterangan Dataset</div>
+            <p style="font-size:12px;color:#475569;margin:0;line-height:1.5;">
+              Dataset '${dataset.name}' merupakan Informasi Geospasial Tematik (IGT) resmi yang diproduksi dan dikelola oleh ${direktoratVal}. Data ini telah melewati tahapan validasi atribut, penjaminan kualitas spasial, dan verifikasi topologi sehingga siap untuk diintegrasikan dan dimanfaatkan pada sistem GIS Kementerian ATR/BPN.
+            </p>
+          </div>
+
+          <!-- Toolbar Muat Layer -->
+          <div class="toolbar" style="margin-top:16px;justify-content:space-between;padding-top:12px;border-top:1px solid #e2e8f0;">
+            <button type="button" class="btn btn-soft" data-close-detail-modal>Tutup</button>
+            <div style="display:flex;gap:8px;">
+              <button type="button" class="btn btn-primary" data-action="wms" data-name="${dataset.name.replace(/"/g, '&quot;')}" ${hasSubs ? 'data-is-parent-multi="true"' : ''}>
+                ${ri('map-2-line')}<span>Muat WMS ke Kanvas</span>
+              </button>
+              ${allowWfs ? `
+                <button type="button" class="btn btn-primary" style="background:#7c3aed;border-color:#7c3aed;" data-action="wfs" data-name="${dataset.name.replace(/"/g, '&quot;')}" ${hasSubs ? 'data-is-parent-multi="true"' : ''}>
+                  ${ri('shape-line')}<span>Muat WFS ke Kanvas</span>
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+      </section>
+    `;
+
+    modal.innerHTML = modalInner;
+    modal.hidden = false;
+    modal.style.display = 'flex';
+
+    // Hook load actions inside modal
+    modal.querySelectorAll('[data-action]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        const act = btn.dataset.action;
+        const name = btn.dataset.name;
+        if (btn.dataset.isParentMulti === 'true' && dataset && dataset.subLayers) {
+          const count = dataset.subLayers.length;
+          const subNames = dataset.subLayers.map((s) => s.name).join(', ');
+          const typeLabel = act === 'wfs' ? 'layer vektor WFS' : 'layer citra WMS';
+          const msg = "Simulasi QGIS: Memuat " + (count === 2 ? "kedua" : "seluruh " + count) + " sub-IGT untuk '" + dataset.name + "' (" + subNames + ") sebagai " + typeLabel + " ke dalam kanvas peta QGIS.";
+          if (typeof toast === 'function') toast(msg);
+          else alert(msg);
+          return;
+        }
+        const msg = act === 'wms' ? WMS_MESSAGE(name) : WFS_MESSAGE(name);
+        if (typeof toast === 'function') toast(msg);
+        else alert(msg);
+      });
+    });
+  }
+
   // Datasets of one category that are in its catalog (see CATEGORIES[...].catalogStatus); nothing can be edited here.
   function catalog(role, category) {
     // Karena Katalog IGT sudah ditampilkan di depan (dashboard), page khusus dialihkan ke dashboard utama
@@ -336,7 +509,8 @@ const IgtApp = (() => {
               '</button>'
             : '') +
           '<span class="igt-cat-inline-icon is-' + d.category + '" title="' + d.category + '">' + catIcon + '</span>' +
-          '<span class="igt-catalog-name">' + d.name + '</span>' +
+          '<button type="button" class="igt-catalog-name igt-card-link-title" data-open-detail="' + d.id + '" title="Klik untuk melihat detail lengkap dataset IGT">' + d.name + '</button>' +
+          '<button type="button" class="igt-info-btn" data-open-detail="' + d.id + '" title="Detail Informasi & Metadata IGT" aria-label="Detail Informasi IGT">' + ri('information-line') + '</button>' +
           (hasSubs
             ? '<button type="button" class="igt-chip igt-chip--multi-layer igt-chip--compact" data-toggle-sub="' + d.id + '" aria-expanded="' + (isExp ? 'true' : 'false') + '" title="Klik untuk membuka/menutup sub-layer">' +
               '<span class="igt-chip__text">Multi-layer (' + d.subLayers.length + ')</span>' +
@@ -412,6 +586,17 @@ const IgtApp = (() => {
       render();
     }));
     document.addEventListener('click', (event) => {
+      const openDetailBtn = event.target.closest('[data-open-detail]');
+      if (openDetailBtn) {
+        event.stopPropagation();
+        const dsId = openDetailBtn.dataset.openDetail;
+        const ds = datasets.find((x) => x.id === dsId);
+        if (ds) {
+          showIgtDetailModal(ds, role);
+        }
+        return;
+      }
+
       const toggleSub = event.target.closest('[data-toggle-sub]');
       if (toggleSub) {
         const parentId = toggleSub.dataset.toggleSub;
@@ -1200,7 +1385,10 @@ const IgtApp = (() => {
                     <div class="dash-card-title-wrap">
                       <span class="igt-catalog-num">${startIdx + idx + 1}</span>
                       <span class="igt-cat-inline-icon is-${cat}" title="${cat}">${iconHtml}</span>
-                      <span class="dash-card-title igt-catalog-name">${d.name}</span>
+                      <button type="button" class="dash-card-title igt-catalog-name igt-card-link-title" data-open-detail="${d.id}" title="Klik untuk melihat detail lengkap dataset IGT">${d.name}</button>
+                      <button type="button" class="igt-info-btn" data-open-detail="${d.id}" title="Detail Informasi & Metadata IGT" aria-label="Detail Informasi IGT">
+                        ${ri('information-line')}
+                      </button>
                       ${hasSubs ? `
                         <button type="button" class="igt-chip igt-chip--multi-layer igt-chip--compact dash-chip-toggle" data-dash-toggle="${d.id}" aria-expanded="${isExp}" title="Klik untuk membuka/menutup sub-layer">
                           <span class="igt-chip__text">Multi-layer (${d.subLayers.length})</span>
@@ -1374,6 +1562,17 @@ const IgtApp = (() => {
           dashFilterBtn.setAttribute('aria-expanded', filterExpanded ? 'true' : 'false');
         });
       }
+
+      rootEl.querySelectorAll('[data-open-detail]').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const id = btn.dataset.openDetail;
+          const ds = IgtData.loadRecords().find((r) => r.id === id);
+          if (ds) {
+            showIgtDetailModal(ds, role);
+          }
+        });
+      });
 
       rootEl.querySelectorAll('[data-action]').forEach((btn) => {
         btn.addEventListener('click', (e) => {

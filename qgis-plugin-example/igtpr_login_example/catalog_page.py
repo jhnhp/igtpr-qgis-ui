@@ -26,6 +26,7 @@ from .assets import ICONS
 from .data import CATEGORIES, DATASETS, INDONESIA_REGIONS, can_access_wfs
 from .login_page import svg_pixmap
 from .ui_kit import FlowLayout, icon_badge
+from .igt_detail_dialog import IgtDetailDialog
 
 CATEGORY_KEYS = ['igt-pr', 'pertanahan', 'tata-ruang', 'derivatif', 'lainnya']
 PAGE_SIZE = 8
@@ -115,6 +116,25 @@ class DatasetCard(QFrame):
                 border-color: #34d399;
                 color: #065f46;
             }
+            QLabel#titleLbl {
+                color: #0f294d;
+                font-size: 13px;
+                font-weight: 500;
+            }
+            QLabel#titleLbl:hover {
+                color: #1f6fd6;
+                text-decoration: underline;
+            }
+            QPushButton#btnInfo {
+                background-color: #f1f5f9;
+                border: 1px solid #cbd5e1;
+                border-radius: 9px;
+                padding: 0;
+            }
+            QPushButton#btnInfo:hover {
+                background-color: #e0f2fe;
+                border-color: #7dd3fc;
+            }
         """)
 
         card_layout = QVBoxLayout(self)
@@ -158,9 +178,22 @@ class DatasetCard(QFrame):
         title_row.addWidget(self.icon_lbl, 0, Qt.AlignmentFlag.AlignVCenter)
 
         self.title_lbl = QLabel(dataset.get('name', ''), self)
-        self.title_lbl.setStyleSheet("color: #0f294d; font-size: 13px; font-weight: 500;")
+        self.title_lbl.setObjectName('titleLbl')
         self.title_lbl.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        self.title_lbl.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.title_lbl.setToolTip("Klik untuk melihat detail lengkap dataset IGT")
+        self.title_lbl.mousePressEvent = lambda e: self.open_detail()
         title_row.addWidget(self.title_lbl, 0, Qt.AlignmentFlag.AlignVCenter)
+
+        self.btn_info = QPushButton(self)
+        self.btn_info.setObjectName('btnInfo')
+        self.btn_info.setFixedSize(18, 18)
+        self.btn_info.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_info.setToolTip("Detail Informasi & Metadata IGT")
+        self.btn_info.setIcon(QIcon(svg_pixmap(ICONS.get('info', ICONS['pin']).format(color='#1f6fd6'), QSize(12, 12))))
+        self.btn_info.setIconSize(QSize(12, 12))
+        self.btn_info.clicked.connect(self.open_detail)
+        title_row.addWidget(self.btn_info, 0, Qt.AlignmentFlag.AlignVCenter)
 
         if self.has_subs:
             sub_count = len(dataset['subLayers'])
@@ -302,6 +335,17 @@ class DatasetCard(QFrame):
 
             self.subs_container.setVisible(self.is_expanded)
             card_layout.addWidget(self.subs_container)
+
+    def open_detail(self):
+        """Buka dialog modal detail informasi dan metadata IGT."""
+        try:
+            dlg = IgtDetailDialog(self.dataset, allow_wfs=self.allow_wfs, parent=self.window())
+            dlg.wmsRequested.connect(lambda ds, sl: self.wmsClicked.emit(ds, sl))
+            dlg.wfsRequested.connect(lambda ds, sl: self.wfsClicked.emit(ds, sl))
+            dlg.exec_()
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
 
     def _load_all_sublayers(self, mode='wms'):
         """Muat seluruh sub-IGT (2 atau lebih) sekaligus ke kanvas peta QGIS sebagai WMS atau WFS."""
