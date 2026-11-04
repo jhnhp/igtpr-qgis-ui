@@ -4,7 +4,7 @@ Dokumen ini merangkum seluruh pemetaan fungsi dan hak akses untuk 4 peran (*role
 
 Berkas spreadsheet Excel tersedia di:
 - [`MATRIKS_HAK_AKSES_ROLE_QGIS.xlsx`](MATRIKS_HAK_AKSES_ROLE_QGIS.xlsx)
-  > **Fitur Checkbox Interaktif (Clickable Checkbox):** Kolom peran (`superadmin`, `admin`, `operator`, `umum`) pada sheet *Matriks Hak Akses (Clickable)* menggunakan fitur native **Cell Checkbox** Excel 365 / Excel 2024. Kotak centang dapat langsung diklik atau ditekan spasi untuk beralih antara centang (`TRUE` / latar hijau lembut) dan tidak centang (`FALSE`).
+  > **Fitur Kotak Centang Interaktif (Clickable Form Control Checkbox):** Kolom peran (`superadmin`, `admin`, `operator`, `umum`) pada sheet *Matriks Hak Akses (Clickable)* menggunakan objek kendali form (**Form Control Checkbox**) standar. Kotak centang berupa kotak fisik yang dapat langsung diklik untuk mencentang atau mengosongkan centang secara interaktif di **WPS Office**, **Microsoft Excel**, maupun **LibreOffice Calc** tanpa menampilkan teks mentah `TRUE`/`FALSE`.
 
 ---
 
