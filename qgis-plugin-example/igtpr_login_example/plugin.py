@@ -348,14 +348,14 @@ class IgtprLoginExample:
             desa = params.get('desa', '')
 
             parts = []
-            if kab and kab not in ('Semua Kabupaten / Kota', 'Kabupaten / Kota Utama'):
+            if kab and kab not in ('Semua Kabupaten / Kota', 'Semua Kabupaten', 'Kabupaten / Kota Utama'):
                 parts.append(kab)
             if kec and kec != 'Semua Kecamatan':
                 parts.append(kec)
             if desa and desa != 'Semua Desa / Kelurahan':
                 parts.append(desa)
 
-            filter_label = ", ".join(parts) if parts else prov
+            filter_label = ", ".join(parts) if parts else f"{prov} (Semua Kabupaten)"
             admin_filter = {'provinsi': prov, 'kabupaten': kab, 'kecamatan': kec, 'desa': desa}
             aoi_filter = None
         else:  # aoi
@@ -434,8 +434,12 @@ class IgtprLoginExample:
             if not is_wms and admin_filter:
                 try:
                     kab_filter_val = admin_filter.get('kabupaten', '').replace('Kab. ', '').replace('Kota ', '').strip()
-                    if kab_filter_val and kab_filter_val not in ('Semua Kabupaten / Kota', 'Kabupaten / Kota Utama'):
+                    if kab_filter_val and kab_filter_val not in ('Semua Kabupaten / Kota', 'Semua Kabupaten', 'Kabupaten / Kota Utama'):
                         layer.setSubsetString(f"\"kabupaten\" ILIKE '%{kab_filter_val}%'")
+                    else:
+                        prov_filter_val = admin_filter.get('provinsi', '').replace('D.I. ', '').replace('Provinsi ', '').strip()
+                        if prov_filter_val and prov_filter_val not in ('Nasional', 'Semua Provinsi'):
+                            layer.setSubsetString(f"\"provinsi\" ILIKE '%{prov_filter_val}%'")
                 except Exception:
                     pass
 
@@ -471,7 +475,7 @@ class IgtprLoginExample:
                     elif 'jakarta' in prov_name or 'dki' in prov_name:
                         prov_name = 'jakarta'
 
-                    if kab_name and kab_name not in ('seluruh indonesia', 'multi-kabupaten', 'semua kab / kota', 'semua kabupaten / kota'):
+                    if kab_name and kab_name not in ('seluruh indonesia', 'multi-kabupaten', 'semua kab / kota', 'semua kabupaten / kota', 'semua kabupaten'):
                         for f in layer.getFeatures():
                             f_kab = (f['kabupaten'] or '').lower()
                             if kab_name in f_kab or f_kab in kab_name:

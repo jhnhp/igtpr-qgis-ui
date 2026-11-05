@@ -449,16 +449,27 @@ const IgtApp = (() => {
 
     function syncKab() {
       const p = selProv.value;
-      const kabs = (WFS_ADMIN_DATA[p] && Object.keys(WFS_ADMIN_DATA[p])) || ['Kab. Sleman', 'Kota Yogyakarta'];
+      const rawKabs = (WFS_ADMIN_DATA[p] && Object.keys(WFS_ADMIN_DATA[p])) || ['Kab. Sleman', 'Kota Yogyakarta'];
+      const kabs = ['Semua Kabupaten / Kota', ...rawKabs.filter((x) => x !== 'Semua Kabupaten / Kota')];
       selKab.innerHTML = kabs.map((k) => `<option value="${k}">${k}</option>`).join('');
+      selKab.value = 'Semua Kabupaten / Kota';
       syncKec();
     }
 
     function syncKec() {
       const p = selProv.value;
       const k = selKab.value;
-      const kecs = (WFS_ADMIN_DATA[p] && WFS_ADMIN_DATA[p][k] && Object.keys(WFS_ADMIN_DATA[p][k])) || ['Semua Kecamatan', 'Kec. Depok', 'Kec. Mlati', 'Kec. Gamping', 'Kec. Sentral'];
-      selKec.innerHTML = ['Semua Kecamatan', ...kecs.filter((x) => x !== 'Semua Kecamatan')].map((kc) => `<option value="${kc}">${kc}</option>`).join('');
+      const isAllKab = k === 'Semua Kabupaten / Kota' || k === 'Semua Kabupaten';
+      if (isAllKab) {
+        selKec.innerHTML = '<option value="Semua Kecamatan">Semua Kecamatan</option>';
+        selKec.value = 'Semua Kecamatan';
+        selKec.disabled = true;
+      } else {
+        selKec.disabled = false;
+        const kecs = (WFS_ADMIN_DATA[p] && WFS_ADMIN_DATA[p][k] && Object.keys(WFS_ADMIN_DATA[p][k])) || ['Semua Kecamatan', 'Kec. Depok', 'Kec. Mlati', 'Kec. Gamping', 'Kec. Sentral'];
+        selKec.innerHTML = ['Semua Kecamatan', ...kecs.filter((x) => x !== 'Semua Kecamatan')].map((kc) => `<option value="${kc}">${kc}</option>`).join('');
+        selKec.value = 'Semua Kecamatan';
+      }
       syncDesa();
     }
 
@@ -466,13 +477,23 @@ const IgtApp = (() => {
       const p = selProv.value;
       const k = selKab.value;
       const kc = selKec.value;
-      let desas = ['Semua Desa / Kelurahan'];
-      if (WFS_ADMIN_DATA[p] && WFS_ADMIN_DATA[p][k] && WFS_ADMIN_DATA[p][k][kc]) {
-        desas = ['Semua Desa / Kelurahan', ...WFS_ADMIN_DATA[p][k][kc]];
-      } else if (kc !== 'Semua Kecamatan') {
-        desas = ['Semua Desa / Kelurahan', 'Kel. 01 Sentra', 'Kel. 02 Utama', 'Kel. 03 Terpadu'];
+      const isAllKab = k === 'Semua Kabupaten / Kota' || k === 'Semua Kabupaten';
+      const isAllKec = kc === 'Semua Kecamatan' || !kc;
+      if (isAllKab || isAllKec) {
+        selDesa.innerHTML = '<option value="Semua Desa / Kelurahan">Semua Desa / Kelurahan</option>';
+        selDesa.value = 'Semua Desa / Kelurahan';
+        selDesa.disabled = true;
+      } else {
+        selDesa.disabled = false;
+        let desas = ['Semua Desa / Kelurahan'];
+        if (WFS_ADMIN_DATA[p] && WFS_ADMIN_DATA[p][k] && WFS_ADMIN_DATA[p][k][kc]) {
+          desas = ['Semua Desa / Kelurahan', ...WFS_ADMIN_DATA[p][k][kc]];
+        } else {
+          desas = ['Semua Desa / Kelurahan', 'Kel. 01 Sentra', 'Kel. 02 Utama', 'Kel. 03 Terpadu'];
+        }
+        selDesa.innerHTML = desas.map((d) => `<option value="${d}">${d}</option>`).join('');
+        selDesa.value = 'Semua Desa / Kelurahan';
       }
-      selDesa.innerHTML = desas.map((d) => `<option value="${d}">${d}</option>`).join('');
     }
 
     selProv.addEventListener('change', syncKab);
@@ -497,7 +518,15 @@ const IgtApp = (() => {
         const k = selKab.value;
         const kc = selKec.value;
         const d = selDesa.value;
-        const msg = `Simulasi QGIS: Memuat fitur WFS '${dsName}' terfilter Batas Admin [${p} > ${k} > ${kc} > ${d}].`;
+        let adminLabel = p;
+        if (k && k !== 'Semua Kabupaten / Kota' && k !== 'Semua Kabupaten') {
+          adminLabel += ` > ${k}`;
+          if (kc && kc !== 'Semua Kecamatan') adminLabel += ` > ${kc}`;
+          if (d && d !== 'Semua Desa / Kelurahan') adminLabel += ` > ${d}`;
+        } else {
+          adminLabel += ' (Semua Kabupaten)';
+        }
+        const msg = `Simulasi QGIS: Memuat fitur WFS '${dsName}' terfilter Batas Admin [${adminLabel}].`;
         if (typeof toast === 'function') toast(msg); else alert(msg);
       } else if (mode === 'aoi') {
         const aoiSub = modal.querySelector('input[name="wfs-aoi-sub-radio"]:checked').value;

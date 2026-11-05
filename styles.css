@@ -3199,6 +3199,12 @@ tr.igt-sublayer-row td {
 .wfs-field input:focus {
   border-color: #2563eb;
 }
+.wfs-field select:disabled {
+  background: #f1f5f9;
+  color: #94a3b8;
+  border-color: #e2e8f0;
+  cursor: not-allowed;
+}
 .wfs-aoi-choice {
   display: flex;
   flex-direction: column;

@@ -136,6 +136,11 @@ class WfsFilterDialog(QDialog):
             QComboBox:focus {
                 border-color: #2563eb;
             }
+            QComboBox:disabled {
+                background: #f1f5f9;
+                color: #94a3b8;
+                border: 1.5px solid #e2e8f0;
+            }
             QRadioButton {
                 font-weight: 700;
                 font-size: 12.5px;
@@ -457,12 +462,12 @@ class WfsFilterDialog(QDialog):
 
         self.cb_kab.blockSignals(True)
         self.cb_kab.clear()
-        self.cb_kab.addItems(kabs)
 
-        # Cari Kab. Sleman sebagai default jika ada
-        sleman_idx = self.cb_kab.findText('Kab. Sleman')
-        if sleman_idx >= 0:
-            self.cb_kab.setCurrentIndex(sleman_idx)
+        # Opsi 'Semua Kabupaten / Kota' selalu di urutan pertama dan menjadi default setelah provinsi dipilih
+        all_kabs_label = 'Semua Kabupaten / Kota'
+        kab_items = [all_kabs_label] + [k for k in kabs if k != all_kabs_label]
+        self.cb_kab.addItems(kab_items)
+        self.cb_kab.setCurrentIndex(0)
 
         self.cb_kab.blockSignals(False)
         self._sync_kecamatan()
@@ -470,16 +475,20 @@ class WfsFilterDialog(QDialog):
     def _sync_kecamatan(self):
         prov = self.cb_prov.currentText()
         kab = self.cb_kab.currentText()
+        is_all_kab = kab in ('Semua Kabupaten / Kota', 'Semua Kabupaten', '')
 
         kecs = ['Semua Kecamatan']
-        if prov in ADMIN_HIERARCHY and kab in ADMIN_HIERARCHY[prov]:
-            kecs.extend(list(ADMIN_HIERARCHY[prov][kab].keys()))
-        else:
-            kecs.extend(['Kec. 01 (Pusat)', 'Kec. 02 (Barat)', 'Kec. 03 (Timur)', 'Kec. 04 (Utara)', 'Kec. 05 (Selatan)'])
+        if not is_all_kab:
+            if prov in ADMIN_HIERARCHY and kab in ADMIN_HIERARCHY[prov]:
+                kecs.extend(list(ADMIN_HIERARCHY[prov][kab].keys()))
+            else:
+                kecs.extend(['Kec. 01 (Pusat)', 'Kec. 02 (Barat)', 'Kec. 03 (Timur)', 'Kec. 04 (Utara)', 'Kec. 05 (Selatan)'])
 
         self.cb_kec.blockSignals(True)
         self.cb_kec.clear()
         self.cb_kec.addItems(kecs)
+        self.cb_kec.setCurrentIndex(0)
+        self.cb_kec.setEnabled(not is_all_kab)
         self.cb_kec.blockSignals(False)
 
         self._sync_desa()
@@ -488,16 +497,21 @@ class WfsFilterDialog(QDialog):
         prov = self.cb_prov.currentText()
         kab = self.cb_kab.currentText()
         kec = self.cb_kec.currentText()
+        is_all_kab = kab in ('Semua Kabupaten / Kota', 'Semua Kabupaten', '')
+        is_all_kec = kec in ('Semua Kecamatan', '')
 
         desas = ['Semua Desa / Kelurahan']
-        if prov in ADMIN_HIERARCHY and kab in ADMIN_HIERARCHY[prov] and kec in ADMIN_HIERARCHY[prov][kab]:
-            desas.extend(ADMIN_HIERARCHY[prov][kab][kec])
-        elif kec != 'Semua Kecamatan':
-            desas.extend(['Kelurahan 01', 'Kelurahan 02', 'Desa 01', 'Desa 02'])
+        if not is_all_kab and not is_all_kec:
+            if prov in ADMIN_HIERARCHY and kab in ADMIN_HIERARCHY[prov] and kec in ADMIN_HIERARCHY[prov][kab]:
+                desas.extend(ADMIN_HIERARCHY[prov][kab][kec])
+            else:
+                desas.extend(['Kelurahan 01', 'Kelurahan 02', 'Desa 01', 'Desa 02'])
 
         self.cb_desa.blockSignals(True)
         self.cb_desa.clear()
         self.cb_desa.addItems(desas)
+        self.cb_desa.setCurrentIndex(0)
+        self.cb_desa.setEnabled(not is_all_kab and not is_all_kec)
         self.cb_desa.blockSignals(False)
 
     # -------------------------------------------------------------------------
