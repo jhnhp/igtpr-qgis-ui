@@ -152,17 +152,36 @@ class WfsFilterDialog(QDialog):
                 color: #0f294d;
                 border: 1.5px solid #cbd5e1;
                 border-radius: 6px;
-                padding: 4px;
+                padding: 2px;
+                max-height: 200px;
                 selection-background-color: #eff6ff;
                 selection-color: #2563eb;
                 outline: none;
             }
             QComboBox QAbstractItemView::item {
-                min-height: 28px;
+                min-height: 24px;
                 padding: 4px 8px;
             }
             QComboBox QAbstractItemView::item:hover {
                 background-color: #f1f5f9;
+            }
+            QScrollBar:vertical {
+                border: none;
+                background: #f1f5f9;
+                width: 10px;
+                margin: 0px;
+                border-radius: 5px;
+            }
+            QScrollBar::handle:vertical {
+                background: #cbd5e1;
+                min-height: 24px;
+                border-radius: 5px;
+            }
+            QScrollBar::handle:vertical:hover {
+                background: #94a3b8;
+            }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                height: 0px;
             }
             QRadioButton {
                 font-weight: 700;
@@ -415,10 +434,14 @@ class WfsFilterDialog(QDialog):
         self.rb_admin.toggled.connect(self._update_cards_ui)
         self.rb_aoi.toggled.connect(self._update_cards_ui)
 
-        # Inisialisasi QListView view agar dropdown popup tampil stabil dan nyaman diklik
+        # Batasi tinggi dropdown popup agar tidak melebihi layar dan dapat di-scroll dengan mulus
         for cb in (self.cb_prov, self.cb_kab, self.cb_kec, self.cb_desa, self.cb_aoi_layer):
-            cb.setView(QListView())
-            cb.setMaxVisibleItems(15)
+            cb.setMaxVisibleItems(8)
+            v = cb.view()
+            if v:
+                v.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+                v.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+                v.setMaximumHeight(200)
 
         # Populate Administrative Dropdowns
         self._populate_admin_hierarchy()
