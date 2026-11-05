@@ -178,8 +178,8 @@ class DashboardPage(ResponsivePage):
         self.body.addWidget(self.workflow)
 
         # 5. Model Builder & Logout
-        self.mb_card = WideCard('mb', 'node-tree', '#7c3aed', '#ebe4fe', 'Model Builder',
-                                'Bangun dan jalankan model pengolahan data geospasial.', 'mbTitle', 'mbDesc',
+        self.mb_card = WideCard('mb', 'node-tree', '#7c3aed', '#ebe4fe', 'Model Builder (Runner)',
+                                'Jalankan alur model pemodelan geospasial (pembuatan model di Web).', 'mbTitle', 'mbDesc',
                                 self.content)
         self.mb_card.clicked.connect(self.openModelBuilderRequested.emit)
         self.body.addWidget(self.mb_card)
@@ -207,10 +207,12 @@ class DashboardPage(ResponsivePage):
         is_umum = role == 'umum'
 
         upload_items = []
-        if not is_umum:
+        # Hanya Operator yang memiliki hak akses mengunggah IGT Utama (Admin & Superadmin tidak mengunggah IGT Utama)
+        if role == 'operator':
             upload_items.append(('upload:pertanahan', 'database', 'Unggah IGT Utama', '#1f6fd6'))
         upload_items.append(('upload:derivatif', 'layers', 'Unggah IGT Derivatif Multiguna', '#1f6fd6'))
-        upload_items.append(('kustom-derivatif', 'gear', 'Kustom Tematik Derivatif', '#1f6fd6'))
+        if not is_umum:
+            upload_items.append(('kustom-derivatif', 'gear', 'Kustom Tematik Derivatif', '#1f6fd6'))
 
         manage_items = []
         if not is_umum:

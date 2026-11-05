@@ -126,7 +126,7 @@ class ModelBuilderPage(QWidget):
         title_lbl.setStyleSheet("color: #2e1065; font-size: 18px; font-weight: 800;")
         text_layout.addWidget(title_lbl)
 
-        desc_lbl = QLabel('Katalog algoritma dan model pemrosesan spasial terotomatisasi untuk QGIS.', self)
+        desc_lbl = QLabel('Katalog dan eksekusi alur model spasial di QGIS (pembuatan model dilakukan melalui Web).', self)
         desc_lbl.setStyleSheet("color: #6b21a8; font-size: 11.5px;")
         text_layout.addWidget(desc_lbl)
         head_layout.addLayout(text_layout, 1)

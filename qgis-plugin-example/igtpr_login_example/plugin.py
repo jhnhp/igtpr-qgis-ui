@@ -163,6 +163,11 @@ class IgtprDockWidget(QDockWidget):
 
     def show_upload(self, category_key='pertanahan'):
         # Menampilkan modal popup Unggah Data langsung sesuai mockup V2
+        if category_key == 'pertanahan' and self.current_role != 'operator':
+            QMessageBox.warning(self, "Akses Dibatasi",
+                                "Admin dan Superadmin tidak memiliki wewenang untuk mengunggah IGT Utama.\n"
+                                "Pengunggahan IGT Utama hanya dapat dilakukan oleh Operator.")
+            return
         main_win = self.window()
         dlg = UploadIgtUtamaDialog(current_category=category_key, iface=self.iface, parent=main_win)
         dlg.uploadSubmitted.connect(self.upload_page.uploadSubmitted.emit)

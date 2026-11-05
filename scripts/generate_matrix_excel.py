@@ -20,7 +20,7 @@ matrix_data = [
     ("Dashboard / Beranda", "Pintasan Hub Katalog IGT (4 Kategori)", True, True, True, True, "Pintasan ke IGT Pertanahan, Tata Ruang, Derivatif, Lainnya"),
     ("Dashboard / Beranda", "Pintasan Hub Unggah Data", True, True, True, True, "Pintasan membuka dialog unggah data geospasial"),
     ("Dashboard / Beranda", "Pintasan Hub Manajemen Data", True, True, True, False, "Tersedia untuk Superadmin, Admin, dan Operator"),
-    ("Dashboard / Beranda", "Pintasan Hub Model Builder", True, True, True, True, "Pintasan ke katalog modul analisis pemodelan spasial"),
+    ("Dashboard / Beranda", "Pintasan Hub Model Builder (Runner)", True, True, True, True, "Pintasan ke katalog modul eksekusi pemodelan spasial"),
 
     ("Katalog Data IGT", "Akses Halaman Katalog IGT Terpadu", True, True, True, True, "Katalog pencarian dan visualisasi dataset terintegrasi"),
     ("Katalog Data IGT", "Katalog Tab IGT-PR (Terpadu Pertanahan & Tata Ruang)", True, True, True, True, "Katalog gabungan IGT Pertanahan dan IGT Tata Ruang"),
@@ -40,8 +40,8 @@ matrix_data = [
     ("Integrasi Kanvas QGIS", "Muat Layer WFS (Vektor Fitur) - Sesuai Satker Penugasan", True, True, True, False, "Admin & Operator hanya untuk satker Sleman. Umum tidak diizinkan"),
 
     ("Unggah Data (Upload)", "Akses Formulir Dialog Unggah Data", True, True, True, True, "Dialog upload berkas dan entri metadata geospasial"),
-    ("Unggah Data (Upload)", "Unggah Data IGT Pertanahan", True, True, True, False, "Hanya internal pengelola data (Operator, Admin, Superadmin)"),
-    ("Unggah Data (Upload)", "Unggah Data IGT Tata Ruang", True, True, True, False, "Hanya internal pengelola data (Operator, Admin, Superadmin)"),
+    ("Unggah Data (Upload)", "Unggah Data IGT Pertanahan (IGT Utama)", False, False, True, False, "Khusus Operator Satker. Superadmin dan Admin tidak mengunggah IGT Utama"),
+    ("Unggah Data (Upload)", "Unggah Data IGT Tata Ruang (IGT Utama)", False, False, True, False, "Khusus Operator Satker. Superadmin dan Admin tidak mengunggah IGT Utama"),
     ("Unggah Data (Upload)", "Unggah Data IGT Derivatif Multiguna", True, True, True, True, "Pengguna Umum dan internal dapat mengunggah derivatif"),
     ("Unggah Data (Upload)", "Unggah Data IGT K/L Lainnya (Eksternal)", True, False, False, False, "Khusus Superadmin untuk integrasi dataset rujukan K/L"),
     ("Unggah Data (Upload)", "Pilih Berkas Geospasial (.gpkg, .zip, .shp, .geojson)", True, True, True, True, "File picker lokal mendukung berbagai format spasial"),
@@ -56,10 +56,11 @@ matrix_data = [
     ("Manajemen Data", "Perbaiki Revisi Pengajuan", False, False, True, False, "Khusus Operator mengunggah perbaikan saat status Revisi"),
     ("Manajemen Data", "Hapus Layer / Pengajuan Eksternal", True, False, False, False, "Khusus Superadmin pada data eksternal K/L"),
 
-    ("Model Builder Spasial", "Akses Modul Model Builder", True, True, True, True, "Katalog modul analisis geospasial otomatis"),
-    ("Model Builder Spasial", "Eksekusi Model Analisis Kesesuaian Lahan", True, True, True, True, "Analisis multi-kriteria kesesuaian lahan langsung di kanvas"),
-    ("Model Builder Spasial", "Eksekusi Model Buffer Kawasan Lindung", True, True, True, True, "Analisis zona penyangga radius sempadan/kawasan lindung"),
-    ("Model Builder Spasial", "Eksekusi Model Overlay RTRW vs Bidang Tanah", True, True, True, True, "Tumpang susun bidang tanah terhadap zonasi pola ruang"),
+    ("Model Builder Spasial", "Akses Modul Model Builder (Menjalankan Model)", True, True, True, True, "Menjalankan pemodelan spasial otomatis pada kanvas QGIS"),
+    ("Model Builder Spasial", "Eksekusi Model Analisis Kesesuaian Lahan", True, True, True, True, "Menjalankan analisis multi-kriteria kesesuaian lahan langsung di kanvas QGIS"),
+    ("Model Builder Spasial", "Eksekusi Model Buffer Kawasan Lindung", True, True, True, True, "Menjalankan analisis zona penyangga radius sempadan/kawasan lindung"),
+    ("Model Builder Spasial", "Eksekusi Model Overlay RTRW vs Bidang Tanah", True, True, True, True, "Menjalankan tumpang susun bidang tanah terhadap zonasi pola ruang"),
+    ("Model Builder Spasial", "Membangun / Merancang Model Spasial Baru", False, False, False, False, "Hanya dilakukan di Web Geoportal IGT-PR (QGIS hanya untuk eksekusi)"),
 
     ("Alur Derivatif Bidang", "Akses Alur 6-Langkah Derivatif Bidang", True, True, True, False, "Alur tematik pembuatan derivatif berbasis bidang tanah"),
     ("Alur Derivatif Bidang", "Langkah 1: Muat Baseline Bidang Tanah QGIS", True, True, True, False, "Memuat data persil dasar ke memori peta"),
@@ -72,17 +73,17 @@ matrix_data = [
 
 roles_info = [
     ("superadmin", "Superadmin", "SA", "Semua Satker", "1E40AF",
-     "Akses WFS Seluruh Indonesia, Unggah Semua Kategori (termasuk K/L), Verifikasi Topologi, Persetujuan Integrasi Nasional.",
-     "Bertanggung jawab penuh atas tata kelola data geospasial tematik nasional, validasi lintas sektor, persetujuan publikasi data IGT Utama dan eksternal ke Geoportal ATR/BPN."),
+     "Akses WFS Seluruh Indonesia, Verifikasi Topologi, Persetujuan Integrasi Nasional, Manajemen Data Penuh. (Catatan: Superadmin tidak mengunggah IGT Utama).",
+     "Bertanggung jawab penuh atas tata kelola data geospasial tematik nasional, validasi lintas sektor, dan persetujuan integrasi nasional. Pengunggahan data IGT Utama merupakan tugas Operator Satker."),
     ("admin", "Admin Satker", "AD", "Kantah Kab. Sleman", "6B21A8",
-     "Akses WFS Satker Sleman, Unggah IGT Utama & Derivatif, Verifikasi Topologi, Persetujuan Derivatif, Akses Model Builder.",
-     "Bertindak sebagai verifikator tingkat satuan kerja (Kantah), memvalidasi kelayakan geometri dan atribut data sebelum dinaikkan ke tingkat integrasi pusat."),
+     "Akses WFS Satker Sleman, Unggah IGT Derivatif, Verifikasi Topologi, Persetujuan Derivatif, Menjalankan Model Spasial. (Catatan: Admin tidak mengunggah IGT Utama).",
+     "Bertindak sebagai verifikator tingkat satuan kerja (Kantah), memvalidasi kelayakan geometri dan atribut data. Pengunggahan data IGT Utama merupakan tugas Operator Satker."),
     ("operator", "Operator Pusat", "JH", "Kantah Kab. Sleman", "166534",
-     "Akses WFS Satker Sleman, Unggah IGT Utama & Derivatif, Perbaikan Revisi Geometri/Atribut, Alur 6-Langkah Derivatif Bidang.",
-     "Pelaksana teknis pengolahan data spasial, perbaikan overlap/gap saat revisi, kompilasi data spasial per wilayah, dan input atribut derivatif bidang tanah."),
+     "Akses WFS Satker Sleman, Unggah Data IGT Utama (Pertanahan & Tata Ruang) & Derivatif, Perbaikan Revisi, Alur 6-Langkah Derivatif Bidang, Menjalankan Model Spasial.",
+     "Pelaksana teknis pengolahan dan pengunggahan data spasial IGT Utama dan Derivatif, perbaikan revisi geometri/atribut, kompilasi data spasial per wilayah."),
     ("umum", "Pengguna Umum", "UM", "Non-Satker (Publik)", "334155",
-     "Akses WMS Seluruh Katalog (Tanpa Akses WFS), Unggah Derivatif Multiguna, Eksekusi Model Spasial Model Builder.",
-     "Pengguna publik / pemangku kepentingan eksternal yang memanfaatkan katalog peta terpadu untuk keperluan visualisasi, analisis derivatif mandiri, dan pemodelan spasial."),
+     "Akses WMS Seluruh Katalog (Tanpa Akses WFS), Unggah Derivatif Multiguna, Menjalankan Model Spasial di QGIS.",
+     "Pengguna publik / pemangku kepentingan eksternal yang memanfaatkan katalog peta terpadu untuk keperluan visualisasi, pengajuan derivatif mandiri, dan menjalankan model analisis spasial."),
 ]
 
 def generate_base_file(base_path):

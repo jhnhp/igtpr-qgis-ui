@@ -12,10 +12,10 @@ Berkas spreadsheet Excel tersedia di:
 
 | Kode Peran | Nama Peran | Avatar | Satker Penugasan | Warna Tema | Deskripsi & Tanggung Jawab Utama |
 | :--- | :--- | :---: | :--- | :---: | :--- |
-| `superadmin` | **Superadmin** | `SA` | Semua Satker | `#1e40af` | Akses WFS seluruh wilayah Indonesia, unggah semua kategori (termasuk IGT K/L Lainnya), verifikasi topologi, persetujuan integrasi data spasial nasional, dan manajemen data penuh. |
-| `admin` | **Admin** | `AD` | Kantah Kab. Sleman | `#6b21a8` | Verifikasi kelayakan spasial & persetujuan pengajuan IGT Utama & Derivatif, unggah IGT Utama & Derivatif, akses Model Builder, serta akses WFS terbatas sesuai satker penugasan (Sleman). |
-| `operator` | **Operator Pusat** | `JH` | Kantah Kab. Sleman | `#166534` | Unggah data IGT Utama & Derivatif, perbaikan revisi geometri/atribut, pemantauan status kompilasi, eksekusi alur 6-langkah Derivatif Bidang, dan akses WFS sesuai satker penugasan (Sleman). |
-| `umum` | **Pengguna Umum** | `UM` | Non-Satker (Publik) | `#334155` | Akses visualisasi seluruh katalog publikasi IGT via WMS, pengajuan layer IGT Derivatif Multiguna, dan eksekusi pemodelan spasial Model Builder (tidak memiliki akses WFS). |
+| `superadmin` | **Superadmin** | `SA` | Semua Satker | `#1e40af` | Akses WFS seluruh wilayah Indonesia, verifikasi topologi, persetujuan integrasi data spasial nasional, dan manajemen data penuh. *(Catatan: Superadmin tidak mengunggah IGT Utama)*. |
+| `admin` | **Admin** | `AD` | Kantah Kab. Sleman | `#6b21a8` | Verifikasi kelayakan spasial/topologi & persetujuan pengajuan IGT, unggah IGT Derivatif, eksekusi model spasial di QGIS, serta akses WFS terbatas sesuai satker penugasan (Sleman). *(Catatan: Admin tidak mengunggah IGT Utama)*. |
+| `operator` | **Operator Pusat** | `JH` | Kantah Kab. Sleman | `#166534` | Pengunggahan data spasial IGT Utama (Pertanahan & Tata Ruang) dan IGT Derivatif, perbaikan revisi geometri/atribut, pemantauan status kompilasi, eksekusi alur 6-langkah Derivatif Bidang, dan akses WFS sesuai satker penugasan (Sleman). |
+| `umum` | **Pengguna Umum** | `UM` | Non-Satker (Publik) | `#334155` | Akses visualisasi seluruh katalog publikasi IGT via WMS, pengajuan layer IGT Derivatif Multiguna, dan eksekusi pemodelan spasial di QGIS (tidak memiliki akses WFS). |
 
 ---
 
@@ -40,7 +40,7 @@ Keterangan simbol:
 | Pintasan Hub Katalog IGT (4 Kategori)                            |     ☑      |   ☑   |    ☑     |  ☑   | Dashboard / Beranda   | Pintasan ke IGT Pertanahan, Tata Ruang, Derivatif, Lainnya       |
 | Pintasan Hub Unggah Data                                         |     ☑      |   ☑   |    ☑     |  ☑   | Dashboard / Beranda   | Pintasan membuka dialog unggah data geospasial                   |
 | Pintasan Hub Manajemen Data                                      |     ☑      |   ☑   |    ☑     |  ☐   | Dashboard / Beranda   | Tersedia untuk Superadmin, Admin, dan Operator                   |
-| Pintasan Hub Model Builder                                       |     ☑      |   ☑   |    ☑     |  ☑   | Dashboard / Beranda   | Pintasan ke katalog modul analisis pemodelan spasial             |
+| Pintasan Hub Model Builder (Runner)                              |     ☑      |   ☑   |    ☑     |  ☑   | Dashboard / Beranda   | Pintasan ke katalog modul eksekusi pemodelan spasial             |
 | **C. Katalog Data IGT**                                          |            |       |          |      |                       |                                                                  |
 | Akses Halaman Katalog IGT Terpadu                                |     ☑      |   ☑   |    ☑     |  ☑   | Katalog Data IGT      | Katalog pencarian dan visualisasi dataset terintegrasi           |
 | Katalog Tab IGT-PR (Terpadu)                                     |     ☑      |   ☑   |    ☑     |  ☑   | Katalog Data IGT      | Katalog gabungan IGT Pertanahan dan IGT Tata Ruang               |
@@ -60,8 +60,8 @@ Keterangan simbol:
 | Muat Layer WFS (Vektor Fitur) - Sesuai Satker Penugasan          |     ☑      |   ☑   |    ☑     |  ☐   | Integrasi Kanvas QGIS | Admin & Operator hanya untuk satker Sleman. Umum tidak diizinkan |
 | **E. Unggah Data (Upload Data)**                                 |            |       |          |      |                       |                                                                  |
 | Akses Formulir Dialog Unggah Data                                |     ☑      |   ☑   |    ☑     |  ☑   | Unggah Data (Upload)  | Dialog upload berkas dan entri metadata geospasial               |
-| Unggah Data IGT Pertanahan                                       |     ☑      |   ☑   |    ☑     |  ☐   | Unggah Data (Upload)  | Hanya internal pengelola data (Operator, Admin, Superadmin)      |
-| Unggah Data IGT Tata Ruang                                       |     ☑      |   ☑   |    ☑     |  ☐   | Unggah Data (Upload)  | Hanya internal pengelola data (Operator, Admin, Superadmin)      |
+| Unggah Data IGT Pertanahan (IGT Utama)                           |     ☐      |   ☐   |    ☑     |  ☐   | Unggah Data (Upload)  | Khusus Operator Satker. Superadmin & Admin tidak mengunggah IGT Utama |
+| Unggah Data IGT Tata Ruang (IGT Utama)                            |     ☐      |   ☐   |    ☑     |  ☐   | Unggah Data (Upload)  | Khusus Operator Satker. Superadmin & Admin tidak mengunggah IGT Utama |
 | Unggah Data IGT Derivatif Multiguna                              |     ☑      |   ☑   |    ☑     |  ☑   | Unggah Data (Upload)  | Pengguna Umum dan internal dapat mengunggah derivatif            |
 | Unggah Data IGT K/L Lainnya (Eksternal)                          |     ☑      |   ☐   |    ☐     |  ☐   | Unggah Data (Upload)  | Khusus Superadmin untuk integrasi dataset rujukan K/L            |
 | Pilih Berkas Geospasial (.gpkg, .zip, .shp, .geojson)            |     ☑      |   ☑   |    ☑     |  ☑   | Unggah Data (Upload)  | File picker lokal mendukung berbagai format spasial              |
@@ -76,10 +76,11 @@ Keterangan simbol:
 | Perbaiki Revisi Pengajuan                                        |     ☐      |   ☐   |    ☑     |  ☐   | Manajemen Data        | Khusus Operator mengunggah perbaikan saat status Revisi          |
 | Hapus Layer / Pengajuan Eksternal                                |     ☑      |   ☐   |    ☐     |  ☐   | Manajemen Data        | Khusus Superadmin pada data eksternal K/L                        |
 | **G. Model Builder Spasial**                                     |            |       |          |      |                       |                                                                  |
-| Akses Modul Model Builder                                        |     ☑      |   ☑   |    ☑     |  ☑   | Model Builder Spasial | Katalog modul analisis geospasial otomatis                       |
-| Eksekusi Model Analisis Kesesuaian Lahan                         |     ☑      |   ☑   |    ☑     |  ☑   | Model Builder Spasial | Analisis multi-kriteria kesesuaian lahan langsung di kanvas      |
-| Eksekusi Model Buffer Kawasan Lindung                            |     ☑      |   ☑   |    ☑     |  ☑   | Model Builder Spasial | Analisis zona penyangga radius sempadan/kawasan lindung          |
-| Eksekusi Model Overlay RTRW vs Bidang Tanah                      |     ☑      |   ☑   |    ☑     |  ☑   | Model Builder Spasial | Tumpang susun bidang tanah terhadap zonasi pola ruang            |
+| Akses Modul Model Builder (Menjalankan Model di QGIS)            |     ☑      |   ☑   |    ☑     |  ☑   | Model Builder Spasial | Menjalankan model analisis spasial otomatis pada kanvas QGIS     |
+| Eksekusi Model Analisis Kesesuaian Lahan                         |     ☑      |   ☑   |    ☑     |  ☑   | Model Builder Spasial | Menjalankan analisis multi-kriteria kesesuaian lahan langsung di kanvas QGIS |
+| Eksekusi Model Buffer Kawasan Lindung                            |     ☑      |   ☑   |    ☑     |  ☑   | Model Builder Spasial | Menjalankan analisis zona penyangga radius sempadan/kawasan lindung di QGIS |
+| Eksekusi Model Overlay RTRW vs Bidang Tanah                      |     ☑      |   ☑   |    ☑     |  ☑   | Model Builder Spasial | Menjalankan tumpang susun bidang tanah terhadap zonasi pola ruang di QGIS |
+| Membangun / Merancang Model Spasial Baru                         |     ☐      |   ☐   |    ☐     |  ☐   | Model Builder Spasial | Hanya dilakukan di Web Geoportal IGT-PR (QGIS hanya untuk eksekusi) |
 | **H. Alur Derivatif Bidang (Workflow 6-Langkah)**                |            |       |          |      |                       |                                                                  |
 | Akses Alur 6-Langkah Derivatif Bidang                            |     ☑      |   ☑   |    ☑     |  ☐   | Alur Derivatif Bidang | Alur tematik pembuatan derivatif berbasis bidang tanah           |
 | Langkah 1: Muat Baseline Bidang Tanah QGIS                       |     ☑      |   ☑   |    ☑     |  ☐   | Alur Derivatif Bidang | Memuat data persil dasar ke memori peta                          |

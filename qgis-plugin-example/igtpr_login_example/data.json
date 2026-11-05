@@ -747,7 +747,7 @@
         "satker": "Semua Satker",
         "color": "#1e40af",
         "bg": "#dbeafe",
-        "desc": "Akses penuh seluruh katalog, verifikasi, manajemen pengajuan, dan konfigurasi data."
+        "desc": "Akses penuh seluruh katalog, verifikasi topologi, persetujuan integrasi data, dan eksekusi Model Builder."
       },
       "admin": {
         "id": "admin",
@@ -756,7 +756,7 @@
         "satker": "Kantah Kab. Sleman",
         "color": "#6b21a8",
         "bg": "#ede9fe",
-        "desc": "Verifikasi & persetujuan pengajuan IGT Utama & Derivatif, serta Model Builder."
+        "desc": "Verifikasi topologi & persetujuan pengajuan IGT, unggah derivatif, serta eksekusi Model Builder."
       },
       "operator": {
         "id": "operator",
@@ -774,7 +774,7 @@
         "satker": null,
         "color": "#334155",
         "bg": "#f1f5f9",
-        "desc": "Akses katalog terintegrasi, unggah derivatif multiguna, dan pemodelan spasial."
+        "desc": "Akses katalog terintegrasi, unggah derivatif multiguna, dan eksekusi pemodelan spasial."
       }
     },
     "indonesia_regions": {
