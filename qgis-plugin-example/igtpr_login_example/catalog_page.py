@@ -709,29 +709,29 @@ class CatalogPage(QWidget):
 
         self.filter_toggle_btn = QPushButton('Filter', self.filter_card)
         self.filter_toggle_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.filter_toggle_btn.setIcon(QIcon(svg_pixmap(ICONS.get('filter', ICONS['layers']).format(color='#1f6fd6'), QSize(14, 14))))
+        self.filter_toggle_btn.setIcon(QIcon(svg_pixmap(ICONS.get('filter', ICONS['layers']).format(color='#ffffff'), QSize(14, 14))))
         self.filter_toggle_btn.setStyleSheet("""
             QPushButton {
-                background-color: #ffffff;
-                color: #1f6fd6;
-                border: 1.5px solid #cbd5e1;
+                background-color: #1f6fd6;
+                color: #ffffff;
+                border: 1.5px solid #1f6fd6;
                 border-radius: 8px;
                 padding: 6px 9px;
                 font-size: 11px;
                 font-weight: 700;
             }
             QPushButton:hover {
-                background-color: #eff6ff;
-                border-color: #93c5fd;
+                background-color: #1d4ed8;
             }
         """)
         self.filter_toggle_btn.clicked.connect(self._toggle_filter_dropdowns)
         filter_top_row.addWidget(self.filter_toggle_btn)
         self.fc_main_layout.addLayout(filter_top_row)
 
-        # Dropdowns container (Provinsi + Kabupaten) - Toggleable / Collapsible
+        # Dropdowns container (Provinsi + Kabupaten) - Terbuka default & dapat di-toggle
+        self._filter_dropdowns_open = True
         self.filter_dropdowns_container = QWidget(self.filter_card)
-        self.filter_dropdowns_container.setVisible(False)
+        self.filter_dropdowns_container.setVisible(True)
         self.filter_box_layout = QBoxLayout(QBoxLayout.Direction.TopToBottom, self.filter_dropdowns_container)
         self.filter_box_layout.setContentsMargins(0, 6, 0, 0)
         self.filter_box_layout.setSpacing(8)
@@ -1150,13 +1150,15 @@ class CatalogPage(QWidget):
         self.current_role = role_id
         self._render_page()
 
-    def _toggle_filter_dropdowns(self, force_open=None):
-        if force_open is not None:
-            self._filter_dropdowns_open = bool(force_open)
+    def _toggle_filter_dropdowns(self, *args, **kwargs):
+        if 'force_open' in kwargs and kwargs['force_open'] is not None:
+            self._filter_dropdowns_open = bool(kwargs['force_open'])
         else:
-            self._filter_dropdowns_open = not getattr(self, '_filter_dropdowns_open', False)
+            self._filter_dropdowns_open = not getattr(self, '_filter_dropdowns_open', True)
 
         self.filter_dropdowns_container.setVisible(self._filter_dropdowns_open)
+        has_filter = bool(self.get_active_admin_filter())
+        self.filter_toggle_btn.setText('Filter (1)' if has_filter else 'Filter')
         if self._filter_dropdowns_open:
             self.filter_toggle_btn.setStyleSheet("""
                 QPushButton {
@@ -1167,6 +1169,9 @@ class CatalogPage(QWidget):
                     padding: 6px 9px;
                     font-size: 11px;
                     font-weight: 700;
+                }
+                QPushButton:hover {
+                    background-color: #1d4ed8;
                 }
             """)
             self.filter_toggle_btn.setIcon(QIcon(svg_pixmap(ICONS.get('filter', ICONS['layers']).format(color='#ffffff'), QSize(14, 14))))
