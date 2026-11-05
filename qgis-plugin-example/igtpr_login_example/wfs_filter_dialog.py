@@ -15,7 +15,7 @@ from qgis.PyQt.QtWidgets import (
 
 from qgis.core import QgsProject, QgsWkbTypes
 
-from .data import INDONESIA_REGIONS
+from .data import INDONESIA_REGIONS, match_province_name
 
 
 # Referensi hirarki administrasi hingga tingkat Kecamatan dan Desa
@@ -92,11 +92,12 @@ class WfsFilterDialog(QDialog):
 
     loadWfsConfirmed = pyqtSignal(dict)
 
-    def __init__(self, dataset, sublayer=None, iface=None, parent=None):
+    def __init__(self, dataset, sublayer=None, iface=None, initial_admin_filter=None, parent=None):
         super().__init__(parent)
         self.dataset = dataset or {}
         self.sublayer = sublayer
         self.iface = iface
+        self.initial_admin_filter = initial_admin_filter
 
         d_name = self.dataset.get('name', 'Dataset IGT')
         if sublayer:
@@ -508,13 +509,7 @@ class WfsFilterDialog(QDialog):
                 completer.popup().setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
                 completer.popup().setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
-        # Kondisi awal: Provinsi belum dipilih (dropdown turunan terkunci)
-        self.cb_prov.setCurrentIndex(-1)
-        if self.cb_prov.lineEdit():
-            self.cb_prov.lineEdit().clear()
-
-        self.cb_prov.blockSignals(False)
-
+        # Sambungkan event listener perubahan
         self.cb_prov.currentIndexChanged.connect(self._sync_kabupaten)
         if completer:
             completer.activated.connect(lambda txt: self._sync_kabupaten())
@@ -524,22 +519,51 @@ class WfsFilterDialog(QDialog):
         self.cb_kab.currentIndexChanged.connect(self._sync_kecamatan)
         self.cb_kec.currentIndexChanged.connect(self._sync_desa)
 
-        self._sync_kabupaten()
+        # Cek apakah ada filter awal (dari katalog IGT atau metadata dataset)
+        init_prov = None
+        init_kab = None
+        if self.initial_admin_filter and isinstance(self.initial_admin_filter, dict):
+            init_prov = self.initial_admin_filter.get('provinsi')
+            init_kab = self.initial_admin_filter.get('kabupaten')
+        elif self.dataset.get('prov'):
+            init_prov = self.dataset.get('prov')
+            init_kab = self.dataset.get('kab')
+
+        # Jika ada filter provinsi yang valid, set nilainya dan sinkronkan kabupaten
+        matched_prov = match_province_name(init_prov, self.all_provs) if init_prov else None
+
+        if matched_prov:
+            self.rb_admin.setChecked(True)
+            self._update_cards_ui()
+            self.cb_prov.blockSignals(True)
+            self.cb_prov.setCurrentText(matched_prov)
+            if self.cb_prov.lineEdit():
+                self.cb_prov.lineEdit().setText(matched_prov)
+            self.cb_prov.blockSignals(False)
+
+            self._sync_kabupaten()
+
+            if init_kab and init_kab not in ('Semua Kabupaten / Kota', 'Semua Kab / Kota', '-- Pilih Provinsi Terlebih Dahulu --', ''):
+                self.cb_kab.blockSignals(True)
+                clean_k = init_kab.lower().replace('kab. ', '').replace('kota ', '').strip()
+                for idx in range(self.cb_kab.count()):
+                    txt = self.cb_kab.itemText(idx)
+                    if (txt.lower() == init_kab.lower() or
+                        init_kab.lower() in txt.lower() or
+                        clean_k in txt.lower()):
+                        self.cb_kab.setCurrentIndex(idx)
+                        break
+                self.cb_kab.blockSignals(False)
+                self._sync_kecamatan()
+        else:
+            self.cb_prov.setCurrentIndex(-1)
+            if self.cb_prov.lineEdit():
+                self.cb_prov.lineEdit().clear()
+            self._sync_kabupaten()
 
     def _sync_kabupaten(self):
         raw_prov = self.cb_prov.currentText().strip()
-        prov = None
-        # Cocokkan nama provinsi secara cerdas jika diketik sebagian oleh pengguna
-        if hasattr(self, 'all_provs') and raw_prov:
-            for p in self.all_provs:
-                if p.lower() == raw_prov.lower():
-                    prov = p
-                    break
-            else:
-                for p in self.all_provs:
-                    if raw_prov.lower() in p.lower():
-                        prov = p
-                        break
+        prov = match_province_name(raw_prov, getattr(self, 'all_provs', []))
 
         # Jika provinsi belum dipilih / kosong, kunci semua dropdown turunan
         if not prov:
@@ -692,17 +716,7 @@ class WfsFilterDialog(QDialog):
             mode = 'admin'
             aoi_sub = None
             raw_prov = self.cb_prov.currentText().strip()
-            prov = None
-            if hasattr(self, 'all_provs') and raw_prov:
-                for p in self.all_provs:
-                    if p.lower() == raw_prov.lower():
-                        prov = p
-                        break
-                else:
-                    for p in self.all_provs:
-                        if raw_prov.lower() in p.lower():
-                            prov = p
-                            break
+            prov = match_province_name(raw_prov, getattr(self, 'all_provs', []))
 
             if not prov:
                 if hasattr(self.iface, 'messageBar') and self.iface.messageBar():

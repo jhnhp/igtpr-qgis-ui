@@ -2428,6 +2428,14 @@ tr.igt-sublayer-row td {
   outline: none;
   border-color: #1f6fd6;
 }
+.dash-cat-select:disabled,
+.catalog-filter-drawer select:disabled,
+.field select:disabled {
+  background: #f1f5f9;
+  color: #94a3b8;
+  border-color: #e2e8f0;
+  cursor: not-allowed;
+}
 
 /* Count / Summary Info */
 .dash-cat-summary {

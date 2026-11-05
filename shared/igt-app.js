@@ -551,8 +551,49 @@ const IgtApp = (() => {
     selKab.addEventListener('change', syncKec);
     selKec.addEventListener('change', syncDesa);
 
-    // Initial populate
-    syncKab();
+    // Cek apakah ada filter wilayah aktif dari Katalog IGT atau metadata dataset
+    let activeProv = '';
+    let activeKab = '';
+    const dashProvEl = document.getElementById('dash-cat-prov-select');
+    const dashKabEl = document.getElementById('dash-cat-kab-select');
+    const catProvEl = document.getElementById('catalog-prov-filter');
+    const catKabEl = document.getElementById('catalog-kab-filter');
+
+    if (dashProvEl && dashProvEl.value && dashProvEl.value !== 'all') {
+      activeProv = dashProvEl.value;
+      if (dashKabEl && dashKabEl.value && dashKabEl.value !== 'all') {
+        activeKab = dashKabEl.value;
+      }
+    } else if (catProvEl && catProvEl.value && catProvEl.value !== 'all') {
+      activeProv = catProvEl.value;
+      if (catKabEl && catKabEl.value && catKabEl.value !== 'all') {
+        activeKab = catKabEl.value;
+      }
+    } else if (dataset && dataset.prov) {
+      activeProv = dataset.prov;
+      if (dataset.kab) activeKab = dataset.kab;
+    }
+
+    if (activeProv) {
+      const resolved = resolveProv(activeProv) || activeProv;
+      selProv.value = resolved;
+      syncKab();
+      if (activeKab) {
+        for (let i = 0; i < selKab.options.length; i++) {
+          const optVal = selKab.options[i].value.toLowerCase();
+          const target = activeKab.toLowerCase().replace('kab. ', '').replace('kota ', '').trim();
+          if (optVal.includes(target) || target.includes(optVal.replace('kab. ', '').replace('kota ', '').trim())) {
+            selKab.selectedIndex = i;
+            break;
+          }
+        }
+        syncKec();
+      }
+      radioAdmin.checked = true;
+      updateActiveMode('admin');
+    } else {
+      syncKab();
+    }
 
     // Submit handler
     const btnSubmit = modal.querySelector('#wfs-btn-submit');
@@ -578,6 +619,29 @@ const IgtApp = (() => {
         const k = selKab.value;
         const kc = selKec.value;
         const d = selDesa.value;
+
+        // Sinkronisasi pilihan filter WFS kembali ke Katalog agar tersambung dua arah
+        if (dashProvEl) {
+          dashProvEl.value = p;
+          dashProvEl.dispatchEvent(new Event('change'));
+          if (dashKabEl && k && k !== 'Semua Kabupaten / Kota') {
+            setTimeout(() => {
+              dashKabEl.value = k;
+              dashKabEl.dispatchEvent(new Event('change'));
+            }, 60);
+          }
+        }
+        if (catProvEl) {
+          catProvEl.value = p;
+          catProvEl.dispatchEvent(new Event('change'));
+          if (catKabEl && k && k !== 'Semua Kabupaten / Kota') {
+            setTimeout(() => {
+              catKabEl.value = k;
+              catKabEl.dispatchEvent(new Event('change'));
+            }, 60);
+          }
+        }
+
         let adminLabel = p;
         if (k && k !== 'Semua Kabupaten / Kota' && k !== 'Semua Kabupaten') {
           adminLabel += ` > ${k}`;
@@ -841,7 +905,7 @@ const IgtApp = (() => {
       '<div class="catalog-filter-drawer" id="catalog-filter-drawer" hidden>' +
       '<div class="field year-filter"><label for="catalog-year-filter">TAHUN</label><select id="catalog-year-filter">' + yearFilterOptions(datasets) + '</select></div>' +
       '<div class="field prov-filter"><label for="catalog-prov-filter">PROVINSI</label><select id="catalog-prov-filter">' + provFilterOptions(datasets) + '</select></div>' +
-      '<div class="field kab-filter"><label for="catalog-kab-filter">KABUPATEN / KOTA</label><select id="catalog-kab-filter">' + kabFilterOptions(datasets) + '</select></div>' +
+      '<div class="field kab-filter"><label for="catalog-kab-filter">KABUPATEN / KOTA</label><select id="catalog-kab-filter" disabled><option value="all">-- Pilih Provinsi Terlebih Dahulu --</option></select></div>' +
       '</div>' +
       '</div>' +
       '<section class="card"><div class="card-head"><div><h2>' + config.noun.charAt(0).toUpperCase() + config.noun.slice(1) + '</h2><p id="catalog-count"></p></div></div>' +
@@ -982,9 +1046,17 @@ const IgtApp = (() => {
     if ($('#catalog-prov-filter')) {
       $('#catalog-prov-filter').addEventListener('change', (e) => {
         const selP = e.target.value;
-        if ($('#catalog-kab-filter')) {
-          $('#catalog-kab-filter').innerHTML = kabFilterOptions(datasets, selP);
-          $('#catalog-kab-filter').value = 'all';
+        const kabEl = $('#catalog-kab-filter');
+        if (kabEl) {
+          if (!selP || selP === 'all') {
+            kabEl.disabled = true;
+            kabEl.innerHTML = '<option value="all">-- Pilih Provinsi Terlebih Dahulu --</option>';
+            kabEl.value = 'all';
+          } else {
+            kabEl.disabled = false;
+            kabEl.innerHTML = kabFilterOptions(datasets, selP);
+            kabEl.value = 'all';
+          }
         }
         render();
       });
@@ -1767,11 +1839,11 @@ const IgtApp = (() => {
             </div>
             <div class="field kab-filter">
               <label for="dash-cat-kab-select">KABUPATEN / KOTA</label>
-              <select class="dash-cat-select" id="dash-cat-kab-select" aria-label="Filter Kabupaten">
-                <option value="all" ${selectedKab === 'all' ? 'selected' : ''}>Semua Kab / Kota</option>
-                ${kabOptions.map((k) => `
+              <select class="dash-cat-select" id="dash-cat-kab-select" aria-label="Filter Kabupaten" ${selectedProv === 'all' ? 'disabled' : ''}>
+                <option value="all" ${selectedKab === 'all' ? 'selected' : ''}>${selectedProv === 'all' ? '-- Pilih Provinsi Terlebih Dahulu --' : 'Semua Kabupaten / Kota'}</option>
+                ${selectedProv !== 'all' ? kabOptions.map((k) => `
                   <option value="${k.replace(/"/g, '&quot;')}" ${selectedKab === k ? 'selected' : ''}>${k}</option>
-                `).join('')}
+                `).join('') : ''}
               </select>
             </div>
           </div>
@@ -1921,9 +1993,13 @@ const IgtApp = (() => {
       if (provSelect) {
         provSelect.addEventListener('change', (e) => {
           selectedProv = e.target.value;
-          const validKabs = getKabOptions(selectedProv);
-          if (!validKabs.includes(selectedKab)) {
+          if (selectedProv === 'all') {
             selectedKab = 'all';
+          } else {
+            const validKabs = getKabOptions(selectedProv);
+            if (!validKabs.includes(selectedKab)) {
+              selectedKab = 'all';
+            }
           }
           currentPage = 1;
           render();

@@ -18,12 +18,12 @@ import math
 from qgis.PyQt.QtCore import QSize, Qt, pyqtSignal
 from qgis.PyQt.QtGui import QColor, QCursor, QFont, QIcon
 from qgis.PyQt.QtWidgets import (
-    QBoxLayout, QComboBox, QFrame, QHBoxLayout, QLabel, QLineEdit,
+    QBoxLayout, QComboBox, QCompleter, QFrame, QHBoxLayout, QLabel, QLineEdit,
     QPushButton, QScrollArea, QSizePolicy, QVBoxLayout, QWidget,
 )
 
 from .assets import ICONS
-from .data import CATEGORIES, DATASETS, INDONESIA_REGIONS, can_access_wfs
+from .data import CATEGORIES, DATASETS, INDONESIA_REGIONS, can_access_wfs, match_province_name
 from .login_page import svg_pixmap
 from .ui_kit import FlowLayout, icon_badge
 from .igt_detail_dialog import IgtDetailDialog
@@ -482,6 +482,56 @@ class CatalogPage(QWidget):
             QComboBox:focus {
                 border-color: #1f6fd6;
             }
+            QComboBox:disabled {
+                background: #f1f5f9;
+                color: #94a3b8;
+                border: 1.5px solid #e2e8f0;
+            }
+            QComboBox QLineEdit {
+                border: none;
+                background: transparent;
+                color: #0f294d;
+                font-weight: 600;
+                font-size: 11.5px;
+                padding: 0;
+            }
+            QComboBox QAbstractItemView {
+                background-color: #ffffff;
+                color: #0f294d;
+                border: 1.5px solid #cbd5e1;
+                border-radius: 8px;
+                selection-background-color: #eff6ff;
+                selection-color: #1d4ed8;
+                outline: none;
+                padding: 4px;
+                max-height: 200px;
+            }
+            QComboBox QAbstractItemView::item {
+                min-height: 26px;
+                padding: 4px 8px;
+                border-radius: 4px;
+            }
+            QComboBox QAbstractItemView::item:hover {
+                background-color: #f1f5f9;
+            }
+            QScrollBar:vertical {
+                border: none;
+                background: #f1f5f9;
+                width: 8px;
+                border-radius: 4px;
+                margin: 2px 2px 2px 2px;
+            }
+            QScrollBar::handle:vertical {
+                background: #cbd5e1;
+                border-radius: 4px;
+                min-height: 24px;
+            }
+            QScrollBar::handle:vertical:hover {
+                background: #94a3b8;
+            }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                height: 0px;
+            }
             QScrollArea#catalogScroll {
                 background: transparent;
                 border: none;
@@ -675,6 +725,28 @@ class CatalogPage(QWidget):
         prov_box_layout.addWidget(self.prov_lbl)
         self.prov_combo = QComboBox(prov_box)
         self.prov_combo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.prov_combo.setEditable(True)
+        self.prov_combo.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
+        if self.prov_combo.lineEdit():
+            self.prov_combo.lineEdit().setPlaceholderText("Pilih atau ketik provinsi...")
+            self.prov_combo.lineEdit().textChanged.connect(self._on_prov_text_changed)
+
+        completer = self.prov_combo.completer()
+        if completer:
+            completer.setFilterMode(Qt.MatchFlag.MatchContains)
+            completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+            completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
+            if completer.popup():
+                completer.popup().setMaximumHeight(200)
+                completer.popup().setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+                completer.popup().setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+            completer.activated.connect(lambda txt: self._on_prov_changed())
+
+        if self.prov_combo.view():
+            self.prov_combo.view().setMaximumHeight(200)
+            self.prov_combo.view().setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+            self.prov_combo.view().setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+
         self.prov_combo.currentIndexChanged.connect(self._on_prov_changed)
         prov_box_layout.addWidget(self.prov_combo)
         self.filter_box_layout.addWidget(prov_box, 1)
@@ -689,6 +761,10 @@ class CatalogPage(QWidget):
         kab_box_layout.addWidget(self.kab_lbl)
         self.kab_combo = QComboBox(kab_box)
         self.kab_combo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        if self.kab_combo.view():
+            self.kab_combo.view().setMaximumHeight(200)
+            self.kab_combo.view().setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+            self.kab_combo.view().setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.kab_combo.currentIndexChanged.connect(self._on_kab_changed)
         kab_box_layout.addWidget(self.kab_combo)
         self.filter_box_layout.addWidget(kab_box, 1)
@@ -930,29 +1006,78 @@ class CatalogPage(QWidget):
         self.prov_combo.blockSignals(True)
         curr = self.prov_combo.currentText()
         self.prov_combo.clear()
-        items = ['Semua Provinsi'] + sorted(list(INDONESIA_REGIONS.keys()))
+        self.all_provs = sorted(list(INDONESIA_REGIONS.keys()))
+        items = ['Semua Provinsi'] + self.all_provs
         self.prov_combo.addItems(items)
-        if curr in items:
+
+        # Update Completer
+        completer = self.prov_combo.completer()
+        if completer:
+            completer.setFilterMode(Qt.MatchFlag.MatchContains)
+            completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+            completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
+            if completer.popup():
+                completer.popup().setMaximumHeight(200)
+                completer.popup().setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+                completer.popup().setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+
+        if curr in items and curr != 'Semua Provinsi':
             self.prov_combo.setCurrentText(curr)
+            if self.prov_combo.lineEdit():
+                self.prov_combo.lineEdit().setText(curr)
         else:
             self.prov_combo.setCurrentIndex(0)
+            if self.prov_combo.lineEdit():
+                self.prov_combo.lineEdit().clear()
+                self.prov_combo.lineEdit().setPlaceholderText("Pilih atau ketik provinsi...")
+
         self.prov_combo.blockSignals(False)
+        self._populate_kab_combo()
+
+    def _get_selected_prov(self):
+        """Mendapatkan nama provinsi yang valid jika dipilih atau diketik."""
+        raw = self.prov_combo.currentText().strip()
+        all_provs = getattr(self, 'all_provs', sorted(list(INDONESIA_REGIONS.keys())))
+        return match_province_name(raw, all_provs)
+
+    def _get_selected_kab(self):
+        """Mendapatkan nama kabupaten/kota yang valid jika dipilih."""
+        if not self.kab_combo.isEnabled():
+            return None
+        raw = self.kab_combo.currentText().strip()
+        if not raw or raw in ('Semua Kabupaten / Kota', 'Semua Kab / Kota', '-- Pilih Provinsi Terlebih Dahulu --'):
+            return None
+        return raw
 
     def _populate_kab_combo(self):
+        prov = self._get_selected_prov()
         self.kab_combo.blockSignals(True)
         curr = self.kab_combo.currentText()
         self.kab_combo.clear()
-        sel_prov = self.prov_combo.currentText()
-        if sel_prov in INDONESIA_REGIONS:
-            kabs = INDONESIA_REGIONS[sel_prov]
-        else:
-            kabs = []
-        items = ['Semua Kab / Kota'] + kabs
-        self.kab_combo.addItems(items)
-        if curr in items:
-            self.kab_combo.setCurrentText(curr)
-        else:
+
+        if not prov:
+            self.kab_combo.addItem('-- Pilih Provinsi Terlebih Dahulu --')
             self.kab_combo.setCurrentIndex(0)
+            self.kab_combo.setEnabled(False)
+        else:
+            self.kab_combo.setEnabled(True)
+            kabs = INDONESIA_REGIONS.get(prov, [])
+            items = ['Semua Kabupaten / Kota'] + kabs
+            self.kab_combo.addItems(items)
+            matched_idx = -1
+            if curr in items:
+                matched_idx = items.index(curr)
+            elif curr:
+                clean_curr = curr.lower().replace('kab. ', '').replace('kota ', '').strip()
+                for i, it in enumerate(items):
+                    if clean_curr in it.lower():
+                        matched_idx = i
+                        break
+            if matched_idx >= 0:
+                self.kab_combo.setCurrentIndex(matched_idx)
+            else:
+                self.kab_combo.setCurrentIndex(0)
+
         self.kab_combo.blockSignals(False)
 
     def set_year_filter(self, year_text):
@@ -998,6 +1123,9 @@ class CatalogPage(QWidget):
             """)
             self.filter_toggle_btn.setIcon(QIcon(svg_pixmap(ICONS.get('filter', ICONS['layers']).format(color='#1f6fd6'), QSize(14, 14))))
 
+    def _on_prov_text_changed(self, text):
+        self._on_prov_changed()
+
     def _on_prov_changed(self):
         self._populate_kab_combo()
         self.current_page = 1
@@ -1010,6 +1138,66 @@ class CatalogPage(QWidget):
     def _on_filter_changed(self):
         self.current_page = 1
         self._render_page()
+
+    def get_active_admin_filter(self):
+        """Mengambil pilihan filter wilayah aktif (provinsi & kabupaten) dari form filter katalog."""
+        prov = self._get_selected_prov()
+        if not prov:
+            return None
+        kab = self._get_selected_kab()
+        return {
+            'provinsi': prov,
+            'kabupaten': kab or 'Semua Kabupaten / Kota'
+        }
+
+    def set_admin_filter(self, prov_name, kab_name=None):
+        """Menyetel filter wilayah katalog secara terprogram (misal hasil dari dialog WFS)."""
+        if not prov_name or prov_name in ('Semua Provinsi', '-- Pilih Provinsi Terlebih Dahulu --', ''):
+            self.prov_combo.blockSignals(True)
+            self.prov_combo.setCurrentIndex(0)
+            if self.prov_combo.lineEdit():
+                self.prov_combo.lineEdit().clear()
+                self.prov_combo.lineEdit().setPlaceholderText("Pilih atau ketik provinsi...")
+            self.prov_combo.blockSignals(False)
+            self._populate_kab_combo()
+            self.current_page = 1
+            self._render_page()
+            return
+
+        # Pastikan drawer filter terbuka agar pengguna melihat filternya aktif
+        if not self.filter_dropdowns_container.isVisible():
+            self._toggle_filter_dropdowns()
+
+        all_provs = getattr(self, 'all_provs', sorted(list(INDONESIA_REGIONS.keys())))
+        matched_prov = match_province_name(prov_name, all_provs)
+
+        if matched_prov:
+            self.prov_combo.blockSignals(True)
+            idx = self.prov_combo.findText(matched_prov)
+            if idx >= 0:
+                self.prov_combo.setCurrentIndex(idx)
+            else:
+                self.prov_combo.setEditText(matched_prov)
+            if self.prov_combo.lineEdit():
+                self.prov_combo.lineEdit().setText(matched_prov)
+            self.prov_combo.blockSignals(False)
+
+            self._populate_kab_combo()
+
+            if kab_name and kab_name not in ('Semua Kabupaten / Kota', 'Semua Kab / Kota', '-- Pilih Provinsi Terlebih Dahulu --', ''):
+                self.kab_combo.blockSignals(True)
+                clean_k = kab_name.lower().replace('kab. ', '').replace('kota ', '').strip()
+                for i in range(self.kab_combo.count()):
+                    txt = self.kab_combo.itemText(i)
+                    if (txt.lower() == kab_name.lower() or
+                        kab_name.lower() in txt.lower() or
+                        clean_k in txt.lower()):
+                        self.kab_combo.setCurrentIndex(i)
+                        break
+                self.kab_combo.blockSignals(False)
+
+            self.current_page = 1
+            self._render_page()
 
     def set_category(self, cat_key):
         if cat_key not in CATEGORY_KEYS:
@@ -1066,8 +1254,8 @@ class CatalogPage(QWidget):
 
     def _get_filtered_records(self):
         query = self.search_input.text().strip().lower()
-        selected_prov = self.prov_combo.currentText()
-        selected_kab = self.kab_combo.currentText()
+        selected_prov = self._get_selected_prov()
+        selected_kab = self._get_selected_kab()
 
         records = self.get_category_datasets(self.current_category)
 
@@ -1081,7 +1269,7 @@ class CatalogPage(QWidget):
                     continue
 
             # 2. Filter Provinsi
-            if selected_prov != 'Semua Provinsi':
+            if selected_prov:
                 prov_haystack = ((d.get('prov') or '') + ' ' + (d.get('scope') or '')).lower()
                 p_lower = selected_prov.lower()
                 match_alias = (
@@ -1094,9 +1282,10 @@ class CatalogPage(QWidget):
                     continue
 
             # 3. Filter Kabupaten (mengikuti provinsi terpilih)
-            if selected_kab != 'Semua Kab / Kota':
+            if selected_kab:
                 kab_haystack = ((d.get('kab') or '') + ' ' + (d.get('scope') or '')).lower()
-                if selected_kab.lower() not in kab_haystack:
+                clean_kab = selected_kab.lower().replace('kab. ', '').replace('kota ', '').strip()
+                if clean_kab not in kab_haystack and selected_kab.lower() not in kab_haystack:
                     continue
 
             # 4. Filter Pencarian

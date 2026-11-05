@@ -382,3 +382,47 @@ def can_access_wfs(role_id, dataset):
     user_satker = role_cfg.get('satker') or 'Kantah Kab. Sleman'
     ds_satker = str(dataset.get('satker') or dataset.get('direktorat') or '').strip().lower()
     return 'sleman' in ds_satker or ds_satker == user_satker.lower()
+
+
+def match_province_name(target, prov_list):
+    """Mencocokkan nama provinsi dengan daftar provinsi menggunakan alias & substring."""
+    if not target:
+        return None
+    t = target.strip().lower()
+    if t in ('semua provinsi', '-- pilih provinsi terlebih dahulu --', ''):
+        return None
+
+    # 1. Exact match
+    for p in prov_list:
+        if p.lower() == t:
+            return p
+
+    # 2. Alias mapping untuk provinsi dengan variasi penulisan umum
+    aliases = {
+        'd.i. yogyakarta': ['daerah istimewa yogyakarta', 'di yogyakarta', 'yogyakarta'],
+        'daerah istimewa yogyakarta': ['d.i. yogyakarta', 'di yogyakarta', 'yogyakarta'],
+        'dki jakarta': ['daerah khusus ibukota jakarta', 'jakarta'],
+        'daerah khusus ibukota jakarta': ['dki jakarta', 'jakarta'],
+        'kepulauan bangka belitung': ['bangka belitung'],
+        'bangka belitung': ['kepulauan bangka belitung'],
+        'aceh': ['nanggroe aceh darussalam'],
+        'nanggroe aceh darussalam': ['aceh'],
+    }
+    for alt in aliases.get(t, []):
+        for p in prov_list:
+            if p.lower() == alt:
+                return p
+
+    # 3. Substring match
+    for p in prov_list:
+        pl = p.lower()
+        if t in pl or pl in t:
+            return p
+        if 'yogyakarta' in t and 'yogyakarta' in pl:
+            return p
+        if 'jakarta' in t and 'jakarta' in pl:
+            return p
+        if 'bangka' in t and 'bangka' in pl:
+            return p
+
+    return None

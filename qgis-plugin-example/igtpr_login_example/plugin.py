@@ -326,8 +326,18 @@ class IgtprLoginExample:
                 )
             return
 
+        # Ambil filter aktif dari Katalog IGT agar nyambung ke dialog WFS
+        active_admin_filter = None
+        if hasattr(self, 'dock') and self.dock and hasattr(self.dock, 'dashboard_page'):
+            dp = self.dock.dashboard_page
+            if hasattr(dp, 'catalog_widget') and hasattr(dp.catalog_widget, 'get_active_admin_filter'):
+                active_admin_filter = dp.catalog_widget.get_active_admin_filter()
+
         parent = self.dock.window() if self.dock else None
-        dlg = WfsFilterDialog(dataset, sublayer=sublayer, iface=self.iface, parent=parent)
+        dlg = WfsFilterDialog(
+            dataset, sublayer=sublayer, iface=self.iface,
+            initial_admin_filter=active_admin_filter, parent=parent
+        )
         dlg.loadWfsConfirmed.connect(self._handle_wfs_confirmed)
         dlg.exec_()
 
@@ -381,6 +391,16 @@ class IgtprLoginExample:
                 filter_mode=mode, filter_label=filter_label,
                 admin_filter=admin_filter, aoi_filter=aoi_filter
             )
+
+        # Sinkronkan kembali filter yang dipilih ke Katalog agar tersambung dua arah
+        if hasattr(self, 'dock') and self.dock and hasattr(self.dock, 'dashboard_page'):
+            dp = self.dock.dashboard_page
+            if hasattr(dp, 'catalog_widget') and hasattr(dp.catalog_widget, 'set_admin_filter'):
+                if mode == 'admin':
+                    dp.catalog_widget.set_admin_filter(
+                        params.get('provinsi', ''),
+                        params.get('kabupaten', '')
+                    )
 
     def _get_geojson_path(self):
         """Mendapatkan path ke berkas batas administrasi kabupaten Indonesia."""
