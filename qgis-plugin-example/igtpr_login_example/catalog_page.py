@@ -26,7 +26,7 @@ from qgis.PyQt.QtWidgets import (
 from .assets import ICONS
 from .data import CATEGORIES, DATASETS, INDONESIA_REGIONS, can_access_wfs, match_province_name
 from .login_page import svg_pixmap
-from .ui_kit import FlowLayout, icon_badge
+from .ui_kit import FlowLayout, SearchableComboBox, icon_badge
 from .igt_detail_dialog import IgtDetailDialog
 
 PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -771,28 +771,14 @@ class CatalogPage(QWidget):
         prov_head.addWidget(self.filter_reset_btn)
         prov_box_layout.addLayout(prov_head)
 
-        self.prov_combo = QComboBox(prov_box)
+        self.prov_combo = SearchableComboBox(prov_box)
         self.prov_combo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        self.prov_combo.setEditable(True)
-        self.prov_combo.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
         self.prov_combo.setMaxVisibleItems(8)
         if self.prov_combo.lineEdit():
             self.prov_combo.lineEdit().setPlaceholderText("Pilih atau ketik nama provinsi...")
             self.prov_combo.lineEdit().returnPressed.connect(self._on_prov_changed)
             self.prov_combo.lineEdit().editingFinished.connect(self._on_prov_changed)
             self.prov_combo.lineEdit().textChanged.connect(self._on_prov_text_changed)
-
-        completer = self.prov_combo.completer()
-        if completer:
-            completer.setFilterMode(Qt.MatchFlag.MatchContains)
-            completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
-            completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
-            completer.setMaxVisibleItems(8)
-            if completer.popup():
-                completer.popup().setMaximumHeight(200)
-                completer.popup().setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-                completer.popup().setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-            completer.activated.connect(lambda txt: self._on_prov_changed())
 
         if self.prov_combo.view():
             self.prov_combo.view().setMaximumHeight(200)
@@ -1067,16 +1053,8 @@ class CatalogPage(QWidget):
         self.prov_combo.addItems(items)
 
         # Update Completer
-        completer = self.prov_combo.completer()
-        if completer:
-            completer.setFilterMode(Qt.MatchFlag.MatchContains)
-            completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
-            completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
-            completer.setMaxVisibleItems(8)
-            if completer.popup():
-                completer.popup().setMaximumHeight(200)
-                completer.popup().setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-                completer.popup().setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        if hasattr(self.prov_combo, '_setup_completer'):
+            self.prov_combo._setup_completer()
 
         if curr in items and curr != 'Semua Provinsi':
             idx = self.prov_combo.findText(curr)

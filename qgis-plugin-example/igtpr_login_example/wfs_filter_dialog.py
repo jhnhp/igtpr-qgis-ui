@@ -17,6 +17,7 @@ from qgis.PyQt.QtWidgets import (
 from qgis.core import QgsProject, QgsWkbTypes
 
 from .data import INDONESIA_REGIONS, match_province_name
+from .ui_kit import SearchableComboBox
 
 PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
 CHEVRON_DOWN_SVG = os.path.join(PLUGIN_DIR, 'chevron_down_dark.svg').replace('\\', '/')
@@ -380,7 +381,7 @@ class WfsFilterDialog(QDialog):
         # 1. Provinsi
         l_prov = QLabel("PROVINSI", self.admin_grid_widget)
         l_prov.setStyleSheet("font-size: 10px; font-weight: 700; color: #475569;")
-        self.cb_prov = QComboBox(self.admin_grid_widget)
+        self.cb_prov = SearchableComboBox(self.admin_grid_widget)
         ag_layout.addWidget(l_prov, 0, 0)
         ag_layout.addWidget(self.cb_prov, 1, 0)
 
@@ -551,22 +552,14 @@ class WfsFilterDialog(QDialog):
         if self.cb_prov.lineEdit():
             self.cb_prov.lineEdit().setPlaceholderText("Pilih atau ketik nama provinsi...")
 
-        # Konfigurasi auto-completer agar mencocokkan teks di mana saja (contains substring match)
-        completer = self.cb_prov.completer()
-        if completer:
-            completer.setFilterMode(Qt.MatchFlag.MatchContains)
-            completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
-            completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
-            completer.setMaxVisibleItems(8)
-            if completer.popup():
-                completer.popup().setMaximumHeight(200)
-                completer.popup().setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-                completer.popup().setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        # Update Completer
+        if hasattr(self.cb_prov, '_setup_completer'):
+            self.cb_prov._setup_completer()
 
         # Sambungkan event listener perubahan
         self.cb_prov.currentIndexChanged.connect(self._sync_kabupaten)
-        if completer:
-            completer.activated.connect(lambda txt: self._sync_kabupaten())
+        if self.cb_prov.completer():
+            self.cb_prov.completer().activated.connect(lambda txt: self._sync_kabupaten())
         if self.cb_prov.lineEdit():
             self.cb_prov.lineEdit().returnPressed.connect(self._sync_kabupaten)
             self.cb_prov.lineEdit().editingFinished.connect(self._sync_kabupaten)

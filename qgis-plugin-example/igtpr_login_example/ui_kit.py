@@ -19,10 +19,10 @@ tanpa properti/objectName akan ikut memberi border dan padding ke semua label di
 
 import os
 
-from qgis.PyQt.QtCore import QPoint, QRect, QSize, Qt, pyqtSignal
+from qgis.PyQt.QtCore import QEvent, QPoint, QRect, QSize, Qt, pyqtSignal
 from qgis.PyQt.QtGui import QFontDatabase, QIcon, QPixmap
 from qgis.PyQt.QtWidgets import (
-    QApplication, QBoxLayout, QFrame, QGridLayout, QHBoxLayout, QLabel, QLayout, QPushButton,
+    QApplication, QBoxLayout, QComboBox, QCompleter, QFrame, QGridLayout, QHBoxLayout, QLabel, QLayout, QPushButton,
     QScrollArea, QSizePolicy, QVBoxLayout, QWidget,
 )
 
@@ -829,3 +829,103 @@ class KVRow(QWidget):
             lay.addStretch(1)
             lay.addWidget(value, 0, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
         self.value_widget = value
+
+
+class SearchableComboBox(QComboBox):
+    """QComboBox yang dapat diketik (searchable/completer) dan langsung memunculkan
+    seluruh daftar pilihan saat diklik, sebelum pengguna mengetik apapun."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setEditable(True)
+        self.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
+        self.setMaxVisibleItems(8)
+        self._setup_completer()
+        if self.lineEdit():
+            self.lineEdit().installEventFilter(self)
+            self.lineEdit().textChanged.connect(self._on_line_edit_text_changed)
+
+    def _setup_completer(self):
+        comp = self.completer()
+        if not comp:
+            comp = QCompleter(self.model(), self)
+            self.setCompleter(comp)
+        comp.setFilterMode(Qt.MatchFlag.MatchContains)
+        comp.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+        comp.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
+        comp.setMaxVisibleItems(8)
+        try:
+            comp.activated[str].disconnect(self._on_completer_activated)
+        except Exception:
+            pass
+        comp.activated[str].connect(self._on_completer_activated)
+
+        if comp.popup():
+            comp.popup().setMaximumHeight(220)
+            comp.popup().setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+            comp.popup().setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+            comp.popup().setStyleSheet("""
+                QListView {
+                    background-color: #ffffff;
+                    color: #1e293b;
+                    border: 1.5px solid #cbd5e1;
+                    border-radius: 8px;
+                    padding: 4px;
+                    font-size: 11px;
+                    outline: none;
+                }
+                QListView::item {
+                    padding: 6px 10px;
+                    border-radius: 4px;
+                    min-height: 18px;
+                }
+                QListView::item:hover, QListView::item:selected {
+                    background-color: #eff6ff;
+                    color: #1f6fd6;
+                    font-weight: 700;
+                }
+            """)
+
+    def _on_completer_activated(self, text):
+        idx = self.findText(text)
+        if idx >= 0:
+            self.setCurrentIndex(idx)
+
+    def _on_line_edit_text_changed(self, text):
+        if not text:
+            comp = self.completer()
+            if comp and (self.hasFocus() or (self.lineEdit() and self.lineEdit().hasFocus())):
+                comp.setCompletionPrefix('')
+                comp.complete()
+
+    def eventFilter(self, obj, event):
+        if obj == self.lineEdit():
+            if event.type() == QEvent.MouseButtonRelease:
+                comp = self.completer()
+                if comp and comp.popup() and comp.popup().isVisible():
+                    comp.popup().hide()
+                    return True
+                self.show_choices()
+                return True
+        return super().eventFilter(obj, event)
+
+    def mousePressEvent(self, event):
+        comp = self.completer()
+        if comp and comp.popup() and comp.popup().isVisible():
+            comp.popup().hide()
+            return
+        self.show_choices()
+
+    def showPopup(self):
+        self.show_choices()
+
+    def show_choices(self):
+        comp = self.completer()
+        if comp:
+            if self.lineEdit():
+                self.lineEdit().selectAll()
+            comp.setCompletionPrefix('')
+            comp.complete()
+        else:
+            super().showPopup()
+
