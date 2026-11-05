@@ -7,6 +7,7 @@ Mencegah beban unduhan data WFS nasional yang terlalu besar dengan memberikan op
 3. Load berdasarkan AOI (Pilih layer AOI yang ada di QGIS atau Gambar AOI)
 """
 
+import os
 from qgis.PyQt.QtCore import Qt, pyqtSignal
 from qgis.PyQt.QtWidgets import (
     QButtonGroup, QComboBox, QCompleter, QDialog, QFrame, QGridLayout, QHBoxLayout,
@@ -16,6 +17,9 @@ from qgis.PyQt.QtWidgets import (
 from qgis.core import QgsProject, QgsWkbTypes
 
 from .data import INDONESIA_REGIONS, match_province_name
+
+PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
+CHEVRON_DOWN_SVG = os.path.join(PLUGIN_DIR, 'chevron_down_dark.svg').replace('\\', '/')
 
 
 # Referensi hirarki administrasi hingga tingkat Kecamatan dan Desa
@@ -150,21 +154,19 @@ class WfsFilterDialog(QDialog):
             }
             QLabel {
                 font-family: "Segoe UI", Arial, sans-serif;
+                border: none;
+                background: transparent;
             }
-            QFrame.cardBox {
+            QFrame#cardAll, QFrame#cardAdmin, QFrame#cardAoi {
                 background-color: #ffffff;
                 border: 1.5px solid #e2e8f0;
                 border-radius: 10px;
-            }
-            QFrame.cardBoxActive {
-                background-color: #eff6ff;
-                border: 1.5px solid #2563eb;
             }
             QComboBox {
                 background: #ffffff;
                 border: 1.5px solid #cbd5e1;
                 border-radius: 7px;
-                padding: 6px 28px 6px 10px;
+                padding: 6px 30px 6px 10px;
                 font-size: 11.5px;
                 color: #0f294d;
                 font-weight: 600;
@@ -190,6 +192,12 @@ class WfsFilterDialog(QDialog):
                 subcontrol-position: center right;
                 width: 24px;
                 border: none;
+                background: transparent;
+            }
+            QComboBox::down-arrow {
+                image: url('%CHEVRON%');
+                width: 12px;
+                height: 12px;
             }
             QComboBox QAbstractItemView {
                 background-color: #ffffff;
@@ -201,7 +209,7 @@ class WfsFilterDialog(QDialog):
                 selection-background-color: #eff6ff;
                 selection-color: #2563eb;
                 outline: none;
-            }
+            }""".replace('%CHEVRON%', CHEVRON_DOWN_SVG) + """
             QComboBox QAbstractItemView::item {
                 min-height: 24px;
                 padding: 4px 8px;
@@ -326,6 +334,7 @@ class WfsFilterDialog(QDialog):
         # OPTION 1: LOAD SEMUA
         # =====================================================================
         self.card_all = QFrame(self)
+        self.card_all.setObjectName('cardAll')
         self.card_all.setProperty('class', 'cardBox')
         ca_layout = QVBoxLayout(self.card_all)
         ca_layout.setContentsMargins(14, 10, 14, 10)
@@ -346,6 +355,7 @@ class WfsFilterDialog(QDialog):
         # OPTION 2: BATAS ADMINISTRASI
         # =====================================================================
         self.card_admin = QFrame(self)
+        self.card_admin.setObjectName('cardAdmin')
         self.card_admin.setProperty('class', 'cardBox')
         cadm_layout = QVBoxLayout(self.card_admin)
         cadm_layout.setContentsMargins(14, 12, 14, 12)
@@ -402,6 +412,7 @@ class WfsFilterDialog(QDialog):
         # OPTION 3: AOI (AREA OF INTEREST)
         # =====================================================================
         self.card_aoi = QFrame(self)
+        self.card_aoi.setObjectName('cardAoi')
         self.card_aoi.setProperty('class', 'cardBox')
         caoi_layout = QVBoxLayout(self.card_aoi)
         caoi_layout.setContentsMargins(14, 12, 14, 12)
@@ -503,18 +514,18 @@ class WfsFilterDialog(QDialog):
         is_admin = self.rb_admin.isChecked()
         is_aoi = self.rb_aoi.isChecked()
 
-        self.card_all.setStyleSheet("QFrame { background-color: #eff6ff; border: 1.5px solid #2563eb; border-radius: 10px; }"
+        self.card_all.setStyleSheet("QFrame#cardAll { background-color: #eff6ff; border: 1.5px solid #2563eb; border-radius: 10px; }"
                                     if is_all else
-                                    "QFrame { background-color: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 10px; }")
+                                    "QFrame#cardAll { background-color: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 10px; }")
 
-        self.card_admin.setStyleSheet("QFrame { background-color: #eff6ff; border: 1.5px solid #2563eb; border-radius: 10px; }"
+        self.card_admin.setStyleSheet("QFrame#cardAdmin { background-color: #eff6ff; border: 1.5px solid #2563eb; border-radius: 10px; }"
                                       if is_admin else
-                                      "QFrame { background-color: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 10px; }")
+                                      "QFrame#cardAdmin { background-color: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 10px; }")
         self.admin_grid_widget.setVisible(is_admin)
 
-        self.card_aoi.setStyleSheet("QFrame { background-color: #eff6ff; border: 1.5px solid #2563eb; border-radius: 10px; }"
+        self.card_aoi.setStyleSheet("QFrame#cardAoi { background-color: #eff6ff; border: 1.5px solid #2563eb; border-radius: 10px; }"
                                     if is_aoi else
-                                    "QFrame { background-color: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 10px; }")
+                                    "QFrame#cardAoi { background-color: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 10px; }")
         self.aoi_sub_widget.setVisible(is_aoi)
 
     # -------------------------------------------------------------------------

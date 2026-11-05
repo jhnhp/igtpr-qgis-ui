@@ -15,6 +15,7 @@ Fitur:
 """
 
 import math
+import os
 from qgis.PyQt.QtCore import QSize, Qt, pyqtSignal
 from qgis.PyQt.QtGui import QColor, QCursor, QFont, QIcon
 from qgis.PyQt.QtWidgets import (
@@ -27,6 +28,9 @@ from .data import CATEGORIES, DATASETS, INDONESIA_REGIONS, can_access_wfs, match
 from .login_page import svg_pixmap
 from .ui_kit import FlowLayout, icon_badge
 from .igt_detail_dialog import IgtDetailDialog
+
+PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
+CHEVRON_DOWN_SVG = os.path.join(PLUGIN_DIR, 'chevron_down_dark.svg').replace('\\', '/')
 
 CATEGORY_KEYS = ['igt-pr', 'pertanahan', 'tata-ruang', 'derivatif', 'lainnya']
 PAGE_SIZE = 8
@@ -475,15 +479,17 @@ class CatalogPage(QWidget):
                 background-color: #ffffff;
                 border: 1.5px solid #cbd5e1;
                 border-radius: 8px;
-                padding: 5px 8px;
+                padding: 6px 30px 6px 10px;
                 font-size: 11.5px;
                 color: #0f294d;
+                font-weight: 600;
+                min-height: 22px;
             }
             QComboBox:focus {
                 border-color: #1f6fd6;
             }
             QComboBox:disabled {
-                background: #f1f5f9;
+                background: #f8fafc;
                 color: #94a3b8;
                 border: 1.5px solid #e2e8f0;
             }
@@ -494,6 +500,21 @@ class CatalogPage(QWidget):
                 font-weight: 600;
                 font-size: 11.5px;
                 padding: 0;
+            }
+            QComboBox::drop-down {
+                subcontrol-origin: padding;
+                subcontrol-position: center right;
+                width: 24px;
+                border: none;
+                background: transparent;
+            }
+            QComboBox::down-arrow {
+                image: url('%CHEVRON%');
+                width: 12px;
+                height: 12px;
+            }
+            QComboBox::down-arrow:disabled {
+                opacity: 0.35;
             }
             QComboBox QAbstractItemView {
                 background-color: #ffffff;
@@ -536,7 +557,7 @@ class CatalogPage(QWidget):
                 background: transparent;
                 border: none;
             }
-        """)
+        """.replace('%CHEVRON%', CHEVRON_DOWN_SVG))
 
         # Main Outer Layout
         main_layout = QVBoxLayout(self)
@@ -695,8 +716,8 @@ class CatalogPage(QWidget):
                 color: #1f6fd6;
                 border: 1.5px solid #cbd5e1;
                 border-radius: 8px;
-                padding: 6px 12px;
-                font-size: 11.5px;
+                padding: 6px 9px;
+                font-size: 11px;
                 font-weight: 700;
             }
             QPushButton:hover {
@@ -711,25 +732,51 @@ class CatalogPage(QWidget):
         # Dropdowns container (Provinsi + Kabupaten) - Toggleable / Collapsible
         self.filter_dropdowns_container = QWidget(self.filter_card)
         self.filter_dropdowns_container.setVisible(False)
-        self.filter_box_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight, self.filter_dropdowns_container)
-        self.filter_box_layout.setContentsMargins(0, 4, 0, 0)
+        self.filter_box_layout = QBoxLayout(QBoxLayout.Direction.TopToBottom, self.filter_dropdowns_container)
+        self.filter_box_layout.setContentsMargins(0, 6, 0, 0)
         self.filter_box_layout.setSpacing(8)
 
-        # Provinsi Filter
+        # Provinsi Filter (dengan header reset filter)
         prov_box = QWidget(self.filter_dropdowns_container)
         prov_box_layout = QVBoxLayout(prov_box)
         prov_box_layout.setContentsMargins(0, 0, 0, 0)
-        prov_box_layout.setSpacing(2)
+        prov_box_layout.setSpacing(3)
+
+        prov_head = QHBoxLayout()
+        prov_head.setContentsMargins(0, 0, 0, 0)
         self.prov_lbl = QLabel('PROVINSI', prov_box)
-        self.prov_lbl.setStyleSheet("color: #64748b; font-size: 9px; font-weight: 800; letter-spacing: 0.5px;")
-        prov_box_layout.addWidget(self.prov_lbl)
+        self.prov_lbl.setStyleSheet("color: #64748b; font-size: 9.5px; font-weight: 800; letter-spacing: 0.5px;")
+        prov_head.addWidget(self.prov_lbl)
+        prov_head.addStretch()
+
+        self.filter_reset_btn = QPushButton('✕ Reset Filter', prov_box)
+        self.filter_reset_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.filter_reset_btn.setStyleSheet("""
+            QPushButton {
+                background: transparent;
+                color: #ef4444;
+                border: none;
+                font-size: 10px;
+                font-weight: 700;
+                padding: 0 4px;
+            }
+            QPushButton:hover {
+                color: #b91c1c;
+                text-decoration: underline;
+            }
+        """)
+        self.filter_reset_btn.clicked.connect(self._reset_filters)
+        self.filter_reset_btn.setVisible(False)
+        prov_head.addWidget(self.filter_reset_btn)
+        prov_box_layout.addLayout(prov_head)
+
         self.prov_combo = QComboBox(prov_box)
         self.prov_combo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.prov_combo.setEditable(True)
         self.prov_combo.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
         self.prov_combo.setMaxVisibleItems(8)
         if self.prov_combo.lineEdit():
-            self.prov_combo.lineEdit().setPlaceholderText("Pilih atau ketik provinsi...")
+            self.prov_combo.lineEdit().setPlaceholderText("Pilih atau ketik nama provinsi...")
             self.prov_combo.lineEdit().returnPressed.connect(self._on_prov_changed)
             self.prov_combo.lineEdit().editingFinished.connect(self._on_prov_changed)
             self.prov_combo.lineEdit().textChanged.connect(self._on_prov_text_changed)
@@ -753,15 +800,15 @@ class CatalogPage(QWidget):
 
         self.prov_combo.currentIndexChanged.connect(self._on_prov_changed)
         prov_box_layout.addWidget(self.prov_combo)
-        self.filter_box_layout.addWidget(prov_box, 1)
+        self.filter_box_layout.addWidget(prov_box)
 
         # Kabupaten Filter
         kab_box = QWidget(self.filter_dropdowns_container)
         kab_box_layout = QVBoxLayout(kab_box)
         kab_box_layout.setContentsMargins(0, 0, 0, 0)
-        kab_box_layout.setSpacing(2)
+        kab_box_layout.setSpacing(3)
         self.kab_lbl = QLabel('KABUPATEN / KOTA', kab_box)
-        self.kab_lbl.setStyleSheet("color: #64748b; font-size: 9px; font-weight: 800; letter-spacing: 0.5px;")
+        self.kab_lbl.setStyleSheet("color: #64748b; font-size: 9.5px; font-weight: 800; letter-spacing: 0.5px;")
         kab_box_layout.addWidget(self.kab_lbl)
         self.kab_combo = QComboBox(kab_box)
         self.kab_combo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
@@ -772,7 +819,7 @@ class CatalogPage(QWidget):
             self.kab_combo.view().setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.kab_combo.currentIndexChanged.connect(self._on_kab_changed)
         kab_box_layout.addWidget(self.kab_combo)
-        self.filter_box_layout.addWidget(kab_box, 1)
+        self.filter_box_layout.addWidget(kab_box)
 
         self.fc_main_layout.addWidget(self.filter_dropdowns_container)
         target_layout.addWidget(self.filter_card)
@@ -928,11 +975,12 @@ class CatalogPage(QWidget):
     # ------------------------------------------------------------------ Responsivitas
     def apply_width(self, width):
         self._update_tab_labels(width)
-        is_narrow = width < 280
+        is_filter_narrow = width < 480
         if hasattr(self, 'filter_box_layout'):
             self.filter_box_layout.setDirection(
-                QBoxLayout.Direction.TopToBottom if is_narrow else QBoxLayout.Direction.LeftToRight
+                QBoxLayout.Direction.TopToBottom if is_filter_narrow else QBoxLayout.Direction.LeftToRight
             )
+        is_narrow = width < 280
         if hasattr(self, 'pag_main_layout'):
             self.pag_main_layout.setDirection(
                 QBoxLayout.Direction.TopToBottom if is_narrow else QBoxLayout.Direction.LeftToRight
@@ -947,7 +995,6 @@ class CatalogPage(QWidget):
                 item = self.list_layout.itemAt(i)
                 if item and item.widget() and hasattr(item.widget(), 'apply_width'):
                     item.widget().apply_width(width)
-        is_narrow = width < 280
         if getattr(self, '_last_is_narrow', None) != is_narrow:
             self._last_is_narrow = is_narrow
             if hasattr(self, '_last_total_pages'):
@@ -1117,8 +1164,8 @@ class CatalogPage(QWidget):
                     color: #ffffff;
                     border: 1.5px solid #1f6fd6;
                     border-radius: 8px;
-                    padding: 6px 12px;
-                    font-size: 11.5px;
+                    padding: 6px 9px;
+                    font-size: 11px;
                     font-weight: 700;
                 }
             """)
@@ -1130,8 +1177,8 @@ class CatalogPage(QWidget):
                     color: #1f6fd6;
                     border: 1.5px solid #cbd5e1;
                     border-radius: 8px;
-                    padding: 6px 12px;
-                    font-size: 11.5px;
+                    padding: 6px 9px;
+                    font-size: 11px;
                     font-weight: 700;
                 }
                 QPushButton:hover {
@@ -1157,6 +1204,10 @@ class CatalogPage(QWidget):
     def _on_filter_changed(self):
         self.current_page = 1
         self._render_page()
+
+    def _reset_filters(self):
+        """Mereset seluruh filter wilayah kembali ke kondisi awal."""
+        self.set_admin_filter('', '')
 
     def get_active_admin_filter(self):
         """Mengambil pilihan filter wilayah aktif (provinsi & kabupaten) dari form filter katalog."""
@@ -1357,6 +1408,13 @@ class CatalogPage(QWidget):
             )
         else:
             self.count_lbl.setText(f"Tidak ada dataset yang cocok · Kategori {cat_label}{year_suffix}")
+
+        # Update indikator tombol filter dan reset
+        has_filter = bool(self.get_active_admin_filter())
+        if hasattr(self, 'filter_reset_btn'):
+            self.filter_reset_btn.setVisible(has_filter)
+        if hasattr(self, 'filter_toggle_btn'):
+            self.filter_toggle_btn.setText('Filter (1)' if has_filter else 'Filter')
 
         # Render Kartu Dataset (8 data teratas untuk halaman aktif)
         if not page_items:
