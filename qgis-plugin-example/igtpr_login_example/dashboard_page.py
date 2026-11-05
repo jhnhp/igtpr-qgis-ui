@@ -130,6 +130,7 @@ class DashboardPage(ResponsivePage):
     openManagementRequested = pyqtSignal(str)    # 'igt-utama', 'derivatif', 'lainnya'
     openUploadRequested = pyqtSignal(str)        # kategori unggah
     openKustomDerivatifRequested = pyqtSignal()  # buka Derivatif Per Bidang
+    openLoadDerivatifRequested = pyqtSignal()    # muat berkas kustom tematik derivatif
     openModelBuilderRequested = pyqtSignal()
     logoutRequested = pyqtSignal()
     wmsRequested = pyqtSignal(dict, object)      # (dataset, sublayer or None)
@@ -206,16 +207,17 @@ class DashboardPage(ResponsivePage):
 
     def _build_workflow(self):
         """Katalog Unggah & Manajemen Data sesuai role pengguna."""
-        role = self.current_role
-        is_umum = role == 'umum'
+        base_role = str(self.current_role).replace('2', '').lower()
+        is_operator = base_role == 'operator'
+        is_umum = base_role == 'umum'
 
         upload_items = []
         # Hanya Operator yang memiliki hak akses mengunggah IGT Utama (Admin & Superadmin tidak mengunggah IGT Utama)
-        if role == 'operator':
+        if is_operator:
             upload_items.append(('upload:pertanahan', 'database', 'Unggah IGT Utama', '#1f6fd6'))
         upload_items.append(('upload:derivatif', 'layers', 'Unggah IGT Derivatif Multiguna', '#1f6fd6'))
-        if not is_umum:
-            upload_items.append(('kustom-derivatif', 'gear', 'Kustom Tematik Derivatif', '#1f6fd6'))
+        upload_items.append(('kustom-derivatif', 'gear', 'Kustom Tematik Derivatif', '#1f6fd6'))
+        upload_items.append(('load-derivatif', 'cloud-upload', 'Muat Kustom Tematik Derivatif', '#1f6fd6'))
 
         manage_items = []
         if not is_umum:
@@ -230,7 +232,7 @@ class DashboardPage(ResponsivePage):
                          'Kelola proses, revisi, dan status data geospasial per kategori IGT.', manage_items,
                          'hubGreen', [(0, 1)], False)
         upload.itemClicked.connect(self._on_workflow_item)
-        upload.headClicked.connect(lambda: self._on_workflow_item('upload:pertanahan' if role == 'operator' else 'upload:derivatif'))
+        upload.headClicked.connect(lambda: self._on_workflow_item('upload:pertanahan' if is_operator else 'upload:derivatif'))
         manage.itemClicked.connect(self._on_workflow_item)
         self.workflow.add(upload)
         self.workflow.add(manage)
@@ -239,6 +241,8 @@ class DashboardPage(ResponsivePage):
     def _on_workflow_item(self, key):
         if key == 'kustom-derivatif':
             self.openKustomDerivatifRequested.emit()
+        elif key == 'load-derivatif':
+            self.openLoadDerivatifRequested.emit()
         elif key == 'model':
             self.openModelBuilderRequested.emit()
         elif key.startswith('upload:'):

@@ -29,7 +29,7 @@ from .assets import ICONS, Q_ICON
 from .catalog_page import CatalogPage
 from .dashboard_page import DashboardPage
 from .data import CATEGORIES, DATASETS, ROLES, SUBMISSIONS, can_access_wfs
-from .derivatif_dialog import DerivatifBidangDialog
+from .derivatif_dialog import DerivatifBidangDialog, LoadDerivatifDialog
 from .login_page import LoginPage, svg_pixmap
 from .management_page import ManagementPage
 from .model_builder_page import ModelBuilderPage
@@ -129,6 +129,7 @@ class IgtprDockWidget(QDockWidget):
         self.dashboard_page.openManagementRequested.connect(self.show_management)
         self.dashboard_page.openUploadRequested.connect(self.show_upload)
         self.dashboard_page.openKustomDerivatifRequested.connect(self.show_kustom_derivatif)
+        self.dashboard_page.openLoadDerivatifRequested.connect(self.show_load_derivatif)
         self.dashboard_page.openModelBuilderRequested.connect(self.show_model_builder)
         self.dashboard_page.logoutRequested.connect(self.show_login)
 
@@ -178,6 +179,12 @@ class IgtprDockWidget(QDockWidget):
         main_win = self.window()
         dlg = DerivatifBidangDialog(iface=self.iface, parent=main_win)
         dlg.derivatifSaved.connect(self.upload_page.uploadSubmitted.emit)
+        dlg.exec_()
+
+    def show_load_derivatif(self):
+        # Menampilkan dialog Muat Kustom Tematik Derivatif ke kanvas QGIS
+        main_win = self.window()
+        dlg = LoadDerivatifDialog(iface=self.iface, parent=main_win)
         dlg.exec_()
 
     def show_model_builder(self):

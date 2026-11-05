@@ -378,6 +378,9 @@ def can_access_wfs(role_id, dataset):
         return True
     if r == 'umum':
         return False
+    # Layer IGT Derivatif Multiguna terintegrasi dapat diakses WFS oleh Admin dan Operator
+    if dataset.get('category') == 'derivatif':
+        return True
     role_cfg = ROLES.get(r, {})
     user_satker = role_cfg.get('satker') or 'Kantah Kab. Sleman'
     ds_satker = str(dataset.get('satker') or dataset.get('direktorat') or '').strip().lower()

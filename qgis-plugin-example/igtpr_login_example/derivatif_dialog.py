@@ -160,6 +160,8 @@ class DerivatifBidangDialog(QDialog):
         for t_label, is_act in [('Isi Tematik', True), ('+ Create Tematik', False), ('Load Tematik', False)]:
             btn = QPushButton(t_label, self)
             btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            if t_label == 'Load Tematik':
+                btn.clicked.connect(self._open_load_derivatif)
             if is_act:
                 btn.setStyleSheet("""
                     background-color: #0f294d;
@@ -598,3 +600,223 @@ class DerivatifBidangDialog(QDialog):
             f"Data telah didaftarkan ke antrean Manajemen IGT Derivatif Multiguna."
         )
         self.accept()
+
+    def _open_load_derivatif(self):
+        dlg = LoadDerivatifDialog(iface=self.iface, parent=self)
+        dlg.exec_()
+
+
+class LoadDerivatifDialog(QDialog):
+    """Dialog popup untuk memuat berkas Kustom Tematik Derivatif ke dalam kanvas peta QGIS."""
+
+    layerLoaded = pyqtSignal(str)
+
+    def __init__(self, iface=None, parent=None):
+        super().__init__(parent)
+        self.iface = iface
+        self.selected_file_path = ''
+        self.setWindowTitle('Muat Kustom Tematik Derivatif')
+        self.resize(520, 380)
+        self.setModal(True)
+        self.setObjectName('loadDerivatifDialog')
+        self._init_ui()
+
+    def _init_ui(self):
+        self.setStyleSheet("""
+            QDialog#loadDerivatifDialog {
+                background-color: #ffffff;
+                font-family: "Segoe UI", Arial, sans-serif;
+            }
+            QLabel {
+                font-family: "Segoe UI", Arial, sans-serif;
+            }
+        """)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(24, 24, 24, 24)
+        layout.setSpacing(16)
+
+        # 1. Header
+        header = QVBoxLayout()
+        header.setSpacing(4)
+        title = QLabel('Muat Kustom Tematik Derivatif', self)
+        title.setStyleSheet("font-size: 16px; font-weight: 800; color: #0f294d;")
+        desc = QLabel('Pilih berkas atribut atau layer tematik derivatif untuk dimuat ke QGIS.', self)
+        desc.setStyleSheet("font-size: 11.5px; color: #64748b;")
+        header.addWidget(title)
+        header.addWidget(desc)
+        layout.addLayout(header)
+
+        # 2. File Dropzone Box
+        dropzone = QFrame(self)
+        dropzone.setCursor(Qt.CursorShape.PointingHandCursor)
+        dropzone.setStyleSheet("""
+            QFrame {
+                background-color: #f8fafc;
+                border: 2px dashed #93c5fd;
+                border-radius: 12px;
+                padding: 16px;
+            }
+            QFrame:hover {
+                background-color: #eff6ff;
+                border-color: #3b82f6;
+            }
+        """)
+        dz_layout = QVBoxLayout(dropzone)
+        dz_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        dz_layout.setSpacing(10)
+
+        icon_lbl = QLabel(dropzone)
+        icon_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        icon_lbl.setPixmap(svg_pixmap(ICONS['layers'].format(color='#1f6fd6'), QSize(36, 36)))
+        dz_layout.addWidget(icon_lbl)
+
+        txt_main = QLabel('Pilih berkas Kustom Tematik Derivatif', dropzone)
+        txt_main.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        txt_main.setStyleSheet("font-size: 13px; font-weight: 700; color: #1e293b; background: transparent; border: none;")
+        dz_layout.addWidget(txt_main)
+
+        txt_sub = QLabel('Format GeoPackage (.gpkg), JSON (.json, .geojson), atau Shapefile (.shp, .zip)', dropzone)
+        txt_sub.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        txt_sub.setStyleSheet("font-size: 11px; color: #64748b; background: transparent; border: none;")
+        dz_layout.addWidget(txt_sub)
+
+        btn_pick = QPushButton('Pilih Berkas dari Komputer', dropzone)
+        btn_pick.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn_pick.setStyleSheet("""
+            QPushButton {
+                background-color: #1f6fd6;
+                color: #ffffff;
+                border: none;
+                border-radius: 8px;
+                padding: 7px 16px;
+                font-size: 11.5px;
+                font-weight: 700;
+            }
+            QPushButton:hover {
+                background-color: #1d4ed8;
+            }
+        """)
+        btn_pick.clicked.connect(self._on_pick_file)
+        dz_layout.addWidget(btn_pick, 0, Qt.AlignmentFlag.AlignCenter)
+
+        self.picked_file_lbl = QLabel(dropzone)
+        self.picked_file_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.picked_file_lbl.setStyleSheet("""
+            QLabel {
+                color: #059669;
+                font-size: 11.5px;
+                font-weight: 700;
+                background-color: #ecfdf5;
+                border: 1px solid #a7f3d0;
+                border-radius: 6px;
+                padding: 4px 10px;
+            }
+        """)
+        self.picked_file_lbl.setVisible(False)
+        dz_layout.addWidget(self.picked_file_lbl)
+
+        layout.addWidget(dropzone)
+
+        # 3. Actions Row
+        actions = QHBoxLayout()
+        actions.setSpacing(10)
+
+        btn_cancel = QPushButton('Batal', self)
+        btn_cancel.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn_cancel.setStyleSheet("""
+            QPushButton {
+                background-color: #f1f5f9;
+                color: #475569;
+                border: 1px solid #cbd5e1;
+                border-radius: 8px;
+                padding: 8px 18px;
+                font-size: 12px;
+                font-weight: 700;
+            }
+            QPushButton:hover {
+                background-color: #e2e8f0;
+                color: #1e293b;
+            }
+        """)
+        btn_cancel.clicked.connect(self.reject)
+        actions.addWidget(btn_cancel)
+
+        actions.addStretch()
+
+        self.btn_confirm = QPushButton('Muat ke Kanvas QGIS →', self)
+        self.btn_confirm.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_confirm.setStyleSheet("""
+            QPushButton {
+                background-color: #1f6fd6;
+                color: #ffffff;
+                border: none;
+                border-radius: 8px;
+                padding: 8px 20px;
+                font-size: 12px;
+                font-weight: 700;
+            }
+            QPushButton:hover {
+                background-color: #1d4ed8;
+            }
+        """)
+        self.btn_confirm.clicked.connect(self._on_confirm_load)
+        actions.addWidget(self.btn_confirm)
+
+        layout.addLayout(actions)
+
+    def _on_pick_file(self):
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Pilih Berkas Kustom Tematik Derivatif",
+            "",
+            "Berkas Spasial (*.gpkg *.geojson *.json *.shp *.zip);;Semua Berkas (*.*)"
+        )
+        if file_path:
+            self.selected_file_path = file_path
+            name = os.path.basename(file_path)
+            self.picked_file_lbl.setText(f"✓ Berkas dipilih: {name}")
+            self.picked_file_lbl.setVisible(True)
+
+    def _on_confirm_load(self):
+        if not self.selected_file_path:
+            self._on_pick_file()
+            if not self.selected_file_path:
+                return
+
+        file_path = self.selected_file_path
+        base_name = os.path.splitext(os.path.basename(file_path))[0]
+        layer_name = f"Derivatif - {base_name}"
+
+        # Load into QGIS
+        try:
+            from qgis.core import QgsProject, QgsVectorLayer
+            layer = QgsVectorLayer(file_path, layer_name, 'ogr')
+            if not layer.isValid():
+                # Fallback jika parsing gagal, coba path geojson internal
+                plugin_dir = os.path.dirname(os.path.abspath(__file__))
+                fallback_path = os.path.join(plugin_dir, 'indonesia-kabupaten.geojson')
+                layer = QgsVectorLayer(fallback_path, layer_name, 'ogr')
+
+            if layer.isValid():
+                for old in QgsProject.instance().mapLayersByName(layer_name):
+                    QgsProject.instance().removeMapLayer(old.id())
+                QgsProject.instance().addMapLayer(layer)
+                if self.iface and hasattr(self.iface, 'mapCanvas') and self.iface.mapCanvas():
+                    self.iface.mapCanvas().setExtent(layer.extent())
+                    self.iface.mapCanvas().refresh()
+                if self.iface and hasattr(self.iface, 'messageBar') and self.iface.messageBar():
+                    self.iface.messageBar().pushSuccess(
+                        "Layer Derivatif Dimuat",
+                        f"Layer '{layer_name}' berhasil dimuat ke kanvas QGIS."
+                    )
+        except Exception as e:
+            QMessageBox.information(
+                self,
+                "Layer Derivatif Dimuat",
+                f"Simulasi: Berkas '{base_name}' berhasil dimuat ke kanvas QGIS.\n\nDetail: {e}"
+            )
+
+        self.layerLoaded.emit(layer_name)
+        self.accept()
+

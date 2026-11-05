@@ -487,6 +487,19 @@
       },
       {
         "category": "derivatif",
+        "id": "DRV-2026-007",
+        "name": "Derivatif Potensi Pajak PBB-P2 (Bidang)",
+        "direktorat": "Direktorat Survei Dan Pemetaan Tematik",
+        "satker": "Kantah Kab. Sleman",
+        "scope": "Kab. Sleman",
+        "prov": "D.I. Yogyakarta",
+        "kab": "Kab. Sleman",
+        "date": "15 Okt 2026",
+        "updated": "16 Okt 2026",
+        "status": "Disetujui"
+      },
+      {
+        "category": "derivatif",
         "id": "DRV-2026-005",
         "name": "Derivatif Bidang Wilayah B",
         "direktorat": "Direktorat Survei Dan Pemetaan Tematik",
