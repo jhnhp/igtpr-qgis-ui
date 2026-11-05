@@ -1179,6 +1179,57 @@ const IgtApp = (() => {
 
   const LEGACY = '../../../legacy/';
 
+  function uploadDerivatifPanel(role) {
+    const isDirect = role === 'admin';
+    return (
+      `<div class="upload-modal-v2">` +
+      `<div class="notice" style="background:#f0fdf4;border-color:#bbf7d0;color:#166534;margin-bottom:12px">` +
+      `<strong>Formulir Upload Data Derivatif</strong>Pilih target layer derivatif dari CMS Geoportal, tentukan layer SHP di QGIS, terapkan gaya SLD, dan kirim pengajuan data.` +
+      `</div>` +
+      `<div class="form-section">` +
+      `<h3>1. Layer Derivatif (*)</h3>` +
+      `<div class="field"><label for="u-der-layer">PILIH LAYER DERIVATIF (CMS GEOPORTAL)</label>` +
+      `<select id="u-der-layer" style="font-weight:700">` +
+      `<option value="kumuh" selected>Kawasan Kumuh Bidang (Perkim) · Ditjen SPPR</option>` +
+      `<option value="kritis">Lahan Kritis Bidang (KLHK) · Ditjen Tata Ruang</option>` +
+      `<option value="gempa">Zona Kerentanan Sesar &amp; Gempa (BNPB) · Kantah Sleman</option>` +
+      `<option value="sengketa">Potensi Sengketa Tanah · Kantah Sleman</option>` +
+      `</select></div>` +
+      `<div style="font-size:11.5px;color:#475569;background:#f8fafc;padding:6px 10px;border-radius:6px;border:1px solid #e2e8f0;margin-top:6px">` +
+      `Kategori: IGT Derivatif Multiguna | Format Standar: Polygon | Tipe Data: Analisis Tematik` +
+      `</div></div>` +
+      `<div class="form-section">` +
+      `<h3>2. File SHP (Pilih Layer Aktif di QGIS / Berkas Spasial) (*)</h3>` +
+      `<div class="field"><label for="u-der-qgis-layer">LAYER SPASIAL QGIS / BERKAS</label>` +
+      `<select id="u-der-qgis-layer" style="font-weight:700">` +
+      `<option selected>derivatif_kumuh_sleman_2026.gpkg (Polygon, EPSG:3857)</option>` +
+      `<option>kawasan_prioritas_perkim.shp (Polygon, EPSG:3857)</option>` +
+      `<option>hasil_analisis_spasial_derivatif.geojson (Polygon, EPSG:3857)</option>` +
+      `</select></div>` +
+      `<div style="font-size:11.5px;color:#047857;background:#ecfdf5;padding:6px 10px;border-radius:6px;border:1px solid #a7f3d0;margin-top:6px">` +
+      `✓ Layer terpilih valid. Tipe Geometri: Polygon, Sistem Koordinat: EPSG:3857 (WGS 84 / Pseudo-Mercator).` +
+      `</div></div>` +
+      `<div class="form-section">` +
+      `<h3>3. SLD Style (*)</h3>` +
+      `<div style="display:flex;align-items:center;gap:10px">` +
+      `<select id="u-der-sld" style="flex:1">` +
+      `<option selected>sld_kawasan_kumuh_standard.sld (Gaya Bawaan Geoportal)</option>` +
+      `<option>sld_kategori_warna_gradasi.sld</option>` +
+      `</select>` +
+      `<button type="button" class="btn btn-soft btn-sm" onclick="alert('⚡ SLD berhasil diterapkan ke layer peta QGIS.')" style="color:#059669;border-color:#10b981;font-weight:700">⚡ Terapkan SLD</button>` +
+      `</div></div>` +
+      `<div class="form-section">` +
+      `<h3>4. Keterangan Pengajuan (*)</h3>` +
+      `<div class="field"><label for="u-der-keterangan">CATATAN / DESKRIPSI PENGAJUAN (WAJIB)</label>` +
+      `<textarea id="u-der-keterangan" rows="3" placeholder="Isi keterangan pengajuan data derivatif (wajib)..." style="width:100%;padding:8px;font-size:12px;border:1px solid #cbd5e1;border-radius:6px">Pengajuan hasil analisis spasial tematik bidang derivatif berbasis baseline WMS ATR/BPN.</textarea></div>` +
+      `</div>` +
+      `<div class="toolbar" style="margin-top:16px;justify-content:flex-end;gap:8px">` +
+      `<button type="button" class="btn btn-soft" data-close-upload-modal>Batal</button>` +
+      `<button type="button" class="btn btn-primary" id="u-submit-der-btn" data-modal-submit="derivatif">${ri('upload-cloud-2-line')}<span>${isDirect ? 'Simpan & Setujui Derivatif' : 'Kirim Pengajuan Derivatif'}</span></button>` +
+      `</div></div>`
+    );
+  }
+
   function uploadIgtUtamaPanel(role, category, recordToRevise = null) {
     const isRev = Boolean(recordToRevise);
     const catLabel = category === 'tata-ruang' ? 'IGT Tata Ruang' : 'IGT Pertanahan';
@@ -1188,6 +1239,21 @@ const IgtApp = (() => {
     return (
       `<div class="upload-modal-v2">` +
       (isRev ? `<div class="notice" style="background:#fff7ed;border-color:#fdba74;color:#9a3412;margin-bottom:12px"><strong>Mode Perbaikan Revisi</strong>Silakan perbarui berkas spasial dan catatan tindak lanjut untuk pengajuan <strong>${recordToRevise.id}</strong>.</div>` : '') +
+
+      // Target Renaksi Box (Poin Renaksi di plugin eksisting)
+      `<div class="form-section" style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:12px">` +
+      `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">` +
+      `<h4 style="margin:0;font-size:12.5px;color:#166534">🎯 Target Rencana Aksi (Renaksi)</h4>` +
+      `<span style="font-size:11px;font-weight:700;color:#15803d;background:#dcfce7;padding:2px 8px;border-radius:4px">Target Aktif 2026</span>` +
+      `</div>` +
+      `<div class="form-grid" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(130px, 1fr));gap:8px">` +
+      `<div class="field" style="margin:0"><label style="font-size:10px;font-weight:700;color:#166534">TAHUN RENAKSI</label><input type="text" value="2026" readonly style="height:28px;font-size:11.5px;background:#ffffff;border:1px solid #86efac"></div>` +
+      `<div class="field" style="margin:0"><label style="font-size:10px;font-weight:700;color:#166534">TARGET</label><input type="text" value="${category === 'tata-ruang' ? '12.000' : '5.000'}" readonly style="height:28px;font-size:11.5px;background:#ffffff;border:1px solid #86efac"></div>` +
+      `<div class="field" style="margin:0"><label style="font-size:10px;font-weight:700;color:#166534">SATUAN</label><input type="text" value="${category === 'tata-ruang' ? 'Hektar (Ha)' : 'Bidang Tanah'}" readonly style="height:28px;font-size:11.5px;background:#ffffff;border:1px solid #86efac"></div>` +
+      `<div class="field" style="margin:0"><label style="font-size:10px;font-weight:800;color:#166534">JUMLAH REALISASI (*)</label><input type="number" id="u-renaksi-realisasi" value="${category === 'tata-ruang' ? '2450' : '1250'}" style="height:28px;font-size:11.5px;font-weight:700;border:1.5px solid #16a34a;background:#ffffff" required></div>` +
+      `</div></div>` +
+
+      // 1. Informasi Dasar Layer
       `<div class="form-section">` +
       `<h3>1. Informasi Dasar Layer</h3>` +
       `<div class="form-grid">` +
@@ -1202,36 +1268,71 @@ const IgtApp = (() => {
       `</select></div>` +
       `<div class="field"><label for="u-tahun">TAHUN PEMBUATAN</label><select id="u-tahun"><option selected>2026</option><option>2025</option><option>2024</option></select></div>` +
       `</div></div>` +
+
+      // 2. Pilih Berkas Geospasial
       `<div class="form-section">` +
-      `<h3>2. Pilih Berkas Geospasial</h3>` +
-      `<div class="dropzone" style="padding:16px 12px;margin:0">` +
+      `<h3>2. Pilih Berkas Geospasial / Layer QGIS</h3>` +
+      `<div class="dropzone" style="padding:14px 12px;margin:0">` +
       `<div class="big" style="font-size:24px;margin-bottom:4px">📁</div>` +
       `<strong>${isRev ? 'Unggah Berkas Geospasial Hasil Revisi' : 'Tarik & Letakkan Berkas di Sini'}</strong>` +
-      `<p style="margin:2px 0 8px 0;font-size:12px">Mendukung GeoPackage (.gpkg), Shapefile (.zip), atau GeoJSON (.geojson)</p>` +
+      `<p style="margin:2px 0 8px 0;font-size:12px">Mendukung GeoPackage (.gpkg), Shapefile (.zip/.shp), atau GeoJSON (.geojson)</p>` +
       `<input type="file" id="u-file-input" style="display:none" accept=".gpkg,.zip,.shp,.geojson">` +
       `<button type="button" class="btn btn-soft btn-sm" id="u-file-browse-btn" onclick="document.getElementById('u-file-input').click()">Pilih Berkas Komputer</button>` +
       `<div id="u-file-name" style="font-size:12px;color:#047857;margin-top:6px;font-weight:600">${isRev ? 'berkas_revisi_' + recordToRevise.id.toLowerCase() + '.gpkg' : 'peta_geospasial_sleman_2026.gpkg (14.2 MB)'}</div>` +
       `</div></div>` +
+
+      // 3. Periksa Atribut (Verifikasi Kompilasi)
       `<div class="form-section">` +
-      `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px"><h3 style="margin:0">3. Pengecekan Atribut Standar</h3><span class="badge-valid">✓ 5 Kolom Sesuai Standar</span></div>` +
-      `<p style="font-size:11.5px;color:#64748b;margin:0 0 8px 0">Struktur skema atribut telah divalidasi terhadap standar data geospasial ATR/BPN.</p>` +
-      `<div style="max-height:110px;overflow:auto;border:1px solid #e2e8f0;border-radius:6px"><table class="stack" style="font-size:11px;margin:0;width:100%">` +
-      `<thead><tr style="background:#f8fafc"><th style="padding:4px 8px">Kolom</th><th style="padding:4px 8px">Tipe Data</th><th style="padding:4px 8px">Keterangan</th><th style="padding:4px 8px">Status</th></tr></thead>` +
-      `<tbody>` +
-      `<tr><td style="padding:4px 8px"><code>KODE_UNIK</code></td><td style="padding:4px 8px">String (32)</td><td style="padding:4px 8px">NIB / ID Objek</td><td style="padding:4px 8px;color:#047857;font-weight:700">Valid</td></tr>` +
-      `<tr><td style="padding:4px 8px"><code>NAMA_OBJEK</code></td><td style="padding:4px 8px">String (100)</td><td style="padding:4px 8px">Penggunaan / Zonasi</td><td style="padding:4px 8px;color:#047857;font-weight:700">Valid</td></tr>` +
-      `<tr><td style="padding:4px 8px"><code>LUAS_HA</code></td><td style="padding:4px 8px">Float (10,2)</td><td style="padding:4px 8px">Luas Hektar</td><td style="padding:4px 8px;color:#047857;font-weight:700">Valid</td></tr>` +
-      `<tr><td style="padding:4px 8px"><code>TAHUN</code></td><td style="padding:4px 8px">Integer (4)</td><td style="padding:4px 8px">Tahun Penetapan</td><td style="padding:4px 8px;color:#047857;font-weight:700">Valid</td></tr>` +
-      `<tr><td style="padding:4px 8px"><code>TEMA</code></td><td style="padding:4px 8px">String (50)</td><td style="padding:4px 8px">Tema IGT</td><td style="padding:4px 8px;color:#047857;font-weight:700">Valid</td></tr>` +
-      `</tbody></table></div></div>` +
+      `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">` +
+      `<h3 style="margin:0">3. Periksa Atribut (Verifikasi Kompilasi)</h3>` +
+      `<span class="badge-valid" id="badge-attr-status">✓ Atribut Terverifikasi</span>` +
+      `</div>` +
+      `<p style="font-size:11.5px;color:#64748b;margin:0 0 8px 0">Struktur skema atribut acuan standar IGT telah dipetakan dan divalidasi terhadap layer masukan.</p>` +
+      `<div style="display:flex;align-items:center;gap:10px;background:#f8fafc;padding:8px 12px;border:1px solid #e2e8f0;border-radius:6px">` +
+      `<span style="font-size:12px;color:#334155;flex:1">Status Pemetaan: <strong>5 Kolom Wajib Standar Cocok</strong></span>` +
+      `<button type="button" class="btn btn-soft btn-sm" id="btn-open-attr-mapping" style="color:#0284c7;border-color:#38bdf8;font-weight:700">🔍 Buka Verifikasi Atribut...</button>` +
+      `</div></div>` +
+
+      // 4. Simbologi & Visualisasi
       `<div class="form-section">` +
       `<h3>4. Simbologi &amp; Visualisasi (SLD / QML)</h3>` +
-      `<div style="display:flex;align-items:center;gap:12px"><span style="display:inline-block;width:24px;height:24px;border-radius:4px;background:#3b82f6;border:2px solid #1d4ed8" title="Warna Standar ATR/BPN"></span><div style="flex:1;font-size:12px;color:#475569">Gaya visual bawaan: <strong>ATR/BPN Standard Thematic Style (.sld)</strong></div><button type="button" class="btn btn-soft btn-sm" onclick="alert('Simulasi: Berkas SLD khusus berhasil dipilih.')">Ganti SLD</button></div>` +
-      `</div>` +
+      `<div style="display:flex;align-items:center;gap:12px">` +
+      `<span style="display:inline-block;width:24px;height:24px;border-radius:4px;background:#3b82f6;border:2px solid #1d4ed8" title="Warna Standar ATR/BPN"></span>` +
+      `<div style="flex:1;font-size:12px;color:#475569">Gaya visual bawaan: <strong>ATR/BPN Standard Thematic Style (.sld)</strong></div>` +
+      `<button type="button" class="btn btn-soft btn-sm" onclick="alert('⚡ SLD bawaan ATR/BPN berhasil diterapkan ke layer peta QGIS.')" style="color:#059669;border-color:#10b981;font-weight:700">⚡ Terapkan SLD</button>` +
+      `</div></div>` +
+
+      // 5. Metadata Standar (ISO 19115)
       `<div class="form-section">` +
-      `<h3>5. Metadata Standar (ISO 19115)</h3>` +
-      `<div style="font-size:11.5px;color:#475569;background:#f8fafc;padding:8px;border-radius:6px;border:1px solid #e2e8f0;line-height:1.5"><div><strong>Sistem Proyeksi (CRS):</strong> EPSG:3857 (WGS 84 / Pseudo-Mercator)</div><div><strong>Cakupan Spasial:</strong> Kab. Sleman, D.I. Yogyakarta</div><div><strong>Status Metadata:</strong> Lengkap (Pratinjau XML Valid)</div></div>` +
+      `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">` +
+      `<h3 style="margin:0">5. Metadata Standar (ISO 19115)</h3>` +
+      `<button type="button" class="btn btn-soft btn-sm" id="btn-open-meta-preview" style="font-weight:700;color:#0284c7;border-color:#38bdf8">📄 Pratinjau Metadata...</button>` +
       `</div>` +
+      `<div style="display:flex;gap:16px;margin-bottom:8px;font-size:12px">` +
+      `<label style="cursor:pointer"><input type="radio" name="u-meta-mode" value="cms" checked> Gunakan Metadata dari CMS Geoportal</label>` +
+      `<label style="cursor:pointer"><input type="radio" name="u-meta-mode" value="xml"> Unggah Berkas XML Mandiri</label>` +
+      `</div>` +
+      `<div style="font-size:11.5px;color:#475569;background:#f8fafc;padding:8px;border-radius:6px;border:1px solid #e2e8f0;line-height:1.5">` +
+      `<div><strong>Sistem Proyeksi (CRS):</strong> EPSG:3857 (WGS 84 / Pseudo-Mercator)</div>` +
+      `<div><strong>Cakupan Spasial:</strong> Kab. Sleman, D.I. Yogyakarta</div>` +
+      `<div><strong>Status Metadata:</strong> Lengkap (Pratinjau XML Valid)</div>` +
+      `</div></div>` +
+
+      // 6. Dokumen Pendukung Lainnya
+      `<div class="form-section">` +
+      `<h3>6. Dokumen Pendukung Lainnya (opsional)</h3>` +
+      `<div style="display:flex;align-items:center;gap:8px">` +
+      `<input type="text" readonly value="sk_penetapan_sleman_2026.pdf (1.8 MB)" style="flex:1;height:30px;font-size:11.5px;padding:3px 8px;border:1px solid #cbd5e1;border-radius:5px;background:#f8fafc">` +
+      `<button type="button" class="btn btn-soft btn-sm" onclick="alert('Simulasi: Berkas dokumen pendukung dipilih.')">Pilih Dokumen</button>` +
+      `</div></div>` +
+
+      // 7. Keterangan Pengajuan
+      `<div class="form-section">` +
+      `<h3>7. Keterangan Pengajuan</h3>` +
+      `<div class="field"><textarea id="u-keterangan" rows="2" placeholder="Catatan atau deskripsi pengajuan data kompilasi..." style="width:100%;padding:6px 8px;font-size:12px;border:1px solid #cbd5e1;border-radius:6px">Kompilasi pemutakhiran data spasial tahun 2026.</textarea></div>` +
+      `</div>` +
+
+      // Toolbar
       `<div class="toolbar" style="margin-top:16px;justify-content:flex-end;gap:8px">` +
       `<button type="button" class="btn btn-soft" data-close-upload-modal>Batal</button>` +
       `<button type="button" class="btn btn-soft" onclick="alert('Draf pengajuan disimpan.'); document.getElementById('igt-upload-modal').hidden = true; document.getElementById('igt-upload-modal').style.display = 'none';">Simpan Draf</button>` +
@@ -1261,7 +1362,8 @@ const IgtApp = (() => {
       if (role === 'operator') {
         return (
           `<div class="toolbar"><a class="btn btn-primary" href="${LEGACY}06-derivative-kawasan.html">${ri('upload-cloud-2-line')}<span>Unggah Derivatif Kawasan</span></a>` +
-          `<a class="btn btn-primary" href="${BIDANG_WORKFLOW_URL}">${ri('upload-cloud-2-line')}<span>Unggah Derivatif Bidang</span></a></div>` +
+          `<a class="btn btn-primary" href="${BIDANG_WORKFLOW_URL}">${ri('upload-cloud-2-line')}<span>Unggah Derivatif Bidang</span></a>` +
+          `<button class="btn btn-soft" data-action="upload-derivatif">${ri('upload-cloud-2-line')}<span>Unggah Data Derivatif</span></button></div>` +
           `<div class="notice"><strong>Catatan</strong>Pengajuan berstatus Diajukan sampai disetujui atau ditolak oleh Admin atau Superadmin.</div>`
         );
       }
@@ -1371,6 +1473,78 @@ const IgtApp = (() => {
       `</div><div class="notice" style="margin-top:14px"><strong>Pemeriksaan Topologi Selesai</strong>Semua aturan topologi memenuhi standar ketetapan ATR/BPN. Data siap untuk proses integrasi data geospasial.</div>` +
       `<div class="toolbar" style="margin-top:16px;justify-content:flex-end;gap:8px"><button type="button" class="btn btn-soft" data-close-topol-modal>Tutup</button>` +
       `<button type="button" class="btn btn-primary" id="btn-confirm-topol">${ri('checkbox-circle-line')}<span>Konfirmasi Hasil Topologi</span></button></div></div></section></div>` +
+
+      // Modal Attribute Mapping (Verifikasi Kompilasi)
+      `<div id="attr-mapping-modal" class="modal-backdrop" hidden role="dialog" style="position:fixed;inset:0;z-index:1100;background:rgba(15,23,42,.6);display:none;align-items:center;justify-content:center;padding:20px;overflow:auto">` +
+      `<section class="card" style="width:min(880px,100%);max-height:90vh;overflow:auto;margin:auto"><div class="card-head" style="padding:12px 16px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between">` +
+      `<div><h3 style="margin:0;font-size:15px;color:#0f172a">Verifikasi Data Kompilasi (Attribute Mapping)</h3><p style="margin:2px 0 0 0;font-size:11.5px;color:#64748b">Cocokkan struktur field layer masukan dengan standar acuan IGT.</p></div>` +
+      `<button type="button" class="btn btn-soft btn-sm" id="btn-close-attr-mapping">✕ Tutup</button></div>` +
+      `<div style="padding:16px">` +
+      `<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:8px 12px;margin-bottom:12px;display:flex;gap:20px;font-size:12px">` +
+      `<div>Layer Masukan: <strong>peta_geospasial_sleman_2026.gpkg</strong></div>` +
+      `<div>CRS: <strong>EPSG:3857 (WGS 84 / Pseudo-Mercator)</strong></div>` +
+      `<div>Geometri: <strong>Polygon</strong></div></div>` +
+      `<div style="max-height:300px;overflow:auto;border:1px solid #cbd5e1;border-radius:6px;margin-bottom:12px"><table class="stack" style="width:100%;font-size:11.5px;margin:0">` +
+      `<thead><tr style="background:#f1f5f9;text-align:left"><th style="padding:6px 8px;width:150px">Field Standar IGT</th><th style="padding:6px 8px;width:110px">Tipe Data</th><th style="padding:6px 8px;width:180px">Kolom Layer Sumber</th><th style="padding:6px 8px">Sampel Nilai (Baris 1)</th><th style="padding:6px 8px;width:80px">Status</th></tr></thead>` +
+      `<tbody>` +
+      `<tr><td style="padding:6px 8px;font-weight:700"><code>KODE_UNIK (*)</code></td><td style="padding:6px 8px">String (32)</td><td style="padding:6px 8px"><select style="width:100%;height:26px;font-size:11px"><option selected>NIB (12.01.04.01.00128)</option><option>ID_BIDANG</option><option>KODE</option></select></td><td style="padding:6px 8px;color:#475569">12.01.04.01.00128</td><td style="padding:6px 8px;color:#047857;font-weight:700">✓ Cocok</td></tr>` +
+      `<tr><td style="padding:6px 8px;font-weight:700"><code>NAMA_OBJEK (*)</code></td><td style="padding:6px 8px">String (100)</td><td style="padding:6px 8px"><select style="width:100%;height:26px;font-size:11px"><option selected>PENGGUNAAN (Permukiman)</option><option>JENIS_HAK</option><option>NAMA</option></select></td><td style="padding:6px 8px;color:#475569">Permukiman Padat</td><td style="padding:6px 8px;color:#047857;font-weight:700">✓ Cocok</td></tr>` +
+      `<tr><td style="padding:6px 8px;font-weight:700"><code>LUAS_HA (*)</code></td><td style="padding:6px 8px">Decimal (10,2)</td><td style="padding:6px 8px"><select style="width:100%;height:26px;font-size:11px"><option selected>LUAS_HA (0.08)</option><option>LUAS_M2</option></select></td><td style="padding:6px 8px;color:#475569">0.0842</td><td style="padding:6px 8px;color:#047857;font-weight:700">✓ Cocok</td></tr>` +
+      `<tr><td style="padding:6px 8px;font-weight:700"><code>TAHUN (*)</code></td><td style="padding:6px 8px">Integer (4)</td><td style="padding:6px 8px"><select style="width:100%;height:26px;font-size:11px"><option selected>TAHUN_DATA (2026)</option><option>THN_PENETAPAN</option></select></td><td style="padding:6px 8px;color:#475569">2026</td><td style="padding:6px 8px;color:#047857;font-weight:700">✓ Cocok</td></tr>` +
+      `<tr><td style="padding:6px 8px;font-weight:700"><code>TEMA (*)</code></td><td style="padding:6px 8px">String (50)</td><td style="padding:6px 8px"><select style="width:100%;height:26px;font-size:11px"><option selected>TEMA_IGT (Bidang Tanah)</option><option>KATEGORI</option></select></td><td style="padding:6px 8px;color:#475569">Bidang Tanah</td><td style="padding:6px 8px;color:#047857;font-weight:700">✓ Cocok</td></tr>` +
+      `<tr><td style="padding:6px 8px"><code>WADMPR</code></td><td style="padding:6px 8px">String (50)</td><td style="padding:6px 8px"><select style="width:100%;height:26px;font-size:11px"><option selected>PROVINSI (D.I. Yogyakarta)</option><option>WADMPR</option></select></td><td style="padding:6px 8px;color:#475569">D.I. Yogyakarta</td><td style="padding:6px 8px;color:#047857;font-weight:700">✓ Cocok</td></tr>` +
+      `<tr><td style="padding:6px 8px"><code>WADMKK</code></td><td style="padding:6px 8px">String (50)</td><td style="padding:6px 8px"><select style="width:100%;height:26px;font-size:11px"><option selected>KABUPATEN (Sleman)</option><option>WADMKK</option></select></td><td style="padding:6px 8px;color:#475569">Kab. Sleman</td><td style="padding:6px 8px;color:#047857;font-weight:700">✓ Cocok</td></tr>` +
+      `</tbody></table></div>` +
+      `<div style="font-size:11.5px;color:#047857;background:#ecfdf5;border:1px solid #a7f3d0;padding:8px 12px;border-radius:6px;margin-bottom:12px">` +
+      `✓ Seluruh 5 field standar wajib IGT berhasil dipetakan secara valid ke layer sumber masukan.` +
+      `</div>` +
+      `<div class="toolbar" style="justify-content:flex-end;gap:8px">` +
+      `<button type="button" class="btn btn-soft" id="btn-cancel-attr-mapping">Batal</button>` +
+      `<button type="button" class="btn btn-primary" id="btn-confirm-attr-mapping">✓ Konfirmasi &amp; Simpan Pemetaan</button>` +
+      `</div></div></section></div>` +
+
+      // Modal Metadata Preview (XPath & XML Mentah)
+      `<div id="metadata-preview-modal" class="modal-backdrop" hidden role="dialog" style="position:fixed;inset:0;z-index:1100;background:rgba(15,23,42,.6);display:none;align-items:center;justify-content:center;padding:20px;overflow:auto">` +
+      `<section class="card" style="width:min(820px,100%);max-height:90vh;overflow:auto;margin:auto"><div class="card-head" style="padding:12px 16px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between">` +
+      `<div><h3 style="margin:0;font-size:15px;color:#0f172a">Metadata XML Standar ISO 19115</h3><p style="margin:2px 0 0 0;font-size:11.5px;color:#64748b">Pratinjau data metadata resmi Geoportal ATR/BPN</p></div>` +
+      `<button type="button" class="btn btn-soft btn-sm" id="btn-close-meta-preview">✕ Tutup</button></div>` +
+      `<div style="padding:12px 16px">` +
+      `<div style="display:flex;gap:6px;border-bottom:1.5px solid #e2e8f0;margin-bottom:12px">` +
+      `<button type="button" id="meta-tab-xpath" class="btn btn-soft btn-sm" style="background:#2563eb;color:#fff;font-weight:700">Tabel XPath &amp; Nilai</button>` +
+      `<button type="button" id="meta-tab-raw" class="btn btn-soft btn-sm" style="font-weight:700">Editor XML Mentah</button>` +
+      `</div>` +
+      `<div id="meta-content-xpath" style="max-height:360px;overflow:auto;border:1px solid #cbd5e1;border-radius:6px"><table class="stack" style="width:100%;font-size:11.5px;margin:0">` +
+      `<thead><tr style="background:#f1f5f9;text-align:left"><th style="padding:6px 8px;width:260px">Path XPath (ISO 19115)</th><th style="padding:6px 8px">Nilai Metadata</th></tr></thead>` +
+      `<tbody>` +
+      `<tr><td style="padding:6px 8px"><code>gmd:fileIdentifier/gco:CharacterString</code></td><td style="padding:6px 8px">urn:uuid:7b2e9d40-41fa-11ed-b878-0242ac120002</td></tr>` +
+      `<tr><td style="padding:6px 8px"><code>gmd:identificationInfo//gmd:title</code></td><td style="padding:6px 8px">Bidang Tanah Sleman 2026</td></tr>` +
+      `<tr><td style="padding:6px 8px"><code>gmd:identificationInfo//gmd:abstract</code></td><td style="padding:6px 8px">Dataset geospasial kompilasi tematik bidang tanah Kab. Sleman TA 2026.</td></tr>` +
+      `<tr><td style="padding:6px 8px"><code>gmd:referenceSystemInfo//gmd:code</code></td><td style="padding:6px 8px">EPSG:3857 (WGS 84 / Pseudo-Mercator)</td></tr>` +
+      `<tr><td style="padding:6px 8px"><code>gmd:contact//gmd:organisationName</code></td><td style="padding:6px 8px">Kantah Kab. Sleman / Ditjen SPPR ATR/BPN</td></tr>` +
+      `<tr><td style="padding:6px 8px"><code>gmd:dataQualityInfo//gmd:lineage</code></td><td style="padding:6px 8px">Kompilasi survei lapangan dan digitasi batas kadaster presisi tinggi.</td></tr>` +
+      `</tbody></table></div>` +
+      `<div id="meta-content-raw" style="display:none;max-height:360px;overflow:auto;background:#0f172a;color:#f8fafc;padding:12px;border-radius:6px;font-family:monospace;font-size:11px;line-height:1.5">` +
+`&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;gmd:MD_Metadata xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:gco="http://www.isotc211.org/2005/gco"&gt;
+  &lt;gmd:fileIdentifier&gt;
+    &lt;gco:CharacterString&gt;urn:uuid:7b2e9d40-41fa-11ed-b878-0242ac120002&lt;/gco:CharacterString&gt;
+  &lt;/gmd:fileIdentifier&gt;
+  &lt;gmd:identificationInfo&gt;
+    &lt;gmd:MD_DataIdentification&gt;
+      &lt;gmd:citation&gt;
+        &lt;gmd:CI_Citation&gt;
+          &lt;gmd:title&gt;&lt;gco:CharacterString&gt;Bidang Tanah Sleman 2026&lt;/gco:CharacterString&gt;&lt;/gmd:title&gt;
+          &lt;gmd:date&gt;&lt;gmd:CI_Date&gt;&lt;gmd:date&gt;&lt;gco:Date&gt;2026-01-15&lt;/gco:Date&gt;&lt;/gmd:date&gt;&lt;/gmd:CI_Date&gt;&lt;/gmd:date&gt;
+        &lt;/gmd:CI_Citation&gt;
+      &lt;/gmd:citation&gt;
+      &lt;gmd:abstract&gt;&lt;gco:CharacterString&gt;Dataset kompilasi bidang tanah Kabupaten Sleman.&lt;/gco:CharacterString&gt;&lt;/gmd:abstract&gt;
+    &lt;/gmd:MD_DataIdentification&gt;
+  &lt;/gmd:identificationInfo&gt;
+&lt;/gmd:MD_Metadata&gt;` +
+      `</div>` +
+      `<div class="toolbar" style="margin-top:14px;justify-content:flex-end">` +
+      `<button type="button" class="btn btn-primary" id="btn-ok-meta-preview">Selesai Pratinjau</button>` +
+      `</div></div></section></div>` +
       `<div id="submission-status-tabs" class="tabs" data-status-tabs></div>` +
       `<div class="card-head submissions-head"><div><h2>Daftar Pengajuan</h2><p id="submission-count"></p></div></div>` +
       `<div class="table-wrap"><table class="stack"><thead id="submission-thead"><tr><th>ID Pengajuan</th><th>Layer Target</th><th id="submission-org-heading">Satker</th><th id="submission-date-heading">Tanggal Unggah</th><th>Status</th><th>Aksi</th></tr></thead>` +
@@ -1518,13 +1692,34 @@ const IgtApp = (() => {
     });
 
     document.addEventListener('click', (event) => {
-      const target = event.target.closest('[data-action], [data-open-upload-modal], [data-close-upload-modal], [data-close-topol-modal], [data-modal-submit], #btn-confirm-topol, #igt-upload-modal, #topology-modal');
+      const target = event.target.closest('[data-action], [data-open-upload-modal], [data-close-upload-modal], [data-close-topol-modal], [data-modal-submit], #btn-confirm-topol, #btn-open-attr-mapping, #btn-close-attr-mapping, #btn-cancel-attr-mapping, #btn-confirm-attr-mapping, #btn-open-meta-preview, #btn-close-meta-preview, #btn-ok-meta-preview, #meta-tab-xpath, #meta-tab-raw, #igt-upload-modal, #topology-modal, #attr-mapping-modal, #metadata-preview-modal');
       if (!target) return;
       const { action, id } = target.dataset || {};
       const record = records.find((r) => r.id === id);
 
       if (target.dataset && target.dataset.modalSubmit) {
-        const isRev = target.dataset.modalSubmit === 'revision';
+        const submitType = target.dataset.modalSubmit;
+        if (submitType === 'derivatif') {
+          const isDirect = role === 'admin';
+          const derLayerSelect = $('#u-der-layer');
+          const derLayerName = derLayerSelect ? derLayerSelect.options[derLayerSelect.selectedIndex].text.split('·')[0].trim() : 'Derivatif Multiguna ' + nextDerivative;
+          records.unshift({
+            category: 'derivatif',
+            id: 'DRV-2026-' + String(nextDerivative).padStart(3, '0'),
+            name: derLayerName,
+            date: '20 Okt 2026',
+            status: isDirect ? 'Disetujui' : 'Diajukan',
+            owner: role === 'umum' ? 'umum' : undefined,
+          });
+          nextDerivative += 1;
+          alert('Pengajuan layer derivatif "' + derLayerName + '" berhasil dikirim dengan status ' + (isDirect ? 'Disetujui' : 'Diajukan') + '.');
+          const m = $('#igt-upload-modal');
+          if (m) { m.hidden = true; m.style.display = 'none'; }
+          render();
+          return;
+        }
+
+        const isRev = submitType === 'revision';
         if (isRev) {
           const recId = target.dataset.recordId;
           const targetRec = records.find((r) => r.id === recId);
@@ -1549,6 +1744,56 @@ const IgtApp = (() => {
         const m = $('#igt-upload-modal');
         if (m) { m.hidden = true; m.style.display = 'none'; }
         render();
+        return;
+      }
+
+      // Attribute Mapping Modal Controls
+      if (target.id === 'btn-open-attr-mapping') {
+        const m = $('#attr-mapping-modal');
+        if (m) { m.hidden = false; m.style.display = 'flex'; }
+        return;
+      }
+      if (target.id === 'btn-close-attr-mapping' || target.id === 'btn-cancel-attr-mapping' || (target.id === 'attr-mapping-modal' && event.target === target)) {
+        const m = $('#attr-mapping-modal');
+        if (m) { m.hidden = true; m.style.display = 'none'; }
+        return;
+      }
+      if (target.id === 'btn-confirm-attr-mapping') {
+        alert('✓ Pemetaan atribut berhasil diverifikasi dan disimpan.');
+        const b = $('#badge-attr-status');
+        if (b) b.textContent = '✓ Pemetaan Terverifikasi (Kompilasi Sesuai Standar)';
+        const m = $('#attr-mapping-modal');
+        if (m) { m.hidden = true; m.style.display = 'none'; }
+        return;
+      }
+
+      // Metadata Preview Modal Controls
+      if (target.id === 'btn-open-meta-preview') {
+        const m = $('#metadata-preview-modal');
+        if (m) { m.hidden = false; m.style.display = 'flex'; }
+        return;
+      }
+      if (target.id === 'btn-close-meta-preview' || target.id === 'btn-ok-meta-preview' || (target.id === 'metadata-preview-modal' && event.target === target)) {
+        const m = $('#metadata-preview-modal');
+        if (m) { m.hidden = true; m.style.display = 'none'; }
+        return;
+      }
+      if (target.id === 'meta-tab-xpath') {
+        $('#meta-tab-xpath').style.background = '#2563eb';
+        $('#meta-tab-xpath').style.color = '#fff';
+        $('#meta-tab-raw').style.background = '';
+        $('#meta-tab-raw').style.color = '';
+        $('#meta-content-xpath').style.display = 'block';
+        $('#meta-content-raw').style.display = 'none';
+        return;
+      }
+      if (target.id === 'meta-tab-raw') {
+        $('#meta-tab-raw').style.background = '#2563eb';
+        $('#meta-tab-raw').style.color = '#fff';
+        $('#meta-tab-xpath').style.background = '';
+        $('#meta-tab-xpath').style.color = '';
+        $('#meta-content-xpath').style.display = 'none';
+        $('#meta-content-raw').style.display = 'block';
         return;
       }
 
@@ -1645,22 +1890,14 @@ const IgtApp = (() => {
         record.status = action === 'approve' ? 'Disetujui' : 'Ditolak';
         render();
       } else if (action === 'upload-derivatif') {
-        // Admin uploads skip review and are approved immediately; Umum uploads wait for a decision.
-        const direct = role !== 'umum';
-        const message = direct
-          ? 'Simulasi: pilih berkas layer derivatif. Unggahan Admin langsung berstatus Disetujui. Lanjutkan?'
-          : 'Simulasi: pilih berkas layer derivatif. Pengajuan Umum berstatus Diajukan dan menunggu keputusan Admin atau Superadmin. Lanjutkan?';
-        if (!confirm(message)) return;
-        records.unshift({
-          category: 'derivatif',
-          id: 'DRV-2026-' + String(nextDerivative).padStart(3, '0'),
-          name: (direct ? 'Derivatif Unggahan Admin ' : 'Derivatif Unggahan Umum ') + nextDerivative,
-          date: '19 Okt 2026',
-          status: direct ? 'Disetujui' : 'Diajukan',
-          owner: role === 'umum' ? 'umum' : undefined,
-        });
-        nextDerivative += 1;
-        render();
+        const modal = $('#igt-upload-modal');
+        if (modal) {
+          $('#igt-upload-modal-title').textContent = 'Upload Data IGT Derivatif Multiguna';
+          $('#igt-upload-modal-description').textContent = 'Formulir terpadu pengajuan data spasial derivatif berbasis baseline geoportal.';
+          $('#igt-upload-modal-content').innerHTML = uploadDerivatifPanel(role);
+          modal.hidden = false;
+          modal.style.display = 'flex';
+        }
       } else if (action === 'delete') {
         if (!confirm('Hapus layer ' + id + ' dari katalog IGT Lainnya? Tindakan ini tidak dapat dibatalkan.')) return;
         records.splice(records.indexOf(record), 1);

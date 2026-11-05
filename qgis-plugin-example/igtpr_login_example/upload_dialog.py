@@ -2,13 +2,16 @@
 """Halaman & Formulir Unggah Data Geospasial IGT-PR (Mockup V2)."""
 
 import os
+import xml.etree.ElementTree as ET
 
 from qgis.PyQt.QtCore import QDate, QSize, Qt, pyqtSignal
-from qgis.PyQt.QtGui import QColor, QCursor, QFont, QIcon
+from qgis.PyQt.QtGui import QColor, QCursor, QFont, QIcon, QIntValidator
 from qgis.PyQt.QtWidgets import (
-    QCheckBox, QComboBox, QDialog, QFileDialog, QFrame, QGridLayout,
-    QHBoxLayout, QLabel, QLineEdit, QMessageBox, QPushButton, QScrollArea,
-    QSizePolicy, QTextEdit, QVBoxLayout, QWidget,
+    QAbstractItemView, QButtonGroup, QCheckBox, QComboBox, QDialog,
+    QFileDialog, QFrame, QGridLayout, QHBoxLayout, QHeaderView, QLabel,
+    QLineEdit, QMessageBox, QPushButton, QRadioButton, QScrollArea,
+    QSizePolicy, QTabWidget, QTableWidget, QTableWidgetItem, QTextEdit,
+    QVBoxLayout, QWidget,
 )
 
 try:
@@ -374,22 +377,464 @@ class UploadPage(QWidget):
         return QSize(200, 120)
 
 
+class AttributeMappingDialog(QDialog):
+    """
+    Dialog Modal 'Verifikasi Data Kompilasi' (Attribute Mapping).
+    Memeriksa dan memetakan field standar acuan IGT dengan kolom pada layer SHP input user.
+    """
+    def __init__(self, parent=None, igt_name="Data Dasar IGT", target_layer=None, attribute_masters=None):
+        super().__init__(parent)
+        self.setWindowTitle("Verifikasi Data Kompilasi")
+        self.resize(920, 640)
+        self.setMinimumSize(800, 520)
+        self.setObjectName("attributeMappingDialog")
+
+        self.igt_name = igt_name or "Data Dasar IGT"
+        self.target_layer = target_layer
+        self.attribute_masters = attribute_masters or [
+            {"nama_kolom": "KODE_UNIK", "alias": "NIB / ID Objek Unik", "tipe_data": "String (32)", "is_required": True},
+            {"nama_kolom": "NAMA_OBJEK", "alias": "Nama Objek / Hak / Penatagunaan", "tipe_data": "String (100)", "is_required": True},
+            {"nama_kolom": "LUAS_HA", "alias": "Luas Bidang / Kawasan (Ha)", "tipe_data": "Decimal (10,2)", "is_required": True},
+            {"nama_kolom": "TAHUN", "alias": "Tahun Penetapan / Survei", "tipe_data": "Integer (4)", "is_required": True},
+            {"nama_kolom": "TEMA", "alias": "Tema Geospasial IGT", "tipe_data": "String (50)", "is_required": True},
+            {"nama_kolom": "WADMPR", "alias": "Nama Provinsi", "tipe_data": "String (50)", "is_required": False},
+            {"nama_kolom": "WADMKK", "alias": "Nama Kabupaten / Kota", "tipe_data": "String (50)", "is_required": False},
+            {"nama_kolom": "WADMKC", "alias": "Nama Kecamatan", "tipe_data": "String (50)", "is_required": False},
+            {"nama_kolom": "WADMKD", "alias": "Nama Kelurahan / Desa", "tipe_data": "String (50)", "is_required": False},
+            {"nama_kolom": "REMARK", "alias": "Keterangan Tambahan", "tipe_data": "String (254)", "is_required": False},
+        ]
+
+        self.mappings = {}
+        self.confirmed = False
+        self.source_fields = []
+        self.sample_values = {}
+        self._extract_source_fields()
+
+        self._init_ui()
+        self._auto_match_and_populate()
+
+    def _extract_source_fields(self):
+        if self.target_layer and hasattr(self.target_layer, 'isValid') and self.target_layer.isValid():
+            try:
+                for f in self.target_layer.fields():
+                    self.source_fields.append(f.name())
+                for feat in self.target_layer.getFeatures():
+                    for f in self.target_layer.fields():
+                        val = feat[f.name()]
+                        self.sample_values[f.name()] = str(val) if val is not None else ""
+                    break
+            except Exception:
+                pass
+
+        if not self.source_fields:
+            # Fallback daftar kolom simulasi dari layer QGIS aktif
+            self.source_fields = ["KODE_UNIK", "NIB", "NAMOBJ", "LUAS_HA", "LUASTERTUL", "TAHUN", "TEMA", "WADMPR", "WADMKK", "WADMKC", "WADMKD", "REMARK"]
+            self.sample_values = {
+                "KODE_UNIK": "12.01.04.01.00129",
+                "NIB": "12.01.04.01.00129",
+                "NAMOBJ": "Bidang Pertanahan 00129",
+                "LUAS_HA": "0.035",
+                "LUASTERTUL": "350.00",
+                "TAHUN": "2026",
+                "TEMA": "Bidang Tanah",
+                "WADMPR": "D.I. Yogyakarta",
+                "WADMKK": "Kabupaten Sleman",
+                "WADMKC": "Kecamatan Depok",
+                "WADMKD": "Kalurahan Condongcatur",
+                "REMARK": "Terverifikasi Lengkap"
+            }
+
+    def _init_ui(self):
+        self.setStyleSheet("""
+            QDialog#attributeMappingDialog {
+                background-color: #f8fafc;
+                font-family: "Segoe UI", Arial, sans-serif;
+            }
+            QLabel {
+                font-family: "Segoe UI", Arial, sans-serif;
+            }
+            QFrame.cardBox {
+                background-color: #ffffff;
+                border: 1px solid #dce5ef;
+                border-radius: 10px;
+                padding: 12px 14px;
+            }
+            QTableWidget {
+                background-color: #ffffff;
+                border: 1px solid #cbd5e1;
+                border-radius: 8px;
+                gridline-color: #f1f5f9;
+            }
+            QHeaderView::section {
+                background-color: #f1f5f9;
+                color: #0f294d;
+                font-size: 11px;
+                font-weight: 700;
+                border: none;
+                border-bottom: 2px solid #cbd5e1;
+                padding: 6px;
+            }
+            QComboBox {
+                background-color: #ffffff;
+                border: 1.5px solid #cbd5e1;
+                border-radius: 6px;
+                padding: 4px 8px;
+                font-size: 11px;
+            }
+            QComboBox:focus {
+                border-color: #1f6fd6;
+            }
+        """)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(18, 18, 18, 18)
+        layout.setSpacing(12)
+
+        # 1. Header
+        layer_name = self.target_layer.name() if (self.target_layer and hasattr(self.target_layer, 'name')) else "Layer Aktif QGIS"
+        feat_count = self.target_layer.featureCount() if (self.target_layer and hasattr(self.target_layer, 'featureCount')) else 42
+        
+        h_box = QVBoxLayout()
+        h_box.setSpacing(2)
+        h_title = QLabel("Verifikasi Data Kompilasi", self)
+        h_title.setStyleSheet("font-size: 17px; font-weight: 800; color: #0f294d;")
+        h_sub = QLabel(f"Dataset: <b>{self.igt_name}</b> • Layer: <b>{layer_name}</b> • {feat_count} objek spasial (Polygon)", self)
+        h_sub.setStyleSheet("font-size: 11px; color: #64748b;")
+        h_box.addWidget(h_title)
+        h_box.addWidget(h_sub)
+        layout.addLayout(h_box)
+
+        # 2. Kotak Pemeriksaan Data Spasial
+        spatial_card = QFrame(self)
+        spatial_card.setProperty('class', 'cardBox')
+        sc_lay = QHBoxLayout(spatial_card)
+        sc_lay.setContentsMargins(12, 10, 12, 10)
+        sc_lay.setSpacing(14)
+
+        sc_left = QVBoxLayout()
+        sc_left.setSpacing(2)
+        lbl_sc_title = QLabel("Pemeriksaan Data Spasial & Proyeksi CRS", spatial_card)
+        lbl_sc_title.setStyleSheet("font-size: 12px; font-weight: 700; color: #0f294d;")
+        lbl_sc_info = QLabel(f"Penamaan Data: <b>{self.igt_name}</b> • Proyeksi: <b>EPSG:4326 (WGS 84)</b> • Geometri: Valid", spatial_card)
+        lbl_sc_info.setStyleSheet("font-size: 11px; color: #475569;")
+        sc_left.addWidget(lbl_sc_title)
+        sc_left.addWidget(lbl_sc_info)
+        sc_lay.addLayout(sc_left, 1)
+
+        badge_crs = QLabel("✓ CRS & Geometri Sesuai", spatial_card)
+        badge_crs.setStyleSheet("""
+            background-color: #ecfdf5; color: #047857; font-size: 11px; font-weight: 700;
+            padding: 4px 10px; border-radius: 6px; border: 1px solid #a7f3d0;
+        """)
+        sc_lay.addWidget(badge_crs, 0, Qt.AlignmentFlag.AlignVCenter)
+        layout.addWidget(spatial_card)
+
+        # 3. Alert Box (jika ada kolom wajib belum terpetakan)
+        self.alert_box = QFrame(self)
+        self.alert_box.setStyleSheet("""
+            background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 6px 12px;
+        """)
+        ab_lay = QHBoxLayout(self.alert_box)
+        ab_lay.setContentsMargins(6, 6, 6, 6)
+        self.alert_msg = QLabel("⚠️ Pastikan seluruh kolom acuan bertanda (*) telah terpetakan dengan benar.", self.alert_box)
+        self.alert_msg.setStyleSheet("color: #991b1b; font-size: 11px; font-weight: 600;")
+        ab_lay.addWidget(self.alert_msg)
+        layout.addWidget(self.alert_box)
+
+        # 4. Tabel Pemetaan Atribut
+        table_card = QFrame(self)
+        table_card.setProperty('class', 'cardBox')
+        tc_lay = QVBoxLayout(table_card)
+        tc_lay.setContentsMargins(10, 10, 10, 10)
+        tc_lay.setSpacing(6)
+
+        tc_head = QHBoxLayout()
+        tc_title = QLabel("Pemetaan Field Atribut (Attribute Mapping)", table_card)
+        tc_title.setStyleSheet("font-size: 12.5px; font-weight: 800; color: #0f294d;")
+        tc_head.addWidget(tc_title)
+        tc_head.addStretch()
+        tc_hint = QLabel("Kolom bertanda <span style='color:#ef4444; font-weight:bold;'>* (Wajib)</span> harus dipetakan", table_card)
+        tc_hint.setStyleSheet("font-size: 10.5px; color: #64748b;")
+        tc_head.addWidget(tc_hint)
+        tc_lay.addLayout(tc_head)
+
+        self.table = QTableWidget(table_card)
+        self.table.setColumnCount(4)
+        self.table.setHorizontalHeaderLabels([
+            "Data Dasar (Acuan IGT)",
+            "Data Input (Kolom SHP & Contoh Nilai)",
+            "Status",
+            "Aksi"
+        ])
+        self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Interactive)
+        self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
+        self.table.setColumnWidth(0, 260)
+        self.table.verticalHeader().setVisible(False)
+        self.table.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
+        tc_lay.addWidget(self.table)
+        layout.addWidget(table_card, 1)
+
+        # 5. Footer Buttons
+        footer = QHBoxLayout()
+        btn_cancel = QPushButton("Batal", self)
+        btn_cancel.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn_cancel.setStyleSheet("""
+            QPushButton {
+                background-color: #ffffff; color: #475569; border: 1px solid #cbd5e1;
+                border-radius: 8px; padding: 7px 16px; font-size: 11.5px; font-weight: 600;
+            }
+            QPushButton:hover { background-color: #f1f5f9; }
+        """)
+        btn_cancel.clicked.connect(self.reject)
+        footer.addWidget(btn_cancel)
+
+        footer.addStretch()
+
+        self.btn_confirm = QPushButton("✓ Gunakan Mapping Ini (Konfirmasi)", self)
+        self.btn_confirm.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_confirm.setStyleSheet("""
+            QPushButton {
+                background-color: #1f6fd6; color: #ffffff; font-weight: 700;
+                font-size: 12px; border-radius: 8px; padding: 8px 20px; border: none;
+            }
+            QPushButton:hover { background-color: #1a63c7; }
+        """)
+        self.btn_confirm.clicked.connect(self._on_confirm_mapping)
+        footer.addWidget(self.btn_confirm)
+        layout.addLayout(footer)
+
+    def _auto_match_and_populate(self):
+        self.table.setRowCount(len(self.attribute_masters))
+        source_map = {name.lower().replace('_', ''): name for name in self.source_fields}
+
+        for row, attr in enumerate(self.attribute_masters):
+            target_name = attr.get("nama_kolom", "").strip()
+            alias = attr.get("alias", target_name)
+            tipe = attr.get("tipe_data", "String")
+            is_req = attr.get("is_required", True)
+
+            clean_target = target_name.lower().replace('_', '')
+            matched_src = None
+            if clean_target in source_map:
+                matched_src = source_map[clean_target]
+            elif target_name.lower() in [s.lower() for s in self.source_fields]:
+                for s in self.source_fields:
+                    if s.lower() == target_name.lower():
+                        matched_src = s
+                        break
+            # common synonym matches:
+            if not matched_src:
+                if target_name == "KODE_UNIK" and "NIB" in self.source_fields:
+                    matched_src = "NIB"
+                elif target_name == "NAMA_OBJEK" and "NAMOBJ" in self.source_fields:
+                    matched_src = "NAMOBJ"
+                elif target_name == "LUAS_HA" and "LUASTERTUL" in self.source_fields:
+                    matched_src = "LUASTERTUL"
+
+            self.mappings[target_name] = {
+                "source_col": matched_src,
+                "is_required": is_req,
+            }
+            self._render_row(row, attr, matched_src)
+
+        self._validate_all()
+
+    def _render_row(self, row, attr, current_src):
+        target_name = attr.get("nama_kolom", "").strip()
+        alias = attr.get("alias", target_name)
+        tipe = attr.get("tipe_data", "String")
+        is_req = attr.get("is_required", True)
+
+        # Kolom 0: Acuan Target
+        w_acuan = QWidget()
+        lay_acuan = QVBoxLayout(w_acuan)
+        lay_acuan.setContentsMargins(6, 6, 6, 6)
+        lay_acuan.setSpacing(2)
+
+        req_badge = "<span style='color:#ef4444; font-weight:bold;'> *</span>" if is_req else ""
+        lbl_target = QLabel(f"<b>{target_name}</b>{req_badge}", w_acuan)
+        lbl_desc = QLabel(f"{alias} • <small style='color:#64748b;'>{tipe}</small>", w_acuan)
+        lbl_desc.setStyleSheet("color: #475569; font-size: 10.5px;")
+        lay_acuan.addWidget(lbl_target)
+        lay_acuan.addWidget(lbl_desc)
+        self.table.setCellWidget(row, 0, w_acuan)
+
+        # Kolom 1: Dropdown Field Input SHP + Sample
+        w_input = QWidget()
+        lay_input = QVBoxLayout(w_input)
+        lay_input.setContentsMargins(6, 6, 6, 6)
+        lay_input.setSpacing(2)
+
+        combo = QComboBox(w_input)
+        combo.addItem("-- Pilih Kolom SHP --", "")
+        for sf in self.source_fields:
+            combo.addItem(sf, sf)
+        if current_src and current_src in self.source_fields:
+            combo.setCurrentText(current_src)
+
+        sample_txt = self.sample_values.get(current_src, "—") if current_src else "—"
+        lbl_sample = QLabel(f"<small style='color:#64748b;'>Contoh nilai: <b>{sample_txt}</b></small>", w_input)
+        lay_input.addWidget(combo)
+        lay_input.addWidget(lbl_sample)
+        self.table.setCellWidget(row, 1, w_input)
+
+        # Kolom 2: Status Badge
+        lbl_status = QLabel(w_input)
+        lbl_status.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._update_status_badge(lbl_status, bool(current_src), is_req)
+        self.table.setCellWidget(row, 2, lbl_status)
+
+        # Kolom 3: Tombol Reset
+        btn_reset = QPushButton("Reset", w_input)
+        btn_reset.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn_reset.setStyleSheet("font-size: 10px; color: #dc2626; padding: 2px 8px; border: 1px solid #fca5a5; border-radius: 4px; background: #fff;")
+        self.table.setCellWidget(row, 3, btn_reset)
+
+        def on_change(idx):
+            chosen = combo.currentData()
+            self.mappings[target_name]["source_col"] = chosen or None
+            s_val = self.sample_values.get(chosen, "—") if chosen else "—"
+            lbl_sample.setText(f"<small style='color:#64748b;'>Contoh nilai: <b>{s_val}</b></small>")
+            self._update_status_badge(lbl_status, bool(chosen), is_req)
+            self._validate_all()
+
+        combo.currentIndexChanged.connect(on_change)
+        btn_reset.clicked.connect(lambda: combo.setCurrentIndex(0))
+        self.table.setRowHeight(row, 56)
+
+    def _update_status_badge(self, label, is_mapped, is_req):
+        if is_mapped:
+            label.setText("✓ Sesuai")
+            label.setStyleSheet("color: #047857; font-weight: 700; font-size: 11px; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 4px; padding: 2px 8px;")
+        elif is_req:
+            label.setText("Belum Dipetakan")
+            label.setStyleSheet("color: #b91c1c; font-weight: 700; font-size: 10.5px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 4px; padding: 2px 6px;")
+        else:
+            label.setText("Opsional")
+            label.setStyleSheet("color: #64748b; font-size: 10.5px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 6px;")
+
+    def _validate_all(self):
+        missing_req = []
+        for target, data in self.mappings.items():
+            if data.get("is_required") and not data.get("source_col"):
+                missing_req.append(target)
+
+        if missing_req:
+            self.alert_msg.setText(f"⚠️ Kolom wajib belum terpetakan: {', '.join(missing_req)}")
+            self.alert_box.setVisible(True)
+            self.btn_confirm.setEnabled(False)
+        else:
+            self.alert_msg.setText("✓ Seluruh kolom wajib acuan telah terpetakan dengan benar!")
+            self.alert_msg.setStyleSheet("color: #047857; font-size: 11px; font-weight: 600;")
+            self.alert_box.setStyleSheet("background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 6px 12px;")
+            self.alert_box.setVisible(True)
+            self.btn_confirm.setEnabled(True)
+
+    def _on_confirm_mapping(self):
+        self.confirmed = True
+        self.accept()
+
+    def get_result_mappings(self):
+        return [
+            {"target_column": target, "source_column": val.get("source_col")}
+            for target, val in self.mappings.items()
+            if val.get("source_col")
+        ]
+
+
 class MetadataPreviewDialog(QDialog):
-    """Dialog pratinjau XML metadata resmi CMS/Geoportal."""
+    """Dialog pratinjau XML metadata resmi CMS/Geoportal dengan tampilan XPath dan XML Mentah."""
 
     def __init__(self, dataset_title="Data Potensi WP3WT", parent=None):
         super().__init__(parent)
         self.setWindowTitle(f"Metadata XML: {dataset_title}")
-        self.resize(500, 420)
+        self.resize(720, 520)
+        self.dataset_title = dataset_title
+
+        self.setStyleSheet("""
+            QDialog {
+                background-color: #f8fafc;
+                font-family: "Segoe UI", Arial, sans-serif;
+            }
+            QTabWidget::pane {
+                border: 1px solid #cbd5e1;
+                background-color: #ffffff;
+                border-radius: 6px;
+            }
+            QTabBar::tab {
+                background-color: #f1f5f9;
+                color: #475569;
+                padding: 6px 20px;
+                min-width: 140px;
+                font-weight: 600;
+                font-size: 11.5px;
+                border-top-left-radius: 6px;
+                border-top-right-radius: 6px;
+                margin-right: 4px;
+            }
+            QTabBar::tab:selected {
+                background-color: #ffffff;
+                color: #1f6fd6;
+                font-weight: 700;
+                border-bottom: 2px solid #1f6fd6;
+            }
+        """)
+
         lay = QVBoxLayout(self)
-        lay.setContentsMargins(14, 14, 14, 14)
+        lay.setContentsMargins(16, 16, 16, 16)
         lay.setSpacing(10)
 
-        head = QLabel(f"Pratinjau Metadata XML (Standar ISO 19115 / FGDC)", self)
-        head.setStyleSheet("color: #0f294d; font-size: 13px; font-weight: 700;")
+        head = QLabel(f"Pratinjau Metadata Geospasial ISO 19115: {dataset_title}", self)
+        head.setStyleSheet("color: #0f294d; font-size: 13.5px; font-weight: 800;")
         lay.addWidget(head)
 
-        txt = QTextEdit(self)
+        tabs = QTabWidget(self)
+
+        # Tab 1: XPath & Nilai
+        tab_xpath = QWidget()
+        tx_lay = QVBoxLayout(tab_xpath)
+        tx_lay.setContentsMargins(8, 8, 8, 8)
+        
+        table_xp = QTableWidget(tab_xpath)
+        table_xp.setColumnCount(2)
+        table_xp.setHorizontalHeaderLabels(["Struktur XPath / Elemen", "Nilai Metadata CMS"])
+        table_xp.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Interactive)
+        table_xp.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        table_xp.setColumnWidth(0, 320)
+        table_xp.verticalHeader().setVisible(False)
+        table_xp.setStyleSheet("font-size: 11px;")
+
+        xpath_rows = [
+            ("gmd:fileIdentifier / gco:CharacterString", f"urn:igtpr:dataset:{dataset_title.lower().replace(' ', '_')}"),
+            ("gmd:identificationInfo / gmd:citation / gmd:title", dataset_title),
+            ("gmd:identificationInfo / gmd:citation / gmd:date", QDate.currentDate().toString("yyyy-MM-dd")),
+            ("gmd:identificationInfo / gmd:abstract", "Dataset spasial terkompilasi resmi Kementerian Agraria dan Tata Ruang / Badan Pertanahan Nasional."),
+            ("gmd:identificationInfo / gmd:status", "completed / Terintegrasi"),
+            ("gmd:spatialRepresentationInfo / gmd:spatialRepresentationType", "vector / Poligon Spasial"),
+            ("gmd:referenceSystemInfo / gmd:referenceSystemIdentifier", "EPSG:4326 (WGS 84 / Geographic)"),
+            ("gmd:contact / gmd:organisationName", "Kementerian ATR/BPN - Ditjen SPPR"),
+            ("gmd:distributionInfo / gmd:transferOptions / gmd:onLine", "WMS / WFS GeoServer Geoportal IGT-PR"),
+        ]
+        table_xp.setRowCount(len(xpath_rows))
+        for r_idx, (xp, val) in enumerate(xpath_rows):
+            item_xp = QTableWidgetItem(xp)
+            item_xp.setFlags(item_xp.flags() ^ Qt.ItemFlag.ItemIsEditable)
+            item_xp.setFont(QFont("Consolas", 9))
+            table_xp.setItem(r_idx, 0, item_xp)
+            item_val = QTableWidgetItem(val)
+            table_xp.setItem(r_idx, 1, item_val)
+
+        tx_lay.addWidget(table_xp)
+        tabs.addTab(tab_xpath, "Tabel XPath && Nilai")
+
+        # Tab 2: Raw XML
+        tab_raw = QWidget()
+        tr_lay = QVBoxLayout(tab_raw)
+        tr_lay.setContentsMargins(8, 8, 8, 8)
+
+        txt = QTextEdit(tab_raw)
         txt.setReadOnly(True)
         txt.setStyleSheet("""
             QTextEdit {
@@ -416,7 +861,7 @@ class MetadataPreviewDialog(QDialog):
           </gmd:title>
           <gmd:date>
             <gmd:CI_Date>
-              <gmd:date><gco:Date>2026-11-01</gco:Date></gmd:date>
+              <gmd:date><gco:Date>{QDate.currentDate().toString("yyyy-MM-dd")}</gco:Date></gmd:date>
               <gmd:dateType><gmd:CI_DateTypeCode codeListValue="publication"/></gmd:dateType>
             </gmd:CI_Date>
           </gmd:date>
@@ -432,14 +877,17 @@ class MetadataPreviewDialog(QDialog):
   </gmd:identificationInfo>
 </gmd:MD_Metadata>"""
         txt.setPlainText(xml_content)
-        lay.addWidget(txt, 1)
+        tr_lay.addWidget(txt)
+        tabs.addTab(tab_raw, "Editor XML Mentah")
+
+        lay.addWidget(tabs, 1)
 
         btn_close = QPushButton("Tutup", self)
         btn_close.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_close.setStyleSheet("""
             QPushButton {
                 background-color: #1f6fd6; color: #ffffff; font-weight: 700;
-                border-radius: 6px; padding: 6px 16px; border: none;
+                border-radius: 6px; padding: 6px 16px; border: none; font-size: 11.5px;
             }
             QPushButton:hover { background-color: #1a63c7; }
         """)
@@ -590,13 +1038,15 @@ class UploadIgtUtamaDialog(QDialog):
         s1_lay = QVBoxLayout(s1)
         s1_lay.setSpacing(8)
 
-        s1_title = QLabel("1. Jenis IGT (*)", s1)
+        s1_title_text = "1. Layer Derivatif (CMS Geoportal) (*)" if is_derivatif else "1. Jenis IGT (*)"
+        s1_title = QLabel(s1_title_text, s1)
         s1_title.setStyleSheet("color: #0f294d; font-size: 12.5px; font-weight: 800;")
         s1_lay.addWidget(s1_title)
 
         self.jenis_combo = QComboBox(s1)
         if is_derivatif:
             self.jenis_combo.addItems([
+                'Coba Derivatif Bidang',
                 'Derivatif Potensi Pajak PBB-P2 (Bidang)',
                 'Derivatif Zona Kerentanan Bencana',
                 'Derivatif Konsolidasi Tanah',
@@ -613,6 +1063,47 @@ class UploadIgtUtamaDialog(QDialog):
             ])
         self.jenis_combo.currentIndexChanged.connect(self._on_jenis_changed)
         s1_lay.addWidget(self.jenis_combo)
+
+        # Target Renaksi Container (Khusus IGT Utama)
+        self.renaksi_box = QFrame(s1)
+        self.renaksi_box.setStyleSheet("background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px;")
+        rn_lay = QVBoxLayout(self.renaksi_box)
+        rn_lay.setContentsMargins(6, 6, 6, 6)
+        rn_lay.setSpacing(6)
+
+        lbl_rn_head = QLabel("Target Rencana Aksi (Renaksi ATR/BPN)", self.renaksi_box)
+        lbl_rn_head.setStyleSheet("color: #0f294d; font-size: 11px; font-weight: 700;")
+        rn_lay.addWidget(lbl_rn_head)
+
+        rn_grid = QGridLayout()
+        rn_grid.setSpacing(6)
+
+        rn_grid.addWidget(QLabel("Tahun Renaksi:", self.renaksi_box), 0, 0)
+        self.combo_tahun_renaksi = QComboBox(self.renaksi_box)
+        self.combo_tahun_renaksi.addItems(["2026", "2025", "2024"])
+        rn_grid.addWidget(self.combo_tahun_renaksi, 0, 1)
+
+        rn_grid.addWidget(QLabel("Target:", self.renaksi_box), 0, 2)
+        self.inp_target = QLineEdit("1.500", self.renaksi_box)
+        self.inp_target.setEnabled(False)
+        self.inp_target.setStyleSheet("background-color: #f1f5f9; color: #475569; font-weight: 700;")
+        rn_grid.addWidget(self.inp_target, 0, 3)
+
+        rn_grid.addWidget(QLabel("Satuan:", self.renaksi_box), 1, 0)
+        self.inp_satuan = QLineEdit("Bidang", self.renaksi_box)
+        self.inp_satuan.setEnabled(False)
+        self.inp_satuan.setStyleSheet("background-color: #f1f5f9; color: #475569; font-weight: 700;")
+        rn_grid.addWidget(self.inp_satuan, 1, 1)
+
+        rn_grid.addWidget(QLabel("Jumlah Realisasi (*):", self.renaksi_box), 1, 2)
+        self.inp_realisasi = QLineEdit("1.500", self.renaksi_box)
+        self.inp_realisasi.setValidator(QIntValidator(0, 999999999, self))
+        rn_grid.addWidget(self.inp_realisasi, 1, 3)
+
+        rn_lay.addLayout(rn_grid)
+        s1_lay.addWidget(self.renaksi_box)
+        if is_derivatif:
+            self.renaksi_box.setVisible(False)
 
         sub_grid = QGridLayout()
         sub_grid.setSpacing(8)
@@ -678,6 +1169,10 @@ class UploadIgtUtamaDialog(QDialog):
         verify_row.addWidget(self.attr_status_lbl, 1)
         s2_lay.addLayout(verify_row)
 
+        if is_derivatif:
+            self.btn_verify_attr.setVisible(False)
+            self.attr_status_lbl.setVisible(False)
+
         c_layout.addWidget(s2)
 
         # ------------------------------------------------------------------ Section 3: SLD Style
@@ -738,6 +1233,8 @@ class UploadIgtUtamaDialog(QDialog):
         s4_lay.addLayout(meta_row)
 
         c_layout.addWidget(s4)
+        if is_derivatif:
+            s4.setVisible(False)
 
         # ------------------------------------------------------------------ Section 5: Dokumen Pendukung Lainnya
         s5 = QFrame(content)
@@ -762,6 +1259,8 @@ class UploadIgtUtamaDialog(QDialog):
         doc_row.addWidget(btn_doc)
         s5_lay.addLayout(doc_row)
         c_layout.addWidget(s5)
+        if is_derivatif:
+            s5.setVisible(False)
 
         # ------------------------------------------------------------------ Section 6: Keterangan
         s6 = QFrame(content)
@@ -769,12 +1268,14 @@ class UploadIgtUtamaDialog(QDialog):
         s6_lay = QVBoxLayout(s6)
         s6_lay.setSpacing(8)
 
-        s6_title = QLabel("6. Keterangan (opsional)", s6)
+        s6_title_txt = "4. Keterangan Pengajuan (*)" if is_derivatif else "6. Keterangan (opsional)"
+        s6_title = QLabel(s6_title_txt, s6)
         s6_title.setStyleSheet("color: #0f294d; font-size: 12.5px; font-weight: 800;")
         s6_lay.addWidget(s6_title)
 
         self.keterangan_input = QLineEdit(s6)
-        self.keterangan_input.setPlaceholderText("Catatan atau deskripsi pengajuan data kompilasi")
+        ph_txt = "Isi keterangan pengajuan data derivatif (wajib)" if is_derivatif else "Catatan atau deskripsi pengajuan data kompilasi"
+        self.keterangan_input.setPlaceholderText(ph_txt)
         s6_lay.addWidget(self.keterangan_input)
         c_layout.addWidget(s6)
 
@@ -847,9 +1348,23 @@ class UploadIgtUtamaDialog(QDialog):
             self._refresh_layers()
 
     def _on_verify_attributes(self):
-        self.is_attribute_verified = True
-        self.attr_status_lbl.setText("✓ Pemeriksaan atribut berhasil: 18 kolom sesuai skema standar IGT")
-        self.attr_status_lbl.setStyleSheet("color: #047857; font-size: 10.5px; font-weight: 700;")
+        lyr = None
+        if QgsProject is not None and QgsProject.instance():
+            sel_text = self.layer_combo.currentText()
+            matches = QgsProject.instance().mapLayersByName(sel_text)
+            if matches:
+                lyr = matches[0]
+
+        dlg = AttributeMappingDialog(
+            parent=self,
+            igt_name=self.jenis_combo.currentText(),
+            target_layer=lyr
+        )
+        if dlg.exec_() and dlg.confirmed:
+            self.is_attribute_verified = True
+            n_mapped = len(dlg.get_result_mappings())
+            self.attr_status_lbl.setText(f"✓ Pemetaan atribut berhasil dikonfirmasi ({n_mapped} kolom sesuai skema standar IGT).")
+            self.attr_status_lbl.setStyleSheet("color: #047857; font-size: 10.5px; font-weight: 700;")
 
     def _on_apply_sld(self):
         self.sld_status_lbl.setText("✓ SLD berhasil diterapkan ke layer kanvas QGIS")
@@ -870,8 +1385,28 @@ class UploadIgtUtamaDialog(QDialog):
             self.doc_lbl.setStyleSheet("color: #047857; font-size: 11px; font-weight: 700;")
 
     def _on_submit(self):
+        is_derivatif = self.current_category == 'derivatif'
+        sel_layer = self.layer_combo.currentText().strip()
+        if not sel_layer or "Tidak ada layer" in sel_layer:
+            QMessageBox.warning(self, "Peringatan", "Silakan pilih layer SHP aktif di kanvas QGIS atau tentukan berkas data terlebih dahulu.")
+            return
+
+        if not is_derivatif and not self.is_attribute_verified:
+            QMessageBox.warning(self, "Peringatan", "Pemeriksaan atribut (Verifikasi Kompilasi) wajib diselesaikan dan dikonfirmasi terlebih dahulu sebelum pengajuan.")
+            return
+
+        keterangan = self.keterangan_input.text().strip()
+        if is_derivatif and not keterangan:
+            QMessageBox.warning(self, "Peringatan", "Keterangan pengajuan data derivatif wajib diisi.")
+            return
+
+        if not is_derivatif and hasattr(self, 'inp_realisasi') and self.renaksi_box.isVisible() and not self.inp_realisasi.text().strip():
+            QMessageBox.warning(self, "Peringatan", "Jumlah realisasi target rencana aksi wajib diisi.")
+            return
+
         jenis = self.jenis_combo.currentText()
-        keterangan = self.keterangan_input.text().strip() or "Pengajuan data kompilasi"
+        if not keterangan:
+            keterangan = "Pengajuan data kompilasi"
 
         if self.is_revision and self.record_to_revise:
             self.record_to_revise['status'] = 'Diajukan'

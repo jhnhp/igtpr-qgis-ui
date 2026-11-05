@@ -1,690 +1,842 @@
-// Workflow page "Upload Derivatif Bidang" (IGT Derivatif, Operator): six steps on one page.
-// Needs shared/igt-data.js. Everything that would touch QGIS, the baseline layer or files is a simulation:
-// there is no WFS, no QGIS API and no file generation. Workflow state lives in this page; only the list of
-// "saved" attribute files is mirrored to sessionStorage so step 6 can be revisited after leaving the page.
+// Workflow page "Derivatif Per Bidang" (Mockup V2).
+// Sesuai dengan spesifikasi dan alur kerja di plugin eksisting (IGTPR-PLUGIN-QGIS / derivatif_bidang_page.py):
+// 1. ✍️ ISI TEMATIK (Pilih layer derivatif CMS, load baseline WMS, klik bidang, isi atribut CMS dinamis, simpan ke sesi, ekspor)
+// 2. ➕ CREATE TEMATIK (Pengaturan layer baru & baseline CMS, pilih bidang baseline, atribut default terkunci 🔒, atribut custom tambahan dinamis, simpan ke sesi, ekspor)
+// 3. 📂 LOAD TEMATIK (Pilih berkas tabel atribut derivatif hasil ekspor lokal, verifikasi baseline, re-join geometri & visualisasi kanvas)
+
 const DerivatifBidang = (() => {
   const $ = (selector) => document.querySelector(selector);
   const esc = (value) =>
-    String(value).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+    String(value === undefined || value === null ? '' : value)
+      .replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
-  const STEPS = [
-    { short: 'Sumber', title: 'Pilih Sumber Bidang Tanah', text: 'Muat layer baseline sebagai sumber geometri bidang.' },
-    { short: 'Struktur', title: 'Atur Struktur Atribut', text: 'Gunakan template layer derivatif atau tambahkan kolom manual.' },
-    { short: 'Bidang', title: 'Pilih Bidang Tanah', text: 'Pilih satu bidang pada QGIS Canvas.' },
-    { short: 'Atribut', title: 'Isi Atribut', text: 'Lengkapi nilai atribut untuk bidang terpilih.' },
-    { short: 'Simpan', title: 'Simpan Berkas', text: 'Simpan ID bidang dan atribut tambahan ke sebuah berkas.' },
-    { short: 'Disetujui', title: 'Atribut Disetujui', text: 'Gabungkan atribut dari berkas yang disetujui ke bidang sumber berdasarkan ID Bidang.' },
+  // Baseline dummy parcels
+  const BASELINE_PARCELS = [
+    { id: '123456789012345', nib: '12.01.04.01.00128', desa: 'Caturtunggal', kecamatan: 'Depok', kabupaten: 'Sleman', luas: '842', hak: 'Hak Milik' },
+    { id: '123456789012346', nib: '12.01.04.01.00129', desa: 'Condongcatur', kecamatan: 'Depok', kabupaten: 'Sleman', luas: '1.215', hak: 'Hak Guna Bangunan' },
+    { id: '123456789012347', nib: '12.01.04.01.00130', desa: 'Maguwoharjo', kecamatan: 'Depok', kabupaten: 'Sleman', luas: '530', hak: 'Hak Milik' },
+    { id: '123456789012348', nib: '12.01.04.01.00131', desa: 'Sinduadi', kecamatan: 'Mlati', kabupaten: 'Sleman', luas: '2.060', hak: 'Hak Pakai' },
+    { id: '123456789012349', nib: '12.01.04.01.00132', desa: 'Tirtomartani', kecamatan: 'Kalasan', kabupaten: 'Sleman', luas: '978', hak: 'Hak Milik' },
+    { id: '123456789012350', nib: '12.01.04.01.00133', desa: 'Purwomartani', kecamatan: 'Kalasan', kabupaten: 'Sleman', luas: '1.430', hak: 'Hak Milik' },
   ];
-  const APPROVED = STEPS.length;
 
-  const FIELD_TYPES = { text: 'Teks', integer: 'Bilangan bulat', decimal: 'Desimal', date: 'Tanggal' };
-  const FIELD_NAME = /^[A-Za-z][A-Za-z0-9_]{0,29}$/;
-  const FILE_NAME = /^[A-Za-z0-9][A-Za-z0-9._-]{0,59}$/;
-  const FORMATS = { gpkg: { ext: '.gpkg', label: 'GeoPackage (.gpkg)' }, json: { ext: '.json', label: 'JSON (.json)' } };
-  const ID_FIELD = 'id_bidang';
-  const STORAGE_KEY = 'igtpr.derivatifBidang.savedFiles';
-
-  // Dummy data. None of this comes from a real baseline, Geoportal or template registry.
-  const BASELINE = [
-    { id: '123456789012345', desa: 'Caturtunggal', kecamatan: 'Depok', kabupaten: 'Sleman', luas: '842', hak: 'Hak Milik' },
-    { id: '123456789012346', desa: 'Condongcatur', kecamatan: 'Depok', kabupaten: 'Sleman', luas: '1.215', hak: 'Hak Guna Bangunan' },
-    { id: '123456789012347', desa: 'Maguwoharjo', kecamatan: 'Depok', kabupaten: 'Sleman', luas: '530', hak: 'Hak Milik' },
-    { id: '123456789012348', desa: 'Sinduadi', kecamatan: 'Mlati', kabupaten: 'Sleman', luas: '2.060', hak: 'Hak Pakai' },
-    { id: '123456789012349', desa: 'Tirtomartani', kecamatan: 'Kalasan', kabupaten: 'Sleman', luas: '978', hak: 'Hak Milik' },
-    { id: '123456789012350', desa: 'Purwomartani', kecamatan: 'Kalasan', kabupaten: 'Sleman', luas: '1.430', hak: 'Hak Milik' },
-  ];
-  const CANVAS_COUNT = 4; // the first parcels are inside the simulated canvas extent
   const CANVAS_SHAPES = [
     { points: '18,22 138,14 150,82 28,96', cx: 84, cy: 54 },
     { points: '150,14 282,24 270,92 160,84', cx: 216, cy: 54 },
     { points: '28,106 150,96 160,166 22,160', cx: 90, cy: 132 },
     { points: '160,96 270,104 282,162 170,166', cx: 220, cy: 132 },
   ];
-  const TEMPLATES = [
+
+  const DERIVATIF_CMS_LAYERS = [
     {
-      id: 'penggunaan-lahan', name: 'Template Contoh A · Penggunaan Lahan',
+      id: 'kumuh',
+      name: 'Kawasan Kumuh Bidang (Perkim)',
+      summary: 'Tipe: Vektor Poligon | Target: 2.500 Bidang | CRS: EPSG:3857 | Pemilik: Ditjen Survei dan Pemetaan',
       fields: [
-        { name: 'kode_guna', type: 'text', required: true },
-        { name: 'jenis_guna', type: 'text', required: true },
-        { name: 'luas_ha', type: 'decimal', required: false },
-        { name: 'jumlah_bangunan', type: 'integer', required: false },
-        { name: 'tgl_survei', type: 'date', required: false },
+        { name: 'status_kumuh', label: 'Status Kekumuhan', type: 'select', options: ['Kumuh Ringan', 'Kumuh Sedang', 'Kumuh Berat', 'Bukan Kumuh'] },
+        { name: 'kepadatan_bangunan', label: 'Kepadatan Bangunan', type: 'select', options: ['Tinggi (>70%)', 'Sedang (40-70%)', 'Rendah (<40%)'] },
+        { name: 'tingkat_kerentanan', label: 'Tingkat Kerentanan Bencana', type: 'select', options: ['Tinggi', 'Sedang', 'Rendah'] },
+        { name: 'luas_terdampak_m2', label: 'Luas Terdampak (m²)', type: 'number', default: '450' },
+        { name: 'rekomendasi_penanganan', label: 'Rekomendasi Penanganan', type: 'text', default: 'Peningkatan drainase dan jalan lingkungan' },
+        { name: 'tahun_analisis', label: 'Tahun Analisis', type: 'number', default: '2026' },
       ],
     },
     {
-      id: 'kondisi-bidang', name: 'Template Contoh B · Kondisi Bidang',
+      id: 'kritis',
+      name: 'Lahan Kritis Bidang (KLHK)',
+      summary: 'Tipe: Vektor Poligon | Target: 1.800 Bidang | CRS: EPSG:3857 | Pemilik: Ditjen Tata Ruang',
       fields: [
-        { name: 'kondisi', type: 'text', required: true },
-        { name: 'tahun_data', type: 'integer', required: true },
-        { name: 'nilai_taksiran', type: 'decimal', required: false },
-        { name: 'tgl_verifikasi', type: 'date', required: false },
+        { name: 'tingkat_kritis', label: 'Tingkat Kekritisan', type: 'select', options: ['Sangat Kritis', 'Kritis', 'Agak Kritis', 'Potensial Kritis'] },
+        { name: 'kemiringan_lereng', label: 'Kelas Lereng', type: 'select', options: ['Datar (0-8%)', 'Landai (8-15%)', 'Agak Curam (15-25%)', 'Sangat Curam (>40%)'] },
+        { name: 'tutupan_vegetasi', label: 'Persentase Vegetasi (%)', type: 'number', default: '35' },
+        { name: 'upaya_konservasi', label: 'Upaya Konservasi', type: 'text', default: 'Penanaman bibit pohon pelindung' },
+        { name: 'tahun_analisis', label: 'Tahun Analisis', type: 'number', default: '2026' },
+      ],
+    },
+    {
+      id: 'gempa',
+      name: 'Zona Kerentanan Sesar Aktif & Gempa (BNPB)',
+      summary: 'Tipe: Vektor Poligon | Target: 3.200 Bidang | CRS: EPSG:3857 | Pemilik: Kantah Kab. Sleman',
+      fields: [
+        { name: 'zona_bahaya', label: 'Zona Bahaya Gempa', type: 'select', options: ['Zona Merah (Tinggi)', 'Zona Kuning (Sedang)', 'Zona Hijau (Aman)'] },
+        { name: 'jarak_ke_sesar_m', label: 'Jarak ke Sesar Terdekat (m)', type: 'number', default: '250' },
+        { name: 'jenis_tanah_pondasi', label: 'Jenis Tanah Pondasi', type: 'text', default: 'Alluvial sedang berpasir' },
+        { name: 'kelayakan_struktur', label: 'Kelayakan Struktur Bangunan', type: 'select', options: ['Tahan Gempa', 'Perlu Penguatan', 'Rawan Roboh'] },
+        { name: 'tahun_analisis', label: 'Tahun Analisis', type: 'number', default: '2026' },
       ],
     },
   ];
-  const SAMPLE_FILES = [
-    {
-      fileName: 'atribut_penggunaan_lahan_contoh.gpkg', format: 'gpkg', origin: 'sample',
-      fields: [{ name: 'kode_guna', type: 'text' }, { name: 'jenis_guna', type: 'text' }, { name: 'luas_ha', type: 'decimal' }],
-      records: [
-        { id: '123456789012345', values: { kode_guna: 'PMK-01', jenis_guna: 'Permukiman', luas_ha: '0.08' } },
-        { id: '123456789012346', values: { kode_guna: 'PRD-02', jenis_guna: 'Perdagangan', luas_ha: '0.12' } },
-        { id: '999999999999999', values: { kode_guna: 'PMK-01', jenis_guna: 'Permukiman', luas_ha: '0.05' } },
-      ],
-    },
-    {
-      fileName: 'atribut_kondisi_bidang_contoh.json', format: 'json', origin: 'sample',
-      fields: [{ name: 'kondisi', type: 'text' }, { name: 'tahun_data', type: 'integer' }],
-      records: [
-        { id: '123456789012347', values: { kondisi: 'Terbangun', tahun_data: '2025' } },
-        { id: '123456789012348', values: { kondisi: 'Kosong', tahun_data: '2024' } },
-      ],
-    },
-    {
-      fileName: 'atribut_tidak_valid_contoh.gpkg', format: 'gpkg', origin: 'sample',
-      invalid: 'Kolom ID Bidang (id_bidang) tidak ditemukan pada berkas ini.',
-      fields: [], records: [],
-    },
+
+  const CMS_BASELINES = [
+    { id: 'sleman', name: 'bidang_tanah_sleman_2026', typename: 'sppr:baseline_bidang_sleman', count: 32400 },
+    { id: 'bantul', name: 'bidang_tanah_bantul_2026', typename: 'sppr:baseline_bidang_bantul', count: 28100 },
+    { id: 'kulonprogo', name: 'bidang_tanah_kulonprogo_2026', typename: 'sppr:baseline_bidang_kulonprogo', count: 19800 },
   ];
 
-  const today = () => new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
-  const findParcel = (id) => BASELINE.find((p) => p.id === id);
-  const typeLabel = (type) => FIELD_TYPES[type] || type;
-  const badge = (cls, text) => `<span class="status ${cls}">${text}</span>`;
+  // Global state
+  const state = {
+    role: 'operator',
+    currentMode: 'isi', // 'isi' | 'create' | 'load'
+    activeParcelId: '123456789012345',
+    isPicking: true,
 
-  function loadSavedFiles() {
-    try {
-      const parsed = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || '[]');
-      return Array.isArray(parsed)
-        ? parsed.filter((f) => f && typeof f.fileName === 'string' && Array.isArray(f.fields) && Array.isArray(f.records))
-        : [];
-    } catch (e) {
-      return [];
-    }
-  }
-  function persistSavedFiles(files) {
-    try {
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(files));
-    } catch (e) {
-      /* storage can be blocked (file:// previews); the files stay available while the page is open */
-    }
-  }
-
-  function init(role) {
-    const view = $('#view');
-    if (!IgtData.ROLES[role] || !IgtData.ROLES[role].derivatifWorkflow) {
-      view.innerHTML = '<div class="notice"><strong>Akses ditolak</strong>Upload Derivatif Bidang tidak tersedia untuk role ini.</div>';
-      return;
-    }
-    const isV2 = Boolean(IgtData.ROLES[role].v2);
-    if (isV2) {
-      document.body.classList.add('v2-page', 'v2-theme-upload');
-    }
-    const backUrl = isV2 ? '../beranda/index.html' : '../upload-data/index.html?tab=derivatif';
-    const finishLabel = isV2 ? 'Selesai · Kembali ke Dashboard' : 'Selesai · Kembali ke IGT Derivatif';
-
-    const state = {
-      step: 1,
-      resumeMode: false,
-      sourceLoaded: false,
-      selectionActive: false,
-      parcelId: '',
-      mode: 'template',
-      templateId: '',
-      manualFields: [],
-      draft: { name: '', type: 'text', required: false },
-      draftError: '',
-      values: {},
-      touched: {},
-      filename: '',
-      filenameEdited: false,
+    // Mode ISI
+    isi: {
+      selectedLayerId: 'kumuh',
+      wmsLoaded: true,
+      wmsLogOpen: false,
+      formValues: {
+        status_kumuh: 'Kumuh Sedang',
+        kepadatan_bangunan: 'Tinggi (>70%)',
+        tingkat_kerentanan: 'Sedang',
+        luas_terdampak_m2: '450',
+        rekomendasi_penanganan: 'Peningkatan drainase dan jalan lingkungan',
+        tahun_analisis: '2026',
+      },
+      sessionParcels: [
+        {
+          id: '123456789012346',
+          nib: '12.01.04.01.00129',
+          desa: 'Condongcatur',
+          kecamatan: 'Depok',
+          summary: 'Kumuh Ringan · Drainase memadai · Luas: 280 m²',
+          values: { status_kumuh: 'Kumuh Ringan', kepadatan_bangunan: 'Sedang (40-70%)', tingkat_kerentanan: 'Rendah', luas_terdampak_m2: '280' },
+        },
+      ],
+      folder: '~/Documents/Derivatif_Kompilasi',
       format: 'gpkg',
-      saveDone: false,
-      savedFiles: loadSavedFiles(),
-      fileKey: '',
-      loadedFile: null,
-      loadError: '',
-      join: null,
-      notice: '',
-    };
+    },
 
-    // ---------------------------------------------------------------- derived data
+    // Mode CREATE
+    create: {
+      layerName: 'derivatif_bidang_kustom',
+      selectedBaselineId: 'sleman',
+      wmsLoaded: true,
+      customColumns: [
+        { name: 'kode_zona', type: 'Teks', length: 20, value: 'ZN-04' },
+        { name: 'indeks_kerentanan', type: 'Desimal', length: 10, value: '0.78' },
+        { name: 'prioritas_penanganan', type: 'Angka Bulat', length: 4, value: '1' },
+      ],
+      sessionParcels: [
+        {
+          id: '123456789012347',
+          nib: '12.01.04.01.00130',
+          desa: 'Maguwoharjo',
+          kecamatan: 'Depok',
+          summary: 'kode_zona=ZN-01, indeks_kerentanan=0.45, prioritas_penanganan=2',
+        },
+      ],
+      folder: '~/Documents/Derivatif_Kustom',
+      format: 'gpkg',
+    },
 
-    const currentFields = () =>
-      state.mode === 'template'
-        ? (TEMPLATES.find((t) => t.id === state.templateId) || { fields: [] }).fields
-        : state.manualFields;
+    // Mode LOAD
+    load: {
+      filePath: 'atribut_kawasan_kumuh_sleman_2026.gpkg',
+      fileLoaded: true,
+      settingsOpen: false,
+      detectedBaseline: {
+        name: 'bidang_tanah_sleman_2026',
+        typename: 'sppr:baseline_bidang_sleman',
+        wmsUrl: 'https://geoportal.atrbpn.go.id/geoserver/sppr/wms',
+        crs: 'EPSG:3857',
+        idField: 'id_bidang',
+        totalFeatures: 4,
+      },
+      loadedParcels: [
+        { id: '123456789012345', nib: '12.01.04.01.00128', desa: 'Caturtunggal', kecamatan: 'Depok', status_kumuh: 'Kumuh Berat', luas_terdampak: '520 m²', aksi: 'Normalisasi saluran' },
+        { id: '123456789012346', nib: '12.01.04.01.00129', desa: 'Condongcatur', kecamatan: 'Depok', status_kumuh: 'Kumuh Sedang', luas_terdampak: '410 m²', aksi: 'Perbaikan jalan lingkungan' },
+        { id: '123456789012347', nib: '12.01.04.01.00130', desa: 'Maguwoharjo', kecamatan: 'Depok', status_kumuh: 'Kumuh Ringan', luas_terdampak: '180 m²', aksi: 'Penataan sanitasi' },
+        { id: '123456789012348', nib: '12.01.04.01.00131', desa: 'Sinduadi', kecamatan: 'Mlati', status_kumuh: 'Kumuh Ringan', luas_terdampak: '230 m²', aksi: 'Pemasangan tong sampah pilah' },
+      ],
+    },
+  };
 
-    function fieldError(field, raw) {
-      const value = String(raw === undefined ? '' : raw).trim();
-      if (!value) return field.required ? 'Wajib diisi.' : '';
-      if (field.type === 'integer' && !/^-?\d+$/.test(value)) return 'Isi dengan bilangan bulat.';
-      if (field.type === 'decimal' && !(value !== '' && Number.isFinite(Number(value)))) return 'Isi dengan angka desimal, contoh 12.5.';
-      if (field.type === 'date' && !/^\d{4}-\d{2}-\d{2}$/.test(value)) return 'Isi dengan tanggal yang valid.';
-      return '';
-    }
-    const attributeErrors = () => currentFields().filter((f) => fieldError(f, state.values[f.name]));
+  function getActiveParcel() {
+    return BASELINE_PARCELS.find((p) => p.id === state.activeParcelId) || BASELINE_PARCELS[0];
+  }
 
-    function filenameError() {
-      const name = state.filename.trim();
-      if (!name) return 'Nama berkas wajib diisi.';
-      if (/\.(gpkg|json)$/i.test(name)) return 'Tulis nama tanpa ekstensi; ekstensi mengikuti format yang dipilih.';
-      if (!FILE_NAME.test(name)) return 'Gunakan huruf, angka, titik, garis bawah atau tanda hubung (maks. 60 karakter).';
-      return '';
-    }
+  function getIsiSavedIds() {
+    return state.isi.sessionParcels.map((p) => p.id);
+  }
 
-    // Messages explaining why a step cannot be left yet. Empty = the step is complete.
-    function blockers(step) {
-      if (step === 1) return state.sourceLoaded ? [] : ['Muat baseline bidang tanah terlebih dahulu.'];
-      if (step === 2) {
-        if (state.mode === 'template') return state.templateId ? [] : ['Pilih satu template layer derivatif.'];
-        return state.manualFields.length ? [] : ['Tambahkan minimal satu kolom atribut.'];
-      }
-      if (step === 3) return state.parcelId ? [] : [state.selectionActive ? 'Pilih satu bidang tanah.' : 'Aktifkan alat pilih, lalu pilih satu bidang tanah.'];
-      if (step === 4) {
-        if (blockers(2).length || blockers(3).length) return ['Tentukan struktur atribut dan pilih bidang terlebih dahulu.'];
-        const bad = attributeErrors().length;
-        return bad ? [`Lengkapi atau perbaiki ${bad} kolom atribut.`] : [];
-      }
-      if (step === 5) return state.saveDone ? [] : ['Simpan file untuk melanjutkan (atau selesaikan dan kembali nanti).'];
-      return [];
-    }
-    // A step can be opened when it is behind us, the last step (independent of 1-5), or all steps before it are complete.
-    function canReach(target) {
-      if (target <= state.step || target === APPROVED) return true;
-      for (let s = state.step; s < target; s += 1) if (blockers(s).length) return false;
-      return true;
-    }
+  function getCreateSavedIds() {
+    return state.create.sessionParcels.map((p) => p.id);
+  }
 
-    const touch = () => { state.saveDone = false; };
+  function getLoadedIds() {
+    return state.load.loadedParcels.map((p) => p.id);
+  }
 
-    // ---------------------------------------------------------------- step renderers
+  // -------------------------------------------------------------------------
+  // RENDER SVG CANVAS SIMULATION
+  // -------------------------------------------------------------------------
+  function renderCanvasSvg(mode) {
+    const savedIds = mode === 'isi' ? getIsiSavedIds() : mode === 'create' ? getCreateSavedIds() : getLoadedIds();
+    const activeId = mode === 'load' ? '' : state.activeParcelId;
 
-    function renderSource() {
-      const ready = state.sourceLoaded;
-      return (
-        `<div class="notice"><strong>Baseline bidang tanah</strong>Baseline menyediakan geometri bidang dan pengenal uniknya (ID Bidang). ` +
-        `Geometri tidak diunggah ulang; atribut derivatif dihubungkan ke bidang melalui ID Bidang.</div>` +
-        `<div class="detail-grid">` +
-        `<div class="detail-item"><div class="detail-label">Layer sumber</div><div class="detail-value">Baseline Bidang Tanah (contoh)</div></div>` +
-        `<div class="detail-item"><div class="detail-label">Status sumber</div><div class="detail-value" id="source-status">${ready ? badge('ok', 'Siap digunakan') : badge('', 'Belum dimuat')}</div></div>` +
-        `<div class="detail-item"><div class="detail-label">Pengenal bidang</div><div class="detail-value">ID Bidang</div></div>` +
-        `<div class="detail-item"><div class="detail-label">Koneksi</div><div class="detail-value">Simulasi · tanpa WFS</div></div></div>` +
-        `<div class="toolbar"><button type="button" class="btn btn-primary" data-act="load-baseline" id="load-baseline">▦ ${ready ? 'Muat Ulang Baseline' : 'Load Baseline'}</button></div>` +
-        `<div class="card-head submissions-head"><div><h2>Lanjutkan data tersimpan</h2><p>Muat struktur dan nilai atribut dari berkas sebelumnya agar tidak perlu dibuat ulang.</p></div></div>` +
-        `<div class="field"><label for="resume-file-select">BERKAS DERIVATIF TERSIMPAN</label><select id="resume-file-select">${fileOptions()}</select></div>` +
-        `<div class="toolbar"><button type="button" class="btn btn-soft" data-act="load-saved-for-edit" id="load-saved-for-edit" ${state.fileKey ? '' : 'disabled'}>↻ Muat Data Tersimpan</button></div>` +
-        (state.loadError ? `<div class="notice error" role="alert"><strong>Berkas tidak dapat dimuat</strong>${esc(state.loadError)}</div>` : '') +
-        (state.notice ? `<div class="notice" role="status"><strong>Simulasi</strong>${esc(state.notice)}</div>` : '') +
-        `<p class="summary-note">Sudah punya berkas atribut? <button type="button" class="text-link" data-act="goto-approved">Langsung ke Atribut Disetujui</button></p>`
-      );
-    }
-
-    function parcelPanel(parcel) {
-      if (!parcel) return `<div class="empty-state" id="parcel-panel">Belum ada bidang yang dipilih.</div>`;
-      return (
-        `<div class="detail-grid" id="parcel-panel">` +
-        [['ID Bidang', parcel.id], ['Desa / Kelurahan', parcel.desa], ['Kecamatan', parcel.kecamatan], ['Kabupaten', parcel.kabupaten], ['Luas (m²)', parcel.luas], ['Jenis hak', parcel.hak]]
-          .map(([l, v]) => `<div class="detail-item"><div class="detail-label">${l}</div><div class="detail-value">${esc(v)}</div></div>`)
-          .join('') +
-        `</div>`
-      );
-    }
-
-    function renderParcel() {
-      const active = state.selectionActive;
-      const candidates = BASELINE.slice(0, CANVAS_COUNT);
-      return (
-        `<div class="notice"><strong>Simulasi pemilihan bidang</strong>Pada plugin QGIS, bidang dipilih dengan alat seleksi di QGIS Canvas. ` +
-        `Di prototipe ini canvas di bawah hanya gambar skema; memilih bidang contoh di sini tidak memilih fitur QGIS yang sebenarnya.</div>` +
-        `<p class="summary-note" style="margin:0 0 10px">Instruksi: aktifkan alat pilih, lalu pilih <strong>satu</strong> bidang tanah.</p>` +
-        `<div class="toolbar"><button type="button" class="btn ${active ? 'btn-soft' : 'btn-primary'}" data-act="activate-selection" id="activate-selection">◎ ${active ? 'Alat pilih aktif (simulasi)' : 'Aktifkan alat pilih (simulasi)'}</button></div>` +
-        `<div class="canvas-sim${active ? ' active' : ''}"><div class="canvas-tag">Simulasi QGIS Canvas</div>` +
-        `<svg viewBox="0 0 300 180" role="img" aria-label="Skema canvas dengan empat bidang contoh" focusable="false">` +
-        candidates.map((p, i) => `<polygon class="parcel-shape${p.id === state.parcelId ? ' selected' : ''}" data-act="pick-parcel" data-id="${p.id}" points="${CANVAS_SHAPES[i].points}"></polygon>` +
-          `<text x="${CANVAS_SHAPES[i].cx}" y="${CANVAS_SHAPES[i].cy}" text-anchor="middle" class="parcel-label">…${p.id.slice(-3)}</text>`).join('') +
-        `</svg></div>` +
-        `<fieldset class="choice-list"><legend>Hasil seleksi (simulasi)</legend>` +
-        candidates.map((p) =>
-          `<label class="choice"><input type="radio" name="parcel" value="${p.id}" ${p.id === state.parcelId ? 'checked' : ''} ${active ? '' : 'disabled'}>` +
-          `<span><strong>${p.id}</strong><small>${esc(p.desa)}, ${esc(p.kecamatan)}</small></span></label>`).join('') +
-        `</fieldset>` +
-        `<div class="card-head submissions-head"><div><h2>Bidang terpilih</h2><p>Informasi bidang dari baseline contoh.</p></div></div>` +
-        parcelPanel(findParcel(state.parcelId))
-      );
-    }
-
-    function fieldTable(fields, withRemove) {
-      if (!fields.length) return `<div class="empty-state" id="field-empty">Belum ada kolom atribut.</div>`;
-      return (
-        `<div class="table-wrap"><table class="stack"><thead><tr><th>Nama Kolom</th><th>Tipe</th><th>Wajib</th>${withRemove ? '<th>Aksi</th>' : ''}</tr></thead><tbody>` +
-        fields.map((f, i) =>
-          `<tr><td data-label="Nama Kolom"><div class="primary-cell">${esc(f.name)}</div></td><td data-label="Tipe">${typeLabel(f.type)}</td>` +
-          `<td data-label="Wajib">${f.required ? 'Ya' : 'Tidak'}</td>` +
-          (withRemove ? `<td data-label="Aksi" class="action-cell"><button type="button" class="btn btn-danger qgis-action" data-act="remove-field" data-index="${i}" aria-label="Hapus kolom ${esc(f.name)}">Hapus</button></td>` : '') +
-          `</tr>`).join('') +
-        `</tbody></table></div>`
-      );
-    }
-
-    function renderStructure() {
-      const tpl = state.mode === 'template';
-      const d = state.draft;
-      if (state.resumeMode) {
+    return (
+      `<div class="derivatif-canvas-wrap" style="position:relative;background:#f8fafc;border:1.5px solid #cbd5e1;border-radius:8px;padding:8px;margin:8px 0;overflow:hidden">` +
+      `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">` +
+      `<span style="font-size:11px;font-weight:700;color:#1e40af;background:#eff6ff;padding:2px 8px;border-radius:4px;border:1px solid #bfdbfe">` +
+      `🗺️ QGIS Map Canvas · Baseline WMS (EPSG:3857)` +
+      `</span>` +
+      `<div style="display:flex;align-items:center;gap:10px;font-size:11px;font-weight:600">` +
+      `<span style="display:inline-flex;align-items:center;gap:4px"><span style="display:inline-block;width:12px;height:12px;background:#fef3c7;border:1.5px solid #f59e0b;border-radius:2px"></span> Aktif Dipilih</span>` +
+      `<span style="display:inline-flex;align-items:center;gap:4px"><span style="display:inline-block;width:12px;height:12px;background:#d1fae5;border:1.5px solid #10b981;border-radius:2px"></span> Sudah Tersimpan</span>` +
+      `<span style="display:inline-flex;align-items:center;gap:4px"><span style="display:inline-block;width:12px;height:12px;background:#dbeafe;border:1.5px solid #93c5fd;border-radius:2px"></span> Belum Terisi</span>` +
+      `</div></div>` +
+      `<svg viewBox="0 0 300 180" style="display:block;width:100%;height:190px;background:#f1f5f9;border-radius:6px;cursor:crosshair" id="derivatif-canvas-svg">` +
+      BASELINE_PARCELS.slice(0, 4).map((p, i) => {
+        const isAct = p.id === activeId;
+        const isSvd = savedIds.includes(p.id);
+        const fill = isAct ? '#fef3c7' : isSvd ? '#d1fae5' : '#dbeafe';
+        const stroke = isAct ? '#f59e0b' : isSvd ? '#10b981' : '#60a5fa';
+        const strokeWidth = isAct ? '2.5' : '1.5';
         return (
-          `<div class="notice"><strong>Struktur dipulihkan dari berkas</strong>Kolom dan nilai yang tersimpan telah dimuat. Kamu bisa menghapus kolom yang tidak diperlukan atau menambahkan kolom baru; struktur tidak perlu dibuat ulang.</div>` +
-          `<div class="card-head submissions-head"><div><h2>Struktur atribut saat ini</h2><p>${esc(state.loadedFile ? state.loadedFile.fileName : '')} · ${currentFields().length} kolom dipulihkan.</p></div></div>` +
-          fieldTable(currentFields(), true) +
-          `<div class="form-grid" style="margin-top:14px"><div class="field"><label for="draft-name">NAMA KOLOM BARU</label><input id="draft-name" autocomplete="off" maxlength="30" placeholder="contoh: kode_guna" value="${esc(d.name)}" aria-describedby="draft-error"></div>` +
-          `<div class="field"><label for="draft-type">TIPE DATA</label><select id="draft-type">${Object.entries(FIELD_TYPES).map(([k, v]) => `<option value="${k}" ${d.type === k ? 'selected' : ''}>${v}</option>`).join('')}</select></div></div>` +
-          `<label class="check"><input type="checkbox" id="draft-required" ${d.required ? 'checked' : ''}> Wajib diisi pada langkah berikutnya</label>` +
-          `<div class="field-error" id="draft-error" role="alert">${esc(state.draftError)}</div>` +
-          `<div class="toolbar"><button type="button" class="btn btn-primary" data-act="add-field">＋ Tambah Kolom</button></div>`
+          `<g class="parcel-canvas-group" data-parcel-id="${p.id}" style="cursor:pointer">` +
+          `<polygon points="${CANVAS_SHAPES[i].points}" fill="${fill}" stroke="${stroke}" stroke-width="${strokeWidth}" data-act="select-canvas-parcel" data-id="${p.id}" />` +
+          `<text x="${CANVAS_SHAPES[i].cx}" y="${CANVAS_SHAPES[i].cy - 4}" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b" pointer-events="none">${p.nib.split('.').pop()}</text>` +
+          `<text x="${CANVAS_SHAPES[i].cx}" y="${CANVAS_SHAPES[i].cy + 8}" text-anchor="middle" font-size="8" fill="#64748b" pointer-events="none">${p.desa}</text>` +
+          `</g>`
         );
-      }
-      return (
-        `<div class="choice-list" role="radiogroup" aria-label="Pendekatan struktur atribut">` +
-        `<label class="choice"><input type="radio" name="mode" value="template" ${tpl ? 'checked' : ''}><span><strong>Gunakan Template Layer Derivatif</strong><small>Pakai daftar kolom dari template yang sudah ada.</small></span></label>` +
-        `<label class="choice"><input type="radio" name="mode" value="manual" ${tpl ? '' : 'checked'}><span><strong>Tambahkan Kolom Manual</strong><small>Susun sendiri nama dan tipe kolom atribut.</small></span></label></div>` +
-        (tpl
-          ? `<div class="notice"><strong>Template contoh</strong>Daftar di bawah adalah template dummy untuk prototipe; belum terhubung ke Geoportal.</div>` +
-            `<div class="field"><label for="template-select">TEMPLATE LAYER DERIVATIF</label><select id="template-select"><option value="">Pilih template...</option>` +
-            TEMPLATES.map((t) => `<option value="${t.id}" ${t.id === state.templateId ? 'selected' : ''}>${t.name}</option>`).join('') + `</select></div>` +
-            `<div class="card-head submissions-head"><div><h2>Kolom template</h2><p>ID Bidang selalu disertakan sebagai penghubung ke bidang sumber.</p></div></div>` +
-            fieldTable(currentFields(), false)
-          : `<div class="form-grid" style="margin-top:14px">` +
-            `<div class="field"><label for="draft-name">NAMA KOLOM</label><input id="draft-name" autocomplete="off" maxlength="30" placeholder="contoh: kode_guna" value="${esc(d.name)}" aria-describedby="draft-error"></div>` +
-            `<div class="field"><label for="draft-type">TIPE DATA</label><select id="draft-type">${Object.entries(FIELD_TYPES).map(([k, v]) => `<option value="${k}" ${d.type === k ? 'selected' : ''}>${v}</option>`).join('')}</select></div></div>` +
-            `<label class="check"><input type="checkbox" id="draft-required" ${d.required ? 'checked' : ''}> Wajib diisi pada langkah berikutnya</label>` +
-            `<div class="field-error" id="draft-error" role="alert">${esc(state.draftError)}</div>` +
-            `<div class="toolbar"><button type="button" class="btn btn-primary" data-act="add-field">＋ Tambah Kolom</button></div>` +
-            `<div class="card-head submissions-head"><div><h2>Kolom yang ditambahkan</h2><p>Hapus kolom sebelum melanjutkan jika tidak diperlukan.</p></div></div>` +
-            fieldTable(currentFields(), true))
-      );
-    }
+      }).join('') +
+      `</svg>` +
+      `<div style="font-size:10.5px;color:#64748b;margin-top:4px;text-align:right">` +
+      `Klik langsung poligon bidang di atas untuk memilih bidang yang akan diolah.` +
+      `</div></div>`
+    );
+  }
 
-    function inputFor(f, i) {
-      const value = esc(state.values[f.name] === undefined ? '' : state.values[f.name]);
-      const attrs = `id="attr-${i}" data-attr="${esc(f.name)}" value="${value}" aria-describedby="attr-err-${i}"${f.required ? ' required' : ''}`;
-      if (f.type === 'integer') return `<input type="number" step="1" inputmode="numeric" ${attrs}>`;
-      if (f.type === 'decimal') return `<input type="number" step="any" inputmode="decimal" ${attrs}>`;
-      if (f.type === 'date') return `<input type="date" ${attrs}>`;
-      return `<input type="text" ${attrs}>`;
-    }
+  // -------------------------------------------------------------------------
+  // 1. VIEW ISI TEMATIK
+  // -------------------------------------------------------------------------
+  function renderViewIsi() {
+    const curLayer = DERIVATIF_CMS_LAYERS.find((l) => l.id === state.isi.selectedLayerId) || DERIVATIF_CMS_LAYERS[0];
+    const parcel = getActiveParcel();
+    const sessionCount = state.isi.sessionParcels.length;
 
-    function renderAttributes() {
-      const parcel = findParcel(state.parcelId);
-      const fields = currentFields();
-      return (
-        `<div class="id-banner"><span>ID Bidang terpilih</span><strong id="active-parcel-id">${esc(state.parcelId)}</strong>` +
-        `<small>${esc(parcel.desa)}, ${esc(parcel.kecamatan)}, ${esc(parcel.kabupaten)}</small></div>` +
-        `<p class="summary-note" style="margin:0 0 12px">ID Bidang menghubungkan atribut di bawah dengan bidang sumber. Kolom bertanda * wajib diisi.</p>` +
-        `<div class="form-grid">` +
-        fields.map((f, i) =>
-          `<div class="field"><label for="attr-${i}">${esc(f.name)}${f.required ? ' *' : ''} <small class="type-hint">${typeLabel(f.type)}</small></label>${inputFor(f, i)}` +
-          `<div class="field-error" id="attr-err-${i}"></div></div>`).join('') +
-        `</div>`
-      );
-    }
+    return (
+      `<div class="derivatif-mode-view mode-isi-content">` +
+      // KARTU 1: Pilih Layer Derivatif & Load Baseline WMS
+      `<div class="card" style="margin-bottom:12px;border:1px solid #cbd5e1;border-radius:8px">` +
+      `<div class="card-head" style="padding:10px 14px;border-bottom:1px solid #e2e8f0;background:#f8fafc">` +
+      `<strong style="font-size:13px;color:#0f172a">1. Pilih Layer Derivatif &amp; Load Baseline WMS:</strong>` +
+      `</div>` +
+      `<div style="padding:12px 14px">` +
+      `<div style="display:flex;gap:6px;margin-bottom:8px">` +
+      `<select id="combo-derivatif-layer" style="flex:1;height:34px;padding:4px 10px;font-weight:700;border:1.5px solid #94a3b8;border-radius:6px;font-size:12.5px">` +
+      DERIVATIF_CMS_LAYERS.map((l) => `<option value="${l.id}" ${l.id === curLayer.id ? 'selected' : ''}>${esc(l.name)}</option>`).join('') +
+      `</select>` +
+      `<button type="button" class="btn btn-soft" data-act="refresh-der" title="Muat ulang daftar layer derivatif dari server" style="width:36px;height:34px;padding:0;font-size:14px">🔄</button>` +
+      `</div>` +
+      `<div style="font-size:11.5px;color:#475569;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:8px 10px;margin-bottom:10px">` +
+      `${esc(curLayer.summary)}` +
+      `</div>` +
+      `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">` +
+      `<button type="button" class="btn btn-primary" data-act="load-baseline-isi" style="background:#0284c7;border-color:#0284c7;font-weight:700;font-size:12px">⚡ Load Baseline WMS</button>` +
+      `<span style="font-size:12px;font-weight:700;color:${state.isi.wmsLoaded ? '#047857' : '#64748b'}">` +
+      `${state.isi.wmsLoaded ? '✓ Baseline WMS Aktif: baseline_bidang_sleman (EPSG:3857)' : '⏳ Baseline WMS: Belum dimuat.'}` +
+      `</span>` +
+      `<button type="button" class="btn btn-soft btn-sm" data-act="open-wms-log" style="font-size:11px;font-weight:700;margin-left:auto">📋 Log GeoServer</button>` +
+      `</div></div></div>` +
 
-    function summaryTable() {
-      const fields = currentFields();
-      return (
-        `<div class="table-wrap"><table class="stack"><thead><tr><th>Kolom</th><th>Tipe</th><th>Nilai</th></tr></thead><tbody>` +
-        `<tr><td data-label="Kolom"><div class="primary-cell">${ID_FIELD}</div></td><td data-label="Tipe">Teks</td><td data-label="Nilai">${esc(state.parcelId)}</td></tr>` +
-        fields.map((f) => `<tr><td data-label="Kolom"><div class="primary-cell">${esc(f.name)}</div></td><td data-label="Tipe">${typeLabel(f.type)}</td><td data-label="Nilai">${esc(state.values[f.name] || '—')}</td></tr>`).join('') +
-        `</tbody></table></div>`
-      );
-    }
+      // KARTU 2: Interaksi Canvas & Form Atribut CMS Dinamis
+      `<div class="card" style="margin-bottom:12px;border:1px solid #cbd5e1;border-radius:8px">` +
+      `<div class="card-head" style="padding:10px 14px;border-bottom:1px solid #e2e8f0;background:#f8fafc;display:flex;align-items:center;justify-content:space-between">` +
+      `<strong style="font-size:13px;color:#0f172a">2. Interaksi Kanvas &amp; Form Atribut CMS Dinamis:</strong>` +
+      `<span style="background:#ecfdf5;color:#047857;font-size:11px;font-weight:700;padding:2px 8px;border-radius:12px;border:1px solid #a7f3d0">📦 ${sessionCount} Bidang Sesi</span>` +
+      `</div>` +
+      `<div style="padding:12px 14px">` +
+      `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">` +
+      `<button type="button" class="btn ${state.isPicking ? 'btn-primary' : 'btn-soft'}" data-act="toggle-picker" style="font-size:12px;font-weight:700">🎯 ${state.isPicking ? 'Alat Pilih Bidang Aktif' : 'Klik Bidang di Peta'}</button>` +
+      `<button type="button" class="btn btn-soft" data-act="import-bidang" style="font-size:12px;font-weight:700;color:#0284c7;border-color:#38bdf8">📥 Import Bidang</button>` +
+      `<span style="font-size:12px;color:#1e40af;margin-left:4px">Klik bidang di peta untuk mulai mengisi atribut tematik.</span>` +
+      `</div>` +
+      renderCanvasSvg('isi') +
+      `<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:8px 12px;margin:8px 0;display:flex;align-items:center;justify-content:space-between">` +
+      `<div><strong style="color:#1e3a8a;font-size:12.5px">ID Bidang Terpilih: </strong><code style="font-size:13px;font-weight:800;color:#1d4ed8">${esc(parcel.id)}</code> <span style="font-size:11.5px;color:#475569">(${esc(parcel.desa)}, ${esc(parcel.kecamatan)})</span></div>` +
+      `<span style="font-size:11px;background:#ffffff;border:1px solid #cbd5e1;padding:2px 6px;border-radius:4px;color:#334155">Luas: <strong>${esc(parcel.luas)} m²</strong></span>` +
+      `</div>` +
+      `<div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;padding:12px;margin-bottom:10px">` +
+      `<div style="font-size:11px;font-weight:800;color:#475569;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">Formulir Atribut Standar CMS (${esc(curLayer.name)})</div>` +
+      `<div class="form-grid" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:10px">` +
+      curLayer.fields.map((fld) => {
+        const val = state.isi.formValues[fld.name] || fld.default || '';
+        return (
+          `<div class="field" style="margin:0"><label style="font-size:11px;font-weight:700;color:#334155">${esc(fld.label)}</label>` +
+          (fld.type === 'select'
+            ? `<select data-isi-field="${esc(fld.name)}" style="height:32px;font-size:12px;padding:4px 8px;border:1px solid #cbd5e1;border-radius:5px">` +
+              fld.options.map((opt) => `<option value="${esc(opt)}" ${val === opt ? 'selected' : ''}>${esc(opt)}</option>`).join('') +
+              `</select>`
+            : `<input type="${fld.type === 'number' ? 'number' : 'text'}" data-isi-field="${esc(fld.name)}" value="${esc(val)}" style="height:32px;font-size:12px;padding:4px 8px;border:1px solid #cbd5e1;border-radius:5px">`) +
+          `</div>`
+        );
+      }).join('') +
+      `</div></div>` +
+      `<button type="button" class="btn btn-primary" data-act="isi-save-bidang" style="width:100%;height:38px;background:#0284c7;border-color:#0284c7;font-size:13px;font-weight:700">` +
+      `Simpan Bidang (Simpan ke Sesi &amp; Lanjut Bidang Berikutnya)` +
+      `</button>` +
+      `</div></div>` +
 
-    function renderSave() {
-      const err = filenameError();
-      const ext = FORMATS[state.format].ext;
-      const saved = state.saveDone;
-      return (
-        `<div class="notice"><strong>Simulasi penyimpanan</strong>Prototipe ini tidak membuat berkas sungguhan. Tombol simpan hanya mencatat berkas contoh agar dapat dipakai pada langkah Disetujui.</div>` +
-        `<div class="field"><label for="filename">NAMA BERKAS OUTPUT</label><div class="filename-row"><input id="filename" autocomplete="off" value="${esc(state.filename)}" aria-describedby="filename-error"><span class="ext" id="filename-ext">${ext}</span></div>` +
-        `<div class="field-error" id="filename-error">${state.filenameEdited ? esc(err) : ''}</div></div>` +
-        `<fieldset class="choice-list"><legend>Format output</legend>` +
-        `<label class="choice"><input type="radio" name="format" value="gpkg" ${state.format === 'gpkg' ? 'checked' : ''}><span><strong>GeoPackage (.gpkg)</strong><small>Format utama (disarankan).</small></span></label>` +
-        `<label class="choice"><input type="radio" name="format" value="json" ${state.format === 'json' ? 'checked' : ''}><span><strong>JSON (.json)</strong><small>Hanya tabel atribut dan ID Bidang.</small></span></label></fieldset>` +
-        `<div class="card-head submissions-head"><div><h2>Ringkasan</h2><p>Bidang ${esc(state.parcelId)} · ${currentFields().length} kolom atribut tambahan.</p></div></div>` +
-        summaryTable() +
-        `<div class="toolbar"><button type="button" class="btn btn-primary" data-act="save-file" id="save-file" ${err ? 'disabled' : ''}>💾 Simpan File (simulasi)</button></div>` +
-        (saved
-          ? `<div class="notice ok" role="status" id="save-success"><strong>Berkas tercatat (simulasi)</strong>${esc(state.filename.trim() + ext)} dicatat sebagai berkas contoh berisi ID Bidang, definisi kolom, nilai atribut dan format. Tidak ada berkas fisik yang dibuat.` +
-            `<div class="toolbar"><button type="button" class="btn btn-primary" data-act="next">Lanjut ke Atribut Disetujui →</button>` +
-            `<a class="btn btn-soft" href="${backUrl}" id="finish-later">Selesai, lanjutkan nanti</a></div></div>`
-          : '')
-      );
-    }
+      // KARTU 3: Daftar Bidang Terisi (Sesi Ini)
+      `<div class="card" style="margin-bottom:12px;border:1px solid #cbd5e1;border-radius:8px">` +
+      `<div class="card-head" style="padding:10px 14px;border-bottom:1px solid #e2e8f0;background:#f8fafc;display:flex;align-items:center;justify-content:space-between">` +
+      `<strong style="font-size:13px;color:#0f172a">3. Daftar Bidang Terisi (Sesi Ini): ${sessionCount} bidang</strong>` +
+      `<div style="font-size:11.5px;font-weight:700"><span style="color:#f59e0b">■ Baru Diisi</span> &nbsp; <span style="color:#10b981">■ Sudah Tersimpan</span></div>` +
+      `</div>` +
+      `<div style="padding:10px 14px;max-height:220px;overflow:auto">` +
+      `<table class="stack" style="width:100%;font-size:11.5px;margin:0">` +
+      `<thead><tr style="background:#f1f5f9;text-align:left"><th style="padding:6px 8px;width:38px">No</th><th style="padding:6px 8px;width:140px">ID Bidang</th><th style="padding:6px 8px">Ringkasan Nilai</th><th style="padding:6px 8px;width:70px;text-align:center">Aksi</th></tr></thead>` +
+      `<tbody>` +
+      (sessionCount === 0
+        ? `<tr><td colspan="4" style="text-align:center;padding:16px;color:#64748b;font-style:italic">Belum ada bidang tersimpan pada sesi ini. Lengkapi form di atas lalu klik "Simpan Bidang".</td></tr>`
+        : state.isi.sessionParcels.map((sp, idx) =>
+            `<tr style="border-bottom:1px solid #f1f5f9"><td style="padding:6px 8px;font-weight:700">${idx + 1}</td><td style="padding:6px 8px"><code>${esc(sp.id)}</code><br><small style="color:#64748b">${esc(sp.desa)}</small></td><td style="padding:6px 8px;color:#334155">${esc(sp.summary)}</td><td style="padding:6px 8px;text-align:center"><button type="button" class="btn btn-danger btn-sm" data-act="delete-isi-parcel" data-index="${idx}" style="padding:2px 8px;font-size:10.5px">Hapus</button></td></tr>`
+          ).join('')) +
+      `</tbody></table></div></div>` +
 
-    function fileOptions() {
-      const own = state.savedFiles.map((f) => `<option value="s:${esc(f.fileName)}" ${state.fileKey === 's:' + f.fileName ? 'selected' : ''}>${esc(f.fileName)}</option>`).join('');
-      const samples = SAMPLE_FILES.map((f) => `<option value="x:${f.fileName}" ${state.fileKey === 'x:' + f.fileName ? 'selected' : ''}>${f.fileName}${f.invalid ? ' (contoh tidak valid)' : ''}</option>`).join('');
-      return `<option value="">Pilih berkas atribut...</option>` +
-        (own ? `<optgroup label="Disimpan pada sesi ini">${own}</optgroup>` : '') +
-        `<optgroup label="Berkas contoh (dummy)">${samples}</optgroup>`;
-    }
+      // KARTU 4: Opsi Penyimpanan & Format Ekspor
+      `<div class="card" style="margin-bottom:12px;border:1px solid #cbd5e1;border-radius:8px">` +
+      `<div class="card-head" style="padding:10px 14px;border-bottom:1px solid #e2e8f0;background:#f8fafc">` +
+      `<strong style="font-size:13px;color:#0f172a">4. Opsi Penyimpanan &amp; Format Ekspor (Tabel Atribut Saja):</strong>` +
+      `</div>` +
+      `<div style="padding:12px 14px">` +
+      `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">` +
+      `<label style="font-size:12px;font-weight:700;color:#334155;min-width:90px">Folder Simpan:</label>` +
+      `<input type="text" id="isi-folder-input" value="${esc(state.isi.folder)}" style="flex:1;height:30px;font-size:12px;padding:3px 8px;border:1px solid #cbd5e1;border-radius:5px">` +
+      `<button type="button" class="btn btn-soft" data-act="browse-folder" style="height:30px;padding:2px 10px;font-size:12px">...</button>` +
+      `</div>` +
+      `<div style="font-size:11px;color:#64748b;margin-bottom:10px;font-style:italic">Nama berkas otomatis menggunakan nama <strong>Layer Derivatif</strong> yang dipilih di atas.</div>` +
+      `<div style="display:flex;align-items:center;gap:16px;margin-bottom:10px">` +
+      `<span style="font-size:12px;font-weight:700;color:#334155">Format:</span>` +
+      `<label style="font-size:12px;cursor:pointer"><input type="radio" name="isi-format" value="gpkg" ${state.isi.format === 'gpkg' ? 'checked' : ''}> .gpkg (GeoPackage)</label>` +
+      `<label style="font-size:12px;cursor:pointer"><input type="radio" name="isi-format" value="geojson" ${state.isi.format === 'geojson' ? 'checked' : ''}> .geojson (GeoJSON)</label>` +
+      `<label style="font-size:12px;cursor:pointer"><input type="radio" name="isi-format" value="shp" ${state.isi.format === 'shp' ? 'checked' : ''}> Esri Shapefile (.shp)</label>` +
+      `</div>` +
+      `<div style="font-size:11px;color:#64748b;background:#f8fafc;padding:6px 10px;border-radius:5px;border:1px solid #e2e8f0;margin-bottom:12px">` +
+      `🔒 <i>Hanya poligon bidang terpilih yang disimpan (bukan seluruh baseline provinsi). Sesi akan direset setelah disimpan.</i>` +
+      `</div>` +
+      `<button type="button" class="btn btn-primary" data-act="execute-export-isi" style="width:100%;height:40px;background:#16a34a;border-color:#16a34a;font-size:14px;font-weight:800">` +
+      `💾 Simpan Derivatif` +
+      `</button>` +
+      `</div></div></div>`
+    );
+  }
 
-    function recordsTable(file) {
-      const cols = file.fields.map((f) => f.name);
-      return (
-        `<div class="table-wrap"><table class="stack"><thead><tr><th>${ID_FIELD}</th>${cols.map((c) => `<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>` +
-        file.records.map((r) => `<tr><td data-label="${ID_FIELD}"><div class="primary-cell">${esc(r.id)}</div></td>${cols.map((c) => `<td data-label="${esc(c)}">${esc(r.values[c] || '—')}</td>`).join('')}</tr>`).join('') +
-        `</tbody></table></div>`
-      );
-    }
+  // -------------------------------------------------------------------------
+  // 2. VIEW CREATE TEMATIK
+  // -------------------------------------------------------------------------
+  function renderViewCreate() {
+    const parcel = getActiveParcel();
+    const sessionCount = state.create.sessionParcels.length;
 
-    function joinPanel() {
-      const j = state.join;
-      if (!j) return '';
-      const matched = j.rows.filter((r) => r.parcel);
-      const unmatched = j.rows.filter((r) => !r.parcel);
-      const attrText = (r) => Object.entries(r.values).map(([k, v]) => `${esc(k)}: ${esc(v || '—')}`).join('; ');
-      return (
-        `<div class="card-head submissions-head"><div><h2>Hasil penggabungan</h2><p id="join-summary">${matched.length} cocok · ${unmatched.length} tidak ditemukan dari ${j.rows.length} baris.</p></div></div>` +
-        (matched.length === 0
-          ? `<div class="notice error" role="alert" id="join-error"><strong>Tidak ada ID yang cocok</strong>Tidak ada baris yang dapat digabungkan ke baseline. Periksa berkas atribut atau baseline yang dipakai.</div>`
-          : `<div class="table-wrap"><table class="stack" id="join-table"><thead><tr><th>ID Bidang</th><th>Wilayah</th><th>Atribut tergabung</th></tr></thead><tbody>` +
-            matched.map((r) => `<tr><td data-label="ID Bidang"><div class="primary-cell">${esc(r.id)}</div></td><td data-label="Wilayah">${esc(r.parcel.desa)}, ${esc(r.parcel.kecamatan)}</td><td data-label="Atribut tergabung">${attrText(r)}</td></tr>`).join('') +
-            `</tbody></table></div>`) +
-        (unmatched.length
-          ? `<div class="notice warn" role="status" id="join-unmatched"><strong>${unmatched.length} ID tidak ditemukan di baseline</strong>Baris berikut tidak digabungkan ke bidang mana pun: ${unmatched.map((r) => esc(r.id)).join(', ')}.</div>`
-          : '') +
-        (state.notice ? `<div class="notice ok" role="status" id="show-result"><strong>Simulasi</strong>${esc(state.notice)}</div>` : '') +
-        `<div class="toolbar"><button type="button" class="btn btn-primary" data-act="show-in-qgis" id="show-in-qgis" ${matched.length ? '' : 'disabled'}><svg class="ri-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3c5.392 0 9.878 3.88 10.819 9-.94 5.12-5.427 9-10.819 9-5.392 0-9.878-3.88-10.819-9C2.121 6.88 6.608 3 12 3zm0 16a9.005 9.005 0 0 0 8.777-7 9.005 9.005 0 0 0-17.554 0A9.005 9.005 0 0 0 12 19zm0-2.5a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9zm0-2a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/></svg><span>Tampilkan</span></button></div>`
-      );
-    }
+    return (
+      `<div class="derivatif-mode-view mode-create-content">` +
+      // KARTU 1: Pengaturan Layer Baru & Baseline
+      `<div class="card" style="margin-bottom:12px;border:1px solid #cbd5e1;border-radius:8px">` +
+      `<div class="card-head" style="padding:10px 14px;border-bottom:1px solid #e2e8f0;background:#f8fafc">` +
+      `<strong style="font-size:13px;color:#0f172a">1. Pengaturan Layer Baru &amp; Baseline (CMS Geoportal):</strong>` +
+      `</div>` +
+      `<div style="padding:12px 14px">` +
+      `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">` +
+      `<label style="font-size:12px;font-weight:700;color:#334155;min-width:100px">Nama Layer:</label>` +
+      `<input type="text" id="create-layer-name" value="${esc(state.create.layerName)}" placeholder="contoh: derivatif_bidang_kustom" style="flex:1;height:32px;font-size:12.5px;font-weight:700;padding:3px 8px;border:1.5px solid #94a3b8;border-radius:6px">` +
+      `</div>` +
+      `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">` +
+      `<label style="font-size:12px;font-weight:700;color:#334155;min-width:100px">Baseline CMS:</label>` +
+      `<select id="combo-create-baseline" style="flex:1;height:32px;font-size:12px;font-weight:700;padding:3px 8px;border:1px solid #94a3b8;border-radius:6px">` +
+      CMS_BASELINES.map((b) => `<option value="${b.id}" ${b.id === state.create.selectedBaselineId ? 'selected' : ''}>${esc(b.name)} (${b.count.toLocaleString('id-ID')} bidang)</option>`).join('') +
+      `</select>` +
+      `<button type="button" class="btn btn-soft" data-act="refresh-bl" title="Muat ulang baseline dari CMS" style="width:34px;height:32px;padding:0;font-size:14px">🔄</button>` +
+      `</div>` +
+      `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">` +
+      `<button type="button" class="btn btn-primary" data-act="load-baseline-create" style="background:#7c3aed;border-color:#7c3aed;font-weight:700;font-size:12px">⚡ Load Baseline WMS</button>` +
+      `<span style="font-size:12px;font-weight:700;color:${state.create.wmsLoaded ? '#047857' : '#64748b'}">` +
+      `${state.create.wmsLoaded ? '✓ Baseline WMS Aktif: ' + state.create.selectedBaselineId + ' (EPSG:3857)' : '⏳ Baseline WMS: Belum dimuat.'}` +
+      `</span>` +
+      `<button type="button" class="btn btn-soft btn-sm" data-act="open-wms-log" style="font-size:11px;font-weight:700;margin-left:auto">📋 Log GeoServer</button>` +
+      `</div></div></div>` +
 
-    function renderApproved() {
-      const file = state.loadedFile;
-      return (
-        `<div class="notice"><strong>Simulasi penggabungan</strong>Berkas dan baseline di bawah adalah data contoh; tidak ada layanan WFS atau QGIS yang terhubung. ` +
-        `Hanya baris dengan ID Bidang yang sama persis yang digabungkan; tidak ada penggabungan otomatis lainnya.</div>` +
-        (state.sourceLoaded
-          ? `<p class="summary-note" style="margin:0 0 10px">Sumber bidang: ${badge('ok', 'Baseline siap')} Baseline Bidang Tanah (contoh)</p>`
-          : `<div class="notice warn" id="baseline-needed"><strong>Baseline belum dimuat</strong>Muat baseline agar bidang sumber dapat dicari berdasarkan ID Bidang.` +
-            `<div class="toolbar"><button type="button" class="btn btn-primary" data-act="load-baseline" id="load-baseline">▦ Load Baseline</button></div></div>`) +
-        `<div class="field"><label for="file-select">BERKAS ATRIBUT TERSIMPAN</label><select id="file-select">${fileOptions()}</select></div>` +
-        `<div class="toolbar"><button type="button" class="btn btn-soft" data-act="load-file" id="load-file" ${state.fileKey ? '' : 'disabled'}>Muat Berkas</button></div>` +
-        (state.loadError ? `<div class="notice error" role="alert" id="load-error"><strong>Berkas tidak dapat dibaca</strong>${esc(state.loadError)}</div>` : '') +
-        (file
-          ? `<div class="card-head submissions-head"><div><h2>Isi berkas</h2><p>${esc(file.fileName)} · ${file.records.length} baris · kunci ${ID_FIELD}.</p></div></div>` +
-            recordsTable(file) +
-            `<div class="toolbar"><button type="button" class="btn btn-primary" data-act="run-join" id="run-join" ${state.sourceLoaded ? '' : 'disabled'}>⇄ Gabungkan berdasarkan ID Bidang</button></div>`
-          : '') +
-        joinPanel() +
-        `<div class="toolbar"><a class="btn btn-soft" href="${backUrl}" id="finish">${finishLabel}</a></div>`
-      );
-    }
+      // KARTU 2: Pilih Bidang Baseline, Atribut Default (Terkunci) + Kustom
+      `<div class="card" style="margin-bottom:12px;border:1px solid #cbd5e1;border-radius:8px">` +
+      `<div class="card-head" style="padding:10px 14px;border-bottom:1px solid #e2e8f0;background:#f8fafc;display:flex;align-items:center;justify-content:space-between">` +
+      `<strong style="font-size:13px;color:#0f172a">2. Pilih Bidang, Atribut Default (Terkunci) + Kustom:</strong>` +
+      `<span style="background:#ecfdf5;color:#047857;font-size:11px;font-weight:700;padding:2px 8px;border-radius:12px;border:1px solid #a7f3d0">📦 ${sessionCount} Bidang Sesi</span>` +
+      `</div>` +
+      `<div style="padding:12px 14px">` +
+      `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">` +
+      `<button type="button" class="btn btn-primary" data-act="toggle-picker" style="background:#7c3aed;border-color:#7c3aed;font-size:12px;font-weight:700">🎯 Pilih Bidang Baseline</button>` +
+      `<button type="button" class="btn btn-soft" data-act="import-bidang" style="font-size:12px;font-weight:700;color:#7c3aed;border-color:#c084fc">📥 Import Bidang</button>` +
+      `<span style="font-size:12px;color:#5b21b6;margin-left:4px">Klik salah satu poligon bidang pada kanvas peta.</span>` +
+      `</div>` +
+      renderCanvasSvg('create') +
+      `<div style="margin:8px 0;font-size:13px"><strong style="color:#7c3aed">ID: </strong><code style="font-size:13px;font-weight:800;color:#6d28d9">${esc(parcel.id)}</code> <span style="font-size:11.5px;color:#64748b">(${esc(parcel.desa)}, ${esc(parcel.kecamatan)})</span></div>` +
 
-    // ---------------------------------------------------------------- frame
+      // Sub A: Atribut Baseline Terkunci
+      `<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:10px;margin-bottom:12px">` +
+      `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">` +
+      `<strong style="font-size:12px;color:#1e293b">A. Atribut Default Baseline (🔒 Terkunci):</strong>` +
+      `<span style="font-size:11px;color:#64748b;background:#e2e8f0;padding:1px 6px;border-radius:3px">6 Kolom Bawaan</span>` +
+      `</div>` +
+      `<div style="max-height:140px;overflow:auto;border:1px solid #cbd5e1;border-radius:4px"><table class="stack" style="width:100%;font-size:11px;margin:0">` +
+      `<thead><tr style="background:#f1f5f9;text-align:left"><th style="padding:4px 8px;width:130px">Kolom Baseline</th><th style="padding:4px 8px;width:70px">Tipe</th><th style="padding:4px 8px">Nilai (Terkunci 🔒)</th></tr></thead>` +
+      `<tbody>` +
+      `<tr><td style="padding:4px 8px"><code>id_bidang</code></td><td style="padding:4px 8px">String</td><td style="padding:4px 8px;color:#475569">🔒 ${esc(parcel.id)}</td></tr>` +
+      `<tr><td style="padding:4px 8px"><code>nib</code></td><td style="padding:4px 8px">String</td><td style="padding:4px 8px;color:#475569">🔒 ${esc(parcel.nib)}</td></tr>` +
+      `<tr><td style="padding:4px 8px"><code>desa</code></td><td style="padding:4px 8px">String</td><td style="padding:4px 8px;color:#475569">🔒 ${esc(parcel.desa)}</td></tr>` +
+      `<tr><td style="padding:4px 8px"><code>kecamatan</code></td><td style="padding:4px 8px">String</td><td style="padding:4px 8px;color:#475569">🔒 ${esc(parcel.kecamatan)}</td></tr>` +
+      `<tr><td style="padding:4px 8px"><code>luas_m2</code></td><td style="padding:4px 8px">Decimal</td><td style="padding:4px 8px;color:#475569">🔒 ${esc(parcel.luas)}</td></tr>` +
+      `<tr><td style="padding:4px 8px"><code>jenis_hak</code></td><td style="padding:4px 8px">String</td><td style="padding:4px 8px;color:#475569">🔒 ${esc(parcel.hak)}</td></tr>` +
+      `</tbody></table></div></div>` +
 
-    const BODY = [renderSource, renderStructure, renderParcel, renderAttributes, renderSave, renderApproved];
+      // Sub B: Atribut Custom Tambahan
+      `<div style="background:#ffffff;border:1px solid #ddd6fe;border-radius:6px;padding:10px;margin-bottom:12px">` +
+      `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">` +
+      `<strong style="font-size:12px;color:#5b21b6">B. Atribut Custom Tambahan:</strong>` +
+      `<button type="button" class="btn btn-soft btn-sm" data-act="add-custom-col" style="font-size:11.5px;font-weight:700;color:#6d28d9;border-color:#c084fc">＋ Tambah Atribut</button>` +
+      `</div>` +
+      `<div style="overflow:auto;border:1px solid #cbd5e1;border-radius:4px"><table class="stack" style="width:100%;font-size:11.5px;margin:0" id="table-custom-cols">` +
+      `<thead><tr style="background:#ede9fe;color:#5b21b6;text-align:left"><th style="padding:4px 8px;width:130px">Nama Kolom</th><th style="padding:4px 8px;width:100px">Tipe</th><th style="padding:4px 8px;width:65px">Length</th><th style="padding:4px 8px">Nilai (Isi)</th><th style="padding:4px 8px;width:34px;text-align:center"></th></tr></thead>` +
+      `<tbody>` +
+      state.create.customColumns.map((col, idx) =>
+        `<tr>` +
+        `<td style="padding:4px 6px"><input type="text" data-col-idx="${idx}" data-col-field="name" value="${esc(col.name)}" style="width:100%;height:26px;font-size:11.5px;padding:2px 4px;border:1px solid #cbd5e1;border-radius:4px"></td>` +
+        `<td style="padding:4px 6px"><select data-col-idx="${idx}" data-col-field="type" style="width:100%;height:26px;font-size:11px;padding:1px 4px;border:1px solid #cbd5e1;border-radius:4px"><option ${col.type === 'Teks' ? 'selected' : ''}>Teks</option><option ${col.type === 'Angka Bulat' ? 'selected' : ''}>Angka Bulat</option><option ${col.type === 'Desimal' ? 'selected' : ''}>Desimal</option><option ${col.type === 'Tanggal' ? 'selected' : ''}>Tanggal</option></select></td>` +
+        `<td style="padding:4px 6px"><input type="number" data-col-idx="${idx}" data-col-field="length" value="${col.length || 50}" style="width:100%;height:26px;font-size:11.5px;padding:2px 4px;border:1px solid #cbd5e1;border-radius:4px"></td>` +
+        `<td style="padding:4px 6px"><input type="${col.type === 'Tanggal' ? 'date' : col.type === 'Angka Bulat' || col.type === 'Desimal' ? 'number' : 'text'}" data-col-idx="${idx}" data-col-field="value" value="${esc(col.value)}" style="width:100%;height:26px;font-size:11.5px;padding:2px 4px;border:1px solid #cbd5e1;border-radius:4px"></td>` +
+        `<td style="padding:4px 6px;text-align:center"><button type="button" class="btn btn-soft btn-sm" data-act="remove-custom-col" data-idx="${idx}" style="color:#dc2626;padding:1px 6px;font-weight:700">✕</button></td>` +
+        `</tr>`
+      ).join('') +
+      `</tbody></table></div></div>` +
 
-    function stepper() {
-      return (
-        `<ol class="stepper wizard-steps" aria-label="Langkah alur kerja">` +
-        STEPS.map((s, i) => {
-          const n = i + 1;
-          const cls = n === state.step ? ' active' : n < state.step && !blockers(n).length ? ' done' : '';
-          return `<li class="step${cls}"><button type="button" class="step-btn" data-act="goto" data-step="${n}" ${canReach(n) ? '' : 'disabled'}${n === state.step ? ' aria-current="step"' : ''}>${s.short}</button></li>`;
-        }).join('') +
-        `</ol><p class="summary-note part-note">Bagian 1: buat atribut (langkah 1–5) · Bagian 2: atribut disetujui (langkah 6)</p>`
-      );
-    }
+      `<button type="button" class="btn btn-primary" data-act="create-save-bidang" style="width:100%;height:38px;background:#7c3aed;border-color:#7c3aed;font-size:13px;font-weight:700">` +
+      `Simpan Bidang (Pertahankan Skema Kolom &amp; Siap Bidang Selanjutnya)` +
+      `</button>` +
+      `</div></div>` +
 
-    function navHtml() {
-      const s = state.step;
-      const block = blockers(s)[0];
-      const back = s === 1
-        ? `<a class="btn btn-soft" href="${backUrl}" id="nav-back">← Kembali</a>`
-        : `<button type="button" class="btn btn-soft" data-act="back" id="nav-back">← Kembali</button>`;
-      const next = s === APPROVED
-        ? ''
-        : `<button type="button" class="btn btn-primary" data-act="next" id="nav-next" ${block ? 'disabled' : ''}>Lanjutkan →</button>`;
-      return `${back}${next}` + (block && s !== APPROVED ? `<p class="nav-hint" id="nav-hint" role="status">${esc(block)}</p>` : '');
-    }
+      // KARTU 3: Daftar Bidang Terisi Sesi Ini
+      `<div class="card" style="margin-bottom:12px;border:1px solid #cbd5e1;border-radius:8px">` +
+      `<div class="card-head" style="padding:10px 14px;border-bottom:1px solid #e2e8f0;background:#f8fafc;display:flex;align-items:center;justify-content:space-between">` +
+      `<strong style="font-size:13px;color:#0f172a">3. Daftar Bidang Terisi (Sesi Ini): ${sessionCount} bidang</strong>` +
+      `<div style="font-size:11.5px;font-weight:700"><span style="color:#f59e0b">■ Baru Diisi</span> &nbsp; <span style="color:#10b981">■ Sudah Tersimpan</span></div>` +
+      `</div>` +
+      `<div style="padding:10px 14px;max-height:220px;overflow:auto">` +
+      `<table class="stack" style="width:100%;font-size:11.5px;margin:0">` +
+      `<thead><tr style="background:#f1f5f9;text-align:left"><th style="padding:6px 8px;width:38px">No</th><th style="padding:6px 8px;width:140px">ID Bidang</th><th style="padding:6px 8px">Ringkasan Nilai Kustom</th><th style="padding:6px 8px;width:70px;text-align:center">Aksi</th></tr></thead>` +
+      `<tbody>` +
+      (sessionCount === 0
+        ? `<tr><td colspan="4" style="text-align:center;padding:16px;color:#64748b;font-style:italic">Belum ada bidang tersimpan pada sesi ini.</td></tr>`
+        : state.create.sessionParcels.map((sp, idx) =>
+            `<tr style="border-bottom:1px solid #f1f5f9"><td style="padding:6px 8px;font-weight:700">${idx + 1}</td><td style="padding:6px 8px"><code>${esc(sp.id)}</code><br><small style="color:#64748b">${esc(sp.desa || '')}</small></td><td style="padding:6px 8px;color:#334155">${esc(sp.summary)}</td><td style="padding:6px 8px;text-align:center"><button type="button" class="btn btn-danger btn-sm" data-act="delete-create-parcel" data-index="${idx}" style="padding:2px 8px;font-size:10.5px">Hapus</button></td></tr>`
+          ).join('')) +
+      `</tbody></table></div></div>` +
 
-    function render(focus) {
-      const s = STEPS[state.step - 1];
-      const headHtml = `<div class="card-head"><div><h2 id="step-title" tabindex="-1">Langkah ${state.step} dari ${STEPS.length} · ${s.title}</h2><p>${s.text}</p></div></div>`;
-      view.innerHTML =
-        `<section class="card wizard">` +
-        (isV2 ? `${headHtml}${stepper()}` : `${stepper()}${headHtml}`) +
-        `<div id="step-body">${BODY[state.step - 1]()}</div>` +
-        `<div class="wizard-nav" id="wizard-nav">${navHtml()}</div></section>`;
-      if (state.step === 4) refreshAttributeErrors();
-      const target = focus && $(focus);
-      if (target) target.focus();
-    }
+      // KARTU 4: Opsi Penyimpanan & Format Ekspor
+      `<div class="card" style="margin-bottom:12px;border:1px solid #cbd5e1;border-radius:8px">` +
+      `<div class="card-head" style="padding:10px 14px;border-bottom:1px solid #e2e8f0;background:#f8fafc">` +
+      `<strong style="font-size:13px;color:#0f172a">4. Opsi Penyimpanan &amp; Format Ekspor (Tabel Atribut Saja):</strong>` +
+      `</div>` +
+      `<div style="padding:12px 14px">` +
+      `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">` +
+      `<label style="font-size:12px;font-weight:700;color:#334155;min-width:90px">Folder Simpan:</label>` +
+      `<input type="text" id="create-folder-input" value="${esc(state.create.folder)}" style="flex:1;height:30px;font-size:12px;padding:3px 8px;border:1px solid #cbd5e1;border-radius:5px">` +
+      `<button type="button" class="btn btn-soft" data-act="browse-folder" style="height:30px;padding:2px 10px;font-size:12px">...</button>` +
+      `</div>` +
+      `<div style="display:flex;align-items:center;gap:16px;margin-bottom:10px">` +
+      `<span style="font-size:12px;font-weight:700;color:#334155">Format:</span>` +
+      `<label style="font-size:12px;cursor:pointer"><input type="radio" name="create-format" value="gpkg" ${state.create.format === 'gpkg' ? 'checked' : ''}> .gpkg (GeoPackage)</label>` +
+      `<label style="font-size:12px;cursor:pointer"><input type="radio" name="create-format" value="geojson" ${state.create.format === 'geojson' ? 'checked' : ''}> .geojson (GeoJSON)</label>` +
+      `<label style="font-size:12px;cursor:pointer"><input type="radio" name="create-format" value="shp" ${state.create.format === 'shp' ? 'checked' : ''}> Esri Shapefile (.shp)</label>` +
+      `</div>` +
+      `<button type="button" class="btn btn-primary" data-act="execute-export-create" style="width:100%;height:40px;background:#16a34a;border-color:#16a34a;font-size:14px;font-weight:800">` +
+      `💾 Simpan Derivatif` +
+      `</button>` +
+      `</div></div></div>`
+    );
+  }
 
-    function updateNav() {
-      $('#wizard-nav').innerHTML = navHtml();
-      document.querySelectorAll('.step-btn').forEach((b) => { b.disabled = !canReach(Number(b.dataset.step)); });
-    }
+  // -------------------------------------------------------------------------
+  // 3. VIEW LOAD TEMATIK
+  // -------------------------------------------------------------------------
+  function renderViewLoad() {
+    const loadedCount = state.load.loadedParcels.length;
 
-    function refreshAttributeErrors() {
-      currentFields().forEach((f, i) => {
-        const input = $('#attr-' + i);
-        const message = state.touched[f.name] ? fieldError(f, state.values[f.name]) : '';
-        $('#attr-err-' + i).textContent = message;
-        if (input) input.setAttribute('aria-invalid', message ? 'true' : 'false');
-      });
-    }
+    return (
+      `<div class="derivatif-mode-view mode-load-content">` +
+      // KARTU 1: Pilih File Tabel Atribut Derivatif Hasil Ekspor
+      `<div class="card" style="margin-bottom:12px;border:1px solid #cbd5e1;border-radius:8px">` +
+      `<div class="card-head" style="padding:10px 14px;border-bottom:1px solid #e2e8f0;background:#f8fafc">` +
+      `<strong style="font-size:13px;color:#0f172a">1. Pilih File Tabel Atribut Derivatif Hasil Ekspor:</strong>` +
+      `</div>` +
+      `<div style="padding:12px 14px">` +
+      `<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">` +
+      `<input type="text" readonly id="load-filepath-input" value="${esc(state.load.filePath)}" placeholder="Pilih file (.gpkg, .geojson, .shp, .dbf, .csv)..." style="flex:1;height:32px;font-size:12.5px;padding:3px 8px;border:1px solid #cbd5e1;border-radius:5px;background:#f8fafc">` +
+      `<button type="button" class="btn btn-primary" data-act="browse-load-file" style="height:32px;background:#0284c7;border-color:#0284c7;font-size:12px;font-weight:700">📁 Browse...</button>` +
+      `<button type="button" class="btn btn-soft" data-act="open-load-settings" style="height:32px;font-size:12px;font-weight:700;color:#166534;background:#f0fdf4;border-color:#86efac">⚙️ Pengaturan Baseline...</button>` +
+      `<button type="button" class="btn btn-soft" data-act="reset-load" style="height:32px;font-size:12px;font-weight:700;color:#dc2626">🔄 Reset</button>` +
+      `</div>` +
+      (state.load.fileLoaded
+        ? `<div style="font-size:11.5px;font-weight:700;color:#166534;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:5px;padding:6px 10px;margin-bottom:6px">` +
+          `✓ Berkas berhasil dimuat! Ditemukan ${loadedCount} baris data atribut dengan relasi ID Bidang (EPSG:3857).` +
+          `</div>`
+        : '') +
+      `<div style="font-size:11px;color:#64748b;font-style:italic">` +
+      `Format didukung: GeoPackage (.gpkg), GeoJSON (.geojson), Shapefile/dBASE (.dbf/.shp), CSV (.csv). Berkas ini tanpa geometri namun memuat relasi ID_BIDANG.` +
+      `</div>` +
+      `</div></div>` +
 
-    function go(target, focus) {
-      if (!canReach(target)) return;
-      if (target === 4) {
-        // Drop values of fields that are no longer part of the structure.
-        const names = new Set(currentFields().map((f) => f.name));
-        Object.keys(state.values).forEach((k) => { if (!names.has(k)) delete state.values[k]; });
-      }
-      if (target === 5 && !state.filenameEdited) state.filename = `derivatif_bidang_${state.parcelId}`;
-      state.step = target;
-      state.notice = '';
-      render(focus || '#step-title');
-      window.scrollTo(0, 0);
-    }
+      // KARTU 2: Visualisasi Geometri & Tabel Atribut Bidang
+      `<div class="card" style="margin-bottom:12px;border:1px solid #cbd5e1;border-radius:8px">` +
+      `<div class="card-head" style="padding:10px 14px;border-bottom:1px solid #e2e8f0;background:#f8fafc;display:flex;align-items:center;justify-content:space-between">` +
+      `<strong style="font-size:13px;color:#0f172a">2. Daftar Bidang Derivatif yang Berhasil Dihubungkan (${loadedCount} bidang):</strong>` +
+      `<span style="background:#ecfdf5;color:#047857;font-size:11px;font-weight:700;padding:2px 8px;border-radius:12px;border:1px solid #a7f3d0">✓ Terhubung ke Geometri WMS</span>` +
+      `</div>` +
+      `<div style="padding:12px 14px">` +
+      renderCanvasSvg('load') +
+      `<div style="max-height:260px;overflow:auto;border:1px solid #cbd5e1;border-radius:6px;margin-top:10px">` +
+      `<table class="stack" style="width:100%;font-size:11.5px;margin:0">` +
+      `<thead><tr style="background:#f1f5f9;text-align:left"><th style="padding:6px 8px">ID Bidang</th><th style="padding:6px 8px">NIB</th><th style="padding:6px 8px">Desa</th><th style="padding:6px 8px">Kecamatan</th><th style="padding:6px 8px">Status Kumuh</th><th style="padding:6px 8px">Luas Terdampak</th><th style="padding:6px 8px">Rekomendasi</th></tr></thead>` +
+      `<tbody>` +
+      state.load.loadedParcels.map((p) =>
+        `<tr style="border-bottom:1px solid #f1f5f9"><td style="padding:6px 8px;font-weight:700"><code>${esc(p.id)}</code></td><td style="padding:6px 8px">${esc(p.nib)}</td><td style="padding:6px 8px">${esc(p.desa)}</td><td style="padding:6px 8px">${esc(p.kecamatan)}</td><td style="padding:6px 8px"><span style="background:#fef3c7;color:#92400e;padding:1px 6px;border-radius:4px;font-weight:700">${esc(p.status_kumuh)}</span></td><td style="padding:6px 8px">${esc(p.luas_terdampak)}</td><td style="padding:6px 8px;color:#475569">${esc(p.aksi)}</td></tr>`
+      ).join('') +
+      `</tbody></table></div></div></div></div>`
+    );
+  }
 
-    // ---------------------------------------------------------------- events
+  // -------------------------------------------------------------------------
+  // MODALS: WMS LOG & BASELINE SETTINGS
+  // -------------------------------------------------------------------------
+  function renderModals() {
+    return (
+      // Modal WMS Log
+      `<div id="wms-log-modal" class="modal-backdrop" ${state.isi.wmsLogOpen ? '' : 'hidden'} style="position:fixed;inset:0;z-index:1000;background:rgba(15,23,42,.55);display:${state.isi.wmsLogOpen ? 'flex' : 'none'};align-items:center;justify-content:center;padding:20px">` +
+      `<section class="card" style="width:min(620px,100%);max-height:85vh;overflow:auto;margin:auto">` +
+      `<div class="card-head" style="padding:12px 16px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between">` +
+      `<div><h3 style="margin:0;font-size:14px;color:#0f172a">📋 Diagnostik &amp; Log Koneksi WMS GeoServer</h3><p style="margin:2px 0 0 0;font-size:11px;color:#64748b">Rincian parameter koneksi layer baseline geospasial</p></div>` +
+      `<button type="button" class="btn btn-soft btn-sm" data-act="close-wms-log">✕ Tutup</button>` +
+      `</div>` +
+      `<div style="padding:14px 16px;font-family:monospace;font-size:11.5px;background:#0f172a;color:#f8fafc;border-radius:0 0 8px 8px;line-height:1.6">` +
+      `[19:04:12] INFO: Inisialisasi request GetCapabilities ke GeoServer ATR/BPN...<br>` +
+      `[19:04:13] SUCCESS: Endpoint WMS terdeteksi (HTTP 200 OK)<br>` +
+      `[19:04:13] INFO: Layer Typename: sppr:baseline_bidang_sleman<br>` +
+      `[19:04:14] INFO: SRS/CRS Terpilih: EPSG:3857 (WGS 84 / Pseudo-Mercator)<br>` +
+      `[19:04:14] INFO: Bounding Box: [110.312, -7.785, 110.428, -7.682]<br>` +
+      `[19:04:15] SUCCESS: 4 bidang sampel berhasil dirender ke buffer kanvas (Latency: 142ms)` +
+      `</div></section></div>` +
 
-    function pickParcel(id) {
-      if (!state.selectionActive || !findParcel(id)) return;
-      if (state.parcelId !== id) touch();
-      state.parcelId = id;
-      render();
-    }
+      // Modal Baseline Settings
+      `<div id="baseline-settings-modal" class="modal-backdrop" ${state.load.settingsOpen ? '' : 'hidden'} style="position:fixed;inset:0;z-index:1000;background:rgba(15,23,42,.55);display:${state.load.settingsOpen ? 'flex' : 'none'};align-items:center;justify-content:center;padding:20px">` +
+      `<section class="card" style="width:min(580px,100%);max-height:85vh;overflow:auto;margin:auto">` +
+      `<div class="card-head" style="padding:12px 16px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between">` +
+      `<div><h3 style="margin:0;font-size:14px;color:#0f172a">⚙️ Pengaturan Baseline Layer</h3><p style="margin:2px 0 0 0;font-size:11px;color:#64748b">Konfigurasi sumber baseline untuk join geometri bidang</p></div>` +
+      `<button type="button" class="btn btn-soft btn-sm" data-act="close-load-settings">✕ Tutup</button>` +
+      `</div>` +
+      `<div style="padding:16px;font-size:12px">` +
+      `<div class="field" style="margin-bottom:10px"><label style="font-weight:700">Nama Baseline CMS</label><input type="text" value="${esc(state.load.detectedBaseline.name)}" readonly style="height:30px;width:100%;padding:4px 8px;border:1px solid #cbd5e1;border-radius:4px;background:#f8fafc"></div>` +
+      `<div class="field" style="margin-bottom:10px"><label style="font-weight:700">Typename WMS Geoportal</label><input type="text" value="${esc(state.load.detectedBaseline.typename)}" readonly style="height:30px;width:100%;padding:4px 8px;border:1px solid #cbd5e1;border-radius:4px;background:#f8fafc"></div>` +
+      `<div class="field" style="margin-bottom:10px"><label style="font-weight:700">Kolom Kunci ID Bidang (Join Key)</label><input type="text" value="${esc(state.load.detectedBaseline.idField)}" readonly style="height:30px;width:100%;padding:4px 8px;border:1px solid #cbd5e1;border-radius:4px;background:#f8fafc"></div>` +
+      `<div class="field" style="margin-bottom:14px"><label style="font-weight:700">Sistem Koordinat Acuan (CRS)</label><input type="text" value="${esc(state.load.detectedBaseline.crs)}" readonly style="height:30px;width:100%;padding:4px 8px;border:1px solid #cbd5e1;border-radius:4px;background:#f8fafc"></div>` +
+      `<button type="button" class="btn btn-primary" data-act="close-load-settings" style="width:100%;font-weight:700">Terapkan Pengaturan</button>` +
+      `</div></section></div>`
+    );
+  }
 
-    function addField() {
-      const d = state.draft;
-      const name = d.name.trim();
-      let error = '';
-      if (!name) error = 'Nama kolom wajib diisi.';
-      else if (!FIELD_NAME.test(name)) error = 'Nama kolom harus diawali huruf dan hanya berisi huruf, angka, atau garis bawah (maks. 30 karakter).';
-      else if (name.toLowerCase() === ID_FIELD || state.manualFields.some((f) => f.name.toLowerCase() === name.toLowerCase())) error = `Nama kolom "${name}" sudah dipakai.`;
-      state.draftError = error;
-      if (error) {
-        $('#draft-error').textContent = error;
-        $('#draft-name').setAttribute('aria-invalid', 'true');
-        $('#draft-name').focus();
-        return;
-      }
-      state.manualFields.push({ name, type: d.type, required: d.required });
-      state.draft = { name: '', type: d.type, required: false };
-      touch();
-      render('#draft-name');
-    }
+  // -------------------------------------------------------------------------
+  // MAIN RENDER
+  // -------------------------------------------------------------------------
+  function render() {
+    const view = $('#view');
+    if (!view) return;
 
-    function saveFile() {
-      if (filenameError()) return;
-      const ext = FORMATS[state.format].ext;
-      const fields = currentFields().map((f) => ({ name: f.name, type: f.type }));
-      const values = {};
-      fields.forEach((f) => { values[f.name] = String(state.values[f.name] === undefined ? '' : state.values[f.name]).trim(); });
-      const fileName = state.filename.trim() + ext;
-      const entry = { fileName, format: state.format, origin: 'session', savedAt: today(), fields, records: [{ id: state.parcelId, values }] };
-      state.savedFiles = state.savedFiles.filter((f) => f.fileName !== fileName).concat(entry);
-      persistSavedFiles(state.savedFiles);
-      state.saveDone = true;
-      render('#save-success');
-    }
+    const mode = state.currentMode;
+    const isV2 = Boolean(IgtData.ROLES[state.role] && IgtData.ROLES[state.role].v2);
+    const backUrl = isV2 ? '../beranda/index.html' : '../upload-data/index.html?tab=derivatif';
 
-    function loadSavedForEdit() {
-      state.loadError = '';
-      const [kind, name] = [state.fileKey.slice(0, 1), state.fileKey.slice(2)];
-      const file = (kind === 's' ? state.savedFiles : SAMPLE_FILES).find((f) => f.fileName === name);
-      if (!file) {
-        state.loadError = 'Pilih berkas yang tersedia terlebih dahulu.';
-        state.notice = '';
-        render('#resume-file-select');
-        return;
-      }
-      if (file.invalid || !Array.isArray(file.fields) || !file.fields.length || !Array.isArray(file.records) || !file.records.length) {
-        state.loadError = file.invalid || 'Berkas tidak memiliki definisi kolom atau baris data yang dapat dipulihkan.';
-        state.notice = '';
-        render('#resume-file-select');
-        return;
-      }
-      const record = file.records[0];
-      state.loadedFile = file;
-      state.resumeMode = true;
-      state.sourceLoaded = true;
-      state.mode = 'manual';
-      state.templateId = '';
-      state.manualFields = file.fields.map((field) => ({
-        name: String(field.name),
-        type: FIELD_TYPES[field.type] ? field.type : 'text',
-        required: Boolean(field.required),
-      })).filter((field) => field.name.toLowerCase() !== ID_FIELD);
-      state.values = { ...(record.values || {}) };
-      state.parcelId = findParcel(String(record.id || '')) ? String(record.id) : '';
-      state.selectionActive = Boolean(state.parcelId);
-      state.filename = file.fileName.replace(/\.(gpkg|json)$/i, '');
-      state.filenameEdited = true;
-      state.format = file.format === 'json' ? 'json' : 'gpkg';
-      state.saveDone = false;
-      state.step = 2;
-      state.join = null;
-      state.notice = state.parcelId
-        ? 'Data tersimpan dipulihkan. Struktur dan nilai atribut siap ditinjau; bidang dari berkas telah dikenali.'
-        : 'Struktur dan nilai atribut dipulihkan, tetapi ID bidang pada berkas tidak ditemukan di baseline contoh. Pilih bidang pada langkah Bidang.';
-      render('#step-title');
-      window.scrollTo(0, 0);
-    }
+    const activeBtnStyle = (color, border) =>
+      `background-color:${color};color:#ffffff;font-weight:700;font-size:12px;border:1px solid ${border};border-radius:6px;padding:6px 14px;cursor:pointer;flex:1;text-align:center`;
+    const inactiveBtnStyle =
+      `background-color:#ffffff;color:#475569;font-weight:600;font-size:12px;border:1px solid #cbd5e1;border-radius:6px;padding:6px 14px;cursor:pointer;flex:1;text-align:center`;
 
-    function loadFile() {
-      state.join = null;
-      state.notice = '';
-      state.loadedFile = null;
-      state.loadError = '';
-      const [kind, name] = [state.fileKey.slice(0, 1), state.fileKey.slice(2)];
-      const file = (kind === 's' ? state.savedFiles : SAMPLE_FILES).find((f) => f.fileName === name);
-      if (!file) state.loadError = 'Berkas tidak ditemukan.';
-      else if (file.invalid) state.loadError = file.invalid;
-      else state.loadedFile = file;
-      render('#load-error, #run-join');
-    }
+    const badgeModeText = mode === 'isi' ? 'Mode: Isi Tematik' : mode === 'create' ? 'Mode: Create Tematik' : 'Mode: Load Tematik';
+    const badgeModeColor = mode === 'isi' ? '#eff6ff;color:#1d4ed8;border-color:#bfdbfe' : mode === 'create' ? '#faf5ff;color:#7c3aed;border-color:#e9d5ff' : '#ecfdf5;color:#047857;border-color:#a7f3d0';
 
-    function runJoin() {
-      if (!state.loadedFile || !state.sourceLoaded) return;
-      state.notice = '';
-      state.join = { rows: state.loadedFile.records.map((r) => ({ id: r.id, values: r.values, parcel: findParcel(r.id) })) };
-      render('#join-summary');
-    }
+    view.innerHTML = (
+      `<div class="derivatif-bidang-v2-container" style="max-width:1000px;margin:0 auto">` +
+      // Top Navigation Frame
+      `<div style="display:flex;align-items:center;justify-content:space-between;background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;margin-bottom:10px">` +
+      `<a class="btn btn-soft btn-sm" href="${backUrl}" style="font-weight:700;color:#2563eb">← Kembali ke Manajemen</a>` +
+      `<div style="display:flex;align-items:center;gap:10px">` +
+      `<strong style="font-size:14px;color:#0f172a">▤ Derivatif Per Bidang</strong>` +
+      `<span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:12px;border:1px solid;background:${badgeModeColor}">${badgeModeText}</span>` +
+      `</div></div>` +
 
-    view.addEventListener('click', (event) => {
-      const target = event.target.closest('[data-act]');
-      if (!target || target.disabled) return;
-      const act = target.dataset.act;
-      if (act === 'goto') go(Number(target.dataset.step));
-      else if (act === 'goto-approved') go(APPROVED);
-      else if (act === 'next') go(state.step + 1);
-      else if (act === 'back') go(state.step - 1, '#step-title');
-      else if (act === 'load-baseline') {
-        state.sourceLoaded = true;
-        state.notice = 'Baseline contoh ditandai siap digunakan. Tidak ada koneksi WFS atau QGIS yang dibuat.';
-        render('#load-baseline');
-      } else if (act === 'activate-selection') {
-        state.selectionActive = true;
-        render('#activate-selection');
-      } else if (act === 'pick-parcel') pickParcel(target.dataset.id);
-      else if (act === 'add-field') addField();
-      else if (act === 'remove-field') {
-        const [removed] = state.manualFields.splice(Number(target.dataset.index), 1);
-        delete state.values[removed.name];
-        touch();
+      // 3 Tombol Utama di Atas
+      `<div style="display:flex;gap:8px;background:#ffffff;border:1px solid #cbd5e1;border-radius:8px;padding:6px;margin-bottom:12px">` +
+      `<button type="button" data-act="switch-mode" data-mode="isi" style="${mode === 'isi' ? activeBtnStyle('#2563eb', '#1d4ed8') : inactiveBtnStyle}">✍️ Isi Tematik</button>` +
+      `<button type="button" data-act="switch-mode" data-mode="create" style="${mode === 'create' ? activeBtnStyle('#7c3aed', '#6d28d9') : inactiveBtnStyle}">➕ Create Tematik</button>` +
+      `<button type="button" data-act="switch-mode" data-mode="load" style="${mode === 'load' ? activeBtnStyle('#059669', '#047857') : inactiveBtnStyle}">📂 Load Tematik</button>` +
+      `</div>` +
+
+      // Sub-View Content
+      (mode === 'isi' ? renderViewIsi() : mode === 'create' ? renderViewCreate() : renderViewLoad()) +
+      renderModals() +
+      `</div>`
+    );
+  }
+
+  // -------------------------------------------------------------------------
+  // EVENT LISTENERS
+  // -------------------------------------------------------------------------
+  function bindEvents() {
+    const view = $('#view');
+    if (!view) return;
+
+    view.addEventListener('click', (e) => {
+      const target = e.target.closest('[data-act]');
+      if (!target) return;
+      const act = target.getAttribute('data-act');
+
+      // Mode Switcher
+      if (act === 'switch-mode') {
+        state.currentMode = target.getAttribute('data-mode');
         render();
-      } else if (act === 'save-file') saveFile();
-      else if (act === 'load-file') loadFile();
-      else if (act === 'load-saved-for-edit') loadSavedForEdit();
-      else if (act === 'run-join') runJoin();
-      else if (act === 'show-in-qgis') {
-        const n = state.join.rows.filter((r) => r.parcel).length;
-        state.notice = `Simulasi: ${n} bidang dengan atribut tergabung akan ditampilkan sebagai layer sementara di QGIS. Koneksi QGIS belum aktif pada prototipe ini.`;
-        render('#show-result');
+        return;
+      }
+
+      // Canvas Parcel Picking
+      if (act === 'select-canvas-parcel') {
+        state.activeParcelId = target.getAttribute('data-id');
+        render();
+        return;
+      }
+
+      if (act === 'toggle-picker') {
+        state.isPicking = !state.isPicking;
+        render();
+        return;
+      }
+
+      // WMS Log Modal
+      if (act === 'open-wms-log') {
+        state.isi.wmsLogOpen = true;
+        render();
+        return;
+      }
+      if (act === 'close-wms-log') {
+        state.isi.wmsLogOpen = false;
+        render();
+        return;
+      }
+
+      // Load Settings Modal
+      if (act === 'open-load-settings') {
+        state.load.settingsOpen = true;
+        render();
+        return;
+      }
+      if (act === 'close-load-settings') {
+        state.load.settingsOpen = false;
+        render();
+        return;
+      }
+
+      // Refresh Buttons
+      if (act === 'refresh-der' || act === 'refresh-bl') {
+        alert('Daftar layer berhasil disegarkan dari Geoportal.');
+        return;
+      }
+
+      // Load Baseline WMS
+      if (act === 'load-baseline-isi' || act === 'load-baseline-create') {
+        alert('Layer Baseline WMS berhasil dimuat ke kanvas peta.');
+        render();
+        return;
+      }
+
+      // Import Bidang
+      if (act === 'import-bidang') {
+        alert('Simulasi: Berkas bidang tersimpan berhasil diimpor ke sesi.');
+        return;
+      }
+
+      // Browse Folder
+      if (act === 'browse-folder') {
+        const folder = prompt('Tentukan folder simpan:', '~/Documents/Derivatif_Kompilasi');
+        if (folder) {
+          if (state.currentMode === 'isi') state.isi.folder = folder;
+          if (state.currentMode === 'create') state.create.folder = folder;
+          render();
+        }
+        return;
+      }
+
+      // Save Bidang (Mode ISI)
+      if (act === 'isi-save-bidang') {
+        const parcel = getActiveParcel();
+        // Collect form values
+        document.querySelectorAll('[data-isi-field]').forEach((inp) => {
+          const k = inp.getAttribute('data-isi-field');
+          state.isi.formValues[k] = inp.value;
+        });
+        const summary = `${state.isi.formValues.status_kumuh || 'Diisi'} · Luas: ${state.isi.formValues.luas_terdampak_m2 || '0'} m²`;
+        // Check if exists
+        const exIdx = state.isi.sessionParcels.findIndex((p) => p.id === parcel.id);
+        if (exIdx >= 0) {
+          state.isi.sessionParcels[exIdx] = { ...parcel, summary, values: { ...state.isi.formValues } };
+        } else {
+          state.isi.sessionParcels.push({ ...parcel, summary, values: { ...state.isi.formValues } });
+        }
+        // Pick next unselected parcel
+        const nextParcel = BASELINE_PARCELS.find((p) => !state.isi.sessionParcels.some((sp) => sp.id === p.id));
+        if (nextParcel) state.activeParcelId = nextParcel.id;
+        render();
+        return;
+      }
+
+      // Delete Parcel (Mode ISI)
+      if (act === 'delete-isi-parcel') {
+        const idx = parseInt(target.getAttribute('data-index'), 10);
+        state.isi.sessionParcels.splice(idx, 1);
+        render();
+        return;
+      }
+
+      // Execute Export (Mode ISI)
+      if (act === 'execute-export-isi') {
+        if (state.isi.sessionParcels.length === 0) {
+          alert('Peringatan: Belum ada bidang terisi pada sesi ini.');
+          return;
+        }
+        alert(`Sukses! ${state.isi.sessionParcels.length} bidang derivatif berhasil disimpan ke format .${state.isi.format}.\nSesi telah direset.`);
+        state.isi.sessionParcels = [];
+        render();
+        return;
+      }
+
+      // Add Custom Column (Mode CREATE)
+      if (act === 'add-custom-col') {
+        const colNum = state.create.customColumns.length + 1;
+        state.create.customColumns.push({ name: 'kolom_baru_' + colNum, type: 'Teks', length: 50, value: '' });
+        render();
+        return;
+      }
+
+      // Remove Custom Column (Mode CREATE)
+      if (act === 'remove-custom-col') {
+        const idx = parseInt(target.getAttribute('data-idx'), 10);
+        state.create.customColumns.splice(idx, 1);
+        render();
+        return;
+      }
+
+      // Save Bidang (Mode CREATE)
+      if (act === 'create-save-bidang') {
+        const parcel = getActiveParcel();
+        // Read latest column values
+        document.querySelectorAll('#table-custom-cols tbody tr').forEach((row, i) => {
+          if (state.create.customColumns[i]) {
+            const nameInp = row.querySelector('[data-col-field="name"]');
+            const typeSel = row.querySelector('[data-col-field="type"]');
+            const lenInp = row.querySelector('[data-col-field="length"]');
+            const valInp = row.querySelector('[data-col-field="value"]');
+            if (nameInp) state.create.customColumns[i].name = nameInp.value;
+            if (typeSel) state.create.customColumns[i].type = typeSel.value;
+            if (lenInp) state.create.customColumns[i].length = lenInp.value;
+            if (valInp) state.create.customColumns[i].value = valInp.value;
+          }
+        });
+        const summary = state.create.customColumns.map((c) => `${c.name}=${c.value || '-'}`).join(', ');
+        const exIdx = state.create.sessionParcels.findIndex((p) => p.id === parcel.id);
+        if (exIdx >= 0) {
+          state.create.sessionParcels[exIdx] = { ...parcel, summary };
+        } else {
+          state.create.sessionParcels.push({ ...parcel, summary });
+        }
+        const nextParcel = BASELINE_PARCELS.find((p) => !state.create.sessionParcels.some((sp) => sp.id === p.id));
+        if (nextParcel) state.activeParcelId = nextParcel.id;
+        render();
+        return;
+      }
+
+      // Delete Parcel (Mode CREATE)
+      if (act === 'delete-create-parcel') {
+        const idx = parseInt(target.getAttribute('data-index'), 10);
+        state.create.sessionParcels.splice(idx, 1);
+        render();
+        return;
+      }
+
+      // Execute Export (Mode CREATE)
+      if (act === 'execute-export-create') {
+        if (state.create.sessionParcels.length === 0) {
+          alert('Peringatan: Belum ada bidang terisi pada sesi ini.');
+          return;
+        }
+        alert(`Sukses! ${state.create.sessionParcels.length} bidang derivatif kustom berhasil disimpan ke format .${state.create.format}.\nSesi telah direset.`);
+        state.create.sessionParcels = [];
+        render();
+        return;
+      }
+
+      // Browse Load File (Mode LOAD)
+      if (act === 'browse-load-file') {
+        const path = prompt('Masukkan path berkas tabel derivatif:', 'atribut_kawasan_kumuh_sleman_2026.gpkg');
+        if (path) {
+          state.load.filePath = path;
+          state.load.fileLoaded = true;
+          render();
+        }
+        return;
+      }
+
+      // Reset Load (Mode LOAD)
+      if (act === 'reset-load') {
+        state.load.filePath = '';
+        state.load.fileLoaded = false;
+        render();
+        return;
       }
     });
 
-    view.addEventListener('input', (event) => {
-      const el = event.target;
-      if (el.id === 'draft-name') {
-        state.draft.name = el.value;
-        if (state.draftError) { state.draftError = ''; $('#draft-error').textContent = ''; el.removeAttribute('aria-invalid'); }
-      } else if (el.id === 'filename') {
-        state.filename = el.value;
-        state.filenameEdited = true;
-        touch();
-        const err = filenameError();
-        $('#filename-error').textContent = err;
-        $('#save-file').disabled = Boolean(err);
-        const success = $('#save-success');
-        if (success) success.remove();
-        updateNav();
-      } else if (el.dataset.attr !== undefined) {
-        state.values[el.dataset.attr] = el.value;
-        state.touched[el.dataset.attr] = true;
-        touch();
-        refreshAttributeErrors();
-        updateNav();
+    view.addEventListener('change', (e) => {
+      if (e.target.id === 'combo-derivatif-layer') {
+        state.isi.selectedLayerId = e.target.value;
+        const l = DERIVATIF_CMS_LAYERS.find((x) => x.id === e.target.value);
+        if (l) {
+          state.isi.formValues = {};
+          l.fields.forEach((f) => { state.isi.formValues[f.name] = f.default || (f.options ? f.options[0] : ''); });
+        }
+        render();
+      }
+      if (e.target.id === 'combo-create-baseline') {
+        state.create.selectedBaselineId = e.target.value;
+        render();
+      }
+      if (e.target.name === 'isi-format') {
+        state.isi.format = e.target.value;
+      }
+      if (e.target.name === 'create-format') {
+        state.create.format = e.target.value;
       }
     });
+  }
 
-    view.addEventListener('change', (event) => {
-      const el = event.target;
-      if (el.name === 'parcel') pickParcel(el.value);
-      else if (el.name === 'mode') {
-        state.mode = el.value;
-        touch();
-        render('input[name="mode"]:checked');
-      } else if (el.id === 'template-select') {
-        state.templateId = el.value;
-        touch();
-        render('#template-select');
-      } else if (el.id === 'draft-type') state.draft.type = el.value;
-      else if (el.id === 'draft-required') state.draft.required = el.checked;
-      else if (el.name === 'format') {
-        state.format = el.value;
-        touch();
-        render('input[name="format"]:checked');
-      } else if (el.id === 'resume-file-select') {
-        state.fileKey = el.value;
-        state.loadError = '';
-        const button = $('#load-saved-for-edit');
-        if (button) button.disabled = !state.fileKey;
-      } else if (el.id === 'file-select') {
-        state.fileKey = el.value;
-        state.loadedFile = null;
-        state.loadError = '';
-        state.join = null;
-        state.notice = '';
-        render('#file-select');
-      }
-    });
+  // -------------------------------------------------------------------------
+  // INITIALIZATION
+  // -------------------------------------------------------------------------
+  function init(role) {
+    state.role = role || 'operator';
+    const params = new URLSearchParams(window.location.search);
+    const requestedMode = params.get('mode');
+    const legacyStep = params.get('step');
+    if (requestedMode === 'create') state.currentMode = 'create';
+    else if (requestedMode === 'load' || legacyStep === '6') state.currentMode = 'load';
+    else state.currentMode = 'isi';
 
-    // The last step can be opened directly with ?step=6 (e.g. to come back to it later).
     render();
-    if (new URLSearchParams(location.search).get('step') === String(APPROVED)) go(APPROVED);
+    bindEvents();
   }
 
   return { init };
