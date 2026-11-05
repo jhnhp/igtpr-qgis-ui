@@ -238,6 +238,18 @@ const IgtApp = (() => {
     const hasSubs = Boolean(dataset.subLayers && dataset.subLayers.length > 0);
     const allowWfs = canAccessWfs(role, dataset);
 
+    const keteranganVal = dataset.keterangan || dataset.description || dataset.desc || dataset.catatan || dataset.note || (
+      hasSubs
+        ? `Dataset terpadu multi-layer memuat ${dataset.subLayers.length} sub-layer tematik terintegrasi siap pakai.`
+        : cat === 'pertanahan'
+        ? 'Data geospasial tematik pertanahan terverifikasi berbasis bidang tanah (baseline kadastral).'
+        : cat === 'tata-ruang'
+        ? 'Data geospasial tematik tata ruang berstatus terintegrasi dan tervalidasi topologi.'
+        : cat === 'derivatif'
+        ? 'Layer tematik hasil analisis dan pemodelan spasial derivatif multiguna.'
+        : 'Data geospasial tematik resmi terintegrasi pada Geoportal Kementerian ATR/BPN.'
+    );
+
     const subLayersHtml = hasSubs ? `
       <div class="igt-detail-box" style="border-color:#bbf7d0;background:#f0fdf4;">
         <div class="igt-detail-box-title" style="color:#047857;">Daftar Sub-Layer (${dataset.subLayers.length} Sub-IGT Terintegrasi)</div>
@@ -298,13 +310,9 @@ const IgtApp = (() => {
                 <span class="igt-detail-label">Sistem Koordinat (CRS)</span>
                 <span class="igt-detail-val">EPSG:4326 (WGS 84) / EPSG:3857 (Web Mercator)</span>
               </div>
-              <div class="igt-detail-item">
-                <span class="igt-detail-label">Format Layanan</span>
-                <span class="igt-detail-val">WMS (Web Map Service), WFS (Web Feature Service)</span>
-              </div>
-              <div class="igt-detail-item">
-                <span class="igt-detail-label">Skala Geospasial</span>
-                <span class="igt-detail-val">1:5.000 / 1:25.000 (Sesuai Standar IGT Nasional)</span>
+              <div class="igt-detail-item" style="grid-column: 1 / -1;">
+                <span class="igt-detail-label">Keterangan</span>
+                <span class="igt-detail-val" style="line-height:1.5;">${keteranganVal}</span>
               </div>
             </div>
           </div>

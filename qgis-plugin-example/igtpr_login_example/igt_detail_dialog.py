@@ -7,7 +7,7 @@ Menampilkan informasi lengkap mengenai dataset IGT:
 - Tanggal Integrasi / Pembaruan
 - Jenis IGT & Kategori
 - Ruang Lingkup / Wilayah
-- Format Layanan & Skala
+- Keterangan
 - Sistem Koordinat (CRS)
 - Link Dokumen Metadata
 - Rincian Sub-layer (bila multi-layer)
@@ -200,6 +200,23 @@ class IgtDetailDialog(QDialog):
         tgl_val = self.dataset.get('updated') or self.dataset.get('date') or '18 Okt 2026'
         lingkup_val = self.dataset.get('scope') or f"{self.dataset.get('kab', 'Kab. Sleman')}, {self.dataset.get('prov', 'D.I. Yogyakarta')}"
 
+        keterangan_val = (
+            self.dataset.get('keterangan') or
+            self.dataset.get('description') or
+            self.dataset.get('desc') or
+            self.dataset.get('note') or
+            self.dataset.get('catatan') or
+            (f"Dataset terpadu multi-layer memuat {len(self.dataset.get('subLayers', []))} sub-layer tematik terintegrasi siap pakai."
+             if self.has_subs else
+             "Data geospasial tematik pertanahan terverifikasi berbasis bidang tanah (baseline kadastral)."
+             if cat == 'pertanahan' else
+             "Data geospasial tematik tata ruang berstatus terintegrasi dan tervalidasi topologi."
+             if cat == 'tata-ruang' else
+             "Layer tematik hasil analisis dan pemodelan spasial derivatif multiguna."
+             if cat == 'derivatif' else
+             "Data geospasial tematik resmi terintegrasi pada Geoportal Kementerian ATR/BPN.")
+        )
+
         fields = [
             ("Direktorat Pembina", direktorat_val),
             ("Satuan Kerja (Satker)", satker_val),
@@ -207,8 +224,6 @@ class IgtDetailDialog(QDialog):
             ("Jenis IGT", jenis_igt),
             ("Ruang Lingkup / Wilayah", lingkup_val),
             ("Sistem Koordinat (CRS)", "EPSG:4326 (WGS 84) / EPSG:3857 (Web Mercator)"),
-            ("Format Layanan", "WMS (Web Map Service), WFS (Web Feature Service)"),
-            ("Skala Geospasial", "1:5.000 / 1:25.000 (Sesuai Standar IGT Nasional)"),
         ]
 
         for i, (lbl_txt, val_txt) in enumerate(fields):
@@ -223,6 +238,16 @@ class IgtDetailDialog(QDialog):
             val.setStyleSheet("color: #0f294d; font-size: 11px; font-weight: 600;")
             val.setWordWrap(True)
             grid.addWidget(val, r * 2 + 1, c)
+
+        # Keterangan (memanjang memenuhi grid)
+        lbl_ket = QLabel("KETERANGAN", info_card)
+        lbl_ket.setStyleSheet("color: #64748b; font-size: 10px; font-weight: 700; margin-top: 4px;")
+        grid.addWidget(lbl_ket, 6, 0, 1, 3)
+
+        val_ket = QLabel(keterangan_val, info_card)
+        val_ket.setStyleSheet("color: #0f294d; font-size: 11px; font-weight: 600; line-height: 1.4;")
+        val_ket.setWordWrap(True)
+        grid.addWidget(val_ket, 7, 0, 1, 3)
 
         ic_layout.addLayout(grid)
         body_layout.addWidget(info_card)

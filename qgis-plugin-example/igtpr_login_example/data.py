@@ -78,6 +78,7 @@ TABLE_SCHEMAS = {
             'multiType': 'multi_type',
             'multiLabel': 'multi_label',
             'instansi': 'instansi',
+            'keterangan': 'keterangan',
             'subLayers': 'sub_layers',
         }
     },
