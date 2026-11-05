@@ -898,10 +898,10 @@ const IgtApp = (() => {
       '<div class="catalog-controls-v2">' +
       '<div class="catalog-search-row">' +
       '<div class="field catalog-search catalog-search-input-wrap"><input id="catalog-search" type="search" placeholder="Cari nama IGT, ID, atau kata kunci..."></div>' +
-      '<button type="button" class="catalog-filter-toggle active" id="catalog-filter-toggle" aria-expanded="true" title="Buka / tutup filter wilayah">' +
+      '<button type="button" class="catalog-filter-toggle" id="catalog-filter-toggle" aria-expanded="false" title="Buka / tutup filter wilayah">' +
       ri('filter-3-line') + ' <span>Filter</span></button>' +
       '</div>' +
-      '<div class="catalog-filter-drawer" id="catalog-filter-drawer">' +
+      '<div class="catalog-filter-drawer" id="catalog-filter-drawer" hidden>' +
       '<div class="field year-filter"><label for="catalog-year-filter">TAHUN</label><select id="catalog-year-filter">' + yearFilterOptions(datasets) + '</select></div>' +
       '<div class="field prov-filter"><label for="catalog-prov-filter">PROVINSI</label><select id="catalog-prov-filter">' + provFilterOptions(datasets) + '</select></div>' +
       '<div class="field kab-filter"><label for="catalog-kab-filter">KABUPATEN / KOTA</label><select id="catalog-kab-filter" disabled><option value="all">-- Pilih Provinsi Terlebih Dahulu --</option></select></div>' +
@@ -1683,7 +1683,7 @@ const IgtApp = (() => {
     let query = '';
     let selectedProv = 'all';
     let selectedKab = 'all';
-    let filterExpanded = true;
+    let filterExpanded = false;
     const expandedIds = new Set();
 
     // Sinkronisasi dengan filter tahun kanan atas (Dashboard)
