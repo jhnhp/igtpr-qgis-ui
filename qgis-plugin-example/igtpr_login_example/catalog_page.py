@@ -351,10 +351,10 @@ class DatasetCard(QFrame):
         """Muat seluruh sub-IGT (2 atau lebih) sekaligus ke kanvas peta QGIS sebagai WMS atau WFS."""
         if not self.has_subs:
             return
-        for s in self.dataset.get('subLayers', []):
-            if mode == 'wfs':
-                self.wfsClicked.emit(self.dataset, s)
-            else:
+        if mode == 'wfs':
+            self.wfsClicked.emit(self.dataset, None)
+        else:
+            for s in self.dataset.get('subLayers', []):
                 self.wmsClicked.emit(self.dataset, s)
 
     def toggle_expand(self):

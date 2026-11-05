@@ -37,6 +37,7 @@ from .role_dialog import RoleDialog
 from .topbar import TopbarWidget
 from .topology_dialog import TopologyCheckDialog
 from .upload_dialog import UploadIgtUtamaDialog, UploadPage
+from .wfs_filter_dialog import WfsFilterDialog
 
 PLUGIN_DIR = os.path.dirname(__file__)
 MENU_TITLE = '&IGT-PR Plugin'
@@ -324,7 +325,62 @@ class IgtprLoginExample:
                     f"Akses fitur WFS dibatasi untuk satker terkait ({dataset.get('satker') or 'Satker Terkait'})."
                 )
             return
-        self._load_simulated_layer(dataset, sublayer, is_wms=False)
+
+        parent = self.dock.window() if self.dock else None
+        dlg = WfsFilterDialog(dataset, sublayer=sublayer, iface=self.iface, parent=parent)
+        dlg.loadWfsConfirmed.connect(self._handle_wfs_confirmed)
+        dlg.exec_()
+
+    def _handle_wfs_confirmed(self, params):
+        """Menerima hasil pemilihan filter dari dialog WfsFilterDialog dan memuat layer."""
+        mode = params.get('mode', 'admin')
+        dataset = params.get('dataset', {})
+        sublayer = params.get('sublayer')
+
+        if mode == 'all':
+            filter_label = "Seluruh Indonesia"
+            admin_filter = None
+            aoi_filter = None
+        elif mode == 'admin':
+            prov = params.get('provinsi', '')
+            kab = params.get('kabupaten', '')
+            kec = params.get('kecamatan', '')
+            desa = params.get('desa', '')
+
+            parts = []
+            if kab and kab not in ('Semua Kabupaten / Kota', 'Kabupaten / Kota Utama'):
+                parts.append(kab)
+            if kec and kec != 'Semua Kecamatan':
+                parts.append(kec)
+            if desa and desa != 'Semua Desa / Kelurahan':
+                parts.append(desa)
+
+            filter_label = ", ".join(parts) if parts else prov
+            admin_filter = {'provinsi': prov, 'kabupaten': kab, 'kecamatan': kec, 'desa': desa}
+            aoi_filter = None
+        else:  # aoi
+            aoi_sub = params.get('aoi_sub', 'layer')
+            if aoi_sub == 'draw':
+                filter_label = "AOI Kanvas (BBOX)"
+            else:
+                filter_label = params.get('aoi_layer', 'AOI Terpilih')
+            admin_filter = None
+            aoi_filter = {'aoi_sub': aoi_sub, 'aoi_layer': params.get('aoi_layer')}
+
+        # Jika dataset memiliki sublayers dan sublayer belum spesifik, muat seluruh sublayers dengan filter ini
+        if not sublayer and dataset.get('subLayers'):
+            for s in dataset['subLayers']:
+                self._load_simulated_layer(
+                    dataset, sublayer=s, is_wms=False,
+                    filter_mode=mode, filter_label=filter_label,
+                    admin_filter=admin_filter, aoi_filter=aoi_filter
+                )
+        else:
+            self._load_simulated_layer(
+                dataset, sublayer=sublayer, is_wms=False,
+                filter_mode=mode, filter_label=filter_label,
+                admin_filter=admin_filter, aoi_filter=aoi_filter
+            )
 
     def _get_geojson_path(self):
         """Mendapatkan path ke berkas batas administrasi kabupaten Indonesia."""
@@ -338,14 +394,17 @@ class IgtprLoginExample:
                 return p
         return None
 
-    def _load_simulated_layer(self, dataset, sublayer=None, is_wms=True):
+    def _load_simulated_layer(self, dataset, sublayer=None, is_wms=True, filter_mode=None, filter_label=None, admin_filter=None, aoi_filter=None):
         """Membuat layer di QGIS dari berkas geojson kabupaten Indonesia dan menampilkannya pada kanvas peta."""
         service_type = 'WMS' if is_wms else 'WFS'
         layer_title = dataset['name']
         if sublayer:
             layer_title = f"{dataset['name']} ({sublayer.get('label') or sublayer.get('name')})"
 
-        layer_name = f"[{service_type}] {layer_title}"
+        if not is_wms and filter_label:
+            layer_name = f"[{service_type}] {layer_title} ({filter_label})"
+        else:
+            layer_name = f"[{service_type}] {layer_title}"
         geojson_path = self._get_geojson_path()
 
         layer = None
@@ -371,30 +430,56 @@ class IgtprLoginExample:
             except Exception:
                 pass
 
+            # Filter subset jika admin_filter aktif dan bukan seluruh indonesia
+            if not is_wms and admin_filter:
+                try:
+                    kab_filter_val = admin_filter.get('kabupaten', '').replace('Kab. ', '').replace('Kota ', '').strip()
+                    if kab_filter_val and kab_filter_val not in ('Semua Kabupaten / Kota', 'Kabupaten / Kota Utama'):
+                        layer.setSubsetString(f"\"kabupaten\" ILIKE '%{kab_filter_val}%'")
+                except Exception:
+                    pass
+
             for old_layer in QgsProject.instance().mapLayersByName(layer_name):
                 QgsProject.instance().removeMapLayer(old_layer.id())
 
             QgsProject.instance().addMapLayer(layer)
 
-            # Arahkan zoom kanvas ke wilayah dataset yang sesuai jika ada
+            # Arahkan zoom kanvas sesuai filter
             target_extent = None
             if hasattr(self.iface, 'mapCanvas') and self.iface.mapCanvas():
-                kab_name = (dataset.get('kab') or '').lower().replace('kab.', '').replace('kota', '').strip()
-                if kab_name and kab_name not in ('seluruh indonesia', 'multi-kabupaten', 'semua kab / kota'):
-                    for f in layer.getFeatures():
-                        f_kab = (f['kabupaten'] or '').lower()
-                        if kab_name in f_kab or f_kab in kab_name:
-                            target_extent = f.geometry().boundingBox()
-                            target_extent.scale(1.3)
-                            break
-
-                if not target_extent:
-                    prov_name = (dataset.get('prov') or '').lower().strip()
+                if not is_wms and aoi_filter:
+                    aoi_sub = aoi_filter.get('aoi_sub')
+                    if aoi_sub == 'draw':
+                        target_extent = self.iface.mapCanvas().extent()
+                        if hasattr(self.iface, 'messageBar') and self.iface.messageBar():
+                            self.iface.messageBar().pushInfo(
+                                'AOI Kanvas Aktif',
+                                'Fitur WFS dibatasi sesuai luasan BBOX kanvas peta aktif.'
+                            )
+                    elif aoi_sub == 'layer':
+                        aoi_layer_name = aoi_filter.get('aoi_layer', '')
+                        for l in QgsProject.instance().mapLayers().values():
+                            if l.id() != layer.id() and (l.name() in aoi_layer_name or aoi_layer_name in l.name()):
+                                target_extent = l.extent()
+                                target_extent.scale(1.2)
+                                break
+                elif not is_wms and admin_filter:
+                    kab_name = (admin_filter.get('kabupaten') or '').lower().replace('kab.', '').replace('kota', '').strip()
+                    prov_name = (admin_filter.get('provinsi') or '').lower().strip()
                     if 'yogyakarta' in prov_name or 'd.i.' in prov_name:
                         prov_name = 'yogyakarta'
                     elif 'jakarta' in prov_name or 'dki' in prov_name:
                         prov_name = 'jakarta'
-                    if prov_name and prov_name not in ('nasional', 'semua provinsi'):
+
+                    if kab_name and kab_name not in ('seluruh indonesia', 'multi-kabupaten', 'semua kab / kota', 'semua kabupaten / kota'):
+                        for f in layer.getFeatures():
+                            f_kab = (f['kabupaten'] or '').lower()
+                            if kab_name in f_kab or f_kab in kab_name:
+                                target_extent = f.geometry().boundingBox()
+                                target_extent.scale(1.3)
+                                break
+
+                    if not target_extent and prov_name and prov_name not in ('nasional', 'semua provinsi'):
                         for f in layer.getFeatures():
                             f_prov = (f['provinsi'] or '').lower()
                             if prov_name in f_prov:
@@ -404,6 +489,33 @@ class IgtprLoginExample:
                                     target_extent.combineExtentWith(f.geometry().boundingBox())
                         if target_extent:
                             target_extent.scale(1.15)
+                else:
+                    # Default dataset kab/prov jika ada
+                    kab_name = (dataset.get('kab') or '').lower().replace('kab.', '').replace('kota', '').strip()
+                    if kab_name and kab_name not in ('seluruh indonesia', 'multi-kabupaten', 'semua kab / kota'):
+                        for f in layer.getFeatures():
+                            f_kab = (f['kabupaten'] or '').lower()
+                            if kab_name in f_kab or f_kab in kab_name:
+                                target_extent = f.geometry().boundingBox()
+                                target_extent.scale(1.3)
+                                break
+
+                    if not target_extent:
+                        prov_name = (dataset.get('prov') or '').lower().strip()
+                        if 'yogyakarta' in prov_name or 'd.i.' in prov_name:
+                            prov_name = 'yogyakarta'
+                        elif 'jakarta' in prov_name or 'dki' in prov_name:
+                            prov_name = 'jakarta'
+                        if prov_name and prov_name not in ('nasional', 'semua provinsi'):
+                            for f in layer.getFeatures():
+                                f_prov = (f['provinsi'] or '').lower()
+                                if prov_name in f_prov:
+                                    if target_extent is None:
+                                        target_extent = f.geometry().boundingBox()
+                                    else:
+                                        target_extent.combineExtentWith(f.geometry().boundingBox())
+                            if target_extent:
+                                target_extent.scale(1.15)
 
                 if target_extent:
                     self.iface.mapCanvas().setExtent(target_extent)
@@ -455,10 +567,11 @@ class IgtprLoginExample:
                 self.iface.mapCanvas().refresh()
 
         sub_msg = f" (Sub-layer: {sublayer['name']})" if sublayer else ""
+        filter_msg = f" [{filter_label}]" if filter_label else ""
         if hasattr(self.iface, 'messageBar') and self.iface.messageBar():
             self.iface.messageBar().pushSuccess(
                 f"Layer {service_type} Dimuat",
-                f"Layanan {service_type} untuk '{dataset['name']}'{sub_msg} berhasil ditambahkan ke kanvas peta QGIS!"
+                f"Layanan {service_type} untuk '{dataset['name']}'{sub_msg}{filter_msg} berhasil ditambahkan ke kanvas peta QGIS!"
             )
 
     def on_show_submission_layer(self, record):

@@ -204,6 +204,323 @@ const IgtApp = (() => {
     return dsSatker.toLowerCase().includes('sleman') || dsSatker.toLowerCase() === userSatker.toLowerCase();
   }
 
+  // Referensi Hirarki Wilayah Administrasi untuk Filter WFS
+  const WFS_ADMIN_DATA = {
+    'D.I. Yogyakarta': {
+      'Kab. Sleman': {
+        'Kec. Depok': ['Kel. Caturtunggal', 'Kel. Maguwoharjo', 'Kel. Condongcatur'],
+        'Kec. Mlati': ['Kel. Sendangadi', 'Kel. Sinduadi', 'Kel. Tirtoadi', 'Kel. Tlogoadi', 'Kel. Sumberadi'],
+        'Kec. Gamping': ['Kel. Ambarketawang', 'Kel. Balecatur', 'Kel. Banyuraden', 'Kel. Nogotirto', 'Kel. Trihanggo'],
+        'Kec. Ngaglik': ['Kel. Donoharjo', 'Kel. Minomartani', 'Kel. Sardonoharjo', 'Kel. Sariharjo', 'Kel. Sinduharjo'],
+        'Kec. Kalasan': ['Kel. Purwomartani', 'Kel. Selomartani', 'Kel. Tamanmartani', 'Kel. Tirtomartani'],
+        'Kec. Berbah': ['Kel. Jogotirto', 'Kel. Kalitirto', 'Kel. Sendangtirto', 'Kel. Tegaltirto'],
+      },
+      'Kab. Bantul': {
+        'Kec. Sewon': ['Kel. Bangunharjo', 'Kel. Panggungharjo', 'Kel. Pendowoharjo', 'Kel. Timbulharjo'],
+        'Kec. Banguntapan': ['Kel. Banguntapan', 'Kel. Baturetno', 'Kel. Jagalan', 'Kel. Potorono', 'Kel. Singosaren'],
+        'Kec. Kasihan': ['Kel. Bangunjiwo', 'Kel. Ngestiharjo', 'Kel. Tamantirto', 'Kel. Tirtonirmolo'],
+      },
+      'Kota Yogyakarta': {
+        'Kec. Danurejan': ['Kel. Bausasran', 'Kel. Suryatmajan', 'Kel. Tegalpanggung'],
+        'Kec. Gondomanan': ['Kel. Ngupasan', 'Kel. Prawirodirjan'],
+        'Kec. Umbulharjo': ['Kel. Giwangan', 'Kel. Muja Muju', 'Kel. Pandeyan', 'Kel. Semaki', 'Kel. Sorosutan'],
+      },
+      'Kab. Kulon Progo': {
+        'Kec. Wates': ['Kel. Bendungan', 'Kel. Giripeni', 'Kel. Karangwuni', 'Kel. Wates'],
+        'Kec. Temon': ['Kel. Glagah', 'Kel. Jangkaran', 'Kel. Palihan', 'Kel. Temon Kulon'],
+      },
+      'Kab. Gunungkidul': {
+        'Kec. Wonosari': ['Kel. Baleharjo', 'Kel. Duwet', 'Kel. Kepek', 'Kel. Wonosari'],
+        'Kec. Playen': ['Kel. Playen', 'Kel. Logandeng', 'Kel. Plembutan'],
+      },
+    },
+    'Jawa Barat': {
+      'Kota Bandung': {
+        'Kec. Coblong': ['Kel. Dago', 'Kel. Lebakgede', 'Kel. Sadangserang'],
+        'Kec. Sukasari': ['Kel. Gegerkalong', 'Kel. Sarijadi', 'Kel. Isola'],
+      },
+      'Kab. Bogor': {
+        'Kec. Cibinong': ['Kel. Cirimekar', 'Kel. Pakansari', 'Kel. Tengah'],
+      },
+    },
+    'DKI Jakarta': {
+      'Kota Jakarta Selatan': {
+        'Kec. Kebayoran Baru': ['Kel. Selong', 'Kel. Senayan', 'Kel. Melawai'],
+        'Kec. Cilandak': ['Kel. Cilandak Barat', 'Kel. Cipete Selatan'],
+      },
+      'Kota Jakarta Pusat': {
+        'Kec. Gambir': ['Kel. Gambir', 'Kel. Kebon Kelapa', 'Kel. Petojo Selatan'],
+      },
+    },
+    'Jawa Tengah': {
+      'Kota Semarang': {
+        'Kec. Semarang Tengah': ['Kel. Miroto', 'Kel. Pandansari', 'Kel. Sekayu'],
+      },
+      'Kota Surakarta': {
+        'Kec. Banjarsari': ['Kel. Manahan', 'Kel. Nusukan', 'Kel. Kadipiro'],
+      },
+    },
+    'Jawa Timur': {
+      'Kota Surabaya': {
+        'Kec. Gubeng': ['Kel. Airlangga', 'Kel. Barata Jaya', 'Kel. Gubeng'],
+      },
+    },
+    'Bali': {
+      'Kota Denpasar': {
+        'Kec. Denpasar Selatan': ['Kel. Sanur', 'Kel. Sidakarya', 'Kel. Panjer'],
+      },
+    },
+  };
+
+  function showWfsFilterModal(dataset, role) {
+    const dsName = (dataset && (dataset.name || dataset.layer || dataset.id)) || 'Layer WFS';
+    let modal = document.getElementById('wfs-filter-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'wfs-filter-modal';
+      modal.className = 'modal-backdrop v2-modal-backdrop';
+      modal.setAttribute('role', 'dialog');
+      modal.setAttribute('aria-modal', 'true');
+      modal.style.cssText = 'position:fixed;inset:0;z-index:1001;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;padding:20px;overflow:auto;';
+      document.body.appendChild(modal);
+
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal || e.target.closest('[data-close-wfs-modal]')) {
+          modal.style.display = 'none';
+          modal.hidden = true;
+        }
+      });
+    }
+
+    const modalHtml = `
+      <div class="wfs-modal-card">
+        <div class="wfs-modal-head">
+          <div>
+            <div style="font-size:10px;font-weight:800;color:#bfdbfe;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:3px;">
+              Sistem Informasi Geospasial ATR/BPN · Layanan Fitur WFS
+            </div>
+            <h3 style="margin:0 0 3px;font-size:16px;font-weight:800;color:#fff;">Opsi Pemuatan Layer WFS</h3>
+            <p style="margin:0;font-size:11.5px;color:#bfdbfe;">Layer: <strong>${dsName}</strong></p>
+          </div>
+          <button type="button" class="btn btn-soft" data-close-wfs-modal style="background:rgba(255,255,255,0.15);color:#fff;border:none;border-radius:8px;font-weight:700;">✕</button>
+        </div>
+
+        <div class="wfs-modal-body">
+          <div style="padding:10px 12px;background:#fef3c7;border:1px solid #fde68a;border-radius:9px;color:#92400e;font-size:11.5px;line-height:1.5;display:flex;align-items:flex-start;gap:8px;">
+            <span style="font-size:15px;line-height:1;">⚠️</span>
+            <div><strong>Perhatian:</strong> Data WFS nasional berukuran sangat besar. Disarankan menggunakan batasan wilayah (Batas Admin atau AOI) agar proses unduh dan visualisasi lebih cepat.</div>
+          </div>
+
+          <!-- Opsi 1: Load Semua -->
+          <label class="wfs-opt-card" id="wfs-card-all">
+            <div class="wfs-opt-header">
+              <input type="radio" name="wfs-mode-radio" value="all" id="wfs-radio-all">
+              <div style="flex:1;">
+                <div class="wfs-opt-title">1. Load Semua (Seluruh Indonesia)</div>
+                <p class="wfs-opt-desc">Memuat seluruh data fitur spasial cakupan nasional tanpa batasan wilayah.</p>
+              </div>
+            </div>
+          </label>
+
+          <!-- Opsi 2: Batas Admin (Default) -->
+          <label class="wfs-opt-card active" id="wfs-card-admin">
+            <div class="wfs-opt-header">
+              <input type="radio" name="wfs-mode-radio" value="admin" id="wfs-radio-admin" checked>
+              <div style="flex:1;">
+                <div class="wfs-opt-title">2. Load Berdasarkan Batas Admin</div>
+                <p class="wfs-opt-desc">Filter fitur WFS berdasarkan hirarki wilayah administratif pemerintahan.</p>
+              </div>
+            </div>
+            <div class="wfs-opt-subpanel" id="wfs-admin-panel">
+              <div class="wfs-grid-2x2">
+                <div class="wfs-field">
+                  <label for="wfs-sel-prov">Provinsi</label>
+                  <select id="wfs-sel-prov"></select>
+                </div>
+                <div class="wfs-field">
+                  <label for="wfs-sel-kab">Kabupaten / Kota</label>
+                  <select id="wfs-sel-kab"></select>
+                </div>
+                <div class="wfs-field">
+                  <label for="wfs-sel-kec">Kecamatan</label>
+                  <select id="wfs-sel-kec"></select>
+                </div>
+                <div class="wfs-field">
+                  <label for="wfs-sel-desa">Desa / Kelurahan</label>
+                  <select id="wfs-sel-desa"></select>
+                </div>
+              </div>
+            </div>
+          </label>
+
+          <!-- Opsi 3: AOI -->
+          <label class="wfs-opt-card" id="wfs-card-aoi">
+            <div class="wfs-opt-header">
+              <input type="radio" name="wfs-mode-radio" value="aoi" id="wfs-radio-aoi">
+              <div style="flex:1;">
+                <div class="wfs-opt-title">3. Load Berdasarkan AOI (Area of Interest)</div>
+                <p class="wfs-opt-desc">Batasi fitur spasial dengan poligon delineasi atau penggambaran area di kanvas.</p>
+              </div>
+            </div>
+            <div class="wfs-opt-subpanel" id="wfs-aoi-panel" style="display:none;">
+              <div class="wfs-aoi-choice">
+                <label class="wfs-aoi-subrow">
+                  <input type="radio" name="wfs-aoi-sub-radio" value="layer" checked id="wfs-aoi-sub-layer">
+                  <span>Pilih AOI yang ada di QGIS:</span>
+                </label>
+                <div style="margin-left:22px;margin-bottom:8px;">
+                  <select id="wfs-sel-aoi-layer" style="width:100%;padding:7px 10px;border:1.5px solid #cbd5e1;border-radius:7px;font-size:11.5px;color:#0f294d;">
+                    <option value="Batas Kawasan Perencanaan DIY">Layer: Batas Kawasan Perencanaan DIY (Poligon)</option>
+                    <option value="Delineasi Area Prioritas RDTR">Layer: Delineasi Area Prioritas RDTR</option>
+                    <option value="Fitur Terpilih di Kanvas QGIS (Selected Features)">Fitur Terpilih di Kanvas QGIS (Selected Features)</option>
+                    <option value="Buffer Koridor 500m Infrastruktur">Layer: Buffer Koridor 500m Infrastruktur</option>
+                  </select>
+                </div>
+
+                <label class="wfs-aoi-subrow">
+                  <input type="radio" name="wfs-aoi-sub-radio" value="draw" id="wfs-aoi-sub-draw">
+                  <span>Gambar AOI-nya:</span>
+                </label>
+                <div style="margin-left:22px;">
+                  <button type="button" class="wfs-draw-btn" id="wfs-btn-draw-action">
+                    <span>🖌 Gambar Kotak Pembatas (BBOX) di Kanvas</span>
+                  </button>
+                  <div style="font-size:10.5px;color:#64748b;margin-top:4px;">Klik untuk mengaktifkan kursor gambar poligon/kotak pada kanvas peta QGIS.</div>
+                </div>
+              </div>
+            </div>
+          </label>
+
+          <!-- Action buttons -->
+          <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:8px;padding-top:12px;border-top:1px solid #e2e8f0;">
+            <button type="button" class="btn btn-soft" data-close-wfs-modal>Batal</button>
+            <button type="button" class="btn btn-primary" id="wfs-btn-submit" style="background:#7c3aed;border-color:#7c3aed;">
+              <span>Muat WFS ke Kanvas →</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    modal.innerHTML = modalHtml;
+    modal.hidden = false;
+    modal.style.display = 'flex';
+
+    // Wiring
+    const cardAll = modal.querySelector('#wfs-card-all');
+    const cardAdmin = modal.querySelector('#wfs-card-admin');
+    const cardAoi = modal.querySelector('#wfs-card-aoi');
+    const radioAll = modal.querySelector('#wfs-radio-all');
+    const radioAdmin = modal.querySelector('#wfs-radio-admin');
+    const radioAoi = modal.querySelector('#wfs-radio-aoi');
+    const adminPanel = modal.querySelector('#wfs-admin-panel');
+    const aoiPanel = modal.querySelector('#wfs-aoi-panel');
+
+    function updateActiveMode(mode) {
+      cardAll.classList.toggle('active', mode === 'all');
+      cardAdmin.classList.toggle('active', mode === 'admin');
+      cardAoi.classList.toggle('active', mode === 'aoi');
+      adminPanel.style.display = mode === 'admin' ? 'block' : 'none';
+      aoiPanel.style.display = mode === 'aoi' ? 'block' : 'none';
+    }
+
+    radioAll.addEventListener('change', () => updateActiveMode('all'));
+    radioAdmin.addEventListener('change', () => updateActiveMode('admin'));
+    radioAoi.addEventListener('change', () => updateActiveMode('aoi'));
+
+    cardAll.addEventListener('click', (e) => {
+      if (e.target !== radioAll) { radioAll.checked = true; updateActiveMode('all'); }
+    });
+    cardAdmin.addEventListener('click', (e) => {
+      if (!e.target.closest('#wfs-admin-panel')) { radioAdmin.checked = true; updateActiveMode('admin'); }
+    });
+    cardAoi.addEventListener('click', (e) => {
+      if (!e.target.closest('#wfs-aoi-panel')) { radioAoi.checked = true; updateActiveMode('aoi'); }
+    });
+
+    // Populate Cascading Dropdowns
+    const selProv = modal.querySelector('#wfs-sel-prov');
+    const selKab = modal.querySelector('#wfs-sel-kab');
+    const selKec = modal.querySelector('#wfs-sel-kec');
+    const selDesa = modal.querySelector('#wfs-sel-desa');
+
+    const provList = Object.keys(WFS_ADMIN_DATA);
+    selProv.innerHTML = provList.map((p) => `<option value="${p}">${p}</option>`).join('');
+
+    function syncKab() {
+      const p = selProv.value;
+      const kabs = (WFS_ADMIN_DATA[p] && Object.keys(WFS_ADMIN_DATA[p])) || ['Kab. Sleman', 'Kota Yogyakarta'];
+      selKab.innerHTML = kabs.map((k) => `<option value="${k}">${k}</option>`).join('');
+      syncKec();
+    }
+
+    function syncKec() {
+      const p = selProv.value;
+      const k = selKab.value;
+      const kecs = (WFS_ADMIN_DATA[p] && WFS_ADMIN_DATA[p][k] && Object.keys(WFS_ADMIN_DATA[p][k])) || ['Semua Kecamatan', 'Kec. Depok', 'Kec. Mlati', 'Kec. Gamping', 'Kec. Sentral'];
+      selKec.innerHTML = ['Semua Kecamatan', ...kecs.filter((x) => x !== 'Semua Kecamatan')].map((kc) => `<option value="${kc}">${kc}</option>`).join('');
+      syncDesa();
+    }
+
+    function syncDesa() {
+      const p = selProv.value;
+      const k = selKab.value;
+      const kc = selKec.value;
+      let desas = ['Semua Desa / Kelurahan'];
+      if (WFS_ADMIN_DATA[p] && WFS_ADMIN_DATA[p][k] && WFS_ADMIN_DATA[p][k][kc]) {
+        desas = ['Semua Desa / Kelurahan', ...WFS_ADMIN_DATA[p][k][kc]];
+      } else if (kc !== 'Semua Kecamatan') {
+        desas = ['Semua Desa / Kelurahan', 'Kel. 01 Sentra', 'Kel. 02 Utama', 'Kel. 03 Terpadu'];
+      }
+      selDesa.innerHTML = desas.map((d) => `<option value="${d}">${d}</option>`).join('');
+    }
+
+    selProv.addEventListener('change', syncKab);
+    selKab.addEventListener('change', syncKec);
+    selKec.addEventListener('change', syncDesa);
+
+    // Initial populate
+    syncKab();
+
+    // Submit handler
+    const btnSubmit = modal.querySelector('#wfs-btn-submit');
+    btnSubmit.addEventListener('click', () => {
+      modal.style.display = 'none';
+      modal.hidden = true;
+
+      const mode = modal.querySelector('input[name="wfs-mode-radio"]:checked').value;
+      if (mode === 'all') {
+        const msg = `Simulasi QGIS: Memuat seluruh data fitur WFS '${dsName}' (cakupan Nasional / Seluruh Indonesia).`;
+        if (typeof toast === 'function') toast(msg); else alert(msg);
+      } else if (mode === 'admin') {
+        const p = selProv.value;
+        const k = selKab.value;
+        const kc = selKec.value;
+        const d = selDesa.value;
+        const msg = `Simulasi QGIS: Memuat fitur WFS '${dsName}' terfilter Batas Admin [${p} > ${k} > ${kc} > ${d}].`;
+        if (typeof toast === 'function') toast(msg); else alert(msg);
+      } else if (mode === 'aoi') {
+        const aoiSub = modal.querySelector('input[name="wfs-aoi-sub-radio"]:checked').value;
+        if (aoiSub === 'draw') {
+          const msg = `Simulasi QGIS: Mengaktifkan alat gambar AOI pada kanvas peta untuk memfilter fitur WFS '${dsName}'.`;
+          if (typeof toast === 'function') toast(msg); else alert(msg);
+        } else {
+          const aoiLayer = modal.querySelector('#wfs-sel-aoi-layer').value;
+          const msg = `Simulasi QGIS: Memuat fitur WFS '${dsName}' terfilter berdasarkan layer AOI: '${aoiLayer}'.`;
+          if (typeof toast === 'function') toast(msg); else alert(msg);
+        }
+      }
+    });
+
+    const drawBtn = modal.querySelector('#wfs-btn-draw-action');
+    if (drawBtn) {
+      drawBtn.addEventListener('click', () => {
+        modal.querySelector('#wfs-aoi-sub-draw').checked = true;
+        btnSubmit.click();
+      });
+    }
+  }
+
   function showIgtDetailModal(dataset, role) {
     if (!dataset) return;
     let modal = document.getElementById('igt-detail-modal');
@@ -358,10 +675,14 @@ const IgtApp = (() => {
       btn.addEventListener('click', (e) => {
         const act = btn.dataset.action;
         const name = btn.dataset.name;
+        if (act === 'wfs') {
+          showWfsFilterModal(dataset || { name }, role);
+          return;
+        }
         if (btn.dataset.isParentMulti === 'true' && dataset && dataset.subLayers) {
           const count = dataset.subLayers.length;
           const subNames = dataset.subLayers.map((s) => s.name).join(', ');
-          const typeLabel = act === 'wfs' ? 'layer vektor WFS' : 'layer citra WMS';
+          const typeLabel = 'layer citra WMS';
           const msg = "Simulasi QGIS: Memuat " + (count === 2 ? "kedua" : "seluruh " + count) + " sub-IGT untuk '" + dataset.name + "' (" + subNames + ") sebagai " + typeLabel + " ke dalam kanvas peta QGIS.";
           if (typeof toast === 'function') toast(msg);
           else alert(msg);
@@ -637,7 +958,7 @@ const IgtApp = (() => {
           alert("Akses WFS dibatasi: Akun Anda tidak memiliki izin untuk mengakses layanan fitur WFS dataset ini.");
           return;
         }
-        alert("Simulasi QGIS: Mengambil data fitur WFS untuk '" + subName + "' (sub-layer dari " + parentName + ").");
+        showWfsFilterModal({ name: subName, parent: parentName }, role);
         return;
       }
       if (action === 'wms-all') {
@@ -656,9 +977,7 @@ const IgtApp = (() => {
             alert("Akses WFS dibatasi: Akun Anda tidak memiliki izin untuk mengakses layanan fitur WFS dataset ini.");
             return;
           }
-          const count = d.subLayers.length;
-          const subNames = d.subLayers.map((s) => s.name).join(', ');
-          alert("Simulasi QGIS: Memuat " + (count === 2 ? "kedua" : "seluruh " + count) + " sub-IGT untuk '" + d.name + "' (" + subNames + ") sebagai fitur layer vektor WFS sekaligus ke dalam kanvas peta QGIS.");
+          showWfsFilterModal(d, role);
         }
         return;
       }
@@ -676,11 +995,8 @@ const IgtApp = (() => {
           alert("Akses WFS dibatasi: Akun Anda tidak memiliki izin untuk mengakses layanan fitur WFS dataset ini.");
           return;
         }
-        if (dataset.subLayers && dataset.subLayers.length > 0) {
-          alert("Simulasi QGIS: Mengambil fitur WFS seluruh sub-layer untuk '" + dataset.name + "' (" + dataset.subLayers.length + " layer).");
-        } else {
-          alert(WFS_MESSAGE(dataset.name));
-        }
+        showWfsFilterModal(dataset, role);
+        return;
       } else if (action === 'both') {
         if (dataset.subLayers && dataset.subLayers.length > 0) {
           alert("Simulasi QGIS: Memuat sekaligus layer WMS dan WFS untuk seluruh sub-layer '" + dataset.name + "' (" + dataset.subLayers.length + " layer) ke dalam kanvas peta QGIS.");
@@ -1604,16 +1920,20 @@ const IgtApp = (() => {
           const cardEl = btn.closest('.dash-card');
           const cardId = cardEl ? cardEl.dataset.id : null;
           const ds = cardId ? IgtData.loadRecords().find((r) => r.id === cardId) : null;
-          if (act === 'wfs' && ds && !canAccessWfs(role, ds)) {
-            const warn = 'Akses WFS dibatasi untuk satker terkait.';
-            if (typeof toast === 'function') toast(warn);
-            else alert(warn);
+          if (act === 'wfs') {
+            if (ds && !canAccessWfs(role, ds)) {
+              const warn = 'Akses WFS dibatasi untuk satker terkait.';
+              if (typeof toast === 'function') toast(warn);
+              else alert(warn);
+              return;
+            }
+            showWfsFilterModal(ds || { name }, role);
             return;
           }
           if (btn.dataset.isParentMulti === 'true' && ds && ds.subLayers) {
             const count = ds.subLayers.length;
             const subNames = ds.subLayers.map((s) => s.name).join(', ');
-            const typeLabel = act === 'wfs' ? 'layer vektor WFS' : 'layer citra WMS';
+            const typeLabel = 'layer citra WMS';
             const msg = "Simulasi QGIS: Memuat " + (count === 2 ? "kedua" : "seluruh " + count) + " sub-IGT untuk '" + ds.name + "' (" + subNames + ") sebagai " + typeLabel + " ke dalam kanvas peta QGIS.";
             if (typeof toast === 'function') toast(msg);
             else alert(msg);
@@ -1647,5 +1967,5 @@ const IgtApp = (() => {
     };
   }
 
-  return { dashboard, catalog, upload, dashboardCatalog };
+  return { dashboard, catalog, upload, dashboardCatalog, showWfsFilterModal };
 })();

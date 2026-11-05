@@ -363,9 +363,5 @@ class IgtDetailDialog(QDialog):
         self.accept()
 
     def _on_load_wfs(self):
-        if self.has_subs:
-            for s in self.dataset.get('subLayers', []):
-                self.wfsRequested.emit(self.dataset, s)
-        else:
-            self.wfsRequested.emit(self.dataset, None)
+        self.wfsRequested.emit(self.dataset, None)
         self.accept()
