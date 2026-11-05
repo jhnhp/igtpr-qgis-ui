@@ -181,8 +181,8 @@ class DashboardPage(ResponsivePage):
         self.body.addWidget(self.workflow)
 
         # 5. Model Builder & Logout
-        self.mb_card = WideCard('mb', 'node-tree', '#7c3aed', '#ebe4fe', 'Model Builder (Runner)',
-                                'Jalankan alur model pemodelan geospasial (pembuatan model di Web).', 'mbTitle', 'mbDesc',
+        self.mb_card = WideCard('mb', 'node-tree', '#7c3aed', '#ebe4fe', 'Model Builder',
+                                'Jalankan alur model pemodelan geospasial.', 'mbTitle', 'mbDesc',
                                 self.content)
         self.mb_card.clicked.connect(self.openModelBuilderRequested.emit)
         self.body.addWidget(self.mb_card)

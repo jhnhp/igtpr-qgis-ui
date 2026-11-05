@@ -40,7 +40,7 @@ Keterangan simbol:
 | Pintasan Hub Katalog IGT (4 Kategori)                            |     ☑      |   ☑   |    ☑     |  ☑   | Dashboard / Beranda   | Pintasan ke IGT Pertanahan, Tata Ruang, Derivatif, Lainnya       |
 | Pintasan Hub Unggah Data                                         |     ☑      |   ☑   |    ☑     |  ☑   | Dashboard / Beranda   | Pintasan membuka dialog unggah data geospasial                   |
 | Pintasan Hub Manajemen Data                                      |     ☑      |   ☑   |    ☑     |  ☐   | Dashboard / Beranda   | Tersedia untuk Superadmin, Admin, dan Operator                   |
-| Pintasan Hub Model Builder (Runner)                              |     ☑      |   ☑   |    ☑     |  ☑   | Dashboard / Beranda   | Pintasan ke katalog modul eksekusi pemodelan spasial             |
+| Pintasan Hub Model Builder                                       |     ☑      |   ☑   |    ☑     |  ☑   | Dashboard / Beranda   | Pintasan ke katalog modul eksekusi pemodelan spasial             |
 | **C. Katalog Data IGT**                                          |            |       |          |      |                       |                                                                  |
 | Akses Halaman Katalog IGT Terpadu                                |     ☑      |   ☑   |    ☑     |  ☑   | Katalog Data IGT      | Katalog pencarian dan visualisasi dataset terintegrasi           |
 | Katalog Tab IGT-PR (Terpadu)                                     |     ☑      |   ☑   |    ☑     |  ☑   | Katalog Data IGT      | Katalog gabungan IGT Pertanahan dan IGT Tata Ruang               |

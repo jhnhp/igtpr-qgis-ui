@@ -20,7 +20,7 @@ matrix_data = [
     ("Dashboard / Beranda", "Pintasan Hub Katalog IGT (4 Kategori)", True, True, True, True, "Pintasan ke IGT Pertanahan, Tata Ruang, Derivatif, Lainnya"),
     ("Dashboard / Beranda", "Pintasan Hub Unggah Data", True, True, True, True, "Pintasan membuka dialog unggah data geospasial"),
     ("Dashboard / Beranda", "Pintasan Hub Manajemen Data", True, True, True, False, "Tersedia untuk Superadmin, Admin, dan Operator"),
-    ("Dashboard / Beranda", "Pintasan Hub Model Builder (Runner)", True, True, True, True, "Pintasan ke katalog modul eksekusi pemodelan spasial"),
+    ("Dashboard / Beranda", "Pintasan Hub Model Builder", True, True, True, True, "Pintasan ke katalog modul eksekusi pemodelan spasial"),
 
     ("Katalog Data IGT", "Akses Halaman Katalog IGT Terpadu", True, True, True, True, "Katalog pencarian dan visualisasi dataset terintegrasi"),
     ("Katalog Data IGT", "Katalog Tab IGT-PR (Terpadu Pertanahan & Tata Ruang)", True, True, True, True, "Katalog gabungan IGT Pertanahan dan IGT Tata Ruang"),
