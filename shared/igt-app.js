@@ -551,7 +551,7 @@ const IgtApp = (() => {
     selKab.addEventListener('change', syncKec);
     selKec.addEventListener('change', syncDesa);
 
-    // Cek apakah ada filter wilayah aktif dari Katalog IGT atau metadata dataset
+    // Cek apakah ada filter wilayah aktif dari Katalog IGT
     let activeProv = '';
     let activeKab = '';
     const dashProvEl = document.getElementById('dash-cat-prov-select');
@@ -569,9 +569,6 @@ const IgtApp = (() => {
       if (catKabEl && catKabEl.value && catKabEl.value !== 'all') {
         activeKab = catKabEl.value;
       }
-    } else if (dataset && dataset.prov) {
-      activeProv = dataset.prov;
-      if (dataset.kab) activeKab = dataset.kab;
     }
 
     if (activeProv) {
@@ -581,8 +578,8 @@ const IgtApp = (() => {
       if (activeKab) {
         for (let i = 0; i < selKab.options.length; i++) {
           const optVal = selKab.options[i].value.toLowerCase();
-          const target = activeKab.toLowerCase().replace('kab. ', '').replace('kota ', '').trim();
-          if (optVal.includes(target) || target.includes(optVal.replace('kab. ', '').replace('kota ', '').trim())) {
+          const target = activeKab.toLowerCase().replace('kabupaten', '').replace('kab. ', '').replace('kota ', '').trim();
+          if (optVal.includes(target) || target.includes(optVal.replace('kabupaten', '').replace('kab. ', '').replace('kota ', '').trim())) {
             selKab.selectedIndex = i;
             break;
           }
@@ -592,6 +589,8 @@ const IgtApp = (() => {
       radioAdmin.checked = true;
       updateActiveMode('admin');
     } else {
+      radioAll.checked = true;
+      updateActiveMode('all');
       syncKab();
     }
 
@@ -1758,7 +1757,8 @@ const IgtApp = (() => {
         // 3. Filter Kabupaten (mengikuti provinsi)
         if (selectedKab !== 'all') {
           const kabHaystack = ((d.kab || '') + ' ' + (d.scope || '')).toLowerCase();
-          if (!kabHaystack.includes(selectedKab.toLowerCase())) {
+          const cleanK = selectedKab.toLowerCase().replace('kabupaten', '').replace('kab. ', '').replace('kota ', '').trim();
+          if (!kabHaystack.includes(selectedKab.toLowerCase()) && !kabHaystack.includes(cleanK)) {
             return false;
           }
         }

@@ -385,44 +385,93 @@ def can_access_wfs(role_id, dataset):
 
 
 def match_province_name(target, prov_list):
-    """Mencocokkan nama provinsi dengan daftar provinsi menggunakan alias & substring."""
-    if not target:
+    """Mencocokkan nama provinsi dengan daftar provinsi menggunakan alias, singkatan, & pencarian cerdas."""
+    if not target or not prov_list:
         return None
     t = target.strip().lower()
     if t in ('semua provinsi', '-- pilih provinsi terlebih dahulu --', ''):
         return None
 
-    # 1. Exact match
+    # 1. Exact match (case-insensitive)
     for p in prov_list:
         if p.lower() == t:
             return p
 
-    # 2. Alias mapping untuk provinsi dengan variasi penulisan umum
-    aliases = {
-        'd.i. yogyakarta': ['daerah istimewa yogyakarta', 'di yogyakarta', 'yogyakarta'],
-        'daerah istimewa yogyakarta': ['d.i. yogyakarta', 'di yogyakarta', 'yogyakarta'],
-        'dki jakarta': ['daerah khusus ibukota jakarta', 'jakarta'],
-        'daerah khusus ibukota jakarta': ['dki jakarta', 'jakarta'],
-        'kepulauan bangka belitung': ['bangka belitung'],
-        'bangka belitung': ['kepulauan bangka belitung'],
-        'aceh': ['nanggroe aceh darussalam'],
-        'nanggroe aceh darussalam': ['aceh'],
+    # 2. Kamus alias & singkatan daerah Indonesia
+    aliases_map = {
+        'diy': 'daerah istimewa yogyakarta',
+        'di yogyakarta': 'daerah istimewa yogyakarta',
+        'd.i. yogyakarta': 'daerah istimewa yogyakarta',
+        'yogyakarta': 'daerah istimewa yogyakarta',
+        'jogja': 'daerah istimewa yogyakarta',
+        'dki': 'daerah khusus ibukota jakarta',
+        'dki jakarta': 'daerah khusus ibukota jakarta',
+        'jakarta': 'daerah khusus ibukota jakarta',
+        'babel': 'kepulauan bangka belitung',
+        'bangka belitung': 'kepulauan bangka belitung',
+        'kep. bangka belitung': 'kepulauan bangka belitung',
+        'nad': 'aceh',
+        'nanggroe aceh darussalam': 'aceh',
+        'kepri': 'kepulauan riau',
+        'kep. riau': 'kepulauan riau',
+        'jabar': 'jawa barat',
+        'jateng': 'jawa tengah',
+        'jatim': 'jawa timur',
+        'kalbar': 'kalimantan barat',
+        'kalteng': 'kalimantan tengah',
+        'kalsel': 'kalimantan selatan',
+        'kaltim': 'kalimantan timur',
+        'kaltara': 'kalimantan utara',
+        'sulsel': 'sulawesi selatan',
+        'sulut': 'sulawesi utara',
+        'sulteng': 'sulawesi tengah',
+        'sultra': 'sulawesi tenggara',
+        'sulbar': 'sulawesi barat',
+        'sumbar': 'sumatera barat',
+        'sumsel': 'sumatera selatan',
+        'sumut': 'sumatera utara',
+        'ntb': 'nusa tenggara barat',
+        'ntt': 'nusa tenggara timur',
+        'malut': 'maluku utara',
     }
-    for alt in aliases.get(t, []):
+
+    # Cek apakah input adalah alias yang terdaftar
+    canonical_alias = aliases_map.get(t)
+    if canonical_alias:
         for p in prov_list:
-            if p.lower() == alt:
+            if p.lower() == canonical_alias:
+                return p
+            # Juga jika target dalam daftar provinsi adalah versi singkatnya (misal D.I. Yogyakarta)
+            if canonical_alias == 'daerah istimewa yogyakarta' and 'yogyakarta' in p.lower():
+                return p
+            if canonical_alias == 'daerah khusus ibukota jakarta' and 'jakarta' in p.lower():
+                return p
+            if canonical_alias == 'aceh' and 'aceh' in p.lower():
                 return p
 
-    # 3. Substring match
-    for p in prov_list:
-        pl = p.lower()
-        if t in pl or pl in t:
-            return p
-        if 'yogyakarta' in t and 'yogyakarta' in pl:
-            return p
-        if 'jakarta' in t and 'jakarta' in pl:
-            return p
-        if 'bangka' in t and 'bangka' in pl:
-            return p
+    # 3. Prefix match (jika minimal 3 karakter untuk mencegah salah cocok)
+    if len(t) >= 3:
+        for p in prov_list:
+            if p.lower().startswith(t):
+                return p
+
+    # 4. Keyword / Substring match (jika minimal 4 karakter)
+    if len(t) >= 4:
+        for p in prov_list:
+            pl = p.lower()
+            if t in pl:
+                return p
+        if 'yogyakarta' in t or 'jogja' in t:
+            for p in prov_list:
+                if 'yogyakarta' in p.lower():
+                    return p
+        if 'jakarta' in t:
+            for p in prov_list:
+                if 'jakarta' in p.lower():
+                    return p
+        if 'bangka' in t or 'belitung' in t:
+            for p in prov_list:
+                if 'bangka' in p.lower():
+                    return p
 
     return None

@@ -20,8 +20,8 @@ from .data import INDONESIA_REGIONS, match_province_name
 
 # Referensi hirarki administrasi hingga tingkat Kecamatan dan Desa
 ADMIN_HIERARCHY = {
-    'D.I. Yogyakarta': {
-        'Kab. Sleman': {
+    'Daerah Istimewa Yogyakarta': {
+        'Kabupaten Sleman': {
             'Kec. Depok': ['Kel. Caturtunggal', 'Kel. Maguwoharjo', 'Kel. Condongcatur'],
             'Kec. Mlati': ['Kel. Sendangadi', 'Kel. Sinduadi', 'Kel. Tirtoadi', 'Kel. Tlogoadi', 'Kel. Sumberadi'],
             'Kec. Gamping': ['Kel. Ambarketawang', 'Kel. Balecatur', 'Kel. Banyuraden', 'Kel. Nogotirto', 'Kel. Trihanggo'],
@@ -29,7 +29,7 @@ ADMIN_HIERARCHY = {
             'Kec. Kalasan': ['Kel. Purwomartani', 'Kel. Selomartani', 'Kel. Tamanmartani', 'Kel. Tirtomartani'],
             'Kec. Berbah': ['Kel. Jogotirto', 'Kel. Kalitirto', 'Kel. Sendangtirto', 'Kel. Tegaltirto'],
         },
-        'Kab. Bantul': {
+        'Kabupaten Bantul': {
             'Kec. Sewon': ['Kel. Bangunharjo', 'Kel. Panggungharjo', 'Kel. Pendowoharjo', 'Kel. Timbulharjo'],
             'Kec. Banguntapan': ['Kel. Banguntapan', 'Kel. Baturetno', 'Kel. Jagalan', 'Kel. Potorono', 'Kel. Singosaren'],
             'Kec. Kasihan': ['Kel. Bangunjiwo', 'Kel. Ngestiharjo', 'Kel. Tamantirto', 'Kel. Tirtonirmolo'],
@@ -39,11 +39,11 @@ ADMIN_HIERARCHY = {
             'Kec. Gondomanan': ['Kel. Ngupasan', 'Kel. Prawirodirjan'],
             'Kec. Umbulharjo': ['Kel. Giwangan', 'Kel. Muja Muju', 'Kel. Pandeyan', 'Kel. Semaki', 'Kel. Sorosutan'],
         },
-        'Kab. Kulon Progo': {
+        'Kabupaten Kulon Progo': {
             'Kec. Wates': ['Kel. Bendungan', 'Kel. Giripeni', 'Kel. Karangwuni', 'Kel. Wates'],
             'Kec. Temon': ['Kel. Glagah', 'Kel. Jangkaran', 'Kel. Palihan', 'Kel. Temon Kulon'],
         },
-        'Kab. Gunungkidul': {
+        'Kabupaten Gunungkidul': {
             'Kec. Wonosari': ['Kel. Baleharjo', 'Kel. Duwet', 'Kel. Kepek', 'Kel. Wonosari'],
             'Kec. Playen': ['Kel. Playen', 'Kel. Logandeng', 'Kel. Plembutan'],
         },
@@ -53,11 +53,11 @@ ADMIN_HIERARCHY = {
             'Kec. Coblong': ['Kel. Dago', 'Kel. Lebakgede', 'Kel. Sadangserang'],
             'Kec. Sukasari': ['Kel. Gegerkalong', 'Kel. Sarijadi', 'Kel. Isola'],
         },
-        'Kab. Bogor': {
+        'Kabupaten Bogor': {
             'Kec. Cibinong': ['Kel. Cirimekar', 'Kel. Pakansari', 'Kel. Tengah'],
         },
     },
-    'DKI Jakarta': {
+    'Daerah Khusus Ibukota Jakarta': {
         'Kota Jakarta Selatan': {
             'Kec. Kebayoran Baru': ['Kel. Selong', 'Kel. Senayan', 'Kel. Melawai'],
             'Kec. Cilandak': ['Kel. Cilandak Barat', 'Kel. Cipete Selatan'],
@@ -85,6 +85,41 @@ ADMIN_HIERARCHY = {
         },
     },
 }
+
+# Alias mapping agar kompatibel dengan penulisan singkatan
+ADMIN_HIERARCHY['D.I. Yogyakarta'] = ADMIN_HIERARCHY['Daerah Istimewa Yogyakarta']
+ADMIN_HIERARCHY['DKI Jakarta'] = ADMIN_HIERARCHY['Daerah Khusus Ibukota Jakarta']
+
+
+def get_prov_hierarchy(prov_name):
+    """Mendapatkan dictionary hirarki administrasi untuk provinsi dengan pencocokan nama & alias."""
+    if not prov_name:
+        return {}
+    if prov_name in ADMIN_HIERARCHY:
+        return ADMIN_HIERARCHY[prov_name]
+    p_low = prov_name.lower().strip()
+    for k, v in ADMIN_HIERARCHY.items():
+        if k.lower() == p_low:
+            return v
+    if 'yogyakarta' in p_low or 'jogja' in p_low:
+        return ADMIN_HIERARCHY.get('Daerah Istimewa Yogyakarta', {})
+    if 'jakarta' in p_low:
+        return ADMIN_HIERARCHY.get('Daerah Khusus Ibukota Jakarta', {})
+    return {}
+
+
+def find_kab_in_hierarchy(hierarchy, kab_name):
+    """Mencocokkan nama kabupaten dalam hirarki dengan mengabaikan prefiks Kab/Kota."""
+    if not kab_name or not hierarchy:
+        return None
+    if kab_name in hierarchy:
+        return kab_name
+    clean_target = kab_name.lower().replace('kabupaten', '').replace('kab.', '').replace('kota', '').strip()
+    for k in hierarchy:
+        clean_k = k.lower().replace('kabupaten', '').replace('kab.', '').replace('kota', '').strip()
+        if clean_k == clean_target or clean_target in clean_k:
+            return k
+    return None
 
 
 class WfsFilterDialog(QDialog):
@@ -297,6 +332,7 @@ class WfsFilterDialog(QDialog):
         ca_layout.setSpacing(3)
 
         self.rb_all = QRadioButton("1. Load Semua (Seluruh Indonesia)", self.card_all)
+        self.rb_all.setChecked(True)
         self.btn_group.addButton(self.rb_all, 1)
         ca_layout.addWidget(self.rb_all)
 
@@ -307,16 +343,15 @@ class WfsFilterDialog(QDialog):
         main_layout.addWidget(self.card_all)
 
         # =====================================================================
-        # OPTION 2: BATAS ADMINISTRASI (DEFAULT)
+        # OPTION 2: BATAS ADMINISTRASI
         # =====================================================================
         self.card_admin = QFrame(self)
-        self.card_admin.setProperty('class', 'cardBox cardBoxActive')
+        self.card_admin.setProperty('class', 'cardBox')
         cadm_layout = QVBoxLayout(self.card_admin)
         cadm_layout.setContentsMargins(14, 12, 14, 12)
         cadm_layout.setSpacing(8)
 
         self.rb_admin = QRadioButton("2. Load Berdasarkan Batas Admin", self.card_admin)
-        self.rb_admin.setChecked(True)
         self.btn_group.addButton(self.rb_admin, 2)
         cadm_layout.addWidget(self.rb_admin)
 
@@ -486,15 +521,22 @@ class WfsFilterDialog(QDialog):
     # Administrative Dropdowns (Cascading)
     # -------------------------------------------------------------------------
     def _populate_admin_hierarchy(self):
-        # Gabungkan daftar provinsi
-        self.all_provs = sorted(list(set(list(ADMIN_HIERARCHY.keys()) + list(INDONESIA_REGIONS.keys()))))
+        # 38 Provinsi Indonesia standar tanpa duplikasi
+        self.all_provs = sorted(list(INDONESIA_REGIONS.keys()))
         self.cb_prov.blockSignals(True)
+        if self.cb_prov.lineEdit():
+            self.cb_prov.lineEdit().blockSignals(True)
         self.cb_prov.clear()
         self.cb_prov.addItems(self.all_provs)
 
         # Aktifkan pencarian dan pengetikan langsung untuk memudahkan pencarian nama provinsi
         self.cb_prov.setEditable(True)
         self.cb_prov.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
+        self.cb_prov.setMaxVisibleItems(8)
+        self.cb_kab.setMaxVisibleItems(8)
+        self.cb_kec.setMaxVisibleItems(8)
+        self.cb_desa.setMaxVisibleItems(8)
+
         if self.cb_prov.lineEdit():
             self.cb_prov.lineEdit().setPlaceholderText("Pilih atau ketik nama provinsi...")
 
@@ -504,6 +546,7 @@ class WfsFilterDialog(QDialog):
             completer.setFilterMode(Qt.MatchFlag.MatchContains)
             completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
             completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
+            completer.setMaxVisibleItems(8)
             if completer.popup():
                 completer.popup().setMaximumHeight(200)
                 completer.popup().setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
@@ -514,51 +557,60 @@ class WfsFilterDialog(QDialog):
         if completer:
             completer.activated.connect(lambda txt: self._sync_kabupaten())
         if self.cb_prov.lineEdit():
-            self.cb_prov.lineEdit().textChanged.connect(self._sync_kabupaten)
+            self.cb_prov.lineEdit().returnPressed.connect(self._sync_kabupaten)
+            self.cb_prov.lineEdit().editingFinished.connect(self._sync_kabupaten)
+            self.cb_prov.lineEdit().textChanged.connect(self._on_prov_text_changed)
 
         self.cb_kab.currentIndexChanged.connect(self._sync_kecamatan)
         self.cb_kec.currentIndexChanged.connect(self._sync_desa)
 
-        # Cek apakah ada filter awal (dari katalog IGT atau metadata dataset)
+        # Cek apakah ada filter awal eksplisit dari katalog IGT
         init_prov = None
         init_kab = None
         if self.initial_admin_filter and isinstance(self.initial_admin_filter, dict):
             init_prov = self.initial_admin_filter.get('provinsi')
             init_kab = self.initial_admin_filter.get('kabupaten')
-        elif self.dataset.get('prov'):
-            init_prov = self.dataset.get('prov')
-            init_kab = self.dataset.get('kab')
 
-        # Jika ada filter provinsi yang valid, set nilainya dan sinkronkan kabupaten
         matched_prov = match_province_name(init_prov, self.all_provs) if init_prov else None
 
         if matched_prov:
             self.rb_admin.setChecked(True)
             self._update_cards_ui()
-            self.cb_prov.blockSignals(True)
             self.cb_prov.setCurrentText(matched_prov)
             if self.cb_prov.lineEdit():
                 self.cb_prov.lineEdit().setText(matched_prov)
+
+            if self.cb_prov.lineEdit():
+                self.cb_prov.lineEdit().blockSignals(False)
             self.cb_prov.blockSignals(False)
 
             self._sync_kabupaten()
 
             if init_kab and init_kab not in ('Semua Kabupaten / Kota', 'Semua Kab / Kota', '-- Pilih Provinsi Terlebih Dahulu --', ''):
                 self.cb_kab.blockSignals(True)
-                clean_k = init_kab.lower().replace('kab. ', '').replace('kota ', '').strip()
+                clean_k = init_kab.lower().replace('kabupaten', '').replace('kab.', '').replace('kota', '').strip()
                 for idx in range(self.cb_kab.count()):
                     txt = self.cb_kab.itemText(idx)
+                    clean_txt = txt.lower().replace('kabupaten', '').replace('kab.', '').replace('kota', '').strip()
                     if (txt.lower() == init_kab.lower() or
-                        init_kab.lower() in txt.lower() or
+                        clean_k == clean_txt or
                         clean_k in txt.lower()):
                         self.cb_kab.setCurrentIndex(idx)
                         break
                 self.cb_kab.blockSignals(False)
                 self._sync_kecamatan()
         else:
+            self.rb_all.setChecked(True)
+            self._update_cards_ui()
             self.cb_prov.setCurrentIndex(-1)
             if self.cb_prov.lineEdit():
                 self.cb_prov.lineEdit().clear()
+                self.cb_prov.lineEdit().blockSignals(False)
+            self.cb_prov.blockSignals(False)
+            self._sync_kabupaten()
+
+    def _on_prov_text_changed(self, text):
+        if not text.strip():
             self._sync_kabupaten()
 
     def _sync_kabupaten(self):
@@ -591,14 +643,7 @@ class WfsFilterDialog(QDialog):
 
         # Provinsi valid telah dipilih -> Buka kunci Kabupaten
         self.cb_kab.setEnabled(True)
-        kabs = []
-        if prov in ADMIN_HIERARCHY:
-            kabs = list(ADMIN_HIERARCHY[prov].keys())
-        elif prov in INDONESIA_REGIONS:
-            kabs = INDONESIA_REGIONS[prov]
-
-        if not kabs:
-            kabs = ['Kabupaten / Kota Utama', 'Kabupaten / Kota Sentral']
+        kabs = INDONESIA_REGIONS.get(prov, [])
 
         self.cb_kab.blockSignals(True)
         self.cb_kab.clear()
@@ -614,12 +659,7 @@ class WfsFilterDialog(QDialog):
 
     def _sync_kecamatan(self):
         raw_prov = self.cb_prov.currentText().strip()
-        prov = None
-        if hasattr(self, 'all_provs') and raw_prov:
-            for p in self.all_provs:
-                if p.lower() == raw_prov.lower() or raw_prov.lower() in p.lower():
-                    prov = p
-                    break
+        prov = match_province_name(raw_prov, getattr(self, 'all_provs', []))
 
         if not prov:
             self.cb_kec.setEnabled(False)
@@ -631,8 +671,10 @@ class WfsFilterDialog(QDialog):
 
         kecs = ['Semua Kecamatan']
         if not is_all_kab:
-            if prov in ADMIN_HIERARCHY and kab in ADMIN_HIERARCHY[prov]:
-                kecs.extend(list(ADMIN_HIERARCHY[prov][kab].keys()))
+            prov_hierarchy = get_prov_hierarchy(prov)
+            matched_kab_key = find_kab_in_hierarchy(prov_hierarchy, kab)
+            if matched_kab_key and matched_kab_key in prov_hierarchy:
+                kecs.extend(list(prov_hierarchy[matched_kab_key].keys()))
             else:
                 kecs.extend(['Kec. 01 (Pusat)', 'Kec. 02 (Barat)', 'Kec. 03 (Timur)', 'Kec. 04 (Utara)', 'Kec. 05 (Selatan)'])
 
@@ -647,12 +689,7 @@ class WfsFilterDialog(QDialog):
 
     def _sync_desa(self):
         raw_prov = self.cb_prov.currentText().strip()
-        prov = None
-        if hasattr(self, 'all_provs') and raw_prov:
-            for p in self.all_provs:
-                if p.lower() == raw_prov.lower() or raw_prov.lower() in p.lower():
-                    prov = p
-                    break
+        prov = match_province_name(raw_prov, getattr(self, 'all_provs', []))
 
         if not prov:
             self.cb_desa.setEnabled(False)
@@ -665,8 +702,11 @@ class WfsFilterDialog(QDialog):
 
         desas = ['Semua Desa / Kelurahan']
         if not is_all_kab and not is_all_kec:
-            if prov in ADMIN_HIERARCHY and kab in ADMIN_HIERARCHY[prov] and kec in ADMIN_HIERARCHY[prov][kab]:
-                desas.extend(ADMIN_HIERARCHY[prov][kab][kec])
+            prov_hierarchy = get_prov_hierarchy(prov)
+            matched_kab_key = find_kab_in_hierarchy(prov_hierarchy, kab)
+            if (matched_kab_key and matched_kab_key in prov_hierarchy and
+                kec in prov_hierarchy[matched_kab_key]):
+                desas.extend(prov_hierarchy[matched_kab_key][kec])
             else:
                 desas.extend(['Kelurahan 01', 'Kelurahan 02', 'Desa 01', 'Desa 02'])
 

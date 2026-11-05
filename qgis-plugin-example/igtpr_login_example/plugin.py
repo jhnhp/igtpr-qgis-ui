@@ -453,11 +453,16 @@ class IgtprLoginExample:
             # Filter subset jika admin_filter aktif dan bukan seluruh indonesia
             if not is_wms and admin_filter:
                 try:
-                    kab_filter_val = admin_filter.get('kabupaten', '').replace('Kab. ', '').replace('Kota ', '').strip()
-                    if kab_filter_val and kab_filter_val not in ('Semua Kabupaten / Kota', 'Semua Kabupaten', 'Kabupaten / Kota Utama'):
-                        layer.setSubsetString(f"\"kabupaten\" ILIKE '%{kab_filter_val}%'")
+                    raw_kab = admin_filter.get('kabupaten', '')
+                    clean_kab = raw_kab.lower().replace('kabupaten', '').replace('kab.', '').replace('kota', '').strip()
+                    if clean_kab and raw_kab not in ('Semua Kabupaten / Kota', 'Semua Kabupaten', 'Kabupaten / Kota Utama'):
+                        layer.setSubsetString(f"\"kabupaten\" ILIKE '%{clean_kab}%'")
                     else:
                         prov_filter_val = admin_filter.get('provinsi', '').replace('D.I. ', '').replace('Provinsi ', '').strip()
+                        if 'yogyakarta' in prov_filter_val.lower():
+                            prov_filter_val = 'Yogyakarta'
+                        elif 'jakarta' in prov_filter_val.lower():
+                            prov_filter_val = 'Jakarta'
                         if prov_filter_val and prov_filter_val not in ('Nasional', 'Semua Provinsi'):
                             layer.setSubsetString(f"\"provinsi\" ILIKE '%{prov_filter_val}%'")
                 except Exception:
@@ -488,7 +493,7 @@ class IgtprLoginExample:
                                 target_extent.scale(1.2)
                                 break
                 elif not is_wms and admin_filter:
-                    kab_name = (admin_filter.get('kabupaten') or '').lower().replace('kab.', '').replace('kota', '').strip()
+                    kab_name = (admin_filter.get('kabupaten') or '').lower().replace('kabupaten', '').replace('kab.', '').replace('kota', '').strip()
                     prov_name = (admin_filter.get('provinsi') or '').lower().strip()
                     if 'yogyakarta' in prov_name or 'd.i.' in prov_name:
                         prov_name = 'yogyakarta'
@@ -514,34 +519,38 @@ class IgtprLoginExample:
                         if target_extent:
                             target_extent.scale(1.15)
                 else:
-                    # Default dataset kab/prov jika ada
-                    kab_name = (dataset.get('kab') or '').lower().replace('kab.', '').replace('kota', '').strip()
-                    if kab_name and kab_name not in ('seluruh indonesia', 'multi-kabupaten', 'semua kab / kota'):
-                        for f in layer.getFeatures():
-                            f_kab = (f['kabupaten'] or '').lower()
-                            if kab_name in f_kab or f_kab in kab_name:
-                                target_extent = f.geometry().boundingBox()
-                                target_extent.scale(1.3)
-                                break
-
-                    if not target_extent:
-                        prov_name = (dataset.get('prov') or '').lower().strip()
-                        if 'yogyakarta' in prov_name or 'd.i.' in prov_name:
-                            prov_name = 'yogyakarta'
-                        elif 'jakarta' in prov_name or 'dki' in prov_name:
-                            prov_name = 'jakarta'
-                        if prov_name and prov_name not in ('nasional', 'semua provinsi'):
+                    if filter_mode == 'all':
+                        # Mode 'all' (Seluruh Indonesia) -> Arahkan kanvas ke seluruh cakupan data nasional
+                        target_extent = layer.extent()
+                    else:
+                        # Default dataset kab/prov jika ada
+                        kab_name = (dataset.get('kab') or '').lower().replace('kabupaten', '').replace('kab.', '').replace('kota', '').strip()
+                        if kab_name and kab_name not in ('seluruh indonesia', 'multi-kabupaten', 'semua kab / kota'):
                             for f in layer.getFeatures():
-                                f_prov = (f['provinsi'] or '').lower()
-                                if prov_name in f_prov:
-                                    if target_extent is None:
-                                        target_extent = f.geometry().boundingBox()
-                                    else:
-                                        target_extent.combineExtentWith(f.geometry().boundingBox())
-                            if target_extent:
-                                target_extent.scale(1.15)
+                                f_kab = (f['kabupaten'] or '').lower()
+                                if kab_name in f_kab or f_kab in kab_name:
+                                    target_extent = f.geometry().boundingBox()
+                                    target_extent.scale(1.3)
+                                    break
 
-                if target_extent:
+                        if not target_extent:
+                            prov_name = (dataset.get('prov') or '').lower().strip()
+                            if 'yogyakarta' in prov_name or 'd.i.' in prov_name:
+                                prov_name = 'yogyakarta'
+                            elif 'jakarta' in prov_name or 'dki' in prov_name:
+                                prov_name = 'jakarta'
+                            if prov_name and prov_name not in ('nasional', 'semua provinsi'):
+                                for f in layer.getFeatures():
+                                    f_prov = (f['provinsi'] or '').lower()
+                                    if prov_name in f_prov:
+                                        if target_extent is None:
+                                            target_extent = f.geometry().boundingBox()
+                                        else:
+                                            target_extent.combineExtentWith(f.geometry().boundingBox())
+                                if target_extent:
+                                    target_extent.scale(1.15)
+
+                if target_extent and not target_extent.isNull() and not target_extent.isEmpty():
                     self.iface.mapCanvas().setExtent(target_extent)
                 else:
                     self.iface.mapCanvas().setExtent(layer.extent())
