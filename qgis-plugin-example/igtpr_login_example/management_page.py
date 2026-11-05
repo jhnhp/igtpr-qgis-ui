@@ -418,7 +418,7 @@ class ManagementPage(QWidget):
                     nw_layout.setSpacing(2)
                     layer_name = r.get('name') or r.get('layer', '')
                     n_lbl = QLabel(layer_name)
-                    n_lbl.setStyleSheet("color: #0f294d; font-weight: 700; font-size: 12px;")
+                    n_lbl.setStyleSheet("color: #0f294d; font-weight: 500; font-size: 12px;")
                     nw_layout.addWidget(n_lbl)
                     if r.get('note'):
                         note_lbl = QLabel(r['note'])

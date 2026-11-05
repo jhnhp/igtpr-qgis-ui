@@ -2045,6 +2045,7 @@ body.v2-page .history-item {
 .igt-catalog-name {
   color: #0f294d;
   font-size: 13.5px;
+  font-weight: 400;
   line-height: 1.35;
 }
 
@@ -2219,7 +2220,7 @@ tr.igt-sublayer-row td {
 }
 .igt-sublayer-title {
   color: #1e293b;
-  font-weight: 600;
+  font-weight: 400;
   font-size: 12.5px;
 }
 .igt-sublayer-badge {
@@ -2491,7 +2492,7 @@ tr.igt-sublayer-row td {
 
 .dash-card-title {
   font-size: 13.5px;
-  font-weight: 700;
+  font-weight: 400;
   color: #0f294d;
   line-height: 1.35;
 }
@@ -2669,7 +2670,7 @@ tr.igt-sublayer-row td {
 }
 .dash-sub-title {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 400;
   color: #1e293b;
 }
 .dash-sub-actions {
@@ -2913,7 +2914,7 @@ tr.igt-sublayer-row td {
 .igt-catalog-name {
   color: #0f294d;
   font-size: 13.5px;
-  font-weight: 500 !important;
+  font-weight: 400 !important;
   line-height: 1.35;
 }
 
@@ -2987,7 +2988,7 @@ tr.igt-sublayer-row td {
   padding: 0;
   color: #0f294d;
   font: inherit;
-  font-weight: 600;
+  font-weight: 400;
   text-align: left;
   cursor: pointer;
   text-decoration: none;

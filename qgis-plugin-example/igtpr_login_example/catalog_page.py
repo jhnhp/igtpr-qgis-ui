@@ -123,7 +123,7 @@ class DatasetCard(QFrame):
             QLabel#titleLbl {
                 color: #0f294d;
                 font-size: 13px;
-                font-weight: 500;
+                font-weight: 400;
             }
             QLabel#titleLbl:hover {
                 color: #1f6fd6;
@@ -183,6 +183,10 @@ class DatasetCard(QFrame):
 
         self.title_lbl = QLabel(dataset.get('name', ''), self)
         self.title_lbl.setObjectName('titleLbl')
+        font = self.title_lbl.font()
+        font.setBold(False)
+        font.setWeight(QFont.Weight.Normal)
+        self.title_lbl.setFont(font)
         self.title_lbl.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         self.title_lbl.setCursor(Qt.CursorShape.PointingHandCursor)
         self.title_lbl.setToolTip("Klik untuk melihat detail lengkap dataset IGT")
@@ -290,7 +294,11 @@ class DatasetCard(QFrame):
                 sr_layout.addWidget(branch_lbl)
 
                 sub_title = QLabel(sub.get('name', ''), sub_row)
-                sub_title.setStyleSheet("color: #1e293b; font-size: 11.5px; font-weight: 600;")
+                sub_title.setStyleSheet("color: #1e293b; font-size: 11.5px; font-weight: 400;")
+                s_font = sub_title.font()
+                s_font.setBold(False)
+                s_font.setWeight(QFont.Weight.Normal)
+                sub_title.setFont(s_font)
                 sub_title.setWordWrap(True)
                 sr_layout.addWidget(sub_title, 1)
 
