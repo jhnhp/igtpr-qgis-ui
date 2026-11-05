@@ -156,6 +156,12 @@ class IgtprDockWidget(QDockWidget):
             self.dashboard_page.catalog_widget.set_category(category_key)
 
     def show_management(self, tab_key='igt-utama'):
+        base_role = str(self.current_role).replace('2', '').lower()
+        if base_role == 'umum':
+            QMessageBox.warning(self, "Akses Dibatasi",
+                                "Halaman Manajemen Data hanya dapat diakses oleh peran internal ATR/BPN (Superadmin, Admin, Operator).\n"
+                                "Pengguna Umum dapat mengunggah derivatif melalui menu Unggah Data.")
+            return
         self.topbar.show()
         lbl = 'IGT Utama' if tab_key == 'igt-utama' else 'IGT Derivatif Multiguna' if tab_key == 'derivatif' else 'IGT Lainnya'
         self.topbar.set_breadcrumbs(['Manajemen Data', lbl])
@@ -164,10 +170,11 @@ class IgtprDockWidget(QDockWidget):
 
     def show_upload(self, category_key='pertanahan'):
         # Menampilkan modal popup Unggah Data langsung sesuai mockup V2
-        if category_key == 'pertanahan' and self.current_role != 'operator':
+        base_role = str(self.current_role).replace('2', '').lower()
+        if category_key in ('pertanahan', 'tata-ruang') and base_role != 'operator':
             QMessageBox.warning(self, "Akses Dibatasi",
-                                "Admin dan Superadmin tidak memiliki wewenang untuk mengunggah IGT Utama.\n"
-                                "Pengunggahan IGT Utama hanya dapat dilakukan oleh Operator.")
+                                "Khusus Operator Satker. Superadmin, Admin, dan Pengguna Umum tidak berwenang mengunggah IGT Utama.\n"
+                                "Pengunggahan IGT Utama hanya dapat dilakukan oleh Operator Satker.")
             return
         main_win = self.window()
         dlg = UploadIgtUtamaDialog(current_category=category_key, iface=self.iface, parent=main_win)
@@ -176,6 +183,11 @@ class IgtprDockWidget(QDockWidget):
 
     def show_kustom_derivatif(self):
         # Menampilkan dialog Derivatif Per Bidang langsung sesuai review Lutfi
+        base_role = str(self.current_role).replace('2', '').lower()
+        if base_role == 'umum':
+            QMessageBox.warning(self, "Akses Dibatasi",
+                                "Alur Derivatif Bidang hanya dapat diakses oleh peran internal ATR/BPN (Superadmin, Admin, Operator).")
+            return
         main_win = self.window()
         dlg = DerivatifBidangDialog(iface=self.iface, parent=main_win)
         dlg.derivatifSaved.connect(self.upload_page.uploadSubmitted.emit)
@@ -183,6 +195,11 @@ class IgtprDockWidget(QDockWidget):
 
     def show_load_derivatif(self):
         # Menampilkan dialog Muat Kustom Tematik Derivatif ke kanvas QGIS
+        base_role = str(self.current_role).replace('2', '').lower()
+        if base_role == 'umum':
+            QMessageBox.warning(self, "Akses Dibatasi",
+                                "Alur Derivatif Bidang hanya dapat diakses oleh peran internal ATR/BPN (Superadmin, Admin, Operator).")
+            return
         main_win = self.window()
         dlg = LoadDerivatifDialog(iface=self.iface, parent=main_win)
         dlg.exec_()

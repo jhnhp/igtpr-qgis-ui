@@ -41,19 +41,22 @@ const IgtData = (() => {
   };
 
   // Permissions. Every role may browse all four catalogs (`view`). Uploading and managing submissions
-  // (`upload`) is narrower: IGT Lainnya (Eksternal) can only be managed by Superadmin, and Umum (public users) can only upload IGT Derivatif.
-  // Umum sees only its own submissions (records with `owner: 'umum'`).
-  // `derivatifWorkflow` marks the role that gets the Derivatif Bidang workflow page (Operator only).
+  // (`upload`) is strictly mapped to the official Role Permission Matrix:
+  // - Superadmin: upload ['derivatif', 'lainnya'] (tidak mengunggah IGT Utama)
+  // - Admin: upload ['derivatif'] (tidak mengunggah IGT Utama & Lainnya)
+  // - Operator: upload ['pertanahan', 'tata-ruang', 'derivatif'] (pelaksana pengunggah IGT Utama)
+  // - Umum: upload ['derivatif'] (hanya derivatif mandiri, tanpa IGT Utama / Lainnya)
+  // `derivatifWorkflow`: Alur Derivatif Bidang (Superadmin, Admin, Operator: true; Umum: false).
   const ALL = ['pertanahan', 'tata-ruang', 'derivatif', 'lainnya'];
   const ROLES = {
-    superadmin: { label: 'Superadmin', avatar: 'SA', satker: 'Semua Satker', view: ALL, upload: ['lainnya'] },
-    superadmin2: { label: 'Superadmin', avatar: 'SA', satker: 'Semua Satker', view: ALL, upload: ALL, derivatifWorkflow: true, v2: true, baseRole: 'superadmin' },
-    admin: { label: 'Admin', avatar: 'AD', satker: 'Kantah Kab. Sleman', view: ALL, upload: ['pertanahan', 'tata-ruang', 'derivatif'] },
-    admin2: { label: 'Admin', avatar: 'AD', satker: 'Kantah Kab. Sleman', view: ALL, upload: ['pertanahan', 'tata-ruang', 'derivatif'], derivatifWorkflow: true, v2: true, baseRole: 'admin' },
+    superadmin: { label: 'Superadmin', avatar: 'SA', satker: 'Semua Satker', view: ALL, upload: ['derivatif', 'lainnya'], derivatifWorkflow: true },
+    superadmin2: { label: 'Superadmin', avatar: 'SA', satker: 'Semua Satker', view: ALL, upload: ['derivatif', 'lainnya'], derivatifWorkflow: true, v2: true, baseRole: 'superadmin' },
+    admin: { label: 'Admin', avatar: 'AD', satker: 'Kantah Kab. Sleman', view: ALL, upload: ['derivatif'], derivatifWorkflow: true },
+    admin2: { label: 'Admin', avatar: 'AD', satker: 'Kantah Kab. Sleman', view: ALL, upload: ['derivatif'], derivatifWorkflow: true, v2: true, baseRole: 'admin' },
     operator: { label: 'Operator Pusat', avatar: 'JH', satker: 'Kantah Kab. Sleman', view: ALL, upload: ['pertanahan', 'tata-ruang', 'derivatif'], derivatifWorkflow: true },
     operator2: { label: 'Operator Pusat', avatar: 'JH', satker: 'Kantah Kab. Sleman', view: ALL, upload: ['pertanahan', 'tata-ruang', 'derivatif'], derivatifWorkflow: true, v2: true, baseRole: 'operator' },
-    umum: { label: 'Umum', avatar: 'UM', satker: null, view: ALL, upload: ['derivatif'], ownSubmissionsOnly: true, derivatifWorkflow: true },
-    umum2: { label: 'Umum', avatar: 'UM', satker: null, view: ALL, upload: ['derivatif'], ownSubmissionsOnly: true, derivatifWorkflow: true, v2: true, baseRole: 'umum' },
+    umum: { label: 'Umum', avatar: 'UM', satker: null, view: ALL, upload: ['derivatif'], ownSubmissionsOnly: true, derivatifWorkflow: false },
+    umum2: { label: 'Umum', avatar: 'UM', satker: null, view: ALL, upload: ['derivatif'], ownSubmissionsOnly: true, derivatifWorkflow: false, v2: true, baseRole: 'umum' },
   };
 
   // `n` is the record index understood by the shared detail pages (igt-utama-detail, layer-derivatif-detail).

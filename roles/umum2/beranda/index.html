@@ -735,7 +735,7 @@ button.hub-card-head:hover {
     <div class="dash-cat-widget" id="dashboard-catalog-widget"></div>
   </section>
 
-  <!-- 1 & 2. UNGGAH DATA & MANAJEMEN DATA -->
+  <!-- 1 & 2. UNGGAH DATA & MODEL BUILDER (UMUM: Tanpa Manajemen Data & Derivatif Bidang) -->
   <div class="hub-grid">
     <!-- 1. UNGGAH DATA -->
     <section class="hub-card hub-card--blue">
@@ -749,7 +749,7 @@ button.hub-card-head:hover {
         </div>
         <div class="hub-card-text">
           <h2 class="hub-card-title">Unggah Data</h2>
-          <p class="hub-card-desc">Kelola dan unggah data geospasial ke dalam sistem.</p>
+          <p class="hub-card-desc">Kelola dan unggah data spasial derivatif ke sistem.</p>
         </div>
         <svg class="hub-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
       </button>
@@ -765,82 +765,39 @@ button.hub-card-head:hover {
             <span class="hub-item-label">Unggah IGT Derivatif Multiguna</span>
             <svg class="hub-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
           </button>
-
-          <a class="hub-item" href="../derivatif-bidang/index.html">
-            <span class="hub-item-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <circle cx="12" cy="12" r="3"/>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/>
-              </svg>
-            </span>
-            <span class="hub-item-label">Kustom Tematik Derivatif</span>
-            <svg class="hub-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
-          </a>
-
-          <button type="button" class="hub-item" id="load-derivatif-btn">
-            <span class="hub-item-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/>
-                <path d="M12 12v9"/>
-                <path d="m16 16-4-4-4 4"/>
-              </svg>
-            </span>
-            <span class="hub-item-label">Muat Kustom Tematik Derivatif</span>
-            <svg class="hub-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
-          </button>
       </div>
     </section>
 
-    <!-- 2. MANAJEMEN DATA -->
-    <section class="hub-card hub-card--green">
-      <a class="hub-card-head" href="../upload-data/index.html?tab=derivatif">
-        <div class="hub-badge hub-badge--green">
+    <!-- 2. MODEL BUILDER -->
+    <a class="hub-card hub-card--purple hub-card-link" href="../../../shared/model-builder/index.html?role=umum2">
+      <div class="hub-card-head">
+        <div class="hub-badge hub-badge--purple">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <ellipse cx="12" cy="5" rx="8" ry="3"/>
-            <path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5"/>
-            <path d="M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/>
+            <rect x="9" y="2" width="6" height="5" rx="1"/>
+            <rect x="3" y="16" width="6" height="5" rx="1"/>
+            <rect x="15" y="16" width="6" height="5" rx="1"/>
+            <path d="M12 7v4m-6 5v-3a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3"/>
           </svg>
         </div>
         <div class="hub-card-text">
-          <h2 class="hub-card-title">Manajemen Data</h2>
-          <p class="hub-card-desc">Kelola proses, revisi, dan status data geospasial per kategori IGT.</p>
+          <h2 class="hub-card-title">Model Builder</h2>
+          <p class="hub-card-desc">Jalankan alur model pemodelan geospasial di QGIS.</p>
         </div>
         <svg class="hub-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
-      </a>
+      </div>
       <div class="hub-list">
-          <a class="hub-item" href="../upload-data/index.html?tab=derivatif">
-            <span class="hub-item-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="m12 2 10 5.5-10 5.5L2 7.5 12 2Z"/>
-                <path d="m2 12.5 10 5.5 10-5.5"/>
-                <path d="m2 17 10 5.5 10-5.5"/>
-              </svg>
-            </span>
-            <span class="hub-item-label">IGT Derivatif Multiguna</span>
-            <svg class="hub-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
-          </a>
+        <div class="hub-item" style="cursor:pointer">
+          <span class="hub-item-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+          </span>
+          <span class="hub-item-label">Eksekusi Model Analisis Spasial</span>
+          <svg class="hub-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+        </div>
       </div>
-    </section>
+    </a>
   </div>
-
-  <!-- 3. MODEL BUILDER (DI BAWAH) -->
-  <a class="hub-card hub-card--purple hub-card-link" href="../../../shared/model-builder/index.html?role=umum2">
-    <div class="hub-card-head">
-      <div class="hub-badge hub-badge--purple">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <rect x="9" y="2" width="6" height="5" rx="1"/>
-          <rect x="3" y="16" width="6" height="5" rx="1"/>
-          <rect x="15" y="16" width="6" height="5" rx="1"/>
-          <path d="M12 7v4m-6 5v-3a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3"/>
-        </svg>
-      </div>
-      <div class="hub-card-text">
-        <h2 class="hub-card-title">Model Builder</h2>
-        <p class="hub-card-desc">Jalankan alur model pemodelan geospasial.</p>
-      </div>
-      <svg class="hub-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
-    </div>
-  </a>
 
   <!-- LOGOUT BAR -->
   <button type="button" class="logout-bar" id="logout-btn">
@@ -926,39 +883,6 @@ button.hub-card-head:hover {
     </div>
   </div>
 
-  <!-- POPUP MODAL MUAT KUSTOM TEMATIK DERIVATIF -->
-  <div class="v2-modal-backdrop" id="loadDerivatifModal" hidden role="dialog" aria-modal="true" aria-labelledby="loadDrvTitle">
-    <div class="v2-modal-card">
-      <div class="v2-modal-head">
-        <div>
-          <h3 id="loadDrvTitle">Muat Kustom Tematik Derivatif</h3>
-          <p>Pilih berkas atribut atau layer tematik derivatif untuk dimuat ke QGIS.</p>
-        </div>
-        <button type="button" class="v2-modal-close" id="closeLoadDrvModal" aria-label="Tutup">✕</button>
-      </div>
-      <div class="v2-modal-body">
-        <input id="loadDrvFileInput" type="file" hidden accept=".gpkg,.json,.zip,.shp,.csv">
-        <div class="v2-file-drop" id="loadDrvDropzone">
-          <div class="v2-file-drop-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/>
-              <path d="M12 12v9"/>
-              <path d="m16 16-4-4-4 4"/>
-            </svg>
-          </div>
-          <strong>Pilih berkas Kustom Tematik Derivatif</strong>
-          <p>Format GeoPackage (.gpkg), JSON (.json), atau Shapefile (.zip)</p>
-          <button type="button" class="btn btn-primary" id="pickLoadDrvBtn">Pilih Berkas dari Komputer</button>
-          <div class="v2-file-picked" id="loadDrvPickedName" hidden></div>
-        </div>
-        <div class="v2-modal-actions">
-          <button type="button" class="btn btn-soft" id="cancelLoadDrvBtn">Batal</button>
-          <button type="button" class="btn btn-primary" id="confirmLoadDrvBtn">Muat ke Kanvas QGIS →</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <div class="footer">Mockup UI plugin QGIS · data contoh</div>
 </main>
 </div>
@@ -995,49 +919,6 @@ document.getElementById('logout-btn').addEventListener('click', () => {
   } else {
     window.location.href = '../../../shared/login2/index.html';
   }
-});
-
-const loadModal = document.getElementById('loadDerivatifModal');
-const loadFileInput = document.getElementById('loadDrvFileInput');
-const pickedNameEl = document.getElementById('loadDrvPickedName');
-let selectedDrvFile = '';
-
-document.getElementById('load-derivatif-btn').addEventListener('click', () => {
-  loadModal.hidden = false;
-});
-document.getElementById('closeLoadDrvModal').addEventListener('click', () => {
-  loadModal.hidden = true;
-});
-document.getElementById('cancelLoadDrvBtn').addEventListener('click', () => {
-  loadModal.hidden = true;
-});
-loadModal.addEventListener('click', (e) => {
-  if (e.target === loadModal) loadModal.hidden = true;
-});
-document.getElementById('pickLoadDrvBtn').addEventListener('click', (e) => {
-  e.stopPropagation();
-  loadFileInput.click();
-});
-document.getElementById('loadDrvDropzone').addEventListener('click', () => {
-  loadFileInput.click();
-});
-loadFileInput.addEventListener('change', () => {
-  const f = loadFileInput.files && loadFileInput.files[0];
-  selectedDrvFile = f ? f.name : '';
-  if (selectedDrvFile) {
-    pickedNameEl.textContent = '✓ Berkas dipilih: ' + selectedDrvFile;
-    pickedNameEl.hidden = false;
-  } else {
-    pickedNameEl.hidden = true;
-  }
-});
-document.getElementById('confirmLoadDrvBtn').addEventListener('click', () => {
-  if (!selectedDrvFile) {
-    loadFileInput.click();
-    return;
-  }
-  loadModal.hidden = true;
-  toast('Simulasi: berkas "' + selectedDrvFile + '" berhasil dimuat dan digabungkan ke bidang tanah pada kanvas QGIS.');
 });
 
 // --- LOGIKA POPUP UNGGAH DATA (DERIVATIF) ---

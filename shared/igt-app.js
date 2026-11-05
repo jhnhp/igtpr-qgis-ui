@@ -115,7 +115,8 @@ const IgtApp = (() => {
 
   function managementCategories(role) {
     const base = baseRoleOf(role);
-    if (base === 'umum') return ['derivatif'];
+    // Matriks Hak Akses: Modul F (Akses Halaman Manajemen Data): SA: ☑, AD: ☑, OP: ☑, UM: ☐
+    if (base === 'umum') return [];
     return ['igt-utama', 'derivatif'];
   }
 
@@ -147,10 +148,30 @@ const IgtApp = (() => {
 
   // Repository overview: how many datasets are compiled and integrated. No upload controls here.
   function dashboard(role) {
+    const base = baseRoleOf(role);
     const records = IgtData.loadRecords().filter((r) => IgtData.canView(role, r.category));
     const manageButtons = managementCategories(role)
       .map((key) => '<a class="btn btn-primary menu-btn" id="upload-button-' + key + '" href="../upload-data/index.html?tab=' + key + '">' + (MANAGEMENT_ICON[key] || ri('database-2-line')) + '<span>' + managementShortLabel(key) + '</span></a>')
       .join('');
+
+    // Matriks Hak Akses:
+    // - Pintasan Hub Manajemen Data: SA: ☑, AD: ☑, OP: ☑, UM: ☐
+    // - Pintasan Hub Unggah Data: SA: ☑, AD: ☑, OP: ☑, UM: ☑
+    // - Pintasan Hub Model Builder: SA: ☑, AD: ☑, OP: ☑, UM: ☑
+    const actionSection = (base === 'umum')
+      ? '<section class="card">' +
+        '<div class="card-head menu-upload-head"><div><h2>Aksi Spasial</h2><p>Unggah pengajuan layer derivatif multiguna dan jalankan model spasial.</p></div></div>' +
+        '<div class="menu-buttons" style="display:flex;gap:10px;flex-wrap:wrap">' +
+        '<a class="btn btn-primary menu-btn" id="upload-button-derivatif" href="../upload-derivatif/index.html">' + ri('upload-cloud-2-line') + '<span>Unggah IGT Derivatif</span></a>' +
+        '<a class="btn btn-primary menu-btn" id="model-builder-button" href="../../../shared/model-builder/index.html?role=' + role + '">' + ri('node-tree') + '<span>Model Builder</span></a>' +
+        '</div>' +
+        '</section>'
+      : '<section class="card">' +
+        '<div class="card-head menu-upload-head"><div><h2>Kelola data</h2><p>Unggah data baru dan pantau status pengajuan.</p></div></div>' +
+        '<div class="menu-buttons' + (role === 'superadmin' ? ' menu-buttons-superadmin' : '') + '" id="upload-buttons">' + manageButtons + '</div>' +
+        '<div class="menu-buttons model-builder-buttons"><a class="btn btn-primary menu-btn" id="model-builder-button" href="../../../shared/model-builder/index.html?role=' + role + '">' + ri('node-tree') + '<span>Model Builder</span></a></div>' +
+        '</section>';
+
     $('#view').innerHTML =
       '<div class="field year-filter-wrap"><label for="dashboard-year-filter">FILTER TAHUN</label><select id="dashboard-year-filter">' + yearFilterOptions(records) + '</select></div>' +
       '<div class="grid stats">' +
@@ -161,11 +182,7 @@ const IgtApp = (() => {
       '<div class="card-head"><div><h2>Katalog IGT</h2><p>Katalog terpadu data IGT Pertanahan dan Tata Ruang Kementerian ATR/BPN.</p></div></div>' +
       '<div class="dash-cat-widget" id="dashboard-catalog-widget"></div>' +
       '</section>' +
-      '<section class="card">' +
-      '<div class="card-head menu-upload-head"><div><h2>Kelola data</h2><p>Unggah data baru dan pantau status pengajuan.</p></div></div>' +
-      '<div class="menu-buttons' + (role === 'superadmin' ? ' menu-buttons-superadmin' : '') + '" id="upload-buttons">' + manageButtons + '</div>' +
-      '<div class="menu-buttons model-builder-buttons"><a class="btn btn-primary menu-btn" id="model-builder-button" href="../../../shared/model-builder/index.html?role=' + role + '">' + ri('node-tree') + '<span>Model Builder</span></a></div>' +
-      '</section>';
+      actionSection;
     const catWidget = dashboardCatalog('#dashboard-catalog-widget', role);
     const updateDashboard = () => {
       const year = $('#dashboard-year-filter').value;
@@ -1343,23 +1360,33 @@ const IgtApp = (() => {
 
   // Upload controls differ per category and role. Baseline exists only for IGT Pertanahan.
   function uploadPanel(role, category) {
+    const base = baseRoleOf(role);
     if (category === 'pertanahan' || category === 'tata-ruang') {
+      if (base !== 'operator') {
+        return `<div class="notice"><strong>Catatan</strong>${base === 'superadmin' ? 'Superadmin' : 'Admin'} berfokus pada pemeriksaan topologi dan persetujuan integrasi. Unggah data IGT Utama dilakukan oleh Operator Satker.</div>`;
+      }
       return uploadIgtUtamaPanel(role, category);
     }
     if (category === 'derivatif') {
-      if (role === 'admin') {
+      if (base === 'admin') {
         return (
           `<div class="toolbar"><button class="btn btn-primary" data-action="upload-derivatif">${ri('upload-cloud-2-line')}<span>Unggah Derivatif</span></button></div>` +
           `<div class="notice"><strong>Catatan</strong>Unggahan Admin langsung berstatus Disetujui. Pengajuan Operator dan Umum berstatus Diajukan sampai diputuskan.</div>`
         );
       }
-      if (role === 'umum') {
+      if (base === 'superadmin') {
+        return (
+          `<div class="toolbar"><button class="btn btn-primary" data-action="upload-derivatif">${ri('upload-cloud-2-line')}<span>Unggah Derivatif</span></button></div>` +
+          `<div class="notice"><strong>Catatan</strong>Superadmin dapat mengunggah dan menyetujui pengajuan layer derivatif multiguna.</div>`
+        );
+      }
+      if (base === 'umum') {
         return (
           `<div class="toolbar"><button class="btn btn-primary" data-action="upload-derivatif">${ri('upload-cloud-2-line')}<span>Unggah Derivatif</span></button></div>` +
           `<div class="notice"><strong>Catatan</strong>Pengajuan Umum berstatus Diajukan sampai disetujui atau ditolak oleh Admin atau Superadmin. Anda hanya melihat pengajuan Anda sendiri.</div>`
         );
       }
-      if (role === 'operator') {
+      if (base === 'operator') {
         return (
           `<div class="toolbar"><a class="btn btn-primary" href="${LEGACY}06-derivative-kawasan.html">${ri('upload-cloud-2-line')}<span>Unggah Derivatif Kawasan</span></a>` +
           `<a class="btn btn-primary" href="${BIDANG_WORKFLOW_URL}">${ri('upload-cloud-2-line')}<span>Unggah Derivatif Bidang</span></a>` +
@@ -1368,7 +1395,8 @@ const IgtApp = (() => {
         );
       }
       return (
-        `<div class="notice"><strong>Catatan</strong>Superadmin tidak mengunggah derivatif. Gunakan panel ini untuk menyetujui atau menolak pengajuan.</div>`
+        `<div class="toolbar"><button class="btn btn-primary" data-action="upload-derivatif">${ri('upload-cloud-2-line')}<span>Unggah Derivatif</span></button></div>` +
+        `<div class="notice"><strong>Catatan</strong>Pengajuan layer derivatif multiguna.</div>`
       );
     }
     return (
@@ -1403,6 +1431,25 @@ const IgtApp = (() => {
   function upload(role) {
     const noUploadMenu = isV2Role(role);
     const base = baseRoleOf(role);
+
+    // Matriks Hak Akses: Modul F (Akses Halaman Manajemen Data): SA: ☑, AD: ☑, OP: ☑, UM: ☐
+    if (base === 'umum') {
+      const view = $('#view');
+      if (view) {
+        view.innerHTML = `
+          <div class="card" style="padding:32px 24px;text-align:center;background:#ffffff;border-radius:14px;border:1.5px solid #fed7aa;box-shadow:0 8px 24px rgba(15,41,77,0.06);max-width:540px;margin:24px auto">
+            <div style="font-size:42px;margin-bottom:12px">🔒</div>
+            <h2 style="font-size:18px;font-weight:800;color:#9a3412;margin:0 0 8px 0">Akses Dibatasi: Manajemen Data</h2>
+            <p style="color:#64748b;font-size:12.5px;line-height:1.6;margin:0 0 20px 0">
+              Berdasarkan <strong>Matriks Hak Akses Role QGIS</strong>, Halaman Manajemen Data hanya dapat diakses oleh peran internal ATR/BPN (<strong>Superadmin</strong>, <strong>Admin Satker</strong>, dan <strong>Operator Satker</strong>). Pengguna Umum dapat mengunggah pengajuan layer derivatif langsung melalui menu <em>Unggah Data</em>.
+            </p>
+            <a class="btn btn-primary" href="../beranda/index.html" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;font-weight:700">← Kembali ke Dashboard</a>
+          </div>
+        `;
+      }
+      return;
+    }
+
     const categories = managementCategories(role);
     const allRecords = IgtData.loadRecords();
     const records = (base === 'superadmin')
@@ -1601,17 +1648,17 @@ const IgtApp = (() => {
         setText('tab-heading', 'Manajemen ' + label);
         setText('tab-description', v2DescFor(tab));
         $('#upload-panel').innerHTML = isMain
-          ? (base === 'superadmin'
-            ? `<div class="notice"><strong>Catatan</strong>Superadmin berfokus pada pemeriksaan topologi dan persetujuan integrasi IGT Utama. Unggah data dilakukan oleh Satker/Operator terkait.</div>`
-            : `<div class="toolbar"><button class="btn btn-primary" data-open-upload-modal="pertanahan">${ri('upload-cloud-2-line')}<span>Unggah Data Pertanahan</span></button><button class="btn btn-primary" data-open-upload-modal="tata-ruang">${ri('upload-cloud-2-line')}<span>Unggah Data Tata Ruang</span></button></div>`)
+          ? (base === 'operator'
+            ? `<div class="toolbar"><button class="btn btn-primary" data-open-upload-modal="pertanahan">${ri('upload-cloud-2-line')}<span>Unggah Data Pertanahan</span></button><button class="btn btn-primary" data-open-upload-modal="tata-ruang">${ri('upload-cloud-2-line')}<span>Unggah Data Tata Ruang</span></button></div>`
+            : `<div class="notice"><strong>Catatan</strong>${base === 'superadmin' ? 'Superadmin' : 'Admin'} berfokus pada pemeriksaan topologi dan persetujuan integrasi IGT Utama. Unggah data IGT Utama dilakukan oleh Operator Satker terkait.</div>`)
           : uploadPanel(role, tab);
       } else {
         setText('tab-heading', isMain ? 'IGT Utama' : CATEGORIES[tab].label);
         setText('tab-description', isMain ? 'Kelola pengajuan IGT Pertanahan dan IGT Tata Ruang dari satu halaman.' : UPLOAD_TEXT[tab]);
         $('#upload-panel').innerHTML = isMain
-          ? (role === 'superadmin'
-            ? `<div class="notice"><strong>Catatan</strong>Superadmin hanya memeriksa topologi dan menyetujui integrasi IGT Utama. Unggah data IGT Utama dilakukan oleh role yang berwenang.</div>`
-            : `<div class="toolbar"><button class="btn btn-primary" data-open-upload-modal="pertanahan">${ri('upload-cloud-2-line')}<span>Unggah Data Pertanahan</span></button><button class="btn btn-primary" data-open-upload-modal="tata-ruang">${ri('upload-cloud-2-line')}<span>Unggah Data Tata Ruang</span></button></div>`)
+          ? (base === 'operator'
+            ? `<div class="toolbar"><button class="btn btn-primary" data-open-upload-modal="pertanahan">${ri('upload-cloud-2-line')}<span>Unggah Data Pertanahan</span></button><button class="btn btn-primary" data-open-upload-modal="tata-ruang">${ri('upload-cloud-2-line')}<span>Unggah Data Tata Ruang</span></button></div>`
+            : `<div class="notice"><strong>Catatan</strong>${base === 'superadmin' ? 'Superadmin' : 'Admin'} berfokus pada pemeriksaan topologi dan persetujuan integrasi IGT Utama. Unggah data IGT Utama dilakukan oleh Operator Satker terkait.</div>`)
           : uploadPanel(role, tab);
       }
       const own = records.filter((r) => isMain ? (r.category === 'pertanahan' || r.category === 'tata-ruang') : r.category === tab);
@@ -1812,8 +1859,8 @@ const IgtApp = (() => {
 
       if (target.dataset && target.dataset.openUploadModal) {
         const category = target.dataset.openUploadModal;
-        if (role === 'superadmin' && (category === 'pertanahan' || category === 'tata-ruang')) {
-          alert('Superadmin tidak memiliki akses untuk mengunggah IGT Utama.');
+        if (base !== 'operator' && (category === 'pertanahan' || category === 'tata-ruang')) {
+          alert('Khusus Operator Satker. Superadmin, Admin, dan Umum tidak berwenang mengunggah IGT Utama.');
           return;
         }
         const modal = $('#igt-upload-modal');
@@ -1831,15 +1878,15 @@ const IgtApp = (() => {
         return;
       }
       if (action === 'upload') {
-        if (role === 'superadmin') {
-          alert('Superadmin tidak memiliki akses untuk mengunggah IGT Utama.');
+        if (base !== 'operator' && (tab === 'igt-utama' || tab === 'pertanahan' || tab === 'tata-ruang')) {
+          alert('Khusus Operator Satker. Superadmin, Admin, dan Umum tidak berwenang mengunggah IGT Utama.');
           return;
         }
         alert('Simulasi: pilih berkas data untuk diunggah (' + (tab === 'igt-utama' ? ($('#igt-upload-modal-title').textContent || 'IGT Utama') : CATEGORIES[tab].label) + ').');
       }
       else if (action === 'validate') {
-        if (role === 'superadmin') {
-          alert('Superadmin tidak memiliki akses untuk mengunggah IGT Utama.');
+        if (base !== 'operator' && (tab === 'igt-utama' || tab === 'pertanahan' || tab === 'tata-ruang')) {
+          alert('Khusus Operator Satker. Superadmin, Admin, dan Umum tidak berwenang mengunggah IGT Utama.');
           return;
         }
         alert('Parameter valid. Proses ini masih berupa prototipe UI.');

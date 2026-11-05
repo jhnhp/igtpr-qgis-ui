@@ -828,6 +828,27 @@ const DerivatifBidang = (() => {
   // -------------------------------------------------------------------------
   function init(role) {
     state.role = role || 'operator';
+    const base = (typeof IgtData !== 'undefined' && IgtData.ROLES && IgtData.ROLES[state.role] && IgtData.ROLES[state.role].baseRole) || state.role;
+    const roleCfg = (typeof IgtData !== 'undefined' && IgtData.ROLES) ? IgtData.ROLES[state.role] : null;
+
+    // Matriks Hak Akses: Modul H (Alur Derivatif Bidang) khusus Superadmin, Admin, dan Operator. Umum tidak diizinkan.
+    if (base === 'umum' || (roleCfg && roleCfg.derivatifWorkflow === false)) {
+      const view = document.getElementById('view');
+      if (view) {
+        view.innerHTML = `
+          <div class="card" style="padding:32px 24px;text-align:center;background:#ffffff;border-radius:14px;border:1.5px solid #fed7aa;box-shadow:0 8px 24px rgba(15,41,77,0.06);max-width:540px;margin:24px auto">
+            <div style="font-size:42px;margin-bottom:12px">🔒</div>
+            <h2 style="font-size:18px;font-weight:800;color:#9a3412;margin:0 0 8px 0">Akses Ditolak: Alur Derivatif Bidang</h2>
+            <p style="color:#64748b;font-size:12.5px;line-height:1.6;margin:0 0 20px 0">
+              Berdasarkan <strong>Matriks Hak Akses Role QGIS</strong>, modul <em>Alur 6-Langkah Derivatif Bidang</em> hanya dapat diakses oleh peran internal ATR/BPN (<strong>Superadmin</strong>, <strong>Admin Satker</strong>, dan <strong>Operator Satker</strong>). Pengguna Umum tidak memiliki izin mengakses modul ini.
+            </p>
+            <a class="btn btn-primary" href="../beranda/index.html" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;font-weight:700">← Kembali ke Dashboard</a>
+          </div>
+        `;
+      }
+      return;
+    }
+
     const params = new URLSearchParams(window.location.search);
     const requestedMode = params.get('mode');
     const legacyStep = params.get('step');

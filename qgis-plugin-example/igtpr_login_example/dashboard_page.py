@@ -57,6 +57,8 @@ class HubCard(QFrame):
     def __init__(self, kind, head_kind, icon_key, icon_color, icon_bg, title, desc, items,
                  item_kind='hub', breakpoints=((0, 1),), stacked_head=False, parent=None):
         super().__init__(parent)
+        self.title = title
+        self.items = items
         self.setProperty('card', kind)
         lay = QVBoxLayout(self)
         lay.setContentsMargins(0, 0, 0, 12)
@@ -216,29 +218,36 @@ class DashboardPage(ResponsivePage):
         if is_operator:
             upload_items.append(('upload:pertanahan', 'database', 'Unggah IGT Utama', '#1f6fd6'))
         upload_items.append(('upload:derivatif', 'layers', 'Unggah IGT Derivatif Multiguna', '#1f6fd6'))
-        upload_items.append(('kustom-derivatif', 'gear', 'Kustom Tematik Derivatif', '#1f6fd6'))
-        upload_items.append(('load-derivatif', 'cloud-upload', 'Muat Kustom Tematik Derivatif', '#1f6fd6'))
-
-        manage_items = []
         if not is_umum:
-            manage_items.append(('manage:igt-utama', 'database', 'IGT Utama', '#047857'))
-        manage_items.append(('manage:derivatif', 'layers', 'IGT Derivatif Multiguna', '#047857'))
+            upload_items.append(('kustom-derivatif', 'gear', 'Kustom Tematik Derivatif', '#1f6fd6'))
+            upload_items.append(('load-derivatif', 'cloud-upload', 'Muat Kustom Tematik Derivatif', '#1f6fd6'))
 
         self.workflow.clear()
         upload = HubCard('plain', 'headBlue', 'cloud-upload', '#1f6fd6', '#dceafe', 'Unggah Data',
                          'Kelola dan unggah data geospasial ke dalam sistem.', upload_items,
                          'hub', [(0, 1)], False)
-        manage = HubCard('green', 'headGreen', 'database', '#047857', '#cdf3dd', 'Manajemen Data',
-                         'Kelola proses, revisi, dan status data geospasial per kategori IGT.', manage_items,
-                         'hubGreen', [(0, 1)], False)
         upload.itemClicked.connect(self._on_workflow_item)
         upload.headClicked.connect(lambda: self._on_workflow_item('upload:pertanahan' if is_operator else 'upload:derivatif'))
-        manage.itemClicked.connect(self._on_workflow_item)
         self.workflow.add(upload)
-        self.workflow.add(manage)
+
+        # Matriks Hak Akses: Pintasan Hub Manajemen Data: SA: ☑, AD: ☑, OP: ☑, UM: ☐
+        if not is_umum:
+            manage_items = [
+                ('manage:igt-utama', 'database', 'IGT Utama', '#047857'),
+                ('manage:derivatif', 'layers', 'IGT Derivatif Multiguna', '#047857')
+            ]
+            manage = HubCard('green', 'headGreen', 'database', '#047857', '#cdf3dd', 'Manajemen Data',
+                             'Kelola proses, revisi, dan status data geospasial per kategori IGT.', manage_items,
+                             'hubGreen', [(0, 1)], False)
+            manage.itemClicked.connect(self._on_workflow_item)
+            self.workflow.add(manage)
+
         self.mb_card.setVisible(True)
 
     def _on_workflow_item(self, key):
+        base_role = str(self.current_role).replace('2', '').lower()
+        if base_role == 'umum' and (key in ('kustom-derivatif', 'load-derivatif') or key.startswith('manage:')):
+            return
         if key == 'kustom-derivatif':
             self.openKustomDerivatifRequested.emit()
         elif key == 'load-derivatif':
