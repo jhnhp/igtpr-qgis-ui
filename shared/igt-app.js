@@ -335,7 +335,7 @@ const IgtApp = (() => {
               <div class="wfs-grid-2x2">
                 <div class="wfs-field">
                   <label for="wfs-sel-prov">Provinsi (Ketik / Pilih)</label>
-                  <input list="wfs-prov-datalist" id="wfs-sel-prov" value="D.I. Yogyakarta" placeholder="Pilih atau ketik provinsi..." autocomplete="off">
+                  <input list="wfs-prov-datalist" id="wfs-sel-prov" value="" placeholder="Pilih atau ketik provinsi..." autocomplete="off">
                   <datalist id="wfs-prov-datalist"></datalist>
                 </div>
                 <div class="wfs-field">
@@ -466,18 +466,28 @@ const IgtApp = (() => {
 
     function resolveProv(raw) {
       const q = (raw || '').trim().toLowerCase();
-      if (!q) return provList[0] || 'D.I. Yogyakarta';
+      if (!q) return null;
       for (const p of provList) {
         if (p.toLowerCase() === q) return p;
       }
       for (const p of provList) {
-        if (p.toLowerCase().includes(q) || q.includes(p.toLowerCase())) return p;
+        if (p.toLowerCase().includes(q)) return p;
       }
-      return provList[0] || 'D.I. Yogyakarta';
+      return null;
     }
 
     function syncKab() {
       const p = resolveProv(selProv.value);
+      if (!p) {
+        selKab.innerHTML = '<option value="">-- Pilih Provinsi Terlebih Dahulu --</option>';
+        selKab.disabled = true;
+        selKec.innerHTML = '<option value="">-- Pilih Provinsi Terlebih Dahulu --</option>';
+        selKec.disabled = true;
+        selDesa.innerHTML = '<option value="">-- Pilih Provinsi Terlebih Dahulu --</option>';
+        selDesa.disabled = true;
+        return;
+      }
+      selKab.disabled = false;
       const rawKabs = (WFS_ADMIN_DATA[p] && Object.keys(WFS_ADMIN_DATA[p])) || ['Kab. Sleman', 'Kota Yogyakarta'];
       const kabs = ['Semua Kabupaten / Kota', ...rawKabs.filter((x) => x !== 'Semua Kabupaten / Kota')];
       selKab.innerHTML = kabs.map((k) => `<option value="${k}">${k}</option>`).join('');
@@ -487,8 +497,14 @@ const IgtApp = (() => {
 
     function syncKec() {
       const p = resolveProv(selProv.value);
+      if (!p) {
+        selKec.innerHTML = '<option value="">-- Pilih Provinsi Terlebih Dahulu --</option>';
+        selKec.disabled = true;
+        syncDesa();
+        return;
+      }
       const k = selKab.value;
-      const isAllKab = k === 'Semua Kabupaten / Kota' || k === 'Semua Kabupaten';
+      const isAllKab = k === 'Semua Kabupaten / Kota' || k === 'Semua Kabupaten' || !k;
       if (isAllKab) {
         selKec.innerHTML = '<option value="Semua Kecamatan">Semua Kecamatan</option>';
         selKec.value = 'Semua Kecamatan';
@@ -504,9 +520,14 @@ const IgtApp = (() => {
 
     function syncDesa() {
       const p = resolveProv(selProv.value);
+      if (!p) {
+        selDesa.innerHTML = '<option value="">-- Pilih Provinsi Terlebih Dahulu --</option>';
+        selDesa.disabled = true;
+        return;
+      }
       const k = selKab.value;
       const kc = selKec.value;
-      const isAllKab = k === 'Semua Kabupaten / Kota' || k === 'Semua Kabupaten';
+      const isAllKab = k === 'Semua Kabupaten / Kota' || k === 'Semua Kabupaten' || !k;
       const isAllKec = kc === 'Semua Kecamatan' || !kc;
       if (isAllKab || isAllKec) {
         selDesa.innerHTML = '<option value="Semua Desa / Kelurahan">Semua Desa / Kelurahan</option>';
@@ -536,10 +557,19 @@ const IgtApp = (() => {
     // Submit handler
     const btnSubmit = modal.querySelector('#wfs-btn-submit');
     btnSubmit.addEventListener('click', () => {
+      const mode = modal.querySelector('input[name="wfs-mode-radio"]:checked').value;
+      if (mode === 'admin') {
+        const p = resolveProv(selProv.value);
+        if (!p) {
+          alert('Silakan pilih atau ketik nama provinsi terlebih dahulu.');
+          selProv.focus();
+          return;
+        }
+      }
+
       modal.style.display = 'none';
       modal.hidden = true;
 
-      const mode = modal.querySelector('input[name="wfs-mode-radio"]:checked').value;
       if (mode === 'all') {
         const msg = `Simulasi QGIS: Memuat seluruh data fitur WFS '${dsName}' (cakupan Nasional / Seluruh Indonesia).`;
         if (typeof toast === 'function') toast(msg); else alert(msg);

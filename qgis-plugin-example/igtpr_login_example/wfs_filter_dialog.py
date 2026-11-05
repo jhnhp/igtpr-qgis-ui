@@ -508,14 +508,10 @@ class WfsFilterDialog(QDialog):
                 completer.popup().setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
                 completer.popup().setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
-        # Set default ke D.I. Yogyakarta jika ada
-        default_idx = self.cb_prov.findText('D.I. Yogyakarta')
-        if default_idx >= 0:
-            self.cb_prov.setCurrentIndex(default_idx)
-        else:
-            default_diy = [i for i, p in enumerate(self.all_provs) if 'yogyakarta' in p.lower()]
-            if default_diy:
-                self.cb_prov.setCurrentIndex(default_diy[0])
+        # Kondisi awal: Provinsi belum dipilih (dropdown turunan terkunci)
+        self.cb_prov.setCurrentIndex(-1)
+        if self.cb_prov.lineEdit():
+            self.cb_prov.lineEdit().clear()
 
         self.cb_prov.blockSignals(False)
 
@@ -523,7 +519,7 @@ class WfsFilterDialog(QDialog):
         if completer:
             completer.activated.connect(lambda txt: self._sync_kabupaten())
         if self.cb_prov.lineEdit():
-            self.cb_prov.lineEdit().editingFinished.connect(self._sync_kabupaten)
+            self.cb_prov.lineEdit().textChanged.connect(self._sync_kabupaten)
 
         self.cb_kab.currentIndexChanged.connect(self._sync_kecamatan)
         self.cb_kec.currentIndexChanged.connect(self._sync_desa)
@@ -532,7 +528,7 @@ class WfsFilterDialog(QDialog):
 
     def _sync_kabupaten(self):
         raw_prov = self.cb_prov.currentText().strip()
-        prov = raw_prov
+        prov = None
         # Cocokkan nama provinsi secara cerdas jika diketik sebagian oleh pengguna
         if hasattr(self, 'all_provs') and raw_prov:
             for p in self.all_provs:
@@ -545,6 +541,32 @@ class WfsFilterDialog(QDialog):
                         prov = p
                         break
 
+        # Jika provinsi belum dipilih / kosong, kunci semua dropdown turunan
+        if not prov:
+            self.cb_kab.blockSignals(True)
+            self.cb_kab.clear()
+            self.cb_kab.addItem('-- Pilih Provinsi Terlebih Dahulu --')
+            self.cb_kab.setCurrentIndex(0)
+            self.cb_kab.setEnabled(False)
+            self.cb_kab.blockSignals(False)
+
+            self.cb_kec.blockSignals(True)
+            self.cb_kec.clear()
+            self.cb_kec.addItem('-- Pilih Provinsi Terlebih Dahulu --')
+            self.cb_kec.setCurrentIndex(0)
+            self.cb_kec.setEnabled(False)
+            self.cb_kec.blockSignals(False)
+
+            self.cb_desa.blockSignals(True)
+            self.cb_desa.clear()
+            self.cb_desa.addItem('-- Pilih Provinsi Terlebih Dahulu --')
+            self.cb_desa.setCurrentIndex(0)
+            self.cb_desa.setEnabled(False)
+            self.cb_desa.blockSignals(False)
+            return
+
+        # Provinsi valid telah dipilih -> Buka kunci Kabupaten
+        self.cb_kab.setEnabled(True)
         kabs = []
         if prov in ADMIN_HIERARCHY:
             kabs = list(ADMIN_HIERARCHY[prov].keys())
@@ -567,9 +589,21 @@ class WfsFilterDialog(QDialog):
         self._sync_kecamatan()
 
     def _sync_kecamatan(self):
-        prov = self.cb_prov.currentText()
+        raw_prov = self.cb_prov.currentText().strip()
+        prov = None
+        if hasattr(self, 'all_provs') and raw_prov:
+            for p in self.all_provs:
+                if p.lower() == raw_prov.lower() or raw_prov.lower() in p.lower():
+                    prov = p
+                    break
+
+        if not prov:
+            self.cb_kec.setEnabled(False)
+            self.cb_desa.setEnabled(False)
+            return
+
         kab = self.cb_kab.currentText()
-        is_all_kab = kab in ('Semua Kabupaten / Kota', 'Semua Kabupaten', '')
+        is_all_kab = kab in ('Semua Kabupaten / Kota', 'Semua Kabupaten', '', '-- Pilih Provinsi Terlebih Dahulu --')
 
         kecs = ['Semua Kecamatan']
         if not is_all_kab:
@@ -588,11 +622,22 @@ class WfsFilterDialog(QDialog):
         self._sync_desa()
 
     def _sync_desa(self):
-        prov = self.cb_prov.currentText()
+        raw_prov = self.cb_prov.currentText().strip()
+        prov = None
+        if hasattr(self, 'all_provs') and raw_prov:
+            for p in self.all_provs:
+                if p.lower() == raw_prov.lower() or raw_prov.lower() in p.lower():
+                    prov = p
+                    break
+
+        if not prov:
+            self.cb_desa.setEnabled(False)
+            return
+
         kab = self.cb_kab.currentText()
         kec = self.cb_kec.currentText()
-        is_all_kab = kab in ('Semua Kabupaten / Kota', 'Semua Kabupaten', '')
-        is_all_kec = kec in ('Semua Kecamatan', '')
+        is_all_kab = kab in ('Semua Kabupaten / Kota', 'Semua Kabupaten', '', '-- Pilih Provinsi Terlebih Dahulu --')
+        is_all_kec = kec in ('Semua Kecamatan', '', '-- Pilih Provinsi Terlebih Dahulu --')
 
         desas = ['Semua Desa / Kelurahan']
         if not is_all_kab and not is_all_kec:
@@ -642,31 +687,41 @@ class WfsFilterDialog(QDialog):
         if self.rb_all.isChecked():
             mode = 'all'
             aoi_sub = None
+            prov = None
         elif self.rb_admin.isChecked():
             mode = 'admin'
             aoi_sub = None
+            raw_prov = self.cb_prov.currentText().strip()
+            prov = None
+            if hasattr(self, 'all_provs') and raw_prov:
+                for p in self.all_provs:
+                    if p.lower() == raw_prov.lower():
+                        prov = p
+                        break
+                else:
+                    for p in self.all_provs:
+                        if raw_prov.lower() in p.lower():
+                            prov = p
+                            break
+
+            if not prov:
+                if hasattr(self.iface, 'messageBar') and self.iface.messageBar():
+                    self.iface.messageBar().pushWarning("Pilih Wilayah", "Silakan pilih atau cari nama provinsi terlebih dahulu.")
+                else:
+                    from qgis.PyQt.QtWidgets import QMessageBox
+                    QMessageBox.warning(self, "Pilih Wilayah", "Silakan pilih atau cari nama provinsi terlebih dahulu.")
+                self.cb_prov.setFocus()
+                return
         else:
             mode = 'aoi'
             aoi_sub = 'draw' if self.rb_aoi_draw.isChecked() else 'layer'
-
-        raw_prov = self.cb_prov.currentText().strip()
-        prov = raw_prov
-        if hasattr(self, 'all_provs') and raw_prov:
-            for p in self.all_provs:
-                if p.lower() == raw_prov.lower():
-                    prov = p
-                    break
-            else:
-                for p in self.all_provs:
-                    if raw_prov.lower() in p.lower():
-                        prov = p
-                        break
+            prov = None
 
         result = {
             'mode': mode,
             'dataset': self.dataset,
             'sublayer': self.sublayer,
-            'provinsi': prov,
+            'provinsi': prov or '',
             'kabupaten': self.cb_kab.currentText(),
             'kecamatan': self.cb_kec.currentText(),
             'desa': self.cb_desa.currentText(),
