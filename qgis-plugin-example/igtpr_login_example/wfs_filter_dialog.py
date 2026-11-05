@@ -10,7 +10,7 @@ Mencegah beban unduhan data WFS nasional yang terlalu besar dengan memberikan op
 from qgis.PyQt.QtCore import Qt, pyqtSignal
 from qgis.PyQt.QtWidgets import (
     QButtonGroup, QComboBox, QDialog, QFrame, QGridLayout, QHBoxLayout,
-    QLabel, QPushButton, QRadioButton, QVBoxLayout, QWidget,
+    QLabel, QListView, QPushButton, QRadioButton, QVBoxLayout, QWidget,
 )
 
 from qgis.core import QgsProject, QgsWkbTypes
@@ -128,7 +128,7 @@ class WfsFilterDialog(QDialog):
                 background: #ffffff;
                 border: 1.5px solid #cbd5e1;
                 border-radius: 7px;
-                padding: 6px 10px;
+                padding: 6px 28px 6px 10px;
                 font-size: 11.5px;
                 color: #0f294d;
                 font-weight: 600;
@@ -140,6 +140,29 @@ class WfsFilterDialog(QDialog):
                 background: #f1f5f9;
                 color: #94a3b8;
                 border: 1.5px solid #e2e8f0;
+            }
+            QComboBox::drop-down {
+                subcontrol-origin: padding;
+                subcontrol-position: center right;
+                width: 24px;
+                border: none;
+            }
+            QComboBox QAbstractItemView {
+                background-color: #ffffff;
+                color: #0f294d;
+                border: 1.5px solid #cbd5e1;
+                border-radius: 6px;
+                padding: 4px;
+                selection-background-color: #eff6ff;
+                selection-color: #2563eb;
+                outline: none;
+            }
+            QComboBox QAbstractItemView::item {
+                min-height: 28px;
+                padding: 4px 8px;
+            }
+            QComboBox QAbstractItemView::item:hover {
+                background-color: #f1f5f9;
             }
             QRadioButton {
                 font-weight: 700;
@@ -391,6 +414,11 @@ class WfsFilterDialog(QDialog):
         self.rb_all.toggled.connect(self._update_cards_ui)
         self.rb_admin.toggled.connect(self._update_cards_ui)
         self.rb_aoi.toggled.connect(self._update_cards_ui)
+
+        # Inisialisasi QListView view agar dropdown popup tampil stabil dan nyaman diklik
+        for cb in (self.cb_prov, self.cb_kab, self.cb_kec, self.cb_desa, self.cb_aoi_layer):
+            cb.setView(QListView())
+            cb.setMaxVisibleItems(15)
 
         # Populate Administrative Dropdowns
         self._populate_admin_hierarchy()

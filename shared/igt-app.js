@@ -312,24 +312,24 @@ const IgtApp = (() => {
           </div>
 
           <!-- Opsi 1: Load Semua -->
-          <label class="wfs-opt-card" id="wfs-card-all">
+          <div class="wfs-opt-card" id="wfs-card-all">
             <div class="wfs-opt-header">
               <input type="radio" name="wfs-mode-radio" value="all" id="wfs-radio-all">
-              <div style="flex:1;">
+              <label for="wfs-radio-all" style="flex:1;cursor:pointer;">
                 <div class="wfs-opt-title">1. Load Semua (Seluruh Indonesia)</div>
                 <p class="wfs-opt-desc">Memuat seluruh data fitur spasial cakupan nasional tanpa batasan wilayah.</p>
-              </div>
+              </label>
             </div>
-          </label>
+          </div>
 
           <!-- Opsi 2: Batas Admin (Default) -->
-          <label class="wfs-opt-card active" id="wfs-card-admin">
+          <div class="wfs-opt-card active" id="wfs-card-admin">
             <div class="wfs-opt-header">
               <input type="radio" name="wfs-mode-radio" value="admin" id="wfs-radio-admin" checked>
-              <div style="flex:1;">
+              <label for="wfs-radio-admin" style="flex:1;cursor:pointer;">
                 <div class="wfs-opt-title">2. Load Berdasarkan Batas Admin</div>
                 <p class="wfs-opt-desc">Filter fitur WFS berdasarkan hirarki wilayah administratif pemerintahan.</p>
-              </div>
+              </label>
             </div>
             <div class="wfs-opt-subpanel" id="wfs-admin-panel">
               <div class="wfs-grid-2x2">
@@ -351,16 +351,16 @@ const IgtApp = (() => {
                 </div>
               </div>
             </div>
-          </label>
+          </div>
 
           <!-- Opsi 3: AOI -->
-          <label class="wfs-opt-card" id="wfs-card-aoi">
+          <div class="wfs-opt-card" id="wfs-card-aoi">
             <div class="wfs-opt-header">
               <input type="radio" name="wfs-mode-radio" value="aoi" id="wfs-radio-aoi">
-              <div style="flex:1;">
+              <label for="wfs-radio-aoi" style="flex:1;cursor:pointer;">
                 <div class="wfs-opt-title">3. Load Berdasarkan AOI (Area of Interest)</div>
                 <p class="wfs-opt-desc">Batasi fitur spasial dengan poligon delineasi atau penggambaran area di kanvas.</p>
-              </div>
+              </label>
             </div>
             <div class="wfs-opt-subpanel" id="wfs-aoi-panel" style="display:none;">
               <div class="wfs-aoi-choice">
@@ -389,7 +389,7 @@ const IgtApp = (() => {
                 </div>
               </div>
             </div>
-          </label>
+          </div>
 
           <!-- Action buttons -->
           <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:8px;padding-top:12px;border-top:1px solid #e2e8f0;">
@@ -429,14 +429,27 @@ const IgtApp = (() => {
     radioAoi.addEventListener('change', () => updateActiveMode('aoi'));
 
     cardAll.addEventListener('click', (e) => {
-      if (e.target !== radioAll) { radioAll.checked = true; updateActiveMode('all'); }
+      radioAll.checked = true;
+      updateActiveMode('all');
     });
     cardAdmin.addEventListener('click', (e) => {
-      if (!e.target.closest('#wfs-admin-panel')) { radioAdmin.checked = true; updateActiveMode('admin'); }
+      if (!e.target.closest('#wfs-admin-panel')) {
+        radioAdmin.checked = true;
+        updateActiveMode('admin');
+      }
     });
     cardAoi.addEventListener('click', (e) => {
-      if (!e.target.closest('#wfs-aoi-panel')) { radioAoi.checked = true; updateActiveMode('aoi'); }
+      if (!e.target.closest('#wfs-aoi-panel')) {
+        radioAoi.checked = true;
+        updateActiveMode('aoi');
+      }
     });
+
+    // Mencegah klik di dalam panel filter administratif dan AOI memicu event kartu
+    adminPanel.addEventListener('click', (e) => e.stopPropagation());
+    adminPanel.addEventListener('mousedown', (e) => e.stopPropagation());
+    aoiPanel.addEventListener('click', (e) => e.stopPropagation());
+    aoiPanel.addEventListener('mousedown', (e) => e.stopPropagation());
 
     // Populate Cascading Dropdowns
     const selProv = modal.querySelector('#wfs-sel-prov');
