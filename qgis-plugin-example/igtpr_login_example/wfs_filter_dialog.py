@@ -9,7 +9,7 @@ Mencegah beban unduhan data WFS nasional yang terlalu besar dengan memberikan op
 
 from qgis.PyQt.QtCore import Qt, pyqtSignal
 from qgis.PyQt.QtWidgets import (
-    QButtonGroup, QComboBox, QDialog, QFrame, QGridLayout, QHBoxLayout,
+    QButtonGroup, QComboBox, QCompleter, QDialog, QFrame, QGridLayout, QHBoxLayout,
     QLabel, QListView, QPushButton, QRadioButton, QVBoxLayout, QWidget,
 )
 
@@ -140,6 +140,14 @@ class WfsFilterDialog(QDialog):
                 background: #f1f5f9;
                 color: #94a3b8;
                 border: 1.5px solid #e2e8f0;
+            }
+            QComboBox QLineEdit {
+                border: none;
+                background: transparent;
+                color: #0f294d;
+                font-weight: 600;
+                font-size: 11.5px;
+                padding: 0;
             }
             QComboBox::drop-down {
                 subcontrol-origin: padding;
@@ -478,30 +486,65 @@ class WfsFilterDialog(QDialog):
     # -------------------------------------------------------------------------
     def _populate_admin_hierarchy(self):
         # Gabungkan daftar provinsi
-        all_provs = sorted(list(set(list(ADMIN_HIERARCHY.keys()) + list(INDONESIA_REGIONS.keys()))))
+        self.all_provs = sorted(list(set(list(ADMIN_HIERARCHY.keys()) + list(INDONESIA_REGIONS.keys()))))
         self.cb_prov.blockSignals(True)
         self.cb_prov.clear()
-        self.cb_prov.addItems(all_provs)
+        self.cb_prov.addItems(self.all_provs)
+
+        # Aktifkan pencarian dan pengetikan langsung untuk memudahkan pencarian nama provinsi
+        self.cb_prov.setEditable(True)
+        self.cb_prov.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
+        if self.cb_prov.lineEdit():
+            self.cb_prov.lineEdit().setPlaceholderText("Pilih atau ketik nama provinsi...")
+
+        # Konfigurasi auto-completer agar mencocokkan teks di mana saja (contains substring match)
+        completer = self.cb_prov.completer()
+        if completer:
+            completer.setFilterMode(Qt.MatchFlag.MatchContains)
+            completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+            completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
+            if completer.popup():
+                completer.popup().setMaximumHeight(200)
+                completer.popup().setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+                completer.popup().setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         # Set default ke D.I. Yogyakarta jika ada
         default_idx = self.cb_prov.findText('D.I. Yogyakarta')
         if default_idx >= 0:
             self.cb_prov.setCurrentIndex(default_idx)
         else:
-            default_diy = [i for i, p in enumerate(all_provs) if 'yogyakarta' in p.lower()]
+            default_diy = [i for i, p in enumerate(self.all_provs) if 'yogyakarta' in p.lower()]
             if default_diy:
                 self.cb_prov.setCurrentIndex(default_diy[0])
 
         self.cb_prov.blockSignals(False)
 
         self.cb_prov.currentIndexChanged.connect(self._sync_kabupaten)
+        if completer:
+            completer.activated.connect(lambda txt: self._sync_kabupaten())
+        if self.cb_prov.lineEdit():
+            self.cb_prov.lineEdit().editingFinished.connect(self._sync_kabupaten)
+
         self.cb_kab.currentIndexChanged.connect(self._sync_kecamatan)
         self.cb_kec.currentIndexChanged.connect(self._sync_desa)
 
         self._sync_kabupaten()
 
     def _sync_kabupaten(self):
-        prov = self.cb_prov.currentText()
+        raw_prov = self.cb_prov.currentText().strip()
+        prov = raw_prov
+        # Cocokkan nama provinsi secara cerdas jika diketik sebagian oleh pengguna
+        if hasattr(self, 'all_provs') and raw_prov:
+            for p in self.all_provs:
+                if p.lower() == raw_prov.lower():
+                    prov = p
+                    break
+            else:
+                for p in self.all_provs:
+                    if raw_prov.lower() in p.lower():
+                        prov = p
+                        break
+
         kabs = []
         if prov in ADMIN_HIERARCHY:
             kabs = list(ADMIN_HIERARCHY[prov].keys())
@@ -606,11 +649,24 @@ class WfsFilterDialog(QDialog):
             mode = 'aoi'
             aoi_sub = 'draw' if self.rb_aoi_draw.isChecked() else 'layer'
 
+        raw_prov = self.cb_prov.currentText().strip()
+        prov = raw_prov
+        if hasattr(self, 'all_provs') and raw_prov:
+            for p in self.all_provs:
+                if p.lower() == raw_prov.lower():
+                    prov = p
+                    break
+            else:
+                for p in self.all_provs:
+                    if raw_prov.lower() in p.lower():
+                        prov = p
+                        break
+
         result = {
             'mode': mode,
             'dataset': self.dataset,
             'sublayer': self.sublayer,
-            'provinsi': self.cb_prov.currentText(),
+            'provinsi': prov,
             'kabupaten': self.cb_kab.currentText(),
             'kecamatan': self.cb_kec.currentText(),
             'desa': self.cb_desa.currentText(),

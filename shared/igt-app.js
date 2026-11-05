@@ -334,8 +334,9 @@ const IgtApp = (() => {
             <div class="wfs-opt-subpanel" id="wfs-admin-panel">
               <div class="wfs-grid-2x2">
                 <div class="wfs-field">
-                  <label for="wfs-sel-prov">Provinsi</label>
-                  <select id="wfs-sel-prov"></select>
+                  <label for="wfs-sel-prov">Provinsi (Ketik / Pilih)</label>
+                  <input list="wfs-prov-datalist" id="wfs-sel-prov" value="D.I. Yogyakarta" placeholder="Pilih atau ketik provinsi..." autocomplete="off">
+                  <datalist id="wfs-prov-datalist"></datalist>
                 </div>
                 <div class="wfs-field">
                   <label for="wfs-sel-kab">Kabupaten / Kota</label>
@@ -458,10 +459,25 @@ const IgtApp = (() => {
     const selDesa = modal.querySelector('#wfs-sel-desa');
 
     const provList = Object.keys(WFS_ADMIN_DATA);
-    selProv.innerHTML = provList.map((p) => `<option value="${p}">${p}</option>`).join('');
+    const provDatalist = modal.querySelector('#wfs-prov-datalist');
+    if (provDatalist) {
+      provDatalist.innerHTML = provList.map((p) => `<option value="${p}">${p}</option>`).join('');
+    }
+
+    function resolveProv(raw) {
+      const q = (raw || '').trim().toLowerCase();
+      if (!q) return provList[0] || 'D.I. Yogyakarta';
+      for (const p of provList) {
+        if (p.toLowerCase() === q) return p;
+      }
+      for (const p of provList) {
+        if (p.toLowerCase().includes(q) || q.includes(p.toLowerCase())) return p;
+      }
+      return provList[0] || 'D.I. Yogyakarta';
+    }
 
     function syncKab() {
-      const p = selProv.value;
+      const p = resolveProv(selProv.value);
       const rawKabs = (WFS_ADMIN_DATA[p] && Object.keys(WFS_ADMIN_DATA[p])) || ['Kab. Sleman', 'Kota Yogyakarta'];
       const kabs = ['Semua Kabupaten / Kota', ...rawKabs.filter((x) => x !== 'Semua Kabupaten / Kota')];
       selKab.innerHTML = kabs.map((k) => `<option value="${k}">${k}</option>`).join('');
@@ -470,7 +486,7 @@ const IgtApp = (() => {
     }
 
     function syncKec() {
-      const p = selProv.value;
+      const p = resolveProv(selProv.value);
       const k = selKab.value;
       const isAllKab = k === 'Semua Kabupaten / Kota' || k === 'Semua Kabupaten';
       if (isAllKab) {
@@ -487,7 +503,7 @@ const IgtApp = (() => {
     }
 
     function syncDesa() {
-      const p = selProv.value;
+      const p = resolveProv(selProv.value);
       const k = selKab.value;
       const kc = selKec.value;
       const isAllKab = k === 'Semua Kabupaten / Kota' || k === 'Semua Kabupaten';
@@ -509,6 +525,7 @@ const IgtApp = (() => {
       }
     }
 
+    selProv.addEventListener('input', syncKab);
     selProv.addEventListener('change', syncKab);
     selKab.addEventListener('change', syncKec);
     selKec.addEventListener('change', syncDesa);
@@ -527,7 +544,7 @@ const IgtApp = (() => {
         const msg = `Simulasi QGIS: Memuat seluruh data fitur WFS '${dsName}' (cakupan Nasional / Seluruh Indonesia).`;
         if (typeof toast === 'function') toast(msg); else alert(msg);
       } else if (mode === 'admin') {
-        const p = selProv.value;
+        const p = resolveProv(selProv.value);
         const k = selKab.value;
         const kc = selKec.value;
         const d = selDesa.value;
