@@ -52,6 +52,7 @@ class HubCard(QFrame):
     """Kartu hub: kepala berwarna (ikon, judul, deskripsi) dan daftar tombol HubItem."""
 
     itemClicked = pyqtSignal(str)
+    headClicked = pyqtSignal()
 
     def __init__(self, kind, head_kind, icon_key, icon_color, icon_bg, title, desc, items,
                  item_kind='hub', breakpoints=((0, 1),), stacked_head=False, parent=None):
@@ -62,6 +63,8 @@ class HubCard(QFrame):
         lay.setSpacing(12)
 
         self.head = card(head_kind, self)
+        self.head.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.head.mousePressEvent = lambda _e: self.headClicked.emit()
         h_lay = QVBoxLayout(self.head) if stacked_head else QHBoxLayout(self.head)
         h_lay.setContentsMargins(16, 14, 16, 14)
         h_lay.setSpacing(8 if stacked_head else 14)
@@ -227,6 +230,7 @@ class DashboardPage(ResponsivePage):
                          'Kelola proses, revisi, dan status data geospasial per kategori IGT.', manage_items,
                          'hubGreen', [(0, 1)], False)
         upload.itemClicked.connect(self._on_workflow_item)
+        upload.headClicked.connect(lambda: self._on_workflow_item('upload:pertanahan' if role == 'operator' else 'upload:derivatif'))
         manage.itemClicked.connect(self._on_workflow_item)
         self.workflow.add(upload)
         self.workflow.add(manage)

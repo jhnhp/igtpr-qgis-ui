@@ -471,6 +471,9 @@ body {
   justify-content: center;
   padding: 18px;
 }
+.v2-modal-backdrop[hidden] {
+  display: none !important;
+}
 .v2-modal-card {
   width: min(480px, 100%);
   border-radius: 18px;
@@ -579,6 +582,61 @@ button.hub-item {
   font: inherit;
   cursor: pointer;
 }
+button.hub-card-head {
+  width: 100%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  padding: 15px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: inherit;
+  transition: background 0.15s ease;
+}
+button.hub-card-head:hover {
+  background: rgba(30, 64, 175, 0.04);
+}
+.upload-modal-card {
+  width: min(580px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.upload-modal-card .field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.upload-modal-card .field label {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #475569;
+  letter-spacing: 0.4px;
+}
+.upload-modal-card .field input,
+.upload-modal-card .field select,
+.upload-modal-card .field textarea {
+  width: 100%;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 9px;
+  background: #f8fafc;
+  padding: 8px 12px;
+  font-size: 12.5px;
+  color: #0f172a;
+  outline: none;
+  font-family: inherit;
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+}
+.upload-modal-card .field input:focus,
+.upload-modal-card .field select:focus,
+.upload-modal-card .field textarea:focus {
+  background: #ffffff;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
 </style>
 </head>
 <body class="panel panel-dash panel-list panel-home" data-page="beranda">
@@ -681,7 +739,7 @@ button.hub-item {
   <div class="hub-grid">
     <!-- 1. UNGGAH DATA -->
     <section class="hub-card hub-card--blue">
-      <a class="hub-card-head" href="../upload-igt-utama/index.html">
+      <button type="button" class="hub-card-head" id="open-upload-modal-head">
         <div class="hub-badge hub-badge--blue">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/>
@@ -694,9 +752,9 @@ button.hub-item {
           <p class="hub-card-desc">Kelola dan unggah data geospasial ke dalam sistem.</p>
         </div>
         <svg class="hub-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
-      </a>
+      </button>
       <div class="hub-list">
-          <a class="hub-item" href="../upload-derivatif/index.html">
+          <button type="button" class="hub-item" id="open-upload-drv-btn">
             <span class="hub-item-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="m12 2 10 5.5-10 5.5L2 7.5 12 2Z"/>
@@ -706,7 +764,7 @@ button.hub-item {
             </span>
             <span class="hub-item-label">Unggah IGT Derivatif Multiguna</span>
             <svg class="hub-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
-          </a>
+          </button>
 
           <a class="hub-item" href="../derivatif-bidang/index.html">
             <span class="hub-item-icon">
@@ -812,6 +870,73 @@ button.hub-item {
     <svg class="logout-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
   </button>
 
+
+  <!-- POPUP MODAL UNGGAH DATA (DERIVATIF MULTIGUNA) -->
+  <div class="v2-modal-backdrop" id="uploadDataModal" hidden role="dialog" aria-modal="true" aria-labelledby="uploadDataTitle">
+    <div class="v2-modal-card upload-modal-card">
+      <div class="v2-modal-head">
+        <div>
+          <h3 id="uploadDataTitle">Unggah IGT Derivatif Multiguna</h3>
+          <p>Unggah berkas spasial tematik derivatif multiguna berbasis kawasan.</p>
+        </div>
+        <button type="button" class="v2-modal-close" id="closeUploadModal" aria-label="Tutup">✕</button>
+      </div>
+      <div class="v2-modal-body">
+        <input id="modal-file-drv" type="file" hidden accept=".zip,.gpkg">
+        <div class="v2-file-drop" id="drop-drv">
+          <div class="v2-file-drop-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/>
+              <path d="M12 12v9"/>
+              <path d="m16 16-4-4-4 4"/>
+            </svg>
+          </div>
+          <strong>Pilih berkas spasial derivatif multiguna</strong>
+          <p>Shapefile (.zip) atau GeoPackage (.gpkg), maksimal 500 MB</p>
+          <button type="button" class="btn btn-primary" id="pick-drv-btn">Pilih Berkas Spasial</button>
+          <div class="v2-file-picked" id="drv-picked-name" hidden></div>
+        </div>
+
+        <div class="form-grid" style="margin-top:14px; row-gap:10px;">
+          <div class="field">
+            <label for="modal-drv-tema">TEMA DERIVATIF</label>
+            <select id="modal-drv-tema">
+              <option>Kawasan Hutan &amp; Lingkungan</option>
+              <option>Kawasan Permukiman &amp; Infrastruktur</option>
+              <option>Kesesuaian &amp; Neraca Penatagunaan Tanah</option>
+              <option>Administrasi &amp; Tematik Khusus</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="modal-drv-nama">NAMA LAYER DERIVATIF</label>
+            <input id="modal-drv-nama" placeholder="Contoh: Derivatif Kawasan Lindung">
+          </div>
+          <div class="field">
+            <label for="modal-drv-sld">BERKAS GAYA TAMPILAN (.SLD)</label>
+            <input id="modal-drv-sld" placeholder="Contoh: derivatif-kawasan-lindung.sld">
+          </div>
+          <div class="field">
+            <label for="modal-drv-masa">MASA BERLAKU LAYER</label>
+            <select id="modal-drv-masa">
+              <option>30 Hari</option>
+              <option>90 Hari</option>
+              <option>180 Hari</option>
+              <option>1 Tahun</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column: 1 / -1;">
+            <label for="modal-drv-desc">DESKRIPSI &amp; SUMBER DATA</label>
+            <textarea id="modal-drv-desc" rows="2" placeholder="Jelaskan metode pengolahan dan layer sumber yang dipakai"></textarea>
+          </div>
+        </div>
+
+        <div class="v2-modal-actions">
+          <button type="button" class="btn btn-soft" id="cancelUploadDrv">Batal</button>
+          <button type="button" class="btn btn-primary" id="submitUploadDrv">Validasi &amp; Kirim Pengajuan →</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- POPUP MODAL MUAT KUSTOM TEMATIK DERIVATIF -->
   <div class="v2-modal-backdrop" id="loadDerivatifModal" hidden role="dialog" aria-modal="true" aria-labelledby="loadDrvTitle">
@@ -925,6 +1050,44 @@ document.getElementById('confirmLoadDrvBtn').addEventListener('click', () => {
   }
   loadModal.hidden = true;
   toast('Simulasi: berkas "' + selectedDrvFile + '" berhasil dimuat dan digabungkan ke bidang tanah pada kanvas QGIS.');
+});
+
+// --- LOGIKA POPUP UNGGAH DATA (DERIVATIF) ---
+const uploadModal = document.getElementById('uploadDataModal');
+const closeUploadModal = document.getElementById('closeUploadModal');
+const openModalHead = document.getElementById('open-upload-modal-head');
+const openModalDrv = document.getElementById('open-upload-drv-btn');
+
+const openUpload = () => { uploadModal.hidden = false; };
+const closeUpload = () => { uploadModal.hidden = true; };
+
+if (openModalHead) openModalHead.addEventListener('click', openUpload);
+if (openModalDrv) openModalDrv.addEventListener('click', openUpload);
+if (closeUploadModal) closeUploadModal.addEventListener('click', closeUpload);
+document.getElementById('cancelUploadDrv').addEventListener('click', closeUpload);
+uploadModal.addEventListener('click', (e) => {
+  if (e.target === uploadModal) closeUpload();
+});
+
+const fileDrv = document.getElementById('modal-file-drv');
+const drvNameEl = document.getElementById('drv-picked-name');
+let selectedDrv = '';
+document.getElementById('pick-drv-btn').addEventListener('click', (e) => { e.stopPropagation(); fileDrv.click(); });
+document.getElementById('drop-drv').addEventListener('click', () => fileDrv.click());
+fileDrv.addEventListener('change', () => {
+  const f = fileDrv.files && fileDrv.files[0];
+  selectedDrv = f ? f.name : '';
+  if (selectedDrv) {
+    drvNameEl.textContent = '✓ Berkas dipilih: ' + selectedDrv;
+    drvNameEl.hidden = false;
+  } else {
+    drvNameEl.hidden = true;
+  }
+});
+document.getElementById('submitUploadDrv').addEventListener('click', () => {
+  const nm = document.getElementById('modal-drv-nama').value.trim() || 'Layer Derivatif Baru';
+  closeUpload();
+  toast('Simulasi: Layer Derivatif Multiguna "' + nm + '" berhasil divalidasi dan ditambahkan ke Manajemen Data.');
 });
 </script>
 </body>

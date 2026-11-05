@@ -107,9 +107,8 @@ class IgtprDockWidget(QDockWidget):
         self.management_page = ManagementPage(current_category='igt-utama', current_role=self.current_role, parent=self.stack)
         self.stack.addWidget(self.management_page)
 
-        # Page 4: Upload Data V2
-        self.upload_page = UploadPage(current_category='pertanahan', current_role=self.current_role, parent=self.stack)
-        self.stack.addWidget(self.upload_page)
+        # Upload Data V2 (Popup dialog modal, bukan halaman stack)
+        self.upload_page = UploadPage(current_category='pertanahan', current_role=self.current_role, parent=self)
 
         # Page 5: Model Builder V2
         self.model_builder_page = ModelBuilderPage(current_role=self.current_role, parent=self.stack)

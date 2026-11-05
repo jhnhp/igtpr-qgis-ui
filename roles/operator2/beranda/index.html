@@ -471,6 +471,9 @@ body {
   justify-content: center;
   padding: 18px;
 }
+.v2-modal-backdrop[hidden] {
+  display: none !important;
+}
 .v2-modal-card {
   width: min(480px, 100%);
   border-radius: 18px;
@@ -579,6 +582,110 @@ button.hub-item {
   font: inherit;
   cursor: pointer;
 }
+button.hub-card-head {
+  width: 100%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  padding: 15px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: inherit;
+  transition: background 0.15s ease;
+}
+button.hub-card-head:hover {
+  background: rgba(30, 64, 175, 0.04);
+}
+.upload-modal-card {
+  width: min(580px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.upload-modal-card .field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.upload-modal-card .field label {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #475569;
+  letter-spacing: 0.4px;
+}
+.upload-modal-card .field input,
+.upload-modal-card .field select,
+.upload-modal-card .field textarea {
+  width: 100%;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 9px;
+  background: #f8fafc;
+  padding: 8px 12px;
+  font-size: 12.5px;
+  color: #0f172a;
+  outline: none;
+  font-family: inherit;
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+}
+.upload-modal-card .field input:focus,
+.upload-modal-card .field select:focus,
+.upload-modal-card .field textarea:focus {
+  background: #ffffff;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+.upload-type-tabs {
+  display: flex;
+  border-bottom: 2px solid #e2e8f0;
+  margin-bottom: 14px;
+  gap: 4px;
+}
+.upload-type-tabs button {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  border: none;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.upload-type-tabs button.active {
+  color: #1d4ed8;
+  border-bottom-color: #1d4ed8;
+}
+.upload-subtabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.upload-subtabs button {
+  flex: 1;
+  padding: 7px 12px;
+  font-size: 11.5px;
+  font-weight: 700;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.upload-subtabs button.active {
+  background: #1e40af;
+  color: #ffffff;
+  border-color: #1e40af;
+}
+.upload-pane {
+  display: none;
+}
+.upload-pane.active {
+  display: block;
+}
 </style>
 </head>
 <body class="panel panel-dash panel-list panel-home" data-page="beranda">
@@ -681,7 +788,7 @@ button.hub-item {
   <div class="hub-grid">
     <!-- 1. UNGGAH DATA -->
     <section class="hub-card hub-card--blue">
-      <a class="hub-card-head" href="../upload-igt-utama/index.html">
+      <button type="button" class="hub-card-head" id="open-upload-modal-head">
         <div class="hub-badge hub-badge--blue">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/>
@@ -694,9 +801,9 @@ button.hub-item {
           <p class="hub-card-desc">Kelola dan unggah data geospasial ke dalam sistem.</p>
         </div>
         <svg class="hub-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
-      </a>
+      </button>
       <div class="hub-list">
-          <a class="hub-item" href="../upload-igt-utama/index.html">
+          <button type="button" class="hub-item" id="open-upload-utama-btn">
             <span class="hub-item-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <ellipse cx="12" cy="5" rx="8" ry="3"/>
@@ -706,9 +813,9 @@ button.hub-item {
             </span>
             <span class="hub-item-label">Unggah IGT Utama</span>
             <svg class="hub-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
-          </a>
+          </button>
 
-          <a class="hub-item" href="../upload-derivatif/index.html">
+          <button type="button" class="hub-item" id="open-upload-drv-btn">
             <span class="hub-item-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="m12 2 10 5.5-10 5.5L2 7.5 12 2Z"/>
@@ -718,7 +825,7 @@ button.hub-item {
             </span>
             <span class="hub-item-label">Unggah IGT Derivatif Multiguna</span>
             <svg class="hub-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
-          </a>
+          </button>
 
           <a class="hub-item" href="../derivatif-bidang/index.html">
             <span class="hub-item-icon">
@@ -824,6 +931,209 @@ button.hub-item {
     <svg class="logout-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
   </button>
 
+
+  <!-- POPUP MODAL UNGGAH DATA -->
+  <div class="v2-modal-backdrop" id="uploadDataModal" hidden role="dialog" aria-modal="true" aria-labelledby="uploadDataTitle">
+    <div class="v2-modal-card upload-modal-card">
+      <div class="v2-modal-head">
+        <div>
+          <h3 id="uploadDataTitle">Unggah Data Geospasial</h3>
+          <p>Pilih kategori data geospasial untuk diunggah dan divalidasi ke sistem.</p>
+        </div>
+        <button type="button" class="v2-modal-close" id="closeUploadModal" aria-label="Tutup">✕</button>
+      </div>
+      <div class="v2-modal-body">
+        <!-- Main Tabs: IGT Utama vs IGT Derivatif Multiguna -->
+        <div class="upload-type-tabs" role="tablist">
+          <button type="button" class="active" id="tab-btn-utama" role="tab" aria-selected="true">IGT Utama</button>
+          <button type="button" id="tab-btn-drv" role="tab" aria-selected="false">IGT Derivatif Multiguna</button>
+        </div>
+
+        <!-- Section 1: IGT Utama -->
+        <div class="upload-pane active" id="pane-utama">
+          <!-- Sub-tabs: Pertanahan vs Tata Ruang -->
+          <div class="upload-subtabs" role="tablist">
+            <button type="button" class="active" id="subtab-btn-ptn" role="tab" aria-selected="true">IGT Pertanahan (Bidang)</button>
+            <button type="button" id="subtab-btn-tr" role="tab" aria-selected="false">IGT Tata Ruang (Kawasan)</button>
+          </div>
+
+          <!-- Form IGT Pertanahan -->
+          <div id="subpane-ptn">
+            <input id="modal-file-ptn" type="file" hidden accept=".gpkg,.csv,.zip">
+            <div class="v2-file-drop" id="drop-ptn">
+              <div class="v2-file-drop-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/>
+                  <path d="M12 12v9"/>
+                  <path d="m16 16-4-4-4 4"/>
+                </svg>
+              </div>
+              <strong>Pilih berkas atribut bidang</strong>
+              <p>Format GeoPackage (.gpkg), CSV (.csv), atau Shapefile (.zip) dengan kolom ID_BIDANG</p>
+              <button type="button" class="btn btn-primary" id="pick-ptn-btn">Pilih Berkas Atribut</button>
+              <div class="v2-file-picked" id="ptn-picked-name" hidden></div>
+            </div>
+
+            <div class="form-grid" style="margin-top:14px; row-gap:10px;">
+              <div class="field">
+                <label for="modal-ptn-satker">SATUAN KERJA (SATKER)</label>
+                <select id="modal-ptn-satker">
+                  <option>Ditjen Survei dan Pemetaan Pertanahan dan Ruang</option>
+                  <option>Ditjen Penataan Agraria</option>
+                  <option>Ditjen Penetapan Hak dan Pendaftaran Tanah</option>
+                  <option>Ditjen Pengadaan Tanah dan Pengembangan Pertanahan</option>
+                  <option>Ditjen Pengendalian dan Penertiban Tanah dan Ruang</option>
+                  <option>Ditjen Penanganan Sengketa dan Konflik Pertanahan</option>
+                  <option>Ditjen Tata Ruang</option>
+                  <option>Kanwil BPN D.I. Yogyakarta</option>
+                  <option>Kantah Kab. Sleman</option>
+                  <option>Kantah Kab. Bantul</option>
+                  <option>Kantah Kab. Kulon Progo</option>
+                  <option>Kantah Kab. Gunungkidul</option>
+                  <option>Kantah Kota Yogyakarta</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="modal-ptn-dataset">DATASET TARGET</label>
+                <select id="modal-ptn-dataset">
+                  <option>IGT Bidang Tanah</option>
+                  <option>IGT Penguasaan Tanah</option>
+                  <option>IGT Pemilikan Tanah</option>
+                  <option>IGT Penggunaan Tanah</option>
+                  <option>IGT Pemanfaatan Tanah</option>
+                  <option>IGT Hak Atas Tanah</option>
+                  <option>IGT Nilai Bidang Tanah</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="modal-ptn-wilayah">WILAYAH ADMINISTRASI</label>
+                <input id="modal-ptn-wilayah" placeholder="Contoh: Kabupaten Sleman, D.I. Yogyakarta">
+              </div>
+              <div class="field">
+                <label for="modal-ptn-catatan">KETERANGAN PENGUNGGAHAN</label>
+                <input id="modal-ptn-catatan" placeholder="Catatan pembaruan data bidang">
+              </div>
+            </div>
+
+            <div class="notice" style="margin: 12px 0 8px;">
+              <strong>Catatan</strong> Geometri bidang otomatis terhubung dari baseline. Sistem akan memvalidasi kecocokan ID Bidang sebelum masuk antrean.
+            </div>
+
+            <div class="v2-modal-actions">
+              <button type="button" class="btn btn-soft" id="cancelUploadPtn">Batal</button>
+              <button type="button" class="btn btn-primary" id="submitUploadPtn">Unggah &amp; Validasi Atribut →</button>
+            </div>
+          </div>
+
+          <!-- Form IGT Tata Ruang -->
+          <div id="subpane-tr" hidden>
+            <input id="modal-file-tr" type="file" hidden accept=".zip,.gpkg">
+            <div class="v2-file-drop" id="drop-tr">
+              <div class="v2-file-drop-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/>
+                  <path d="M12 12v9"/>
+                  <path d="m16 16-4-4-4 4"/>
+                </svg>
+              </div>
+              <strong>Pilih berkas spasial kawasan</strong>
+              <p>Format Shapefile (.zip) atau GeoPackage (.gpkg), maksimal 500 MB</p>
+              <button type="button" class="btn btn-primary" id="pick-tr-btn">Pilih Berkas Spasial</button>
+              <div class="v2-file-picked" id="tr-picked-name" hidden></div>
+            </div>
+
+            <div class="form-grid" style="margin-top:14px; row-gap:10px;">
+              <div class="field">
+                <label for="modal-tr-tema">TEMA IGT TATA RUANG</label>
+                <select id="modal-tr-tema">
+                  <option>RTRW Provinsi / Kabupaten / Kota</option>
+                  <option>RDTR Kabupaten/Kota</option>
+                  <option>RTR Kawasan Strategis Nasional</option>
+                  <option>KKPR / Kesesuaian Kegiatan Pemanfaatan Ruang</option>
+                  <option>Lahan Baku Sawah / LSD</option>
+                  <option>Zona Nilai Tanah</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="modal-tr-nama">NAMA LAYER</label>
+                <input id="modal-tr-nama" placeholder="Masukkan nama layer kawasan">
+              </div>
+              <div class="field">
+                <label for="modal-tr-wilayah">CAKUPAN WILAYAH</label>
+                <input id="modal-tr-wilayah" placeholder="Provinsi / Kabupaten / Kota">
+              </div>
+              <div class="field">
+                <label for="modal-tr-deskripsi">DESKRIPSI SINGKAT</label>
+                <input id="modal-tr-deskripsi" placeholder="Sumber penetapan dan tahun data">
+              </div>
+            </div>
+
+            <div class="v2-modal-actions">
+              <button type="button" class="btn btn-soft" id="cancelUploadTr">Batal</button>
+              <button type="button" class="btn btn-primary" id="submitUploadTr">Validasi &amp; Kirim Pengajuan →</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: IGT Derivatif Multiguna -->
+        <div class="upload-pane" id="pane-drv">
+          <input id="modal-file-drv" type="file" hidden accept=".zip,.gpkg">
+          <div class="v2-file-drop" id="drop-drv">
+            <div class="v2-file-drop-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/>
+                <path d="M12 12v9"/>
+                <path d="m16 16-4-4-4 4"/>
+              </svg>
+            </div>
+            <strong>Pilih berkas spasial derivatif multiguna</strong>
+            <p>Shapefile (.zip) atau GeoPackage (.gpkg), maksimal 500 MB</p>
+            <button type="button" class="btn btn-primary" id="pick-drv-btn">Pilih Berkas Spasial</button>
+            <div class="v2-file-picked" id="drv-picked-name" hidden></div>
+          </div>
+
+          <div class="form-grid" style="margin-top:14px; row-gap:10px;">
+            <div class="field">
+              <label for="modal-drv-tema">TEMA DERIVATIF</label>
+              <select id="modal-drv-tema">
+                <option>Kawasan Hutan &amp; Lingkungan</option>
+                <option>Kawasan Permukiman &amp; Infrastruktur</option>
+                <option>Kesesuaian &amp; Neraca Penatagunaan Tanah</option>
+                <option>Administrasi &amp; Tematik Khusus</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="modal-drv-nama">NAMA LAYER DERIVATIF</label>
+              <input id="modal-drv-nama" placeholder="Contoh: Derivatif Kawasan Lindung">
+            </div>
+            <div class="field">
+              <label for="modal-drv-sld">BERKAS GAYA TAMPILAN (.SLD)</label>
+              <input id="modal-drv-sld" placeholder="Contoh: derivatif-kawasan-lindung.sld">
+            </div>
+            <div class="field">
+              <label for="modal-drv-masa">MASA BERLAKU LAYER</label>
+              <select id="modal-drv-masa">
+                <option>30 Hari</option>
+                <option>90 Hari</option>
+                <option>180 Hari</option>
+                <option>1 Tahun</option>
+              </select>
+            </div>
+            <div class="field" style="grid-column: 1 / -1;">
+              <label for="modal-drv-desc">DESKRIPSI &amp; SUMBER DATA</label>
+              <textarea id="modal-drv-desc" rows="2" placeholder="Jelaskan metode pengolahan dan layer sumber yang dipakai"></textarea>
+            </div>
+          </div>
+
+          <div class="v2-modal-actions">
+            <button type="button" class="btn btn-soft" id="cancelUploadDrv">Batal</button>
+            <button type="button" class="btn btn-primary" id="submitUploadDrv">Validasi &amp; Kirim Pengajuan →</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
 
   <!-- POPUP MODAL MUAT KUSTOM TEMATIK DERIVATIF -->
   <div class="v2-modal-backdrop" id="loadDerivatifModal" hidden role="dialog" aria-modal="true" aria-labelledby="loadDrvTitle">
@@ -937,6 +1247,150 @@ document.getElementById('confirmLoadDrvBtn').addEventListener('click', () => {
   }
   loadModal.hidden = true;
   toast('Simulasi: berkas "' + selectedDrvFile + '" berhasil dimuat dan digabungkan ke bidang tanah pada kanvas QGIS.');
+});
+
+// --- LOGIKA POPUP UNGGAH DATA ---
+const uploadModal = document.getElementById('uploadDataModal');
+const closeUploadModal = document.getElementById('closeUploadModal');
+const tabBtnUtama = document.getElementById('tab-btn-utama');
+const tabBtnDrv = document.getElementById('tab-btn-drv');
+const paneUtama = document.getElementById('pane-utama');
+const paneDrv = document.getElementById('pane-drv');
+
+const subtabBtnPtn = document.getElementById('subtab-btn-ptn');
+const subtabBtnTr = document.getElementById('subtab-btn-tr');
+const subpanePtn = document.getElementById('subpane-ptn');
+const subpaneTr = document.getElementById('subpane-tr');
+
+function setUploadTab(type) {
+  if (type === 'derivatif') {
+    tabBtnDrv.classList.add('active');
+    tabBtnDrv.setAttribute('aria-selected', 'true');
+    tabBtnUtama.classList.remove('active');
+    tabBtnUtama.setAttribute('aria-selected', 'false');
+    paneDrv.classList.add('active');
+    paneUtama.classList.remove('active');
+  } else {
+    tabBtnUtama.classList.add('active');
+    tabBtnUtama.setAttribute('aria-selected', 'true');
+    tabBtnDrv.classList.remove('active');
+    tabBtnDrv.setAttribute('aria-selected', 'false');
+    paneUtama.classList.add('active');
+    paneDrv.classList.remove('active');
+  }
+}
+
+function setUploadSubtab(sub) {
+  if (sub === 'tata-ruang') {
+    subtabBtnTr.classList.add('active');
+    subtabBtnTr.setAttribute('aria-selected', 'true');
+    subtabBtnPtn.classList.remove('active');
+    subtabBtnPtn.setAttribute('aria-selected', 'false');
+    subpaneTr.hidden = false;
+    subpanePtn.hidden = true;
+  } else {
+    subtabBtnPtn.classList.add('active');
+    subtabBtnPtn.setAttribute('aria-selected', 'true');
+    subtabBtnTr.classList.remove('active');
+    subtabBtnTr.setAttribute('aria-selected', 'false');
+    subpanePtn.hidden = false;
+    subpaneTr.hidden = true;
+  }
+}
+
+tabBtnUtama.addEventListener('click', () => setUploadTab('utama'));
+tabBtnDrv.addEventListener('click', () => setUploadTab('derivatif'));
+subtabBtnPtn.addEventListener('click', () => setUploadSubtab('pertanahan'));
+subtabBtnTr.addEventListener('click', () => setUploadSubtab('tata-ruang'));
+
+document.getElementById('open-upload-modal-head').addEventListener('click', () => {
+  setUploadTab('utama');
+  setUploadSubtab('pertanahan');
+  uploadModal.hidden = false;
+});
+document.getElementById('open-upload-utama-btn').addEventListener('click', () => {
+  setUploadTab('utama');
+  setUploadSubtab('pertanahan');
+  uploadModal.hidden = false;
+});
+document.getElementById('open-upload-drv-btn').addEventListener('click', () => {
+  setUploadTab('derivatif');
+  uploadModal.hidden = false;
+});
+
+const closeUpload = () => { uploadModal.hidden = true; };
+closeUploadModal.addEventListener('click', closeUpload);
+document.getElementById('cancelUploadPtn').addEventListener('click', closeUpload);
+document.getElementById('cancelUploadTr').addEventListener('click', closeUpload);
+document.getElementById('cancelUploadDrv').addEventListener('click', closeUpload);
+uploadModal.addEventListener('click', (e) => {
+  if (e.target === uploadModal) closeUpload();
+});
+
+// File picker Pertanahan
+const filePtn = document.getElementById('modal-file-ptn');
+const ptnNameEl = document.getElementById('ptn-picked-name');
+let selectedPtn = '';
+document.getElementById('pick-ptn-btn').addEventListener('click', (e) => { e.stopPropagation(); filePtn.click(); });
+document.getElementById('drop-ptn').addEventListener('click', () => filePtn.click());
+filePtn.addEventListener('change', () => {
+  const f = filePtn.files && filePtn.files[0];
+  selectedPtn = f ? f.name : '';
+  if (selectedPtn) {
+    ptnNameEl.textContent = '✓ Berkas dipilih: ' + selectedPtn;
+    ptnNameEl.hidden = false;
+  } else {
+    ptnNameEl.hidden = true;
+  }
+});
+document.getElementById('submitUploadPtn').addEventListener('click', () => {
+  const ds = document.getElementById('modal-ptn-dataset').value;
+  closeUpload();
+  toast('Simulasi: Atribut ' + ds + (selectedPtn ? ' (' + selectedPtn + ')' : '') + ' berhasil divalidasi dan dicatat ke antrean Kompilasi Data.');
+});
+
+// File picker Tata Ruang
+const fileTr = document.getElementById('modal-file-tr');
+const trNameEl = document.getElementById('tr-picked-name');
+let selectedTr = '';
+document.getElementById('pick-tr-btn').addEventListener('click', (e) => { e.stopPropagation(); fileTr.click(); });
+document.getElementById('drop-tr').addEventListener('click', () => fileTr.click());
+fileTr.addEventListener('change', () => {
+  const f = fileTr.files && fileTr.files[0];
+  selectedTr = f ? f.name : '';
+  if (selectedTr) {
+    trNameEl.textContent = '✓ Berkas dipilih: ' + selectedTr;
+    trNameEl.hidden = false;
+  } else {
+    trNameEl.hidden = true;
+  }
+});
+document.getElementById('submitUploadTr').addEventListener('click', () => {
+  const nm = document.getElementById('modal-tr-nama').value.trim() || document.getElementById('modal-tr-tema').value;
+  closeUpload();
+  toast('Simulasi: Pengajuan IGT Tata Ruang "' + nm + '" berhasil dikirim ke antrean verifikasi topologi.');
+});
+
+// File picker Derivatif
+const fileDrv = document.getElementById('modal-file-drv');
+const drvNameEl = document.getElementById('drv-picked-name');
+let selectedDrv = '';
+document.getElementById('pick-drv-btn').addEventListener('click', (e) => { e.stopPropagation(); fileDrv.click(); });
+document.getElementById('drop-drv').addEventListener('click', () => fileDrv.click());
+fileDrv.addEventListener('change', () => {
+  const f = fileDrv.files && fileDrv.files[0];
+  selectedDrv = f ? f.name : '';
+  if (selectedDrv) {
+    drvNameEl.textContent = '✓ Berkas dipilih: ' + selectedDrv;
+    drvNameEl.hidden = false;
+  } else {
+    drvNameEl.hidden = true;
+  }
+});
+document.getElementById('submitUploadDrv').addEventListener('click', () => {
+  const nm = document.getElementById('modal-drv-nama').value.trim() || 'Layer Derivatif Baru';
+  closeUpload();
+  toast('Simulasi: Layer Derivatif Multiguna "' + nm + '" berhasil divalidasi dan ditambahkan ke Manajemen Data.');
 });
 </script>
 </body>
