@@ -25,6 +25,9 @@ from .data import CATEGORIES, DATASETS
 from .login_page import svg_pixmap
 from .ui_kit import icon
 
+PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
+CHEVRON_DOWN_SVG = os.path.join(PLUGIN_DIR, 'chevron_down_dark.svg').replace('\\', '/')
+
 
 class _ScrollContent(QWidget):
     """Widget konten QScrollArea yang lebarnya selalu mengikuti viewport tanpa meluber ke kanan."""
@@ -98,9 +101,24 @@ class UploadPage(QWidget):
                 font-size: 12px;
                 color: #0f294d;
             }
+            QComboBox {
+                padding-right: 26px;
+            }
+            QComboBox::drop-down {
+                subcontrol-origin: padding;
+                subcontrol-position: center right;
+                width: 24px;
+                border: none;
+                background: transparent;
+            }
+            QComboBox::down-arrow {
+                image: url('%CHEVRON%');
+                width: 11px;
+                height: 11px;
+            }
             QLineEdit:focus, QComboBox:focus {
                 border-color: #1f6fd6;
-            }
+            }""".replace('%CHEVRON%', CHEVRON_DOWN_SVG) + """
             QPushButton#browseBtn {
                 background-color: #1f6fd6;
                 color: #ffffff;
@@ -232,7 +250,7 @@ class UploadPage(QWidget):
         s_box = QVBoxLayout()
         s_box.setSpacing(3)
         self.s_lbl = QLabel('SATUAN KERJA (SATKER)', form_card)
-        self.s_lbl.setStyleSheet("color: #475569; font-size: 10px; font-weight: 800; letter-spacing: 0.5px;")
+        self.s_lbl.setStyleSheet("color: #475569; font-size: 10px; font-weight: 800; letter-spacing: 1px;")
         s_box.addWidget(self.s_lbl)
         self.satker_combo = QComboBox(form_card)
         self.satker_combo.addItems([
@@ -252,7 +270,7 @@ class UploadPage(QWidget):
         d_box = QVBoxLayout()
         d_box.setSpacing(3)
         d_lbl = QLabel('DATASET TARGET', form_card)
-        d_lbl.setStyleSheet("color: #475569; font-size: 10px; font-weight: 800; letter-spacing: 0.5px;")
+        d_lbl.setStyleSheet("color: #475569; font-size: 10px; font-weight: 800; letter-spacing: 1px;")
         d_box.addWidget(d_lbl)
         self.dataset_combo = QComboBox(form_card)
         d_box.addWidget(self.dataset_combo)
@@ -262,7 +280,7 @@ class UploadPage(QWidget):
         w_box = QVBoxLayout()
         w_box.setSpacing(3)
         w_lbl = QLabel('WILAYAH ADMINISTRASI', form_card)
-        w_lbl.setStyleSheet("color: #475569; font-size: 10px; font-weight: 800; letter-spacing: 0.5px;")
+        w_lbl.setStyleSheet("color: #475569; font-size: 10px; font-weight: 800; letter-spacing: 1px;")
         w_box.addWidget(w_lbl)
         self.wilayah_input = QLineEdit(form_card)
         self.wilayah_input.setText('Kab. Sleman, D.I. Yogyakarta')
@@ -273,7 +291,7 @@ class UploadPage(QWidget):
         c_box = QVBoxLayout()
         c_box.setSpacing(3)
         c_lbl = QLabel('KETERANGAN / CATATAN PEMBARUAN', form_card)
-        c_lbl.setStyleSheet("color: #475569; font-size: 10px; font-weight: 800; letter-spacing: 0.5px;")
+        c_lbl.setStyleSheet("color: #475569; font-size: 10px; font-weight: 800; letter-spacing: 1px;")
         c_box.addWidget(c_lbl)
         self.catatan_input = QLineEdit(form_card)
         self.catatan_input.setPlaceholderText('Contoh: Pemutakhiran bidang tahun 2026')
@@ -284,11 +302,14 @@ class UploadPage(QWidget):
 
         # Notice
         notice = QFrame(form_card)
+        notice.setObjectName("uploadNoticeBox")
         notice.setStyleSheet("""
-            background-color: #eff6ff;
-            border: 1px solid #bfdbfe;
-            border-radius: 8px;
-            padding: 10px 12px;
+            QFrame#uploadNoticeBox {
+                background-color: #eff6ff;
+                border: 1px solid #bfdbfe;
+                border-radius: 8px;
+                padding: 10px 12px;
+            }
         """)
         n_layout = QHBoxLayout(notice)
         n_layout.setContentsMargins(0, 0, 0, 0)
@@ -495,13 +516,25 @@ class AttributeMappingDialog(QDialog):
                 background-color: #ffffff;
                 border: 1px solid #cbd5e1;
                 border-radius: 6px;
-                padding: 4px 8px;
+                padding: 4px 24px 4px 8px;
                 font-size: 11px;
+            }
+            QComboBox::drop-down {
+                subcontrol-origin: padding;
+                subcontrol-position: center right;
+                width: 22px;
+                border: none;
+                background: transparent;
+            }
+            QComboBox::down-arrow {
+                image: url('%CHEVRON%');
+                width: 11px;
+                height: 11px;
             }
             QComboBox:focus {
                 border-color: #1f6fd6;
             }
-        """)
+        """.replace('%CHEVRON%', CHEVRON_DOWN_SVG))
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(18, 18, 18, 18)
@@ -702,16 +735,26 @@ class AttributeMappingDialog(QDialog):
         self.table.setCellWidget(row, 1, w_input)
 
         # Kolom 2: Status Badge
-        lbl_status = QLabel(w_input)
+        w_status = QWidget()
+        lay_status = QHBoxLayout(w_status)
+        lay_status.setContentsMargins(4, 4, 4, 4)
+        lbl_status = QLabel(w_status)
+        lbl_status.setFixedHeight(24)
         lbl_status.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._update_status_badge(lbl_status, bool(current_src), is_req)
-        self.table.setCellWidget(row, 2, lbl_status)
+        lay_status.addWidget(lbl_status, 0, Qt.AlignmentFlag.AlignCenter)
+        self.table.setCellWidget(row, 2, w_status)
 
         # Kolom 3: Tombol Reset
-        btn_reset = QPushButton("Reset", w_input)
+        w_reset = QWidget()
+        lay_reset = QHBoxLayout(w_reset)
+        lay_reset.setContentsMargins(4, 4, 4, 4)
+        btn_reset = QPushButton("Reset", w_reset)
+        btn_reset.setFixedHeight(24)
         btn_reset.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_reset.setStyleSheet("font-size: 10px; color: #dc2626; padding: 2px 8px; border: 1px solid #fca5a5; border-radius: 4px; background: #fff;")
-        self.table.setCellWidget(row, 3, btn_reset)
+        lay_reset.addWidget(btn_reset, 0, Qt.AlignmentFlag.AlignCenter)
+        self.table.setCellWidget(row, 3, w_reset)
 
         def on_change(idx):
             chosen = combo.currentData()
@@ -966,9 +1009,24 @@ class UploadIgtUtamaDialog(QDialog):
                 font-size: 12px;
                 color: #0f294d;
             }
+            QComboBox {
+                padding-right: 26px;
+            }
+            QComboBox::drop-down {
+                subcontrol-origin: padding;
+                subcontrol-position: center right;
+                width: 24px;
+                border: none;
+                background: transparent;
+            }
+            QComboBox::down-arrow {
+                image: url('%CHEVRON%');
+                width: 11px;
+                height: 11px;
+            }
             QLineEdit:focus, QComboBox:focus {
                 border-color: #1f6fd6;
-            }
+            }""".replace('%CHEVRON%', CHEVRON_DOWN_SVG) + """
             QPushButton#actionBtn {
                 background-color: #eff6ff;
                 border: 1px solid #93c5fd;

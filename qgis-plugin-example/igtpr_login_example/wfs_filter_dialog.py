@@ -8,16 +8,20 @@ Mencegah beban unduhan data WFS nasional yang terlalu besar dengan memberikan op
 """
 
 import os
-from qgis.PyQt.QtCore import Qt, pyqtSignal
+from qgis.PyQt.QtCore import QSize, Qt, pyqtSignal
 from qgis.PyQt.QtWidgets import (
     QButtonGroup, QComboBox, QCompleter, QDialog, QFrame, QGridLayout, QHBoxLayout,
     QLabel, QListView, QPushButton, QRadioButton, QVBoxLayout, QWidget,
 )
 
-from qgis.core import QgsProject, QgsWkbTypes
+try:
+    from qgis.core import QgsProject, QgsWkbTypes
+except ImportError:
+    QgsProject = None
+    QgsWkbTypes = None
 
 from .data import INDONESIA_REGIONS, match_province_name
-from .ui_kit import SearchableComboBox
+from .ui_kit import SearchableComboBox, icon, icon_label
 
 PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
 CHEVRON_DOWN_SVG = os.path.join(PLUGIN_DIR, 'chevron_down_dark.svg').replace('\\', '/')
@@ -160,15 +164,15 @@ class WfsFilterDialog(QDialog):
             }
             QFrame#cardAll, QFrame#cardAdmin, QFrame#cardAoi {
                 background-color: #ffffff;
-                border: 1.5px solid #e2e8f0;
+                border: 1px solid #e2e8f0;
                 border-radius: 10px;
             }
             QComboBox {
                 background: #ffffff;
-                border: 1.5px solid #cbd5e1;
+                border: 1px solid #cbd5e1;
                 border-radius: 7px;
                 padding: 6px 30px 6px 10px;
-                font-size: 11.5px;
+                font-size: 12px;
                 color: #0f294d;
                 font-weight: 600;
             }
@@ -178,14 +182,14 @@ class WfsFilterDialog(QDialog):
             QComboBox:disabled {
                 background: #f1f5f9;
                 color: #94a3b8;
-                border: 1.5px solid #e2e8f0;
+                border: 1px solid #e2e8f0;
             }
             QComboBox QLineEdit {
                 border: none;
                 background: transparent;
                 color: #0f294d;
                 font-weight: 600;
-                font-size: 11.5px;
+                font-size: 12px;
                 padding: 0;
             }
             QComboBox::drop-down {
@@ -203,7 +207,7 @@ class WfsFilterDialog(QDialog):
             QComboBox QAbstractItemView {
                 background-color: #ffffff;
                 color: #0f294d;
-                border: 1.5px solid #cbd5e1;
+                border: 1px solid #cbd5e1;
                 border-radius: 6px;
                 padding: 2px;
                 max-height: 200px;
@@ -238,7 +242,7 @@ class WfsFilterDialog(QDialog):
             }
             QRadioButton {
                 font-weight: 700;
-                font-size: 12.5px;
+                font-size: 13px;
                 color: #0f294d;
             }
             QPushButton#btnConfirm {
@@ -268,10 +272,10 @@ class WfsFilterDialog(QDialog):
             QPushButton#btnDrawAoi {
                 background-color: #ffffff;
                 color: #1d4ed8;
-                border: 1.5px dashed #3b82f6;
+                border: 1px dashed #3b82f6;
                 border-radius: 7px;
                 padding: 7px 12px;
-                font-size: 11.5px;
+                font-size: 12px;
                 font-weight: 700;
             }
             QPushButton#btnDrawAoi:hover {
@@ -285,17 +289,20 @@ class WfsFilterDialog(QDialog):
 
         # Header card
         header_card = QFrame(self)
+        header_card.setObjectName("wfsHeaderCard")
         header_card.setStyleSheet("""
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #102b59, stop:1 #1e40af);
-            border-radius: 10px;
-            color: #ffffff;
+            QFrame#wfsHeaderCard {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #102b59, stop:1 #1e40af);
+                border-radius: 10px;
+                color: #ffffff;
+            }
         """)
         h_layout = QVBoxLayout(header_card)
         h_layout.setContentsMargins(16, 14, 16, 14)
         h_layout.setSpacing(4)
 
         eyebrow = QLabel("SISTEM INFORMASI GEOSPASIAL ATR/BPN · LAYANAN FITUR WFS", header_card)
-        eyebrow.setStyleSheet("color: #bfdbfe; font-size: 9.5px; font-weight: 800; letter-spacing: 0.6px;")
+        eyebrow.setStyleSheet("color: #bfdbfe; font-size: 10px; font-weight: 800; letter-spacing: 1px;")
         h_layout.addWidget(eyebrow)
 
         title_lbl = QLabel("Opsi Pemuatan Layer WFS", header_card)
@@ -310,18 +317,20 @@ class WfsFilterDialog(QDialog):
 
         # Warning banner
         warn_box = QFrame(self)
+        warn_box.setObjectName("wfsWarnBox")
         warn_box.setStyleSheet("""
-            background-color: #fef3c7;
-            border: 1px solid #fde68a;
-            border-radius: 8px;
-            color: #92400e;
+            QFrame#wfsWarnBox {
+                background-color: #fef3c7;
+                border: 1px solid #fde68a;
+                border-radius: 8px;
+                color: #92400e;
+            }
         """)
         w_layout = QHBoxLayout(warn_box)
         w_layout.setContentsMargins(12, 10, 12, 10)
         w_layout.setSpacing(8)
-        w_icon = QLabel("⚠️", warn_box)
-        w_icon.setStyleSheet("font-size: 14px;")
-        w_layout.addWidget(w_icon)
+        w_icon = icon_label('alert', '#d97706', 18, warn_box)
+        w_layout.addWidget(w_icon, 0, Qt.AlignmentFlag.AlignVCenter)
         w_text = QLabel("<b>Perhatian:</b> Data WFS nasional berukuran sangat besar. Disarankan menggunakan batasan wilayah (Batas Admin atau AOI) agar proses unduh dan visualisasi lebih cepat.", warn_box)
         w_text.setWordWrap(True)
         w_text.setStyleSheet("color: #92400e; font-size: 11px;")
@@ -377,11 +386,15 @@ class WfsFilterDialog(QDialog):
         ag_layout.setContentsMargins(22, 6, 0, 0)
         ag_layout.setHorizontalSpacing(10)
         ag_layout.setVerticalSpacing(8)
+        ag_layout.setColumnStretch(0, 1)
+        ag_layout.setColumnStretch(1, 1)
 
         # 1. Provinsi
         l_prov = QLabel("PROVINSI", self.admin_grid_widget)
         l_prov.setStyleSheet("font-size: 10px; font-weight: 700; color: #475569;")
         self.cb_prov = SearchableComboBox(self.admin_grid_widget)
+        self.cb_prov.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+        self.cb_prov.setMinimumContentsLength(6)
         ag_layout.addWidget(l_prov, 0, 0)
         ag_layout.addWidget(self.cb_prov, 1, 0)
 
@@ -389,6 +402,8 @@ class WfsFilterDialog(QDialog):
         l_kab = QLabel("KABUPATEN / KOTA", self.admin_grid_widget)
         l_kab.setStyleSheet("font-size: 10px; font-weight: 700; color: #475569;")
         self.cb_kab = QComboBox(self.admin_grid_widget)
+        self.cb_kab.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+        self.cb_kab.setMinimumContentsLength(6)
         ag_layout.addWidget(l_kab, 0, 1)
         ag_layout.addWidget(self.cb_kab, 1, 1)
 
@@ -396,6 +411,8 @@ class WfsFilterDialog(QDialog):
         l_kec = QLabel("KECAMATAN", self.admin_grid_widget)
         l_kec.setStyleSheet("font-size: 10px; font-weight: 700; color: #475569;")
         self.cb_kec = QComboBox(self.admin_grid_widget)
+        self.cb_kec.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+        self.cb_kec.setMinimumContentsLength(6)
         ag_layout.addWidget(l_kec, 2, 0)
         ag_layout.addWidget(self.cb_kec, 3, 0)
 
@@ -403,6 +420,8 @@ class WfsFilterDialog(QDialog):
         l_desa = QLabel("DESA / KELURAHAN", self.admin_grid_widget)
         l_desa.setStyleSheet("font-size: 10px; font-weight: 700; color: #475569;")
         self.cb_desa = QComboBox(self.admin_grid_widget)
+        self.cb_desa.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+        self.cb_desa.setMinimumContentsLength(6)
         ag_layout.addWidget(l_desa, 2, 1)
         ag_layout.addWidget(self.cb_desa, 3, 1)
 
@@ -440,6 +459,8 @@ class WfsFilterDialog(QDialog):
         aoi_sub_lay.addWidget(self.rb_aoi_layer)
 
         self.cb_aoi_layer = QComboBox(self.aoi_sub_widget)
+        self.cb_aoi_layer.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+        self.cb_aoi_layer.setMinimumContentsLength(6)
         aoi_sub_lay.addWidget(self.cb_aoi_layer)
 
         # Sub-radio 2: Gambar AOI
@@ -448,8 +469,10 @@ class WfsFilterDialog(QDialog):
 
         h_draw = QHBoxLayout()
         h_draw.setSpacing(8)
-        self.btn_draw = QPushButton("🖌 Gambar Kotak Pembatas (BBOX) di Kanvas", self.aoi_sub_widget)
+        self.btn_draw = QPushButton("Gambar Kotak Pembatas (BBOX) di Kanvas", self.aoi_sub_widget)
         self.btn_draw.setObjectName('btnDrawAoi')
+        self.btn_draw.setIcon(icon('edit', '#1f6fd6', 14))
+        self.btn_draw.setIconSize(QSize(14, 14))
         self.btn_draw.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_draw.clicked.connect(self._on_draw_clicked)
         h_draw.addWidget(self.btn_draw)
@@ -467,6 +490,8 @@ class WfsFilterDialog(QDialog):
         self.aoi_btn_group = QButtonGroup(self)
         self.aoi_btn_group.addButton(self.rb_aoi_layer, 1)
         self.aoi_btn_group.addButton(self.rb_aoi_draw, 2)
+
+        main_layout.addStretch(1)
 
         # Action Buttons
         act_box = QHBoxLayout()
@@ -515,18 +540,18 @@ class WfsFilterDialog(QDialog):
         is_admin = self.rb_admin.isChecked()
         is_aoi = self.rb_aoi.isChecked()
 
-        self.card_all.setStyleSheet("QFrame#cardAll { background-color: #eff6ff; border: 1.5px solid #2563eb; border-radius: 10px; }"
+        self.card_all.setStyleSheet("QFrame#cardAll { background-color: #eff6ff; border: 1px solid #2563eb; border-radius: 10px; }"
                                     if is_all else
-                                    "QFrame#cardAll { background-color: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 10px; }")
+                                    "QFrame#cardAll { background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; }")
 
-        self.card_admin.setStyleSheet("QFrame#cardAdmin { background-color: #eff6ff; border: 1.5px solid #2563eb; border-radius: 10px; }"
+        self.card_admin.setStyleSheet("QFrame#cardAdmin { background-color: #eff6ff; border: 1px solid #2563eb; border-radius: 10px; }"
                                       if is_admin else
-                                      "QFrame#cardAdmin { background-color: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 10px; }")
+                                      "QFrame#cardAdmin { background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; }")
         self.admin_grid_widget.setVisible(is_admin)
 
-        self.card_aoi.setStyleSheet("QFrame#cardAoi { background-color: #eff6ff; border: 1.5px solid #2563eb; border-radius: 10px; }"
+        self.card_aoi.setStyleSheet("QFrame#cardAoi { background-color: #eff6ff; border: 1px solid #2563eb; border-radius: 10px; }"
                                     if is_aoi else
-                                    "QFrame#cardAoi { background-color: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 10px; }")
+                                    "QFrame#cardAoi { background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; }")
         self.aoi_sub_widget.setVisible(is_aoi)
 
     # -------------------------------------------------------------------------

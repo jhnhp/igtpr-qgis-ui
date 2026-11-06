@@ -2026,6 +2026,10 @@ body.v2-page .history-item {
   body.v2-page .stepper {
     flex-direction: column;
   }
+  body.v2-page .upload-subnav,
+  body.v2-page .v2-subnav {
+    grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+  }
 }
 
 /* ==========================================================================
@@ -2360,16 +2364,15 @@ tr.igt-sublayer-row td {
   color: #ffffff;
   box-shadow: 0 3px 10px rgba(31, 111, 214, 0.28);
 }
-@media (max-width: 540px) {
-  .dash-cat-tab {
-    padding: 6px 4px;
-    font-size: 10.5px;
-    gap: 4px;
+@media (max-width: 680px) {
+  .dash-cat-tabs {
+    flex-wrap: wrap;
   }
-}
-@media (max-width: 380px) {
-  .dash-cat-tab .tab-label {
-    display: none; /* Pas sempit, teks sembunyi dan icon tetap kelihatan jelas */
+  .dash-cat-tab {
+    flex: 1 1 calc(50% - 6px);
+    padding: 6px 8px;
+    font-size: 11px;
+    gap: 5px;
   }
 }
 
@@ -2471,11 +2474,31 @@ tr.igt-sublayer-row td {
   gap: 10px;
 }
 .dash-card-title-wrap {
-  display: inline-flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px 10px;
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: nowrap;
+  gap: 8px;
   flex: 1;
+  min-width: 0;
+}
+.dash-card-title-wrap .igt-catalog-num,
+.dash-card-title-wrap .igt-cat-inline-icon {
+  flex: none;
+  margin-top: 1px;
+}
+.dash-card-title-group {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.4;
+}
+.dash-card-title-group .dash-card-title {
+  display: inline;
+  vertical-align: middle;
+}
+.dash-card-title-group .igt-info-btn,
+.dash-card-title-group .dash-chip-toggle {
+  vertical-align: middle;
+  margin-left: 4px;
 }
 .dash-card-icon {
   width: 18px;
@@ -3178,6 +3201,12 @@ tr.igt-sublayer-row td {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px 10px;
+}
+@media (max-width: 480px) {
+  .wfs-grid-2x2,
+  .igt-detail-grid {
+    grid-template-columns: 1fr;
+  }
 }
 .wfs-field {
   display: flex;

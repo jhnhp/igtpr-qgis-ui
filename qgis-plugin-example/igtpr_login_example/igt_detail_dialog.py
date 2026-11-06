@@ -17,12 +17,22 @@ Menampilkan informasi lengkap mengenai dataset IGT:
 from qgis.PyQt.QtCore import QSize, Qt, pyqtSignal, QUrl
 from qgis.PyQt.QtGui import QColor, QFont, QDesktopServices
 from qgis.PyQt.QtWidgets import (
-    QDialog, QFrame, QHBoxLayout, QLabel, QPushButton,
-    QScrollArea, QVBoxLayout, QWidget, QGridLayout, QMessageBox,
+    QDialog, QFrame, QHBoxLayout, QLabel, QLayout, QPushButton,
+    QScrollArea, QSizePolicy, QVBoxLayout, QWidget, QGridLayout, QMessageBox,
 )
 
 from .assets import ICONS
 from .login_page import svg_pixmap
+
+
+class _ScrollContent(QWidget):
+    def minimumSizeHint(self):
+        h = self.layout().totalMinimumSize().height() if self.layout() else 100
+        return QSize(100, h)
+
+    def sizeHint(self):
+        h = self.layout().totalSizeHint().height() if self.layout() else 100
+        return QSize(200, h)
 
 
 class IgtDetailDialog(QDialog):
@@ -142,7 +152,7 @@ class IgtDetailDialog(QDialog):
         ht_layout.setSpacing(3)
 
         eyebrow = QLabel("SISTEM INFORMASI GEOSPASIAL ATR/BPN · DETAIL IGT", head_card)
-        eyebrow.setStyleSheet("color: #bfdbfe; font-size: 9px; font-weight: 800; letter-spacing: 0.8px;")
+        eyebrow.setStyleSheet("color: #bfdbfe; font-size: 9px; font-weight: 800; letter-spacing: 1px;")
         ht_layout.addWidget(eyebrow)
 
         title_lbl = QLabel(d_name, head_card)
@@ -164,10 +174,11 @@ class IgtDetailDialog(QDialog):
         scroll.setFrameShape(QFrame.Shape.NoFrame)
         scroll.setStyleSheet("QScrollArea { background: transparent; border: none; }")
 
-        body_widget = QWidget()
+        body_widget = _ScrollContent()
         body_widget.setStyleSheet("background: transparent;")
         body_layout = QVBoxLayout(body_widget)
-        body_layout.setContentsMargins(0, 0, 0, 0)
+        body_layout.setSizeConstraint(QLayout.SizeConstraint.SetNoConstraint)
+        body_layout.setContentsMargins(0, 0, 6, 0)
         body_layout.setSpacing(10)
 
         # Card: Informasi Utama Metadata
@@ -269,10 +280,10 @@ class IgtDetailDialog(QDialog):
         mc_layout.addWidget(m_desc)
 
         meta_url = f"https://geoportal.atrbpn.go.id/metadata/{d_id.lower()}"
-        meta_link_btn = QPushButton(f"↗ Lihat Metadata Geospasial ({meta_url})", meta_card)
+        meta_link_btn = QPushButton("↗ Buka Dokumen Metadata Geospasial (ISO 19115)", meta_card)
         meta_link_btn.setObjectName('metadataLinkBtn')
         meta_link_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        meta_link_btn.setToolTip("Buka halaman dokumen metadata geospasial")
+        meta_link_btn.setToolTip(f"Buka halaman dokumen metadata geospasial: {meta_url}")
         meta_link_btn.clicked.connect(lambda: self._open_metadata(meta_url))
         mc_layout.addWidget(meta_link_btn)
         body_layout.addWidget(meta_card)
@@ -292,7 +303,8 @@ class IgtDetailDialog(QDialog):
 
             for s in self.dataset['subLayers']:
                 s_box = QFrame(subs_card)
-                s_box.setStyleSheet("background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 6px 10px;")
+                s_box.setObjectName("subLayerBox")
+                s_box.setStyleSheet("QFrame#subLayerBox { background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 6px 10px; }")
                 sb_lay = QHBoxLayout(s_box)
                 sb_lay.setContentsMargins(4, 2, 4, 2)
                 sb_lay.setSpacing(8)
@@ -300,7 +312,7 @@ class IgtDetailDialog(QDialog):
                 s_txt = QVBoxLayout()
                 s_txt.setSpacing(2)
                 s_title = QLabel(f"• {s.get('name', 'Sub-layer')}", s_box)
-                s_title.setStyleSheet("color: #065f46; font-size: 11.5px; font-weight: 700;")
+                s_title.setStyleSheet("color: #065f46; font-size: 12px; font-weight: 700;")
                 s_txt.addWidget(s_title)
 
                 s_meta = QLabel(f"ID: {s.get('id', '—')} · Update: {s.get('updated', '—')} · Cakupan: {s.get('scope', '—')}", s_box)

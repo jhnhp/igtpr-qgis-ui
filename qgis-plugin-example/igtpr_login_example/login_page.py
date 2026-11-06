@@ -159,6 +159,7 @@ class ImageView(QWidget):
 
     def resizeEvent(self, event):
         self.setFixedHeight(round(self.width() * self._ratio))
+        self.updateGeometry()
         super().resizeEvent(event)
 
     def paintEvent(self, event):
@@ -218,8 +219,9 @@ class BrandHeader(QWidget):
 
     def __init__(self, bpn_logo_path=None, igtpr_logo_path=None, parent=None):
         super().__init__(parent)
-        self.bpn_logo_path = bpn_logo_path
-        self.igtpr_logo_path = igtpr_logo_path
+        plugin_dir = os.path.dirname(os.path.abspath(__file__))
+        self.bpn_logo_path = bpn_logo_path or os.path.join(plugin_dir, 'logo-bpn.png')
+        self.igtpr_logo_path = igtpr_logo_path or os.path.join(plugin_dir, 'logo-igtpr.png')
         # Header harus tembus pandang agar dekorasi background LoginPage tetap terlihat.
         self.setAttribute(Qt.WidgetAttribute.WA_NoSystemBackground, True)
         self.setAutoFillBackground(False)
@@ -259,15 +261,18 @@ class BrandHeader(QWidget):
         return QPixmap()
 
     def _refresh_logos(self):
-        compact = self.width() < 470
-        height = max(32, min(44 if compact else 68, self.height() - 12))
+        w = self.width() if self.width() > 100 else (self.parentWidget().width() if self.parentWidget() else 480)
+        compact = w < 470
+        h_ref = max(self.height(), 76)
+        height = max(36, min(42 if compact else 58, h_ref - 12))
         self._bpn.setPixmap(self._load_logo(self.bpn_logo_path, QSize(height, height)))
         self._igtpr.setPixmap(self._load_logo(self.igtpr_logo_path, QSize(height, height)))
         self._bpn.setFixedSize(height, height)
         self._igtpr.setFixedSize(height, height)
+        font_px = 16 if w < 380 else (18 if compact else 24)
         self._brand_title.setStyleSheet(
             'color: #080b12; font-family: "Segoe UI", Arial, sans-serif; '
-            'font-size: %dpx; font-weight: 500; background: transparent;' % (16 if compact else 26))
+            'font-size: %dpx; font-weight: 800; background: transparent;' % font_px)
 
     def resizeEvent(self, event):
         self._refresh_logos()
@@ -411,7 +416,7 @@ class LoginPage(QWidget):
         hint.setWordWrap(True)
         secondary_row.addWidget(hint, 1)
 
-        admin_button = QPushButton('Administator', box)
+        admin_button = QPushButton('Administrator', box)
         admin_button.setObjectName('adminLoginButton')
         admin_button.setCursor(Qt.CursorShape.PointingHandCursor)
         admin_button.setToolTip('Login khusus administrator')
@@ -429,7 +434,12 @@ class LoginPage(QWidget):
         super().resizeEvent(event)
 
     def minimumSizeHint(self):
-        return QSize(200, 200)
+        h = self.layout().totalMinimumSize().height() if self.layout() else 200
+        return QSize(200, h)
+
+    def sizeHint(self):
+        h = self.layout().totalSizeHint().height() if self.layout() else 400
+        return QSize(320, h)
 
     def _relayout(self, width):
         if width >= NARROW:

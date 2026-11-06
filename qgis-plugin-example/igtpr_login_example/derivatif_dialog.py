@@ -16,6 +16,9 @@ from .assets import ICONS
 from .login_page import svg_pixmap
 from .ui_kit import icon
 
+PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
+CHEVRON_DOWN_SVG = os.path.join(PLUGIN_DIR, 'chevron_down_dark.svg').replace('\\', '/')
+
 
 class _ScrollContent(QWidget):
     """Widget konten QScrollArea yang lebarnya selalu mengikuti viewport tanpa meluber ke kanan."""
@@ -109,9 +112,24 @@ class DerivatifBidangPage(QWidget):
                 font-size: 12px;
                 color: #0f294d;
             }
+            QComboBox, QDateEdit {
+                padding-right: 24px;
+            }
+            QComboBox::drop-down, QDateEdit::drop-down {
+                subcontrol-origin: padding;
+                subcontrol-position: center right;
+                width: 22px;
+                border: none;
+                background: transparent;
+            }
+            QComboBox::down-arrow, QDateEdit::down-arrow {
+                image: url('%CHEVRON%');
+                width: 11px;
+                height: 11px;
+            }
             QLineEdit:focus, QComboBox:focus, QDateEdit:focus, QDoubleSpinBox:focus, QSpinBox:focus {
                 border-color: #1f6fd6;
-            }
+            }""".replace('%CHEVRON%', CHEVRON_DOWN_SVG) + """
             QPushButton#backBtn {
                 background-color: #ffffff;
                 border: 1px solid #cbd5e1;
@@ -206,9 +224,9 @@ class DerivatifBidangPage(QWidget):
         icon_lbl.setPixmap(svg_pixmap(ICONS['layers'].format(color='#1f6fd6'), QSize(20, 20)))
         title_row.addWidget(icon_lbl)
 
-        title = QLabel('Derivatif Per Bidang', self)
-        title.setStyleSheet("color: #0f294d; font-size: 16px; font-weight: 800;")
-        title_row.addWidget(title)
+        self.title_lbl = QLabel('Derivatif Per Bidang', self)
+        self.title_lbl.setStyleSheet("color: #0f294d; font-size: 16px; font-weight: 800;")
+        title_row.addWidget(self.title_lbl)
 
         self.mode_badge = QLabel('Mode: Isi Tematik', self)
         self.mode_badge.setStyleSheet("""
@@ -231,11 +249,11 @@ class DerivatifBidangPage(QWidget):
 
         head_layout.addLayout(text_layout, 1)
 
-        back_btn = QPushButton('← Dashboard', self)
-        back_btn.setObjectName('backBtn')
-        back_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        back_btn.clicked.connect(self._on_back_clicked)
-        head_layout.addWidget(back_btn, 0, Qt.AlignmentFlag.AlignTop)
+        self.back_btn = QPushButton('← Dashboard', self)
+        self.back_btn.setObjectName('backBtn')
+        self.back_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.back_btn.clicked.connect(self._on_back_clicked)
+        head_layout.addWidget(self.back_btn, 0, Qt.AlignmentFlag.AlignTop)
 
         layout.addLayout(head_layout)
 
@@ -255,6 +273,7 @@ class DerivatifBidangPage(QWidget):
         tf_layout.setSpacing(6)
 
         self.btn_tab_isi = QPushButton('Isi Tematik', tab_frame)
+        self.btn_tab_isi.setMinimumWidth(40)
         self.btn_tab_isi.setIconSize(QSize(14, 14))
         self.btn_tab_isi.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_tab_isi.setToolTip("Pilih layer derivatif, load baseline WMS, klik bidang, isi atribut CMS & ekspor")
@@ -262,6 +281,7 @@ class DerivatifBidangPage(QWidget):
         tf_layout.addWidget(self.btn_tab_isi)
 
         self.btn_tab_create = QPushButton('Create Tematik', tab_frame)
+        self.btn_tab_create.setMinimumWidth(40)
         self.btn_tab_create.setIconSize(QSize(14, 14))
         self.btn_tab_create.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_tab_create.setToolTip("Buat layer baru, load baseline WMS, atribut default terkunci + atribut kustom")
@@ -269,6 +289,7 @@ class DerivatifBidangPage(QWidget):
         tf_layout.addWidget(self.btn_tab_create)
 
         self.btn_tab_load = QPushButton('Load Tematik', tab_frame)
+        self.btn_tab_load.setMinimumWidth(40)
         self.btn_tab_load.setIconSize(QSize(14, 14))
         self.btn_tab_load.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_tab_load.setToolTip("Pilih berkas hasil ekspor tabel atribut derivatif dan muat visualisasinya ke kanvas peta QGIS")
@@ -279,6 +300,7 @@ class DerivatifBidangPage(QWidget):
 
         # 3. Stacked Sub-Pages
         self.sub_stack = QStackedWidget(self)
+        self._page_width = 540
 
         # Page 0: Mode ISI TEMATIK
         self.view_isi = self._build_view_isi()
@@ -298,18 +320,25 @@ class DerivatifBidangPage(QWidget):
 
     def _switch_mode(self, mode_name):
         self.current_mode = mode_name
-        active_isi = "background-color: #2563eb; color: #ffffff; font-weight: 700; font-size: 12px; border-radius: 6px; padding: 6px 10px; border: none;"
-        active_create = "background-color: #7c3aed; color: #ffffff; font-weight: 700; font-size: 12px; border-radius: 6px; padding: 6px 10px; border: none;"
-        active_load = "background-color: #059669; color: #ffffff; font-weight: 700; font-size: 12px; border-radius: 6px; padding: 6px 10px; border: none;"
-        inactive_style = "background-color: #ffffff; color: #475569; font-size: 12px; font-weight: 600; border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 10px;"
+        narrow = getattr(self, '_page_width', 500) < 440
+        pad = "5px 4px" if narrow else "6px 10px"
+        fs = "11px" if narrow else "12px"
+        active_isi = f"background-color: #2563eb; color: #ffffff; font-weight: 700; font-size: {fs}; border-radius: 6px; padding: {pad}; border: none;"
+        active_create = f"background-color: #7c3aed; color: #ffffff; font-weight: 700; font-size: {fs}; border-radius: 6px; padding: {pad}; border: none;"
+        active_load = f"background-color: #059669; color: #ffffff; font-weight: 700; font-size: {fs}; border-radius: 6px; padding: {pad}; border: none;"
+        inactive_style = f"background-color: #ffffff; color: #475569; font-size: {fs}; font-weight: 600; border: 1px solid #cbd5e1; border-radius: 6px; padding: {pad};"
 
         self.btn_tab_isi.setStyleSheet(active_isi if mode_name == 'isi' else inactive_style)
         self.btn_tab_create.setStyleSheet(active_create if mode_name == 'create' else inactive_style)
         self.btn_tab_load.setStyleSheet(active_load if mode_name == 'load' else inactive_style)
 
-        self.btn_tab_isi.setIcon(icon('edit', '#ffffff' if mode_name == 'isi' else '#2563eb', 14))
-        self.btn_tab_create.setIcon(icon('plus', '#ffffff' if mode_name == 'create' else '#7c3aed', 14))
-        self.btn_tab_load.setIcon(icon('folder', '#ffffff' if mode_name == 'load' else '#059669', 14))
+        ic_sz = 12 if narrow else 14
+        self.btn_tab_isi.setIconSize(QSize(ic_sz, ic_sz))
+        self.btn_tab_create.setIconSize(QSize(ic_sz, ic_sz))
+        self.btn_tab_load.setIconSize(QSize(ic_sz, ic_sz))
+        self.btn_tab_isi.setIcon(icon('edit', '#ffffff' if mode_name == 'isi' else '#2563eb', ic_sz))
+        self.btn_tab_create.setIcon(icon('plus', '#ffffff' if mode_name == 'create' else '#7c3aed', ic_sz))
+        self.btn_tab_load.setIcon(icon('folder', '#ffffff' if mode_name == 'load' else '#059669', ic_sz))
 
         if mode_name == 'isi':
             self.mode_badge.setText('Mode: Isi Tematik')
@@ -336,7 +365,88 @@ class DerivatifBidangPage(QWidget):
 
     def apply_width(self, width):
         """Dukungan responsif terhadap lebar panel."""
-        pass
+        self._page_width = width
+        narrow = width < 460
+        very_narrow = width < 420
+        self.mode_badge.setVisible(not narrow)
+        self.back_btn.setText('← Kembali' if narrow else '← Kembali ke Beranda')
+        self.title_lbl.setStyleSheet(
+            f"color: #0f294d; font-size: {'13px' if very_narrow else '15px'}; font-weight: 800;"
+        )
+        self._switch_mode(self.current_mode)
+
+        # Adapt buttons and tables across modes
+        btn_pad_style = "padding: 5px 8px; font-size: 11px;" if very_narrow else ""
+        if hasattr(self, 'btn_load_wms'):
+            self.btn_load_wms.setText('Load WMS' if very_narrow else 'Load Baseline WMS')
+            self.btn_load_wms.setStyleSheet(btn_pad_style)
+        if hasattr(self, 'btn_pick_canvas'):
+            self.btn_pick_canvas.setText('Klik Peta' if very_narrow else 'Klik Bidang di Peta')
+            self.btn_pick_canvas.setStyleSheet(btn_pad_style)
+        if hasattr(self, 'btn_import_isi'):
+            self.btn_import_isi.setText('Import' if very_narrow else 'Import Bidang')
+        if hasattr(self, 'fmt_radios') and len(self.fmt_radios) == 3:
+            labels = (
+                ['.gpkg', '.geojson', '.shp']
+                if narrow else
+                ['.gpkg (GeoPackage)', '.geojson (GeoJSON)', '.shp (Shapefile)']
+            )
+            for rb, txt in zip(self.fmt_radios, labels):
+                rb.setText(txt)
+        if hasattr(self, 'table'):
+            self.table.setColumnHidden(1, narrow)  # NIB
+            self.table.setColumnHidden(3, narrow)  # Jenis Hak
+
+        if hasattr(self, 'btn_load_bl_create'):
+            self.btn_load_bl_create.setText('Load WMS' if very_narrow else 'Load Baseline WMS')
+            self.btn_load_bl_create.setStyleSheet(btn_pad_style)
+        if hasattr(self, 'btn_pick_create'):
+            self.btn_pick_create.setText('Klik Peta' if very_narrow else 'Pilih Bidang Baseline')
+            self.btn_pick_create.setStyleSheet(btn_pad_style)
+        if hasattr(self, 'btn_import_create'):
+            self.btn_import_create.setText('Import' if very_narrow else 'Import Bidang')
+        if hasattr(self, 'btn_save_create_bidang'):
+            self.btn_save_create_bidang.setText(
+                'Simpan Bidang && Lanjut' if very_narrow else 'Simpan Bidang (Pertahankan Skema && Lanjut)'
+            )
+        if hasattr(self, 'table_locked'):
+            self.table_locked.setHorizontalHeaderLabels(
+                ["Kolom", "Tipe", "Nilai Default"] if narrow else ["Kolom Baseline", "Tipe", "Nilai Default (Terkunci)"]
+            )
+        if hasattr(self, 'table_custom'):
+            self.table_custom.setHorizontalHeaderLabels(
+                ["Kolom", "Tipe", "Len", "Nilai", ""] if narrow else ["Nama Kolom", "Tipe", "Len", "Nilai (Isi)", ""]
+            )
+            if narrow:
+                self.table_custom.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+                self.table_custom.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
+                self.table_custom.setColumnWidth(1, 78)
+                self.table_custom.setColumnWidth(2, 38)
+                self.table_custom.setColumnWidth(4, 24)
+            else:
+                self.table_custom.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Interactive)
+                self.table_custom.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Interactive)
+                self.table_custom.setColumnWidth(0, 130)
+                self.table_custom.setColumnWidth(1, 105)
+                self.table_custom.setColumnWidth(2, 46)
+                self.table_custom.setColumnWidth(4, 28)
+        if hasattr(self, 'table_create_parcels'):
+            self.table_create_parcels.setColumnHidden(0, narrow)
+            self.table_create_parcels.setHorizontalHeaderLabels(
+                ["No", "ID Bidang", "Atribut Kustom" if narrow else "Ringkasan Atribut Kustom", "Aksi"]
+            )
+
+        if hasattr(self, 'table_loaded_parcels'):
+            self.table_loaded_parcels.setColumnHidden(1, narrow)  # NIB
+            self.table_loaded_parcels.setColumnHidden(3, narrow)  # Jenis Hak
+        if hasattr(self, 'btn_visualize'):
+            self.btn_visualize.setText(
+                'Visualisasikan Poligon ke QGIS' if very_narrow else 'Muat && Visualisasikan Poligon ke Kanvas QGIS'
+            )
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.apply_width(event.size().width())
 
     # ==========================================================================
     # SUB-PAGE 0: VIEW ISI TEMATIK
@@ -360,6 +470,7 @@ class DerivatifBidangPage(QWidget):
         s1_layout.setSpacing(8)
 
         s1_head = QLabel('1. Pilih Layer Derivatif & Load Baseline WMS:', s1)
+        s1_head.setWordWrap(True)
         s1_head.setStyleSheet("color: #0f294d; font-size: 12px; font-weight: 800;")
         s1_layout.addWidget(s1_head)
 
@@ -431,9 +542,9 @@ class DerivatifBidangPage(QWidget):
 
         s2_head_row = QHBoxLayout()
         s2_head = QLabel('2. Interaksi Kanvas & Form Atribut CMS:', s2)
+        s2_head.setWordWrap(True)
         s2_head.setStyleSheet("color: #0f294d; font-size: 12px; font-weight: 800;")
-        s2_head_row.addWidget(s2_head)
-        s2_head_row.addStretch()
+        s2_head_row.addWidget(s2_head, 1)
 
         self.lbl_count_isi = QLabel(f"{len(self.records)} Bidang Sesi Ini", s2)
         self.lbl_count_isi.setStyleSheet("background-color: #ecfdf5; color: #047857; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; border: 1px solid #a7f3d0;")
@@ -444,23 +555,23 @@ class DerivatifBidangPage(QWidget):
         act_row = QHBoxLayout()
         act_row.setSpacing(6)
 
-        btn_pick_canvas = QPushButton("Klik Bidang di Peta", s2)
-        btn_pick_canvas.setObjectName('actionBtn')
-        btn_pick_canvas.setIcon(icon('pin', '#ffffff', 14))
-        btn_pick_canvas.setIconSize(QSize(14, 14))
-        btn_pick_canvas.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        btn_pick_canvas.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_pick_canvas.clicked.connect(self._on_click_bidang_peta)
-        act_row.addWidget(btn_pick_canvas)
+        self.btn_pick_canvas = QPushButton("Klik Bidang di Peta", s2)
+        self.btn_pick_canvas.setObjectName('actionBtn')
+        self.btn_pick_canvas.setIcon(icon('pin', '#ffffff', 14))
+        self.btn_pick_canvas.setIconSize(QSize(14, 14))
+        self.btn_pick_canvas.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        self.btn_pick_canvas.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_pick_canvas.clicked.connect(self._on_click_bidang_peta)
+        act_row.addWidget(self.btn_pick_canvas)
 
-        btn_import_isi = QPushButton("Import Bidang", s2)
-        btn_import_isi.setIcon(icon('upload', '#0284c7', 14))
-        btn_import_isi.setIconSize(QSize(14, 14))
-        btn_import_isi.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        btn_import_isi.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_import_isi.setStyleSheet("background-color: #f0f9ff; color: #0284c7; border: 1px solid #7dd3fc; border-radius: 6px; padding: 5px 10px; font-size: 11px; font-weight: 700;")
-        btn_import_isi.clicked.connect(self._on_import_bidang_file)
-        act_row.addWidget(btn_import_isi)
+        self.btn_import_isi = QPushButton("Import Bidang", s2)
+        self.btn_import_isi.setIcon(icon('upload', '#0284c7', 14))
+        self.btn_import_isi.setIconSize(QSize(14, 14))
+        self.btn_import_isi.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        self.btn_import_isi.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_import_isi.setStyleSheet("background-color: #f0f9ff; color: #0284c7; border: 1px solid #7dd3fc; border-radius: 6px; padding: 5px 10px; font-size: 11px; font-weight: 700;")
+        self.btn_import_isi.clicked.connect(self._on_import_bidang_file)
+        act_row.addWidget(self.btn_import_isi)
 
         act_row.addSpacing(4)
         id_lbl = QLabel('ID:', s2)
@@ -468,7 +579,7 @@ class DerivatifBidangPage(QWidget):
         act_row.addWidget(id_lbl)
 
         self.id_input = QLineEdit(f"BDG-3404-00{self.current_id_counter}", s2)
-        self.id_input.setMinimumWidth(80)
+        self.id_input.setMinimumWidth(65)
         self.id_input.home(False)
         act_row.addWidget(self.id_input, 1)
 
@@ -498,7 +609,7 @@ class DerivatifBidangPage(QWidget):
             ('REMARK', 'Terverifikasi Lengkap'),
         ]
 
-        lbl_qss = "color: #475569; font-size: 10px; font-weight: 800; letter-spacing: 0.3px; margin-top: 2px;"
+        lbl_qss = "color: #475569; font-size: 10px; font-weight: 800; letter-spacing: 0px; margin-top: 2px;"
         self.form_inputs = {}
         for idx, (f_name, f_val) in enumerate(fields):
             row = idx // 2
@@ -594,9 +705,9 @@ class DerivatifBidangPage(QWidget):
 
         s3_head_row = QHBoxLayout()
         s3_head = QLabel('3. Daftar Bidang Terisi (Sesi Ini):', s3)
+        s3_head.setWordWrap(True)
         s3_head.setStyleSheet("color: #0f294d; font-size: 12px; font-weight: 800;")
-        s3_head_row.addWidget(s3_head)
-        s3_head_row.addStretch()
+        s3_head_row.addWidget(s3_head, 1)
 
         self.badge_baru = QLabel('Baru Diisi: 0', s3)
         self.badge_baru.setStyleSheet("""
@@ -614,6 +725,7 @@ class DerivatifBidangPage(QWidget):
         s3_layout.addLayout(s3_head_row)
 
         self.table = QTableWidget(s3)
+        self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.table.setColumnCount(6)
         self.table.setHorizontalHeaderLabels(['ID Bidang', 'NIB', 'Pemegang Hak', 'Jenis Hak', 'Luas (m²)', 'Aksi'])
         self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
@@ -636,6 +748,7 @@ class DerivatifBidangPage(QWidget):
         s4_layout.setSpacing(8)
 
         s4_head = QLabel('4. Opsi Penyimpanan & Format Ekspor (Tabel Atribut):', s4)
+        s4_head.setWordWrap(True)
         s4_head.setStyleSheet("color: #0f294d; font-size: 12px; font-weight: 800;")
         s4_layout.addWidget(s4_head)
 
@@ -681,6 +794,7 @@ class DerivatifBidangPage(QWidget):
         fmt_row.addWidget(fmt_lbl)
 
         self.radio_group = QButtonGroup(self)
+        self.fmt_radios = []
         for idx, (fmt_label, checked) in enumerate([
             ('.gpkg (GeoPackage)', True),
             ('.geojson (GeoJSON)', False),
@@ -690,6 +804,7 @@ class DerivatifBidangPage(QWidget):
             rb.setStyleSheet("font-size: 11px; color: #334155;")
             rb.setChecked(checked)
             self.radio_group.addButton(rb, idx)
+            self.fmt_radios.append(rb)
             fmt_row.addWidget(rb)
         fmt_row.addStretch()
         s4_layout.addLayout(fmt_row)
@@ -748,6 +863,7 @@ class DerivatifBidangPage(QWidget):
         c1_lay.setSpacing(8)
 
         lbl_c1_title = QLabel("1. Pengaturan Layer Baru & Baseline (CMS Geoportal):", c1)
+        lbl_c1_title.setWordWrap(True)
         lbl_c1_title.setStyleSheet("color: #0f294d; font-size: 12px; font-weight: 800;")
         c1_lay.addWidget(lbl_c1_title)
 
@@ -792,12 +908,13 @@ class DerivatifBidangPage(QWidget):
 
         wms_c_row = QHBoxLayout()
         wms_c_row.setSpacing(8)
-        btn_load_bl_create = QPushButton("Load Baseline WMS", c1)
-        btn_load_bl_create.setObjectName("purpleActionBtn")
-        btn_load_bl_create.setIcon(icon('layers', '#ffffff', 14))
-        btn_load_bl_create.setIconSize(QSize(14, 14))
-        btn_load_bl_create.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_load_bl_create = QPushButton("Load Baseline WMS", c1)
+        self.btn_load_bl_create.setObjectName("purpleActionBtn")
+        self.btn_load_bl_create.setIcon(icon('layers', '#ffffff', 14))
+        self.btn_load_bl_create.setIconSize(QSize(14, 14))
+        self.btn_load_bl_create.setCursor(Qt.CursorShape.PointingHandCursor)
         self.lbl_create_wms_status = QLabel("✓ Baseline WMS Aktif (EPSG:4326)", c1)
+        self.lbl_create_wms_status.setWordWrap(True)
         self.lbl_create_wms_status.setStyleSheet("color: #047857; font-size: 11px; font-weight: 700;")
 
         def on_load_create_wms():
@@ -805,8 +922,8 @@ class DerivatifBidangPage(QWidget):
             self.lbl_create_wms_status.setStyleSheet("color: #047857; font-size: 11px; font-weight: 800;")
             QMessageBox.information(self, "Baseline WMS", "Layer WMS Baseline berhasil dimuat ke peta QGIS.")
 
-        btn_load_bl_create.clicked.connect(on_load_create_wms)
-        wms_c_row.addWidget(btn_load_bl_create)
+        self.btn_load_bl_create.clicked.connect(on_load_create_wms)
+        wms_c_row.addWidget(self.btn_load_bl_create)
         wms_c_row.addWidget(self.lbl_create_wms_status, 1)
         c1_lay.addLayout(wms_c_row)
 
@@ -820,9 +937,9 @@ class DerivatifBidangPage(QWidget):
 
         c2_head_row = QHBoxLayout()
         lbl_c2_title = QLabel("2. Pilih Bidang Baseline, Atribut Default & Kustom:", c2)
+        lbl_c2_title.setWordWrap(True)
         lbl_c2_title.setStyleSheet("color: #0f294d; font-size: 12px; font-weight: 800;")
-        c2_head_row.addWidget(lbl_c2_title)
-        c2_head_row.addStretch()
+        c2_head_row.addWidget(lbl_c2_title, 1)
 
         self.lbl_count_create = QLabel(f"{len(self.create_records)} Bidang Sesi Ini", c2)
         self.lbl_count_create.setStyleSheet("background-color: #ecfdf5; color: #047857; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; border: 1px solid #a7f3d0;")
@@ -831,23 +948,23 @@ class DerivatifBidangPage(QWidget):
 
         pick_row = QHBoxLayout()
         pick_row.setSpacing(6)
-        btn_pick_create = QPushButton("Pilih Bidang Baseline", c2)
-        btn_pick_create.setObjectName("purpleActionBtn")
-        btn_pick_create.setIcon(icon('pin', '#ffffff', 14))
-        btn_pick_create.setIconSize(QSize(14, 14))
-        btn_pick_create.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        btn_pick_create.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_pick_create.clicked.connect(self._on_click_bidang_peta)
-        pick_row.addWidget(btn_pick_create)
+        self.btn_pick_create = QPushButton("Pilih Bidang Baseline", c2)
+        self.btn_pick_create.setObjectName("purpleActionBtn")
+        self.btn_pick_create.setIcon(icon('pin', '#ffffff', 14))
+        self.btn_pick_create.setIconSize(QSize(14, 14))
+        self.btn_pick_create.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        self.btn_pick_create.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_pick_create.clicked.connect(self._on_click_bidang_peta)
+        pick_row.addWidget(self.btn_pick_create)
 
-        btn_import_create = QPushButton("Import Bidang", c2)
-        btn_import_create.setIcon(icon('upload', '#7c3aed', 14))
-        btn_import_create.setIconSize(QSize(14, 14))
-        btn_import_create.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        btn_import_create.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_import_create.setStyleSheet("background-color: #faf5ff; color: #7c3aed; border: 1px solid #d8b4fe; border-radius: 6px; padding: 5px 10px; font-size: 11px; font-weight: 700;")
-        btn_import_create.clicked.connect(self._on_import_bidang_file)
-        pick_row.addWidget(btn_import_create)
+        self.btn_import_create = QPushButton("Import Bidang", c2)
+        self.btn_import_create.setIcon(icon('upload', '#7c3aed', 14))
+        self.btn_import_create.setIconSize(QSize(14, 14))
+        self.btn_import_create.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        self.btn_import_create.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_import_create.setStyleSheet("background-color: #faf5ff; color: #7c3aed; border: 1px solid #d8b4fe; border-radius: 6px; padding: 5px 10px; font-size: 11px; font-weight: 700;")
+        self.btn_import_create.clicked.connect(self._on_import_bidang_file)
+        pick_row.addWidget(self.btn_import_create)
 
         self.lbl_create_id = QLabel(f"ID: <b>BDG-3404-00{self.current_id_counter}</b>", c2)
         self.lbl_create_id.setStyleSheet("color: #0f294d; font-size: 11px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 5px; padding: 4px 8px;")
@@ -858,15 +975,16 @@ class DerivatifBidangPage(QWidget):
         # Sub A: Atribut Baseline Terkunci
         suba_head = QHBoxLayout()
         lbl_suba = QLabel("A. Atribut Default Baseline (Terkunci / Read-Only):", c2)
+        lbl_suba.setWordWrap(True)
         lbl_suba.setStyleSheet("font-size: 11px; font-weight: 700; color: #334155;")
-        suba_head.addWidget(lbl_suba)
-        suba_head.addStretch()
+        suba_head.addWidget(lbl_suba, 1)
         lbl_suba_tag = QLabel("6 Kolom Bawaan", c2)
         lbl_suba_tag.setStyleSheet("font-size: 10px; font-weight: 600; color: #64748b; background: #f1f5f9; border-radius: 4px; padding: 2px 6px;")
         suba_head.addWidget(lbl_suba_tag)
         c2_lay.addLayout(suba_head)
 
         self.table_locked = QTableWidget(c2)
+        self.table_locked.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.table_locked.setColumnCount(3)
         self.table_locked.setHorizontalHeaderLabels(["Kolom Baseline", "Tipe", "Nilai Default (Terkunci)"])
         self.table_locked.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
@@ -905,9 +1023,9 @@ class DerivatifBidangPage(QWidget):
         # Sub B: Atribut Custom Tambahan
         subb_head = QHBoxLayout()
         lbl_subb = QLabel("B. Atribut Kustom Tambahan:", c2)
+        lbl_subb.setWordWrap(True)
         lbl_subb.setStyleSheet("font-size: 11px; font-weight: 700; color: #5b21b6;")
-        subb_head.addWidget(lbl_subb)
-        subb_head.addStretch()
+        subb_head.addWidget(lbl_subb, 1)
 
         btn_add_col = QPushButton("Tambah Atribut", c2)
         btn_add_col.setIcon(icon('plus', '#6d28d9', 13))
@@ -919,6 +1037,7 @@ class DerivatifBidangPage(QWidget):
         c2_lay.addLayout(subb_head)
 
         self.table_custom = QTableWidget(c2)
+        self.table_custom.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.table_custom.setColumnCount(5)
         self.table_custom.setHorizontalHeaderLabels(["Nama Kolom", "Tipe", "Len", "Nilai (Isi)", ""])
         self.table_custom.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Interactive)
@@ -937,13 +1056,13 @@ class DerivatifBidangPage(QWidget):
         c2_lay.addWidget(self.table_custom)
         self._render_custom_cols_table()
 
-        btn_save_create_bidang = QPushButton("Simpan Bidang (Pertahankan Skema && Lanjut)", c2)
-        btn_save_create_bidang.setObjectName("purpleActionBtn")
-        btn_save_create_bidang.setIcon(icon('check-circle', '#ffffff', 14))
-        btn_save_create_bidang.setIconSize(QSize(14, 14))
-        btn_save_create_bidang.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_save_create_bidang.clicked.connect(self._on_save_create_bidang)
-        c2_lay.addWidget(btn_save_create_bidang)
+        self.btn_save_create_bidang = QPushButton("Simpan Bidang (Pertahankan Skema && Lanjut)", c2)
+        self.btn_save_create_bidang.setObjectName("purpleActionBtn")
+        self.btn_save_create_bidang.setIcon(icon('check-circle', '#ffffff', 14))
+        self.btn_save_create_bidang.setIconSize(QSize(14, 14))
+        self.btn_save_create_bidang.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_save_create_bidang.clicked.connect(self._on_save_create_bidang)
+        c2_lay.addWidget(self.btn_save_create_bidang)
 
         c_lay.addWidget(c2)
 
@@ -954,10 +1073,12 @@ class DerivatifBidangPage(QWidget):
         c3_lay.setSpacing(6)
 
         lbl_c3_title = QLabel("3. Daftar Bidang Terisi (Sesi Ini):", c3)
+        lbl_c3_title.setWordWrap(True)
         lbl_c3_title.setStyleSheet("color: #0f294d; font-size: 12px; font-weight: 800;")
         c3_lay.addWidget(lbl_c3_title)
 
         self.table_create_parcels = QTableWidget(c3)
+        self.table_create_parcels.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.table_create_parcels.setColumnCount(4)
         self.table_create_parcels.setHorizontalHeaderLabels(["No", "ID Bidang", "Ringkasan Atribut Kustom", "Aksi"])
         self.table_create_parcels.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
@@ -979,6 +1100,7 @@ class DerivatifBidangPage(QWidget):
         c4_lay.setSpacing(8)
 
         lbl_c4_title = QLabel("4. Opsi Penyimpanan & Format Ekspor:", c4)
+        lbl_c4_title.setWordWrap(True)
         lbl_c4_title.setStyleSheet("color: #0f294d; font-size: 12px; font-weight: 800;")
         c4_lay.addWidget(lbl_c4_title)
 
@@ -1017,6 +1139,7 @@ class DerivatifBidangPage(QWidget):
         l1_lay.setSpacing(8)
 
         lbl_l1_title = QLabel("1. Pilih File Tabel Atribut Derivatif Hasil Ekspor:", l1)
+        lbl_l1_title.setWordWrap(True)
         lbl_l1_title.setStyleSheet("color: #0f294d; font-size: 12px; font-weight: 800;")
         l1_lay.addWidget(lbl_l1_title)
 
@@ -1078,9 +1201,9 @@ class DerivatifBidangPage(QWidget):
 
         l2_head = QHBoxLayout()
         lbl_l2_title = QLabel("2. Visualisasi Geometri di Kanvas QGIS & Tabel Atribut:", l2)
+        lbl_l2_title.setWordWrap(True)
         lbl_l2_title.setStyleSheet("color: #0f294d; font-size: 12px; font-weight: 800;")
-        l2_head.addWidget(lbl_l2_title)
-        l2_head.addStretch()
+        l2_head.addWidget(lbl_l2_title, 1)
 
         badge_join = QLabel("✓ Terhubung WMS", l2)
         badge_join.setStyleSheet("background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; border-radius: 10px; font-size: 10px; font-weight: 700; padding: 2px 8px;")
@@ -1088,6 +1211,7 @@ class DerivatifBidangPage(QWidget):
         l2_lay.addLayout(l2_head)
 
         self.table_loaded_parcels = QTableWidget(l2)
+        self.table_loaded_parcels.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.table_loaded_parcels.setColumnCount(5)
         self.table_loaded_parcels.setHorizontalHeaderLabels(["ID Bidang", "NIB", "Pemegang Hak", "Jenis Hak", "Luas (m²)"])
         self.table_loaded_parcels.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Interactive)
@@ -1106,13 +1230,13 @@ class DerivatifBidangPage(QWidget):
         l2_lay.addWidget(self.table_loaded_parcels)
         self._render_loaded_table()
 
-        btn_visualize = QPushButton("Muat && Visualisasikan Poligon ke Kanvas QGIS", l2)
-        btn_visualize.setObjectName("saveBtn")
-        btn_visualize.setIcon(icon('layers', '#ffffff', 15))
-        btn_visualize.setIconSize(QSize(15, 15))
-        btn_visualize.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_visualize.clicked.connect(self._on_execute_load_to_qgis)
-        l2_lay.addWidget(btn_visualize)
+        self.btn_visualize = QPushButton("Muat && Visualisasikan Poligon ke Kanvas QGIS", l2)
+        self.btn_visualize.setObjectName("saveBtn")
+        self.btn_visualize.setIcon(icon('layers', '#ffffff', 15))
+        self.btn_visualize.setIconSize(QSize(15, 15))
+        self.btn_visualize.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_visualize.clicked.connect(self._on_execute_load_to_qgis)
+        l2_lay.addWidget(self.btn_visualize)
 
         l_lay.addWidget(l2)
         l_lay.addStretch(1)
@@ -1176,7 +1300,18 @@ class DerivatifBidangPage(QWidget):
         self.lbl_count_isi.setText(f"{len(self.records)} Bidang Sesi Ini")
         self._render_table()
 
+    def _clear_table_widgets(self, tbl):
+        for r in range(tbl.rowCount()):
+            for c in range(tbl.columnCount()):
+                cw = tbl.cellWidget(r, c)
+                if cw:
+                    tbl.removeCellWidget(r, c)
+                    cw.hide()
+                    cw.setParent(None)
+                    cw.deleteLater()
+
     def _render_table(self):
+        self._clear_table_widgets(self.table)
         self.table.setRowCount(len(self.records))
         baru_count = len([r for r in self.records if r.get('status') == 'Baru Diisi'])
         saved_count = len([r for r in self.records if r.get('status') == 'Sudah Tersimpan'])
@@ -1214,6 +1349,7 @@ class DerivatifBidangPage(QWidget):
 
     # Create Mode Methods
     def _render_custom_cols_table(self):
+        self._clear_table_widgets(self.table_custom)
         self.table_custom.setRowCount(len(self.create_custom_cols))
         compact_qss = "padding: 3px 6px; font-size: 11px; border-radius: 5px;"
         for row, col_item in enumerate(self.create_custom_cols):
@@ -1287,6 +1423,7 @@ class DerivatifBidangPage(QWidget):
         self._render_create_table()
 
     def _render_create_table(self):
+        self._clear_table_widgets(self.table_create_parcels)
         self.table_create_parcels.setRowCount(len(self.create_records))
         for row, r in enumerate(self.create_records):
             self.table_create_parcels.setItem(row, 0, QTableWidgetItem(str(row + 1)))
@@ -1499,15 +1636,16 @@ class LoadDerivatifDialog(QDialog):
 
         # 2. File Dropzone Box
         dropzone = QFrame(self)
+        dropzone.setObjectName('loadDropzone')
         dropzone.setCursor(Qt.CursorShape.PointingHandCursor)
         dropzone.setStyleSheet("""
-            QFrame {
+            QFrame#loadDropzone {
                 background-color: #f8fafc;
                 border: 2px dashed #93c5fd;
                 border-radius: 12px;
                 padding: 16px;
             }
-            QFrame:hover {
+            QFrame#loadDropzone:hover {
                 background-color: #eff6ff;
                 border-color: #3b82f6;
             }

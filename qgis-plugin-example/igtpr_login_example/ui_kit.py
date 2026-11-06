@@ -193,10 +193,10 @@ QFrame[hero="blue"] QLabel[cls="eyebrow"] {
     background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; color: #1d4ed8; font-size: 9px; font-weight: 800; padding: 2px 7px;
 }
 QFrame[hero="blue"] QLabel[cls="heroTitle"] {
-    color: #080b12; font-size: 18px; font-weight: 800; letter-spacing: -0.3px;
+    color: #080b12; font-size: 18px; font-weight: 800; letter-spacing: -0px;
 }
 QFrame[hero="blue"] QLabel[cls="heroDesc"] {
-    color: #475569; font-size: 11.5px; line-height: 1.4;
+    color: #475569; font-size: 12px; line-height: 1.4;
 }
 QFrame[hero="catalog"] {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #0b4a7f, stop:1 #0479b7); border-radius: 16px;
@@ -601,6 +601,18 @@ class ResponsiveBox(QWidget):
             self.box.setDirection(QBoxLayout.Direction.LeftToRight if wide else QBoxLayout.Direction.TopToBottom)
 
 
+class _PageContent(QWidget):
+    """Widget konten QScrollArea yang lebarnya selalu mengikuti viewport tanpa meluber ke kanan."""
+
+    def minimumSizeHint(self):
+        h = self.layout().totalMinimumSize().height() if self.layout() else 100
+        return QSize(100, h)
+
+    def sizeHint(self):
+        h = self.layout().totalSizeHint().height() if self.layout() else 100
+        return QSize(200, h)
+
+
 class ResponsivePage(QWidget):
     """Halaman bergulir yang meneruskan lebar dock ke komponen responsif terdaftar."""
 
@@ -621,9 +633,10 @@ class ResponsivePage(QWidget):
         self.scroll.setWidgetResizable(True)
         self.scroll.setFrameShape(QFrame.Shape.NoFrame)
         self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.content = QWidget()
+        self.content = _PageContent()
         self.content.setObjectName('pageContent')
         self.body = QVBoxLayout(self.content)
+        self.body.setSizeConstraint(QLayout.SizeConstraint.SetNoConstraint)
         self.body.setContentsMargins(14, 14, 14, 18)
         self.body.setSpacing(12)
         self.scroll.setWidget(self.content)
@@ -656,7 +669,7 @@ class ResponsivePage(QWidget):
 class HeroHeader(QFrame):
     """Kartu hero branding: logo BPN & IGT-PR, eyebrow, judul, accent bar, deskripsi, dan widget samping (filter tahun)."""
 
-    def __init__(self, eyebrow, title, desc, theme='blue', side_widget=None, breakpoint=320, bpn_logo_path=None, igtpr_logo_path=None, parent=None):
+    def __init__(self, eyebrow, title, desc, theme='blue', side_widget=None, breakpoint=460, bpn_logo_path=None, igtpr_logo_path=None, parent=None):
         super().__init__(parent)
         self.setProperty('hero', theme)
         self.breakpoint = breakpoint
@@ -678,22 +691,28 @@ class HeroHeader(QFrame):
         plugin_dir = os.path.dirname(__file__)
         bpn_path = bpn_logo_path or os.path.join(plugin_dir, 'logo-bpn.png')
         igtpr_path = igtpr_logo_path or os.path.join(plugin_dir, 'logo-igtpr.png')
+        self._bpn_path = bpn_path
+        self._igtpr_path = igtpr_path
 
         self.logos_box = QWidget(self.brand_container)
         self.logos_lay = QHBoxLayout(self.logos_box)
         self.logos_lay.setContentsMargins(0, 0, 0, 0)
-        self.logos_lay.setSpacing(8)
+        self.logos_lay.setSpacing(6)
 
+        self.bpn_lbl = None
+        self.igtpr_lbl = None
         if os.path.isfile(bpn_path):
             self.bpn_lbl = QLabel(self.logos_box)
             pm_bpn = QPixmap(bpn_path).scaled(38, 38, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
             self.bpn_lbl.setPixmap(pm_bpn)
+            self.bpn_lbl.setFixedSize(38, 38)
             self.logos_lay.addWidget(self.bpn_lbl)
 
         if os.path.isfile(igtpr_path):
             self.igtpr_lbl = QLabel(self.logos_box)
             pm_igt = QPixmap(igtpr_path).scaled(38, 38, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
             self.igtpr_lbl.setPixmap(pm_igt)
+            self.igtpr_lbl.setFixedSize(38, 38)
             self.logos_lay.addWidget(self.igtpr_lbl)
 
         self.brand_lay.addWidget(self.logos_box, 0, Qt.AlignmentFlag.AlignVCenter)
@@ -727,7 +746,7 @@ class HeroHeader(QFrame):
         self.accent_bar.setFixedWidth(70)
         self.accent_bar.setStyleSheet("""
             border: none;
-            border-radius: 1.5px;
+            border-radius: 1px;
             background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #10b981, stop:0.42 #10b981, stop:0.43 #1f6fd6, stop:1 #1f6fd6);
         """)
         self.main_lay.addWidget(self.accent_bar)
@@ -738,18 +757,25 @@ class HeroHeader(QFrame):
         self.main_lay.addWidget(self.desc)
 
     def apply_width(self, width):
-        m = 10 if width < 280 else (14 if width < 380 else 16)
+        m = 10 if width < 280 else (12 if width < 380 else 16)
         self.main_lay.setContentsMargins(m, 10 if width < 280 else 12, m, 10 if width < 280 else 12)
+        logo_sz = 32 if width < 400 else 38
+        if self.bpn_lbl is not None and os.path.isfile(self._bpn_path):
+            self.bpn_lbl.setPixmap(QPixmap(self._bpn_path).scaled(logo_sz, logo_sz, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
+            self.bpn_lbl.setFixedSize(logo_sz, logo_sz)
+        if self.igtpr_lbl is not None and os.path.isfile(self._igtpr_path):
+            self.igtpr_lbl.setPixmap(QPixmap(self._igtpr_path).scaled(logo_sz, logo_sz, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
+            self.igtpr_lbl.setFixedSize(logo_sz, logo_sz)
         if self.side_widget is not None:
             if width < self.breakpoint:
-                # Bila layar sangat sempit (< 320px), posisikan filter selebar kartu di bawah judul/deskripsi
+                # Bila layar sempit (< breakpoint), posisikan filter selebar kartu di bawah deskripsi
                 if self.top_row.indexOf(self.side_widget) != -1:
                     self.top_row.removeWidget(self.side_widget)
                 if self.main_lay.indexOf(self.side_widget) == -1:
                     self.main_lay.addWidget(self.side_widget)
                 self.side_widget.setMaximumWidth(16777215)
             else:
-                # Pada lebar dock standar (>= 320px), posisikan di KANAN ATAS
+                # Pada lebar dock >= breakpoint, posisikan di KANAN ATAS
                 if self.main_lay.indexOf(self.side_widget) != -1:
                     self.main_lay.removeWidget(self.side_widget)
                 if self.top_row.indexOf(self.side_widget) == -1:
@@ -868,7 +894,7 @@ class SearchableComboBox(QComboBox):
                 QListView {
                     background-color: #ffffff;
                     color: #1e293b;
-                    border: 1.5px solid #cbd5e1;
+                    border: 1px solid #cbd5e1;
                     border-radius: 8px;
                     padding: 4px;
                     font-size: 11px;

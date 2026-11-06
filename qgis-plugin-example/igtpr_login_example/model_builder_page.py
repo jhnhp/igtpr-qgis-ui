@@ -85,7 +85,7 @@ class ModelBuilderPage(QWidget):
             }
             QLineEdit#searchInput {
                 background-color: #ffffff;
-                border: 1.5px solid #ddd6fe;
+                border: 1px solid #ddd6fe;
                 border-radius: 8px;
                 padding: 8px 12px;
                 font-size: 12px;
@@ -96,7 +96,7 @@ class ModelBuilderPage(QWidget):
             }
             QTableWidget {
                 background-color: #ffffff;
-                border: 1.5px solid #ddd6fe;
+                border: 1px solid #ddd6fe;
                 border-radius: 12px;
                 font-size: 12px;
                 gridline-color: #faf5ff;
@@ -106,9 +106,9 @@ class ModelBuilderPage(QWidget):
                 background-color: #f5f3ff;
                 color: #4c1d95;
                 font-weight: 700;
-                font-size: 11.5px;
+                font-size: 12px;
                 border: none;
-                border-bottom: 1.5px solid #ddd6fe;
+                border-bottom: 1px solid #ddd6fe;
                 padding: 10px 8px;
             }
         """)
@@ -122,20 +122,22 @@ class ModelBuilderPage(QWidget):
         text_layout = QVBoxLayout()
         text_layout.setSpacing(2)
 
-        title_lbl = QLabel('Model Builder Geoportal', self)
-        title_lbl.setStyleSheet("color: #2e1065; font-size: 18px; font-weight: 800;")
-        text_layout.addWidget(title_lbl)
+        self.title_lbl = QLabel('Model Builder Geoportal', self)
+        self.title_lbl.setWordWrap(True)
+        self.title_lbl.setStyleSheet("color: #2e1065; font-size: 18px; font-weight: 800;")
+        text_layout.addWidget(self.title_lbl)
 
-        desc_lbl = QLabel('Katalog dan eksekusi alur model spasial di QGIS.', self)
-        desc_lbl.setStyleSheet("color: #6b21a8; font-size: 11.5px;")
-        text_layout.addWidget(desc_lbl)
+        self.desc_lbl = QLabel('Katalog dan eksekusi alur model spasial di QGIS.', self)
+        self.desc_lbl.setWordWrap(True)
+        self.desc_lbl.setStyleSheet("color: #6b21a8; font-size: 12px;")
+        text_layout.addWidget(self.desc_lbl)
         head_layout.addLayout(text_layout, 1)
 
-        back_btn = QPushButton('← Kembali ke Dashboard', self)
-        back_btn.setObjectName('backBtn')
-        back_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        back_btn.clicked.connect(self.backToDashboardRequested.emit)
-        head_layout.addWidget(back_btn)
+        self.back_btn = QPushButton('← Kembali ke Dashboard', self)
+        self.back_btn.setObjectName('backBtn')
+        self.back_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.back_btn.clicked.connect(self.backToDashboardRequested.emit)
+        head_layout.addWidget(self.back_btn, 0, Qt.AlignmentFlag.AlignTop)
 
         layout.addLayout(head_layout)
 
@@ -153,28 +155,45 @@ class ModelBuilderPage(QWidget):
         header = self.table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         header.setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
-        self.table.setColumnWidth(1, 125)
+        self.table.setColumnWidth(1, 114)
         self.table.verticalHeader().setVisible(False)
         self.table.setShowGrid(False)
+        self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self._page_width = 540
 
         layout.addWidget(self.table, 1)
 
         self._render_table()
 
     def _render_table(self):
+        for r_i in range(self.table.rowCount()):
+            for c_i in range(self.table.columnCount()):
+                cw = self.table.cellWidget(r_i, c_i)
+                if cw is not None:
+                    cw.hide()
+                    cw.setParent(None)
+                    cw.deleteLater()
+        self.table.clearContents()
+        self.table.setRowCount(0)
+
         query = self.search_input.text().strip().lower()
         filtered = [m for m in MODELS if not query or query in m['name'].lower() or query in m['desc'].lower()]
+
+        w = getattr(self, '_page_width', self.width() or 540)
+        is_narrow = w < 440
+        self.table.setColumnWidth(1, 98 if is_narrow else 116)
 
         self.table.setRowCount(len(filtered))
         for row, m in enumerate(filtered):
             # Col 0: Name & Desc
             name_widget = QWidget()
             nw_layout = QVBoxLayout(name_widget)
-            nw_layout.setContentsMargins(6, 4, 6, 4)
+            nw_layout.setContentsMargins(8, 5, 8, 5)
             nw_layout.setSpacing(2)
 
             name_lbl = QLabel(m['name'], name_widget)
-            name_lbl.setStyleSheet("color: #1e1b4b; font-weight: 700; font-size: 12.5px;")
+            name_lbl.setWordWrap(True)
+            name_lbl.setStyleSheet("color: #1e1b4b; font-weight: 700; font-size: 12px;")
             nw_layout.addWidget(name_lbl)
 
             desc_lbl = QLabel(m['desc'], name_widget)
@@ -183,9 +202,15 @@ class ModelBuilderPage(QWidget):
             nw_layout.addWidget(desc_lbl)
             self.table.setCellWidget(row, 0, name_widget)
 
-            # Col 1: Run button
-            btn_run = QPushButton('▶ Jalankan')
+            # Col 1: Run button wrapped in centered container
+            act_widget = QWidget()
+            act_lay = QHBoxLayout(act_widget)
+            act_lay.setContentsMargins(6, 4, 6, 4)
+            act_lay.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+            btn_run = QPushButton('▶ Jalankan', act_widget)
             btn_run.setCursor(Qt.CursorShape.PointingHandCursor)
+            btn_run.setFixedHeight(30)
             btn_run.setStyleSheet("""
                 QPushButton {
                     background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #6d28d9, stop:1 #7c3aed);
@@ -194,16 +219,35 @@ class ModelBuilderPage(QWidget):
                     border-radius: 6px;
                     font-size: 11px;
                     font-weight: 700;
-                    padding: 6px 12px;
+                    padding: 4px 10px;
                 }
                 QPushButton:hover {
                     background: #5b21b6;
                 }
             """)
             btn_run.clicked.connect(lambda checked, model=m: self.runModelRequested.emit(model))
-            self.table.setCellWidget(row, 1, btn_run)
+            act_lay.addWidget(btn_run)
+            self.table.setCellWidget(row, 1, act_widget)
 
-            self.table.setRowHeight(row, 62)
+            self.table.setRowHeight(row, 84 if is_narrow else 66)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.apply_width(event.size().width())
+
+    def apply_width(self, width):
+        if width <= 0:
+            return
+        old_narrow = getattr(self, '_page_width', 540) < 440
+        self._page_width = width
+        new_narrow = width < 440
+        is_compact = width < 480
+        if hasattr(self, 'back_btn'):
+            self.back_btn.setText('← Dashboard' if is_compact else '← Kembali ke Dashboard')
+        if hasattr(self, 'title_lbl'):
+            self.title_lbl.setStyleSheet(f"color: #2e1065; font-size: {15 if is_compact else 18}px; font-weight: 800;")
+        if old_narrow != new_narrow and hasattr(self, 'table'):
+            self._render_table()
 
     def minimumSizeHint(self):
         return QSize(200, 120)

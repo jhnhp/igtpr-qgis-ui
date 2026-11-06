@@ -2094,7 +2094,7 @@ const IgtApp = (() => {
           ${TABS.map((t) => `
             <button type="button" class="dash-cat-tab ${t.key === currentCategory ? 'active' : ''}" data-dash-cat="${t.key}" role="tab" aria-selected="${t.key === currentCategory}" title="${t.label}">
               <span class="tab-icon">${ri(t.icon)}</span>
-              <span class="tab-label">${t.label}</span>
+              <span class="tab-label">${t.shortLabel}</span>
             </button>
           `).join('')}
         </div>
@@ -2168,16 +2168,18 @@ const IgtApp = (() => {
                     <div class="dash-card-title-wrap">
                       <span class="igt-catalog-num">${startIdx + idx + 1}</span>
                       <span class="igt-cat-inline-icon is-${cat}" title="${cat}">${iconHtml}</span>
-                      <button type="button" class="dash-card-title igt-catalog-name igt-card-link-title" data-open-detail="${d.id}" title="Klik untuk melihat detail lengkap dataset IGT">${d.name}</button>
-                      <button type="button" class="igt-info-btn" data-open-detail="${d.id}" title="Detail Informasi & Metadata IGT" aria-label="Detail Informasi IGT">
-                        ${ri('information-line')}
-                      </button>
-                      ${hasSubs ? `
-                        <button type="button" class="igt-chip igt-chip--multi-layer igt-chip--compact dash-chip-toggle" data-dash-toggle="${d.id}" aria-expanded="${isExp}" title="Klik untuk membuka/menutup sub-layer">
-                          <span class="igt-chip__text">Multi-layer (${d.subLayers.length})</span>
-                          <span class="igt-chip__caret" aria-hidden="true">${isExp ? '▴' : '▾'}</span>
+                      <div class="dash-card-title-group">
+                        <button type="button" class="dash-card-title igt-catalog-name igt-card-link-title" data-open-detail="${d.id}" title="Klik untuk melihat detail lengkap dataset IGT">${d.name}</button>
+                        <button type="button" class="igt-info-btn" data-open-detail="${d.id}" title="Detail Informasi & Metadata IGT" aria-label="Detail Informasi IGT">
+                          ${ri('information-line')}
                         </button>
-                      ` : ''}
+                        ${hasSubs ? `
+                          <button type="button" class="igt-chip igt-chip--multi-layer igt-chip--compact dash-chip-toggle" data-dash-toggle="${d.id}" aria-expanded="${isExp}" title="Klik untuk membuka/menutup sub-layer">
+                            <span class="igt-chip__text">Multi-layer (${d.subLayers.length})</span>
+                            <span class="igt-chip__caret" aria-hidden="true">${isExp ? '▴' : '▾'}</span>
+                          </button>
+                        ` : ''}
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -25,10 +25,10 @@ STATUS_COLORS = {
 MANAGEMENT_TABLE_COLUMNS = [
     {'key': 'id',      'title': 'ID Pengajuan',       'resize': QHeaderView.ResizeMode.ResizeToContents},
     {'key': 'layer',   'title': 'Layer Target',       'resize': QHeaderView.ResizeMode.Stretch},
-    {'key': 'org',     'title': 'Satker / Direktorat','resize': QHeaderView.ResizeMode.Interactive, 'width': 220},
+    {'key': 'org',     'title': 'Satker / Direktorat','resize': QHeaderView.ResizeMode.Interactive, 'width': 150},
     {'key': 'date',    'title': 'Tanggal',            'resize': QHeaderView.ResizeMode.ResizeToContents},
-    {'key': 'status',  'title': 'Status',             'resize': QHeaderView.ResizeMode.Fixed, 'width': 110},
-    {'key': 'actions', 'title': 'Aksi',               'resize': QHeaderView.ResizeMode.Fixed, 'width': 200},
+    {'key': 'status',  'title': 'Status',             'resize': QHeaderView.ResizeMode.Fixed, 'width': 102},
+    {'key': 'actions', 'title': 'Aksi',               'resize': QHeaderView.ResizeMode.Fixed, 'width': 168},
 ]
 
 
@@ -102,9 +102,9 @@ class ManagementPage(QWidget):
                 background-color: #f8fafc;
                 color: #475569;
                 font-weight: 700;
-                font-size: 11.5px;
+                font-size: 12px;
                 border: none;
-                border-bottom: 1.5px solid #e2e8f0;
+                border-bottom: 1px solid #e2e8f0;
                 padding: 9px 8px;
             }
         """)
@@ -119,19 +119,21 @@ class ManagementPage(QWidget):
         text_layout.setSpacing(2)
 
         self.title_lbl = QLabel('Manajemen IGT Utama', self)
+        self.title_lbl.setWordWrap(True)
         self.title_lbl.setStyleSheet("color: #0f294d; font-size: 18px; font-weight: 800;")
         text_layout.addWidget(self.title_lbl)
 
         self.desc_lbl = QLabel('Pantau proses kompilasi, perbaikan revisi, dan persetujuan integrasi data.', self)
-        self.desc_lbl.setStyleSheet("color: #64748b; font-size: 11.5px;")
+        self.desc_lbl.setWordWrap(True)
+        self.desc_lbl.setStyleSheet("color: #64748b; font-size: 12px;")
         text_layout.addWidget(self.desc_lbl)
         head_layout.addLayout(text_layout, 1)
 
-        back_btn = QPushButton('← Kembali ke Dashboard', self)
-        back_btn.setObjectName('backBtn')
-        back_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        back_btn.clicked.connect(self.backToDashboardRequested.emit)
-        head_layout.addWidget(back_btn)
+        self.back_btn = QPushButton('← Kembali ke Dashboard', self)
+        self.back_btn.setObjectName('backBtn')
+        self.back_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.back_btn.clicked.connect(self.backToDashboardRequested.emit)
+        head_layout.addWidget(self.back_btn, 0, Qt.AlignmentFlag.AlignTop)
 
         layout.addLayout(head_layout)
 
@@ -161,6 +163,8 @@ class ManagementPage(QWidget):
                 self.table.setColumnWidth(idx, col['width'])
         self.table.verticalHeader().setVisible(False)
         self.table.setShowGrid(False)
+        self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self._page_width = 540
 
         layout.addWidget(self.table, 1)
 
@@ -169,23 +173,25 @@ class ManagementPage(QWidget):
 
     def _build_stats_summary(self, parent_layout):
         grid = QGridLayout()
-        grid.setSpacing(10)
+        grid.setSpacing(8)
 
         self.stat_boxes = {}
+        self.stat_title_lbls = {}
         labels = [
-            ('total', 'Total Pengajuan', '#1e293b', '#f1f5f9', '#cbd5e1'),
-            ('process', 'Dalam Proses', '#1d4ed8', '#eff6ff', '#bfdbfe'),
-            ('waiting', 'Menunggu Integrasi', '#b45309', '#fffbeb', '#fde68a'),
+            ('total', 'Total Pengajuan', 'Total', '#1e293b', '#f1f5f9', '#cbd5e1'),
+            ('process', 'Dalam Proses', 'Diproses', '#1d4ed8', '#eff6ff', '#bfdbfe'),
+            ('waiting', 'Menunggu Integrasi', 'Menunggu', '#b45309', '#fffbeb', '#fde68a'),
         ]
 
-        for col, (k, title, color, bg, border) in enumerate(labels):
+        for col, (k, title, short_title, color, bg, border) in enumerate(labels):
             box = QFrame(self)
+            box.setObjectName(f"statBox_{k}")
             box.setStyleSheet(f"""
-                QFrame {{
+                QFrame#statBox_{k} {{
                     background-color: {bg};
                     border: 1px solid {border};
                     border-radius: 10px;
-                    padding: 8px 12px;
+                    padding: 6px 10px;
                 }}
             """)
             b_layout = QVBoxLayout(box)
@@ -193,14 +199,16 @@ class ManagementPage(QWidget):
             b_layout.setSpacing(2)
 
             t_lbl = QLabel(title.upper(), box)
-            t_lbl.setStyleSheet(f"color: {color}; font-size: 9.5px; font-weight: 800; letter-spacing: 0.5px;")
+            t_lbl.setStyleSheet(f"color: {color}; font-size: 10px; font-weight: 800; border: none; background: transparent;")
             b_layout.addWidget(t_lbl)
+            self.stat_title_lbls[k] = (t_lbl, title.upper(), short_title.upper())
 
             num_lbl = QLabel('0', box)
-            num_lbl.setStyleSheet(f"color: #0f294d; font-size: 18px; font-weight: 900;")
+            num_lbl.setStyleSheet("color: #0f294d; font-size: 18px; font-weight: 900; border: none; background: transparent;")
             b_layout.addWidget(num_lbl)
 
             grid.addWidget(box, 0, col)
+            grid.setColumnStretch(col, 1)
             self.stat_boxes[k] = num_lbl
 
         parent_layout.addLayout(grid)
@@ -215,8 +223,11 @@ class ManagementPage(QWidget):
     def _update_category_nav(self):
         while self.cat_nav_layout.count():
             item = self.cat_nav_layout.takeAt(0)
-            if item.widget():
-                item.widget().deleteLater()
+            w = item.widget()
+            if w:
+                w.hide()
+                w.setParent(None)
+                w.deleteLater()
         self.cat_buttons.clear()
 
         cats = []
@@ -245,7 +256,7 @@ class ManagementPage(QWidget):
                         border-radius: 20px;
                         padding: 7px 16px;
                         font-weight: 700;
-                        font-size: 11.5px;
+                        font-size: 12px;
                     }
                 """)
             else:
@@ -257,7 +268,7 @@ class ManagementPage(QWidget):
                         border-radius: 20px;
                         padding: 7px 16px;
                         font-weight: 600;
-                        font-size: 11.5px;
+                        font-size: 12px;
                     }
                     QPushButton:hover {
                         background-color: #f1f5f9;
@@ -297,8 +308,11 @@ class ManagementPage(QWidget):
         # Clear existing buttons
         while self.status_nav_layout.count():
             item = self.status_nav_layout.takeAt(0)
-            if item.widget():
-                item.widget().deleteLater()
+            w = item.widget()
+            if w:
+                w.hide()
+                w.setParent(None)
+                w.deleteLater()
         self.status_buttons.clear()
 
         if self.current_category == 'igt-utama':
@@ -358,6 +372,17 @@ class ManagementPage(QWidget):
                 """)
 
     def _render_table(self):
+        # Bersihkan seluruh cellWidget lama agar tidak tertinggal di viewport (0, 0)
+        for r_i in range(self.table.rowCount()):
+            for c_i in range(self.table.columnCount()):
+                cw = self.table.cellWidget(r_i, c_i)
+                if cw is not None:
+                    cw.hide()
+                    cw.setParent(None)
+                    cw.deleteLater()
+        self.table.clearContents()
+        self.table.setRowCount(0)
+
         # Filter records by category
         if self.current_category == 'igt-utama':
             recs = [s for s in self.submissions if s.get('category') in ('pertanahan', 'tata-ruang')]
@@ -388,26 +413,36 @@ class ManagementPage(QWidget):
         else:
             filtered = recs
 
+        w = getattr(self, '_page_width', self.width() or 540)
+        is_narrow = w < 460
+        is_medium = 460 <= w < 680
+
         # Dynamic Org header
         org_header = 'Instansi' if self.current_category == 'lainnya' else 'Direktorat' if self.current_status_tab == 'Terintegrasi' else 'Satker'
         self.table.horizontalHeaderItem(2).setText(org_header)
 
         # Hapus (sembunyikan) kolom tanggal pada manajemen data IGT Utama untuk admin dan superadmin
         is_reviewer_main = (self.current_category == 'igt-utama' and self.current_role in ('superadmin', 'admin'))
-        self.table.setColumnHidden(3, is_reviewer_main)
+        self.table.setColumnHidden(0, is_narrow)
+        self.table.setColumnHidden(2, is_narrow or is_medium)
+        self.table.setColumnHidden(3, is_reviewer_main or is_narrow or is_medium)
+        self.table.setColumnHidden(4, is_narrow)
+        self.table.setColumnWidth(5, 112 if (is_narrow or is_medium) else 174)
+
         if not is_reviewer_main:
             date_header = 'Tanggal Terintegrasi' if self.current_status_tab == 'Terintegrasi' else 'Tanggal Disetujui' if self.current_category == 'derivatif' else 'Tanggal Unggah'
             self.table.horizontalHeaderItem(3).setText(date_header)
 
         self.table.setRowCount(len(filtered))
         for row, r in enumerate(filtered):
+            org_text = (r.get('direktorat') if self.current_status_tab == 'Terintegrasi' else r.get('satker')) or r.get('instansi') or r.get('source') or '—'
             # LOOPING KOLOM: Memetakan setiap kolom secara dinamis dari definisi skema
             for col_idx, col_def in enumerate(MANAGEMENT_TABLE_COLUMNS):
                 col_key = col_def['key']
 
                 if col_key == 'id':
                     id_item = QTableWidgetItem(r.get('id', ''))
-                    id_item.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
+                    id_item.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
                     id_item.setTextAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
                     self.table.setItem(row, col_idx, id_item)
 
@@ -416,21 +451,31 @@ class ManagementPage(QWidget):
                     nw_layout = QVBoxLayout(name_widget)
                     nw_layout.setContentsMargins(6, 4, 6, 4)
                     nw_layout.setSpacing(2)
+                    if is_narrow:
+                        meta_top = QLabel(f"<b>{r.get('id', '')}</b> · {r.get('status', '')}")
+                        meta_top.setStyleSheet("color: #1f6fd6; font-size: 10px;")
+                        nw_layout.addWidget(meta_top)
                     layer_name = r.get('name') or r.get('layer', '')
                     n_lbl = QLabel(layer_name)
-                    n_lbl.setStyleSheet("color: #0f294d; font-weight: 500; font-size: 12px;")
+                    n_lbl.setWordWrap(True)
+                    n_lbl.setStyleSheet("color: #0f294d; font-weight: 600; font-size: 12px;")
                     nw_layout.addWidget(n_lbl)
-                    if r.get('note'):
-                        note_lbl = QLabel(r['note'])
-                        note_lbl.setStyleSheet("color: #64748b; font-size: 10.5px;")
+                    sub_parts = []
+                    if is_narrow or is_medium:
+                        sub_parts.append(org_text)
+                    if r.get('note') and not is_narrow:
+                        sub_parts.append(r['note'])
+                    if sub_parts:
+                        note_lbl = QLabel(" · ".join(sub_parts))
+                        note_lbl.setWordWrap(True)
+                        note_lbl.setStyleSheet("color: #64748b; font-size: 10px;")
                         nw_layout.addWidget(note_lbl)
                     self.table.setCellWidget(row, col_idx, name_widget)
 
                 elif col_key == 'org':
-                    org_text = (r.get('direktorat') if self.current_status_tab == 'Terintegrasi' else r.get('satker')) or r.get('instansi') or r.get('source') or '—'
                     org_lbl = QLabel(org_text)
                     org_lbl.setWordWrap(True)
-                    org_lbl.setStyleSheet("color: #334155; font-size: 11px;")
+                    org_lbl.setStyleSheet("color: #334155; font-size: 11px; padding: 0 4px;")
                     self.table.setCellWidget(row, col_idx, org_lbl)
 
                 elif col_key == 'date':
@@ -444,21 +489,22 @@ class ManagementPage(QWidget):
                     sw_layout = QHBoxLayout(status_widget)
                     sw_layout.setContentsMargins(4, 4, 4, 4)
                     badge = StatusBadge(r.get('status', ''))
-                    sw_layout.addWidget(badge)
+                    badge.setFixedHeight(24)
+                    sw_layout.addWidget(badge, 0, Qt.AlignmentFlag.AlignVCenter)
                     sw_layout.addStretch()
                     self.table.setCellWidget(row, col_idx, status_widget)
 
                 elif col_key == 'actions':
-                    actions_widget = self._create_actions_widget(r)
+                    actions_widget = self._create_actions_widget(r, is_narrow=(is_narrow or is_medium))
                     self.table.setCellWidget(row, col_idx, actions_widget)
 
-            self.table.setRowHeight(row, 54)
+            self.table.setRowHeight(row, 68 if (is_narrow or is_medium) else 58)
 
-    def _create_actions_widget(self, record):
+    def _create_actions_widget(self, record, is_narrow=False):
         w = QWidget()
-        layout = QHBoxLayout(w)
+        layout = QVBoxLayout(w) if is_narrow else QHBoxLayout(w)
         layout.setContentsMargins(4, 4, 4, 4)
-        layout.setSpacing(6)
+        layout.setSpacing(4 if is_narrow else 6)
 
         status = record.get('status')
         role = self.current_role
@@ -474,9 +520,9 @@ class ManagementPage(QWidget):
                     color: #1f6fd6;
                     border: 1px solid #93c5fd;
                     border-radius: 6px;
-                    font-size: 10.5px;
+                    font-size: 10px;
                     font-weight: 700;
-                    padding: 4px 10px;
+                    padding: 4px 8px;
                 }
                 QPushButton:hover {
                     background-color: #dbeafe;
@@ -495,7 +541,7 @@ class ManagementPage(QWidget):
                     color: #b91c1c;
                     border: 1px solid #fecaca;
                     border-radius: 6px;
-                    font-size: 11px;
+                    font-size: 10px;
                     font-weight: 700;
                     padding: 4px 8px;
                 }
@@ -515,7 +561,7 @@ class ManagementPage(QWidget):
                 color: #475569;
                 border: 1px solid #cbd5e1;
                 border-radius: 6px;
-                font-size: 10.5px;
+                font-size: 10px;
                 font-weight: 600;
                 padding: 4px 8px;
             }
@@ -527,8 +573,32 @@ class ManagementPage(QWidget):
         btn_show.clicked.connect(lambda checked, rec=record: self.showLayerRequested.emit(rec))
         layout.addWidget(btn_show)
 
-        layout.addStretch()
+        if not is_narrow:
+            layout.addStretch()
         return w
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.apply_width(event.size().width())
+
+    def apply_width(self, width):
+        if width <= 0:
+            return
+        old_mode = (getattr(self, '_page_width', 540) < 460, getattr(self, '_page_width', 540) < 680)
+        self._page_width = width
+        new_mode = (width < 460, width < 680)
+
+        is_compact = width < 480
+        if hasattr(self, 'back_btn'):
+            self.back_btn.setText('← Dashboard' if is_compact else '← Kembali ke Dashboard')
+        if hasattr(self, 'title_lbl'):
+            self.title_lbl.setStyleSheet(f"color: #0f294d; font-size: {15 if is_compact else 18}px; font-weight: 800;")
+        if hasattr(self, 'stat_title_lbls'):
+            for k, (lbl, full_t, short_t) in self.stat_title_lbls.items():
+                lbl.setText(short_t if width < 480 else full_t)
+
+        if old_mode != new_mode and hasattr(self, 'table'):
+            self._render_table()
 
     # ------------------------------------------------------------------ Actions Simulation
     def _on_compile(self, record):

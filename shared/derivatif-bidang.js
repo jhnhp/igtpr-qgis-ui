@@ -177,11 +177,11 @@ const DerivatifBidang = (() => {
 
     return (
       `<div class="derivatif-canvas-wrap" style="position:relative;background:#f8fafc;border:1.5px solid #cbd5e1;border-radius:8px;padding:8px;margin:8px 0;overflow:hidden">` +
-      `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">` +
+      `<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:6px">` +
       `<span style="font-size:11px;font-weight:700;color:#1e40af;background:#eff6ff;padding:2px 8px;border-radius:4px;border:1px solid #bfdbfe">` +
       `🗺️ QGIS Map Canvas · Baseline WMS (EPSG:3857)` +
       `</span>` +
-      `<div style="display:flex;align-items:center;gap:10px;font-size:11px;font-weight:600">` +
+      `<div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:11px;font-weight:600">` +
       `<span style="display:inline-flex;align-items:center;gap:4px"><span style="display:inline-block;width:12px;height:12px;background:#fef3c7;border:1.5px solid #f59e0b;border-radius:2px"></span> Aktif Dipilih</span>` +
       `<span style="display:inline-flex;align-items:center;gap:4px"><span style="display:inline-block;width:12px;height:12px;background:#d1fae5;border:1.5px solid #10b981;border-radius:2px"></span> Sudah Tersimpan</span>` +
       `<span style="display:inline-flex;align-items:center;gap:4px"><span style="display:inline-block;width:12px;height:12px;background:#dbeafe;border:1.5px solid #93c5fd;border-radius:2px"></span> Belum Terisi</span>` +
@@ -224,8 +224,8 @@ const DerivatifBidang = (() => {
       `<strong style="font-size:13px;color:#0f172a">1. Pilih Layer Derivatif &amp; Load Baseline WMS:</strong>` +
       `</div>` +
       `<div style="padding:12px 14px">` +
-      `<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">` +
-      `<select id="combo-derivatif-layer" style="flex:1;height:36px;padding:4px 10px;font-weight:700;border:1.5px solid #94a3b8;border-radius:6px;font-size:12.5px">` +
+      `<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;min-width:0">` +
+      `<select id="combo-derivatif-layer" style="flex:1;min-width:0;width:100%;box-sizing:border-box;height:36px;padding:4px 10px;font-weight:700;border:1.5px solid #94a3b8;border-radius:6px;font-size:12.5px">` +
       DERIVATIF_CMS_LAYERS.map((l) => `<option value="${l.id}" ${l.id === curLayer.id ? 'selected' : ''}>${esc(l.name)}</option>`).join('') +
       `</select>` +
       `<button type="button" class="btn btn-soft" data-act="refresh-der" title="Muat ulang daftar layer derivatif dari server" style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;padding:0;flex:none"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#1d4ed8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg></button>` +
@@ -243,24 +243,24 @@ const DerivatifBidang = (() => {
 
       // KARTU 2: Interaksi Canvas & Form Atribut CMS Dinamis
       `<div class="card" style="margin-bottom:12px;border:1px solid #cbd5e1;border-radius:8px">` +
-      `<div class="card-head" style="padding:10px 14px;border-bottom:1px solid #e2e8f0;background:#f8fafc;display:flex;align-items:center;justify-content:space-between">` +
+      `<div class="card-head" style="padding:10px 14px;border-bottom:1px solid #e2e8f0;background:#f8fafc;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">` +
       `<strong style="font-size:13px;color:#0f172a">2. Interaksi Kanvas &amp; Form Atribut CMS Dinamis:</strong>` +
       `<span style="background:#ecfdf5;color:#047857;font-size:11px;font-weight:700;padding:2px 8px;border-radius:12px;border:1px solid #a7f3d0">📦 ${sessionCount} Bidang Sesi</span>` +
       `</div>` +
       `<div style="padding:12px 14px">` +
-      `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">` +
+      `<div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px">` +
       `<button type="button" class="btn ${state.isPicking ? 'btn-primary' : 'btn-soft'}" data-act="toggle-picker" style="font-size:12px;font-weight:700">🎯 ${state.isPicking ? 'Alat Pilih Bidang Aktif' : 'Klik Bidang di Peta'}</button>` +
       `<button type="button" class="btn btn-soft" data-act="import-bidang" style="font-size:12px;font-weight:700;color:#0284c7;border-color:#38bdf8">📥 Import Bidang</button>` +
-      `<span style="font-size:12px;color:#1e40af;margin-left:4px">Klik bidang di peta untuk mulai mengisi atribut tematik.</span>` +
+      `<span style="font-size:12px;color:#1e40af">Klik bidang di peta untuk mulai mengisi atribut tematik.</span>` +
       `</div>` +
       renderCanvasSvg('isi') +
-      `<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:8px 12px;margin:8px 0;display:flex;align-items:center;justify-content:space-between">` +
+      `<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:8px 12px;margin:8px 0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">` +
       `<div><strong style="color:#1e3a8a;font-size:12.5px">ID Bidang Terpilih: </strong><code style="font-size:13px;font-weight:800;color:#1d4ed8">${esc(parcel.id)}</code> <span style="font-size:11.5px;color:#475569">(${esc(parcel.desa)}, ${esc(parcel.kecamatan)})</span></div>` +
       `<span style="font-size:11px;background:#ffffff;border:1px solid #cbd5e1;padding:2px 6px;border-radius:4px;color:#334155">Luas: <strong>${esc(parcel.luas)} m²</strong></span>` +
       `</div>` +
       `<div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;padding:12px;margin-bottom:10px">` +
       `<div style="font-size:11px;font-weight:800;color:#475569;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">Formulir Atribut Standar CMS (${esc(curLayer.name)})</div>` +
-      `<div class="form-grid" style="display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:10px">` +
+      `<div class="form-grid" style="gap:10px">` +
       curLayer.fields.map((fld) => {
         const val = state.isi.formValues[fld.name] || fld.default || '';
         return (
@@ -274,14 +274,14 @@ const DerivatifBidang = (() => {
         );
       }).join('') +
       `</div></div>` +
-      `<button type="button" class="btn btn-primary" data-act="isi-save-bidang" style="width:100%;height:38px;background:#0284c7;border-color:#0284c7;font-size:13px;font-weight:700">` +
+      `<button type="button" class="btn btn-primary" data-act="isi-save-bidang" style="width:100%;min-height:38px;height:auto;white-space:normal;line-height:1.3;padding:8px 12px;background:#0284c7;border-color:#0284c7;font-size:13px;font-weight:700">` +
       `Simpan Bidang (Simpan ke Sesi &amp; Lanjut Bidang Berikutnya)` +
       `</button>` +
       `</div></div>` +
 
       // KARTU 3: Daftar Bidang Terisi (Sesi Ini)
       `<div class="card" style="margin-bottom:12px;border:1px solid #cbd5e1;border-radius:8px">` +
-      `<div class="card-head" style="padding:10px 14px;border-bottom:1px solid #e2e8f0;background:#f8fafc;display:flex;align-items:center;justify-content:space-between">` +
+      `<div class="card-head" style="padding:10px 14px;border-bottom:1px solid #e2e8f0;background:#f8fafc;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">` +
       `<strong style="font-size:13px;color:#0f172a">3. Daftar Bidang Terisi (Sesi Ini): ${sessionCount} bidang</strong>` +
       `<div style="font-size:11.5px;font-weight:700"><span style="color:#f59e0b">■ Baru Diisi</span> &nbsp; <span style="color:#10b981">■ Sudah Tersimpan</span></div>` +
       `</div>` +
@@ -302,13 +302,13 @@ const DerivatifBidang = (() => {
       `<strong style="font-size:13px;color:#0f172a">4. Opsi Penyimpanan &amp; Format Ekspor (Tabel Atribut Saja):</strong>` +
       `</div>` +
       `<div style="padding:12px 14px">` +
-      `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">` +
+      `<div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px">` +
       `<label style="font-size:12px;font-weight:700;color:#334155;min-width:90px">Folder Simpan:</label>` +
-      `<input type="text" id="isi-folder-input" value="${esc(state.isi.folder)}" style="flex:1;height:30px;font-size:12px;padding:3px 8px;border:1px solid #cbd5e1;border-radius:5px">` +
+      `<input type="text" id="isi-folder-input" value="${esc(state.isi.folder)}" style="flex:1;min-width:140px;height:30px;font-size:12px;padding:3px 8px;border:1px solid #cbd5e1;border-radius:5px">` +
       `<button type="button" class="btn btn-soft" data-act="browse-folder" style="height:30px;padding:2px 10px;font-size:12px">...</button>` +
       `</div>` +
       `<div style="font-size:11px;color:#64748b;margin-bottom:10px;font-style:italic">Nama berkas otomatis menggunakan nama <strong>Layer Derivatif</strong> yang dipilih di atas.</div>` +
-      `<div style="display:flex;align-items:center;gap:16px;margin-bottom:10px">` +
+      `<div style="display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:10px">` +
       `<span style="font-size:12px;font-weight:700;color:#334155">Format:</span>` +
       `<label style="font-size:12px;cursor:pointer"><input type="radio" name="isi-format" value="gpkg" ${state.isi.format === 'gpkg' ? 'checked' : ''}> .gpkg (GeoPackage)</label>` +
       `<label style="font-size:12px;cursor:pointer"><input type="radio" name="isi-format" value="geojson" ${state.isi.format === 'geojson' ? 'checked' : ''}> .geojson (GeoJSON)</label>` +
@@ -339,17 +339,18 @@ const DerivatifBidang = (() => {
       `<strong style="font-size:13px;color:#0f172a">1. Pengaturan Layer Baru &amp; Baseline (CMS Geoportal):</strong>` +
       `</div>` +
       `<div style="padding:12px 14px">` +
-      `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">` +
-      `<label style="font-size:12px;font-weight:700;color:#334155;min-width:100px">Nama Layer:</label>` +
-      `<input type="text" id="create-layer-name" value="${esc(state.create.layerName)}" placeholder="contoh: derivatif_bidang_kustom" style="flex:1;height:32px;font-size:12.5px;font-weight:700;padding:3px 8px;border:1.5px solid #94a3b8;border-radius:6px">` +
+      `<div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px;min-width:0">` +
+      `<label style="font-size:12px;font-weight:700;color:#334155;min-width:90px">Nama Layer:</label>` +
+      `<input type="text" id="create-layer-name" value="${esc(state.create.layerName)}" placeholder="contoh: derivatif_bidang_kustom" style="flex:1;min-width:0;width:100%;box-sizing:border-box;height:32px;font-size:12.5px;font-weight:700;padding:3px 8px;border:1.5px solid #94a3b8;border-radius:6px">` +
       `</div>` +
-      `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">` +
-      `<label style="font-size:12px;font-weight:700;color:#334155;min-width:100px">Baseline CMS:</label>` +
-      `<select id="combo-create-baseline" style="flex:1;height:34px;font-size:12px;font-weight:700;padding:3px 8px;border:1px solid #94a3b8;border-radius:6px">` +
+      `<div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;min-width:0">` +
+      `<label style="font-size:12px;font-weight:700;color:#334155;min-width:90px">Baseline CMS:</label>` +
+      `<div style="display:flex;align-items:center;gap:6px;flex:1;min-width:160px">` +
+      `<select id="combo-create-baseline" style="flex:1;min-width:0;width:100%;box-sizing:border-box;height:34px;font-size:12px;font-weight:700;padding:3px 8px;border:1px solid #94a3b8;border-radius:6px">` +
       CMS_BASELINES.map((b) => `<option value="${b.id}" ${b.id === state.create.selectedBaselineId ? 'selected' : ''}>${esc(b.name)} (${b.count.toLocaleString('id-ID')} bidang)</option>`).join('') +
       `</select>` +
       `<button type="button" class="btn btn-soft" data-act="refresh-bl" title="Muat ulang baseline dari CMS" style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:34px;padding:0;flex:none"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#6d28d9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg></button>` +
-      `</div>` +
+      `</div></div>` +
       `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">` +
       `<button type="button" class="btn btn-primary" data-act="load-baseline-create" style="background:#7c3aed;border-color:#7c3aed;font-weight:700;font-size:12px">⚡ Load Baseline WMS</button>` +
       `<span style="font-size:12px;font-weight:700;color:${state.create.wmsLoaded ? '#047857' : '#64748b'}">` +
@@ -360,26 +361,26 @@ const DerivatifBidang = (() => {
 
       // KARTU 2: Pilih Bidang Baseline, Atribut Default (Terkunci) + Kustom
       `<div class="card" style="margin-bottom:12px;border:1px solid #cbd5e1;border-radius:8px">` +
-      `<div class="card-head" style="padding:10px 14px;border-bottom:1px solid #e2e8f0;background:#f8fafc;display:flex;align-items:center;justify-content:space-between">` +
+      `<div class="card-head" style="padding:10px 14px;border-bottom:1px solid #e2e8f0;background:#f8fafc;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">` +
       `<strong style="font-size:13px;color:#0f172a">2. Pilih Bidang, Atribut Default (Terkunci) + Kustom:</strong>` +
       `<span style="background:#ecfdf5;color:#047857;font-size:11px;font-weight:700;padding:2px 8px;border-radius:12px;border:1px solid #a7f3d0">📦 ${sessionCount} Bidang Sesi</span>` +
       `</div>` +
       `<div style="padding:12px 14px">` +
-      `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">` +
+      `<div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px">` +
       `<button type="button" class="btn btn-primary" data-act="toggle-picker" style="background:#7c3aed;border-color:#7c3aed;font-size:12px;font-weight:700">🎯 Pilih Bidang Baseline</button>` +
       `<button type="button" class="btn btn-soft" data-act="import-bidang" style="font-size:12px;font-weight:700;color:#7c3aed;border-color:#c084fc">📥 Import Bidang</button>` +
-      `<span style="font-size:12px;color:#5b21b6;margin-left:4px">Klik salah satu poligon bidang pada kanvas peta.</span>` +
+      `<span style="font-size:12px;color:#5b21b6">Klik salah satu poligon bidang pada kanvas peta.</span>` +
       `</div>` +
       renderCanvasSvg('create') +
       `<div style="margin:8px 0;font-size:13px"><strong style="color:#7c3aed">ID: </strong><code style="font-size:13px;font-weight:800;color:#6d28d9">${esc(parcel.id)}</code> <span style="font-size:11.5px;color:#64748b">(${esc(parcel.desa)}, ${esc(parcel.kecamatan)})</span></div>` +
 
       // Sub A: Atribut Baseline Terkunci
       `<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:10px;margin-bottom:12px">` +
-      `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">` +
+      `<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:6px">` +
       `<strong style="font-size:12px;color:#1e293b">A. Atribut Default Baseline (🔒 Terkunci):</strong>` +
       `<span style="font-size:11px;color:#64748b;background:#e2e8f0;padding:1px 6px;border-radius:3px">6 Kolom Bawaan</span>` +
       `</div>` +
-      `<div style="border:1px solid #cbd5e1;border-radius:6px;overflow:hidden"><table style="width:100%;border-collapse:collapse;font-size:11.5px;margin:0">` +
+      `<div style="border:1px solid #cbd5e1;border-radius:6px;overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:11.5px;margin:0">` +
       `<thead><tr style="background:#f1f5f9;text-align:left"><th style="padding:6px 10px;width:140px">Kolom Baseline</th><th style="padding:6px 10px;width:80px">Tipe</th><th style="padding:6px 10px">Nilai (Terkunci 🔒)</th></tr></thead>` +
       `<tbody>` +
       `<tr style="border-top:1px solid #e2e8f0"><td style="padding:5px 10px"><code>id_bidang</code></td><td style="padding:5px 10px">String</td><td style="padding:5px 10px;color:#475569">🔒 ${esc(parcel.id)}</td></tr>` +
@@ -392,11 +393,11 @@ const DerivatifBidang = (() => {
 
       // Sub B: Atribut Custom Tambahan
       `<div style="background:#ffffff;border:1px solid #ddd6fe;border-radius:6px;padding:10px;margin-bottom:12px">` +
-      `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">` +
+      `<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:6px">` +
       `<strong style="font-size:12px;color:#5b21b6">B. Atribut Custom Tambahan:</strong>` +
       `<button type="button" class="btn btn-soft btn-sm" data-act="add-custom-col" style="font-size:11.5px;font-weight:700;color:#6d28d9;border-color:#c084fc">＋ Tambah Atribut</button>` +
       `</div>` +
-      `<div style="border:1px solid #cbd5e1;border-radius:6px;overflow:hidden"><table style="width:100%;border-collapse:collapse;font-size:11.5px;margin:0" id="table-custom-cols">` +
+      `<div style="border:1px solid #cbd5e1;border-radius:6px;overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:11.5px;margin:0" id="table-custom-cols">` +
       `<thead><tr style="background:#ede9fe;color:#5b21b6;text-align:left"><th style="padding:6px 8px;width:180px">Nama Kolom</th><th style="padding:6px 8px;width:130px">Tipe</th><th style="padding:6px 8px;width:80px">Length</th><th style="padding:6px 8px">Nilai (Isi)</th><th style="padding:6px 8px;width:40px;text-align:center"></th></tr></thead>` +
       `<tbody>` +
       state.create.customColumns.map((col, idx) =>
@@ -410,14 +411,14 @@ const DerivatifBidang = (() => {
       ).join('') +
       `</tbody></table></div></div>` +
 
-      `<button type="button" class="btn btn-primary" data-act="create-save-bidang" style="width:100%;height:38px;background:#7c3aed;border-color:#7c3aed;font-size:13px;font-weight:700">` +
+      `<button type="button" class="btn btn-primary" data-act="create-save-bidang" style="width:100%;min-height:38px;height:auto;white-space:normal;line-height:1.3;padding:8px 12px;background:#7c3aed;border-color:#7c3aed;font-size:13px;font-weight:700">` +
       `Simpan Bidang (Pertahankan Skema Kolom &amp; Siap Bidang Selanjutnya)` +
       `</button>` +
       `</div></div>` +
 
       // KARTU 3: Daftar Bidang Terisi Sesi Ini
       `<div class="card" style="margin-bottom:12px;border:1px solid #cbd5e1;border-radius:8px">` +
-      `<div class="card-head" style="padding:10px 14px;border-bottom:1px solid #e2e8f0;background:#f8fafc;display:flex;align-items:center;justify-content:space-between">` +
+      `<div class="card-head" style="padding:10px 14px;border-bottom:1px solid #e2e8f0;background:#f8fafc;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">` +
       `<strong style="font-size:13px;color:#0f172a">3. Daftar Bidang Terisi (Sesi Ini): ${sessionCount} bidang</strong>` +
       `<div style="font-size:11.5px;font-weight:700"><span style="color:#f59e0b">■ Baru Diisi</span> &nbsp; <span style="color:#10b981">■ Sudah Tersimpan</span></div>` +
       `</div>` +
@@ -438,12 +439,12 @@ const DerivatifBidang = (() => {
       `<strong style="font-size:13px;color:#0f172a">4. Opsi Penyimpanan &amp; Format Ekspor (Tabel Atribut Saja):</strong>` +
       `</div>` +
       `<div style="padding:12px 14px">` +
-      `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">` +
+      `<div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px">` +
       `<label style="font-size:12px;font-weight:700;color:#334155;min-width:90px">Folder Simpan:</label>` +
-      `<input type="text" id="create-folder-input" value="${esc(state.create.folder)}" style="flex:1;height:30px;font-size:12px;padding:3px 8px;border:1px solid #cbd5e1;border-radius:5px">` +
+      `<input type="text" id="create-folder-input" value="${esc(state.create.folder)}" style="flex:1;min-width:140px;height:30px;font-size:12px;padding:3px 8px;border:1px solid #cbd5e1;border-radius:5px">` +
       `<button type="button" class="btn btn-soft" data-act="browse-folder" style="height:30px;padding:2px 10px;font-size:12px">...</button>` +
       `</div>` +
-      `<div style="display:flex;align-items:center;gap:16px;margin-bottom:10px">` +
+      `<div style="display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:10px">` +
       `<span style="font-size:12px;font-weight:700;color:#334155">Format:</span>` +
       `<label style="font-size:12px;cursor:pointer"><input type="radio" name="create-format" value="gpkg" ${state.create.format === 'gpkg' ? 'checked' : ''}> .gpkg (GeoPackage)</label>` +
       `<label style="font-size:12px;cursor:pointer"><input type="radio" name="create-format" value="geojson" ${state.create.format === 'geojson' ? 'checked' : ''}> .geojson (GeoJSON)</label>` +
@@ -470,8 +471,8 @@ const DerivatifBidang = (() => {
       `<strong style="font-size:13px;color:#0f172a">1. Pilih File Tabel Atribut Derivatif Hasil Ekspor:</strong>` +
       `</div>` +
       `<div style="padding:12px 14px">` +
-      `<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">` +
-      `<input type="text" readonly id="load-filepath-input" value="${esc(state.load.filePath)}" placeholder="Pilih file (.gpkg, .geojson, .shp, .dbf, .csv)..." style="flex:1;height:32px;font-size:12.5px;padding:3px 8px;border:1px solid #cbd5e1;border-radius:5px;background:#f8fafc">` +
+      `<div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:8px">` +
+      `<input type="text" readonly id="load-filepath-input" value="${esc(state.load.filePath)}" placeholder="Pilih file (.gpkg, .geojson, .shp, .dbf, .csv)..." style="flex:1 1 180px;min-width:140px;height:32px;font-size:12.5px;padding:3px 8px;border:1px solid #cbd5e1;border-radius:5px;background:#f8fafc">` +
       `<button type="button" class="btn btn-primary" data-act="browse-load-file" style="height:32px;background:#0284c7;border-color:#0284c7;font-size:12px;font-weight:700">📁 Browse...</button>` +
       `<button type="button" class="btn btn-soft" data-act="open-load-settings" style="height:32px;font-size:12px;font-weight:700;color:#166534;background:#f0fdf4;border-color:#86efac">⚙️ Pengaturan Baseline...</button>` +
       `<button type="button" class="btn btn-soft" data-act="reset-load" style="height:32px;font-size:12px;font-weight:700;color:#dc2626">🔄 Reset</button>` +
@@ -488,7 +489,7 @@ const DerivatifBidang = (() => {
 
       // KARTU 2: Visualisasi Geometri & Tabel Atribut Bidang
       `<div class="card" style="margin-bottom:12px;border:1px solid #cbd5e1;border-radius:8px">` +
-      `<div class="card-head" style="padding:10px 14px;border-bottom:1px solid #e2e8f0;background:#f8fafc;display:flex;align-items:center;justify-content:space-between">` +
+      `<div class="card-head" style="padding:10px 14px;border-bottom:1px solid #e2e8f0;background:#f8fafc;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">` +
       `<strong style="font-size:13px;color:#0f172a">2. Daftar Bidang Derivatif yang Berhasil Dihubungkan (${loadedCount} bidang):</strong>` +
       `<span style="background:#ecfdf5;color:#047857;font-size:11px;font-weight:700;padding:2px 8px;border-radius:12px;border:1px solid #a7f3d0">✓ Terhubung ke Geometri WMS</span>` +
       `</div>` +
@@ -568,7 +569,7 @@ const DerivatifBidang = (() => {
     const crumbTitleEl = document.getElementById('crumb-title');
     if (pageTitleEl) {
       const baseTitle = mode === 'load' ? 'Muat IGT Derivatif' : mode === 'create' ? 'Buat IGT Derivatif Kustom' : 'Kustom Tematik Derivatif';
-      pageTitleEl.innerHTML = `${baseTitle} <span style="vertical-align:middle;margin-left:8px;font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:12px;border:1px solid;background:${badgeModeColor}">${badgeModeText}</span>`;
+      pageTitleEl.innerHTML = `${baseTitle} <span style="display:inline-block;white-space:nowrap;vertical-align:middle;margin-left:6px;font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:12px;border:1px solid;background:${badgeModeColor}">${badgeModeText}</span>`;
       if (crumbTitleEl) crumbTitleEl.textContent = baseTitle;
     }
     if (pageDescEl) {
@@ -593,7 +594,7 @@ const DerivatifBidang = (() => {
       `<div class="derivatif-bidang-v2-container" style="max-width:1000px;margin:0 auto">` +
       topNavHtml +
       // 3 Tombol Utama di Atas
-      `<div style="display:flex;gap:8px;background:#ffffff;border:1px solid #cbd5e1;border-radius:8px;padding:6px;margin-bottom:12px">` +
+      `<div style="display:flex;flex-wrap:wrap;gap:6px;background:#ffffff;border:1px solid #cbd5e1;border-radius:8px;padding:6px;margin-bottom:12px">` +
       `<button type="button" data-act="switch-mode" data-mode="isi" style="${mode === 'isi' ? activeBtnStyle('#2563eb', '#1d4ed8') : inactiveBtnStyle}">✍️ Isi Tematik</button>` +
       `<button type="button" data-act="switch-mode" data-mode="create" style="${mode === 'create' ? activeBtnStyle('#7c3aed', '#6d28d9') : inactiveBtnStyle}">➕ Create Tematik</button>` +
       `<button type="button" data-act="switch-mode" data-mode="load" style="${mode === 'load' ? activeBtnStyle('#059669', '#047857') : inactiveBtnStyle}">📂 Load Tematik</button>` +

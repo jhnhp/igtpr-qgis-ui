@@ -19,7 +19,7 @@ import os
 from qgis.PyQt.QtCore import QSize, Qt, pyqtSignal
 from qgis.PyQt.QtGui import QColor, QCursor, QFont, QIcon
 from qgis.PyQt.QtWidgets import (
-    QBoxLayout, QComboBox, QCompleter, QFrame, QHBoxLayout, QLabel, QLineEdit,
+    QBoxLayout, QComboBox, QCompleter, QFrame, QGridLayout, QHBoxLayout, QLabel, QLineEdit,
     QPushButton, QScrollArea, QSizePolicy, QVBoxLayout, QWidget,
 )
 
@@ -71,8 +71,8 @@ class DatasetCard(QFrame):
                 border-radius: 6px;
                 font-size: 11px;
                 font-weight: 700;
-                padding: 4px 8px;
-                min-width: 44px;
+                padding: 4px 7px;
+                min-width: 36px;
             }
             QPushButton#actionWms:hover {
                 background-color: #1f6fd6;
@@ -85,8 +85,8 @@ class DatasetCard(QFrame):
                 border-radius: 6px;
                 font-size: 11px;
                 font-weight: 700;
-                padding: 4px 8px;
-                min-width: 44px;
+                padding: 4px 7px;
+                min-width: 36px;
             }
             QPushButton#actionWfs:hover {
                 background-color: #7c3aed;
@@ -187,11 +187,12 @@ class DatasetCard(QFrame):
         font.setBold(False)
         font.setWeight(QFont.Weight.Normal)
         self.title_lbl.setFont(font)
-        self.title_lbl.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        self.title_lbl.setWordWrap(True)
+        self.title_lbl.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         self.title_lbl.setCursor(Qt.CursorShape.PointingHandCursor)
         self.title_lbl.setToolTip("Klik untuk melihat detail lengkap dataset IGT")
         self.title_lbl.mousePressEvent = lambda e: self.open_detail()
-        title_row.addWidget(self.title_lbl, 0, Qt.AlignmentFlag.AlignVCenter)
+        title_row.addWidget(self.title_lbl, 1, Qt.AlignmentFlag.AlignVCenter)
 
         self.btn_info = QPushButton(self)
         self.btn_info.setObjectName('btnInfo')
@@ -212,15 +213,13 @@ class DatasetCard(QFrame):
             self.chip_btn.clicked.connect(self.toggle_expand)
             title_row.addWidget(self.chip_btn, 0, Qt.AlignmentFlag.AlignVCenter)
 
-        title_row.addStretch(1)
-
         left_col.addLayout(title_row)
 
         # Baris 2 & 3: Nama Direktorat & Tanggal (hanya jika show_metadata=True, disembunyikan di dashboard agar tidak ramai)
         if self.show_metadata:
             org_text = dataset.get('direktorat') or dataset.get('satker') or dataset.get('instansi') or '—'
             self.org_lbl = QLabel(org_text, self)
-            self.org_lbl.setStyleSheet("color: #475569; font-size: 11.5px; margin-left: 22px;")
+            self.org_lbl.setStyleSheet("color: #475569; font-size: 12px; margin-left: 22px;")
             self.org_lbl.setWordWrap(True)
             left_col.addWidget(self.org_lbl)
 
@@ -294,7 +293,7 @@ class DatasetCard(QFrame):
                 sr_layout.addWidget(branch_lbl)
 
                 sub_title = QLabel(sub.get('name', ''), sub_row)
-                sub_title.setStyleSheet("color: #1e293b; font-size: 11.5px; font-weight: 400;")
+                sub_title.setStyleSheet("color: #1e293b; font-size: 12px; font-weight: 400;")
                 s_font = sub_title.font()
                 s_font.setBold(False)
                 s_font.setWeight(QFont.Weight.Normal)
@@ -388,14 +387,26 @@ class DatasetCard(QFrame):
         self.chip_btn.setText(f"Multi-layer ({sub_count}) {caret}")
 
     def apply_width(self, width):
-        is_narrow = width < 280
+        eff_w = self.width() if self.width() > 100 else width
+        is_compact = eff_w < 380
+        is_narrow = eff_w < 260
+        if hasattr(self, 'icon_lbl'):
+            self.icon_lbl.setVisible(not is_compact)
+        if hasattr(self, 'title_lbl'):
+            self.title_lbl.setStyleSheet(
+                f"color: #0f294d; font-size: {'12px' if is_compact else '13px'}; font-weight: 400;"
+            )
+        if self.has_subs and hasattr(self, 'chip_btn'):
+            sub_count = len(self.dataset['subLayers'])
+            caret = '▴' if self.is_expanded else '▾'
+            self.chip_btn.setText(f"({sub_count}) {caret}" if is_compact else f"Multi-layer ({sub_count}) {caret}")
         if is_narrow:
             self.main_row.setDirection(QBoxLayout.Direction.TopToBottom)
             self.main_row.setSpacing(6)
             self.main_row.setAlignment(self.action_wrap, Qt.AlignmentFlag.AlignRight)
         else:
             self.main_row.setDirection(QBoxLayout.Direction.LeftToRight)
-            self.main_row.setSpacing(10)
+            self.main_row.setSpacing(6 if is_compact else 10)
             self.main_row.setAlignment(self.action_wrap, Qt.AlignmentFlag.AlignVCenter)
 
     def resizeEvent(self, event):
@@ -464,7 +475,7 @@ class CatalogPage(QWidget):
                 border: 1px solid #cbd5e1;
                 border-radius: 8px;
                 color: #1f6fd6;
-                font-size: 11.5px;
+                font-size: 12px;
                 font-weight: 700;
                 padding: 5px 10px;
             }
@@ -474,10 +485,10 @@ class CatalogPage(QWidget):
             }
             QLineEdit#searchInput {
                 background-color: #ffffff;
-                border: 1.5px solid #cbd5e1;
+                border: 1px solid #cbd5e1;
                 border-radius: 8px;
                 padding: 6px 10px;
-                font-size: 11.5px;
+                font-size: 12px;
                 color: #0f294d;
             }
             QLineEdit#searchInput:focus {
@@ -485,10 +496,10 @@ class CatalogPage(QWidget):
             }
             QComboBox {
                 background-color: #ffffff;
-                border: 1.5px solid #cbd5e1;
+                border: 1px solid #cbd5e1;
                 border-radius: 8px;
                 padding: 6px 30px 6px 10px;
-                font-size: 11.5px;
+                font-size: 12px;
                 color: #0f294d;
                 font-weight: 600;
                 min-height: 22px;
@@ -499,14 +510,14 @@ class CatalogPage(QWidget):
             QComboBox:disabled {
                 background: #f8fafc;
                 color: #94a3b8;
-                border: 1.5px solid #e2e8f0;
+                border: 1px solid #e2e8f0;
             }
             QComboBox QLineEdit {
                 border: none;
                 background: transparent;
                 color: #0f294d;
                 font-weight: 600;
-                font-size: 11.5px;
+                font-size: 12px;
                 padding: 0;
             }
             QComboBox::drop-down {
@@ -527,7 +538,7 @@ class CatalogPage(QWidget):
             QComboBox QAbstractItemView {
                 background-color: #ffffff;
                 color: #0f294d;
-                border: 1.5px solid #cbd5e1;
+                border: 1px solid #cbd5e1;
                 border-radius: 8px;
                 selection-background-color: #eff6ff;
                 selection-color: #1d4ed8;
@@ -668,14 +679,16 @@ class CatalogPage(QWidget):
         self.tabs_container = QWidget(self)
         self.tabs_container.setObjectName('tabsContainer')
         self.tabs_container.setStyleSheet("background: transparent;")
-        self.subnav_layout = QHBoxLayout(self.tabs_container)
+        self.subnav_layout = QGridLayout(self.tabs_container)
         self.subnav_layout.setContentsMargins(0, 0, 0, 0)
-        self.subnav_layout.setSpacing(4)
+        self.subnav_layout.setHorizontalSpacing(4)
+        self.subnav_layout.setVerticalSpacing(4)
         self.nav_buttons = {}
         self.tab_meta = {}
+        self._subnav_mode = None
 
         # Memuat tab kategori secara dinamis dari CATEGORIES dengan stretch merata sampai ujung
-        for cat_key, cat_info in CATEGORIES.items():
+        for idx, (cat_key, cat_info) in enumerate(CATEGORIES.items()):
             full_title = cat_info.get('label', cat_key)
             short_title = cat_info.get('shortLabel', full_title)
             icon_key = cat_info.get('icon', 'pin')
@@ -683,7 +696,8 @@ class CatalogPage(QWidget):
 
             btn = DynamicTabButton(cat_key, full_title, short_title, icon_key, color, self.tabs_container)
             btn.clicked.connect(lambda checked, k=cat_key: self.set_category(k))
-            self.subnav_layout.addWidget(btn, 1)  # Stretch factor 1: membagi rata sampai ujung
+            self.subnav_layout.addWidget(btn, 0, idx)
+            self.subnav_layout.setColumnStretch(idx, 1)
             self.nav_buttons[cat_key] = btn
             self.tab_meta[cat_key] = (icon_key, color)
 
@@ -722,7 +736,7 @@ class CatalogPage(QWidget):
             QPushButton {
                 background-color: #ffffff;
                 color: #1f6fd6;
-                border: 1.5px solid #cbd5e1;
+                border: 1px solid #cbd5e1;
                 border-radius: 8px;
                 padding: 6px 9px;
                 font-size: 11px;
@@ -754,7 +768,7 @@ class CatalogPage(QWidget):
         prov_head = QHBoxLayout()
         prov_head.setContentsMargins(0, 0, 0, 0)
         self.prov_lbl = QLabel('PROVINSI', prov_box)
-        self.prov_lbl.setStyleSheet("color: #64748b; font-size: 9.5px; font-weight: 800; letter-spacing: 0.5px;")
+        self.prov_lbl.setStyleSheet("color: #64748b; font-size: 10px; font-weight: 800; letter-spacing: 1px;")
         prov_head.addWidget(self.prov_lbl)
         prov_head.addStretch()
 
@@ -803,7 +817,7 @@ class CatalogPage(QWidget):
         kab_box_layout.setContentsMargins(0, 0, 0, 0)
         kab_box_layout.setSpacing(3)
         self.kab_lbl = QLabel('KABUPATEN / KOTA', kab_box)
-        self.kab_lbl.setStyleSheet("color: #64748b; font-size: 9.5px; font-weight: 800; letter-spacing: 0.5px;")
+        self.kab_lbl.setStyleSheet("color: #64748b; font-size: 10px; font-weight: 800; letter-spacing: 1px;")
         kab_box_layout.addWidget(self.kab_lbl)
         self.kab_combo = QComboBox(kab_box)
         self.kab_combo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
@@ -999,34 +1013,52 @@ class CatalogPage(QWidget):
         if not hasattr(self, 'nav_buttons') or not self.nav_buttons:
             return
         if width is None:
-            width = self.width() if self.width() > 0 else 400
+            width = self.width() if self.width() > 0 else 480
 
-        tab_count = max(1, len(self.nav_buttons))
-        # Total lebar yang tersedia untuk baris tab (dikurangi padding kontainer)
+        btns = list(self.nav_buttons.values())
+        new_mode = 'single' if width >= 580 else 'two_rows'
+        if getattr(self, '_subnav_mode', None) != new_mode:
+            self._subnav_mode = new_mode
+            for b in btns:
+                self.subnav_layout.removeWidget(b)
+            for c in range(6):
+                self.subnav_layout.setColumnStretch(c, 0)
+            if new_mode == 'single':
+                for idx, b in enumerate(btns):
+                    self.subnav_layout.addWidget(b, 0, idx)
+                    self.subnav_layout.setColumnStretch(idx, 1)
+            else:
+                # Baris 0: 3 tab pertama masing-masing span 2 kolom (dari 6 kolom)
+                for idx in range(min(3, len(btns))):
+                    self.subnav_layout.addWidget(btns[idx], 0, idx * 2, 1, 2)
+                # Baris 1: 2 tab terakhir masing-masing span 3 kolom (dari 6 kolom)
+                if len(btns) > 3:
+                    self.subnav_layout.addWidget(btns[3], 1, 0, 1, 3)
+                if len(btns) > 4:
+                    self.subnav_layout.addWidget(btns[4], 1, 3, 1, 3)
+                for c in range(6):
+                    self.subnav_layout.setColumnStretch(c, 1)
+
         avail_w = max(60, width - 28)
-        tab_w = avail_w / tab_count
-
-        for key, btn in self.nav_buttons.items():
+        for idx, (key, btn) in enumerate(self.nav_buttons.items()):
             full_title = getattr(btn, 'full_text', btn.text())
             short_title = getattr(btn, 'short_text', full_title)
 
-            # Sisa ruang untuk teks setelah dikurangi icon (13px) + gap (4px) + padding (~12px)
-            avail_text = tab_w - 29
+            if new_mode == 'single':
+                tab_w = avail_w / max(1, len(btns))
+            else:
+                tab_w = (avail_w / 3.0) if idx < 3 else (avail_w / 2.0)
+
+            avail_text = tab_w - 28
             fm = btn.fontMetrics()
             adv = getattr(fm, 'horizontalAdvance', fm.width)
 
-            if tab_w < 50:
-                # Bila pas dikecilin sangat sempit: teks disembunyikan agar icon tetap terlihat jelas
-                btn.setText('')
-            elif tab_w < 84:
-                # Bila sempit: teks di-elide dari short_title
-                btn.setText(fm.elidedText(short_title, Qt.TextElideMode.ElideRight, int(avail_text)))
-            elif adv(full_title) <= avail_text:
+            if adv(full_title) <= avail_text:
                 btn.setText(full_title)
             elif adv(short_title) <= avail_text:
                 btn.setText(short_title)
             else:
-                btn.setText(fm.elidedText(short_title, Qt.TextElideMode.ElideRight, int(avail_text)))
+                btn.setText(fm.elidedText(short_title, Qt.TextElideMode.ElideRight, max(20, int(avail_text))))
 
             btn.setToolTip(full_title)
 
@@ -1151,7 +1183,7 @@ class CatalogPage(QWidget):
                 QPushButton {
                     background-color: #1f6fd6;
                     color: #ffffff;
-                    border: 1.5px solid #1f6fd6;
+                    border: 1px solid #1f6fd6;
                     border-radius: 8px;
                     padding: 6px 9px;
                     font-size: 11px;
@@ -1168,7 +1200,7 @@ class CatalogPage(QWidget):
                     QPushButton {
                         background-color: #eff6ff;
                         color: #1f6fd6;
-                        border: 1.5px solid #1f6fd6;
+                        border: 1px solid #1f6fd6;
                         border-radius: 8px;
                         padding: 6px 9px;
                         font-size: 11px;
@@ -1183,7 +1215,7 @@ class CatalogPage(QWidget):
                     QPushButton {
                         background-color: #ffffff;
                         color: #1f6fd6;
-                        border: 1.5px solid #cbd5e1;
+                        border: 1px solid #cbd5e1;
                         border-radius: 8px;
                         padding: 6px 9px;
                         font-size: 11px;
@@ -1248,7 +1280,7 @@ class CatalogPage(QWidget):
                     QPushButton {
                         background-color: #ffffff;
                         color: #1f6fd6;
-                        border: 1.5px solid #cbd5e1;
+                        border: 1px solid #cbd5e1;
                         border-radius: 8px;
                         padding: 6px 9px;
                         font-size: 11px;
@@ -1445,11 +1477,13 @@ class CatalogPage(QWidget):
         # Render Kartu Dataset (8 data teratas untuk halaman aktif)
         if not page_items:
             empty_card = QFrame(self.list_content)
-            empty_card.setStyleSheet("background-color: #ffffff; border: 1px dashed #cbd5e1; border-radius: 10px; padding: 24px;")
+            empty_card.setObjectName("emptyCard")
+            empty_card.setStyleSheet("QFrame#emptyCard { background-color: #ffffff; border: 1px dashed #cbd5e1; border-radius: 10px; padding: 24px; }")
             ec_layout = QVBoxLayout(empty_card)
             ec_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
             lbl = QLabel('Tidak ada dataset yang cocok dengan kriteria filter atau pencarian.', empty_card)
             lbl.setStyleSheet("color: #64748b; font-size: 12px; font-weight: 600;")
+            lbl.setWordWrap(True)
             lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
             ec_layout.addWidget(lbl)
             self.list_layout.addWidget(empty_card)

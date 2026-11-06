@@ -21,7 +21,7 @@
 .model-table-wrap{height:calc(100vh - 255px);min-height:300px;overflow:auto;border:1px solid #cbd8e8;border-radius:5px}
 .model-table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
 .model-table th{background:#edf3f9;color:#182f4c;font-size:13px;font-weight:800;text-align:left;padding:7px 5px;border-bottom:1px solid #cbd8e8}
-.model-table td{padding:6px 4px;border-bottom:1px solid #e3e8ef;overflow-wrap:anywhere;vertical-align:top}
+.model-table td{padding:6px 4px;border-bottom:1px solid #e3e8ef;overflow-wrap:break-word;word-break:normal;vertical-align:top}
 .model-table th:last-child,.model-table td:last-child{text-align:center;width:64px}
 .model-table th:first-child{width:36%}.model-table th:nth-child(2){width:auto}
 .run-btn{background:#3e5f9d;color:#fff;border:0;border-radius:3px;padding:4px 6px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap}
@@ -52,6 +52,7 @@ body.v2-page.v2-theme-model .model-table td{padding:12px 14px;border-bottom:1px 
 body.v2-page.v2-theme-model .model-table th:last-child,body.v2-page.v2-theme-model .model-table td:last-child{width:110px}
 body.v2-page.v2-theme-model .run-btn{background:linear-gradient(135deg,#6d28d9 0%,#7c3aed 100%);color:#ffffff;border-radius:8px;padding:7px 11px;font-size:11px;font-weight:700;box-shadow:0 3px 10px rgba(109,40,217,.2)}
 body.v2-page.v2-theme-model .run-btn:hover{background:#5b21b6}
+@media(max-width:480px){body.v2-page.v2-theme-model .model-table th,body.v2-page.v2-theme-model .model-table td{padding:10px 8px;font-size:11.5px}body.v2-page.v2-theme-model .model-table th:first-child{width:30%}body.v2-page.v2-theme-model .model-table th:last-child,body.v2-page.v2-theme-model .model-table td:last-child{width:88px}}
 @media(max-width:400px){.main{padding:10px 8px}.brand-logo{width:44px;height:44px}.model-table{font-size:12px}.model-table th{font-size:12px}.run-btn{font-size:9px;padding:4px}.model-table-wrap{height:calc(100vh - 240px)}}
 </style></head>
 <body class="panel" data-page="model-builder"><div class="app"><div class="workspace">

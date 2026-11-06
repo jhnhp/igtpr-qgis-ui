@@ -160,7 +160,7 @@ class DashboardPage(ResponsivePage):
         self.hero = self.responsive(HeroHeader(
             'SISTEM INFORMASI GEOSPASIAL', 'GEOPORTAL IGT-PR',
             'Integrasi data geospasial tematik pertanahan dan tata ruang Kementerian ATR/BPN.',
-            'blue', year_box, 320, self.bpn_logo, self.igtpr_logo, self.content))
+            'blue', year_box, 460, self.bpn_logo, self.igtpr_logo, self.content))
         self.body.addWidget(self.hero)
 
         # 2. Statistik repositori (Pertanahan & Tata Ruang - 2 Kolom pada Tablet/Layar >= 460px)
