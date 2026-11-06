@@ -114,6 +114,7 @@ class IgtprDockWidget(QDockWidget):
 
         # Upload Data V2 (Popup dialog modal, bukan halaman stack)
         self.upload_page = UploadPage(current_category='pertanahan', current_role=self.current_role, parent=self)
+        self.upload_page.hide()
 
         # Page 5: Model Builder V2
         self.model_builder_page = ModelBuilderPage(current_role=self.current_role, parent=self.stack)

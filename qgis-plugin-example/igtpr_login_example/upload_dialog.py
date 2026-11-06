@@ -9,7 +9,7 @@ from qgis.PyQt.QtGui import QColor, QCursor, QFont, QIcon, QIntValidator
 from qgis.PyQt.QtWidgets import (
     QAbstractItemView, QButtonGroup, QCheckBox, QComboBox, QDialog,
     QFileDialog, QFrame, QGridLayout, QHBoxLayout, QHeaderView, QLabel,
-    QLineEdit, QMessageBox, QPushButton, QRadioButton, QScrollArea,
+    QLayout, QLineEdit, QMessageBox, QPushButton, QRadioButton, QScrollArea,
     QSizePolicy, QTabWidget, QTableWidget, QTableWidgetItem, QTextEdit,
     QVBoxLayout, QWidget,
 )
@@ -23,6 +23,19 @@ except ImportError:
 from .assets import ICONS
 from .data import CATEGORIES, DATASETS
 from .login_page import svg_pixmap
+from .ui_kit import icon
+
+
+class _ScrollContent(QWidget):
+    """Widget konten QScrollArea yang lebarnya selalu mengikuti viewport tanpa meluber ke kanan."""
+
+    def minimumSizeHint(self):
+        h = self.layout().totalMinimumSize().height() if self.layout() else 100
+        return QSize(100, h)
+
+    def sizeHint(self):
+        h = self.layout().totalSizeHint().height() if self.layout() else 100
+        return QSize(200, h)
 
 
 class UploadPage(QWidget):
@@ -45,6 +58,8 @@ class UploadPage(QWidget):
             }
             QLabel {
                 font-family: "Segoe UI", Arial, sans-serif;
+                font-size: 11px;
+                color: #334155;
             }
             QPushButton#backBtn {
                 background-color: #ffffff;
@@ -77,7 +92,7 @@ class UploadPage(QWidget):
             }
             QLineEdit, QComboBox {
                 background-color: #ffffff;
-                border: 1.5px solid #cbd5e1;
+                border: 1px solid #cbd5e1;
                 border-radius: 8px;
                 padding: 8px 12px;
                 font-size: 12px;
@@ -135,7 +150,7 @@ class UploadPage(QWidget):
         text_layout.addWidget(title_lbl)
 
         desc_lbl = QLabel('Unggah data atribut bidang IGT Pertanahan, kawasan IGT Tata Ruang, atau Derivatif.', self)
-        desc_lbl.setStyleSheet("color: #64748b; font-size: 11.5px;")
+        desc_lbl.setStyleSheet("color: #64748b; font-size: 12px;")
         text_layout.addWidget(desc_lbl)
         head_layout.addLayout(text_layout, 1)
 
@@ -312,7 +327,7 @@ class UploadPage(QWidget):
                         border-radius: 20px;
                         padding: 7px 16px;
                         font-weight: 700;
-                        font-size: 11.5px;
+                        font-size: 12px;
                     }
                 """)
             else:
@@ -324,7 +339,7 @@ class UploadPage(QWidget):
                         border-radius: 20px;
                         padding: 7px 16px;
                         font-weight: 600;
-                        font-size: 11.5px;
+                        font-size: 12px;
                     }
                     QPushButton:hover {
                         background-color: #f1f5f9;
@@ -452,6 +467,8 @@ class AttributeMappingDialog(QDialog):
             }
             QLabel {
                 font-family: "Segoe UI", Arial, sans-serif;
+                font-size: 11px;
+                color: #334155;
             }
             QFrame.cardBox {
                 background-color: #ffffff;
@@ -476,7 +493,7 @@ class AttributeMappingDialog(QDialog):
             }
             QComboBox {
                 background-color: #ffffff;
-                border: 1.5px solid #cbd5e1;
+                border: 1px solid #cbd5e1;
                 border-radius: 6px;
                 padding: 4px 8px;
                 font-size: 11px;
@@ -531,13 +548,16 @@ class AttributeMappingDialog(QDialog):
 
         # 3. Alert Box (jika ada kolom wajib belum terpetakan)
         self.alert_box = QFrame(self)
+        self.alert_box.setObjectName("alertBox")
         self.alert_box.setStyleSheet("""
-            background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 6px 12px;
+            QFrame#alertBox {
+                background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 6px 12px;
+            }
         """)
         ab_lay = QHBoxLayout(self.alert_box)
         ab_lay.setContentsMargins(6, 6, 6, 6)
-        self.alert_msg = QLabel("⚠️ Pastikan seluruh kolom acuan bertanda (*) telah terpetakan dengan benar.", self.alert_box)
-        self.alert_msg.setStyleSheet("color: #991b1b; font-size: 11px; font-weight: 600;")
+        self.alert_msg = QLabel("Perhatian: Pastikan seluruh kolom acuan bertanda (*) telah terpetakan dengan benar.", self.alert_box)
+        self.alert_msg.setStyleSheet("color: #991b1b; font-size: 11px; font-weight: 600; border: none; background: transparent;")
         ab_lay.addWidget(self.alert_msg)
         layout.addWidget(self.alert_box)
 
@@ -550,11 +570,11 @@ class AttributeMappingDialog(QDialog):
 
         tc_head = QHBoxLayout()
         tc_title = QLabel("Pemetaan Field Atribut (Attribute Mapping)", table_card)
-        tc_title.setStyleSheet("font-size: 12.5px; font-weight: 800; color: #0f294d;")
+        tc_title.setStyleSheet("font-size: 13px; font-weight: 800; color: #0f294d;")
         tc_head.addWidget(tc_title)
         tc_head.addStretch()
         tc_hint = QLabel("Kolom bertanda <span style='color:#ef4444; font-weight:bold;'>* (Wajib)</span> harus dipetakan", table_card)
-        tc_hint.setStyleSheet("font-size: 10.5px; color: #64748b;")
+        tc_hint.setStyleSheet("font-size: 11px; color: #64748b;")
         tc_head.addWidget(tc_hint)
         tc_lay.addLayout(tc_head)
 
@@ -570,9 +590,10 @@ class AttributeMappingDialog(QDialog):
         self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
         self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
         self.table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
-        self.table.setColumnWidth(0, 260)
+        self.table.setColumnWidth(0, 365)
         self.table.verticalHeader().setVisible(False)
         self.table.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
+        self.table.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         tc_lay.addWidget(self.table)
         layout.addWidget(table_card, 1)
 
@@ -583,7 +604,7 @@ class AttributeMappingDialog(QDialog):
         btn_cancel.setStyleSheet("""
             QPushButton {
                 background-color: #ffffff; color: #475569; border: 1px solid #cbd5e1;
-                border-radius: 8px; padding: 7px 16px; font-size: 11.5px; font-weight: 600;
+                border-radius: 8px; padding: 7px 16px; font-size: 12px; font-weight: 600;
             }
             QPushButton:hover { background-color: #f1f5f9; }
         """)
@@ -656,7 +677,7 @@ class AttributeMappingDialog(QDialog):
         req_badge = "<span style='color:#ef4444; font-weight:bold;'> *</span>" if is_req else ""
         lbl_target = QLabel(f"<b>{target_name}</b>{req_badge}", w_acuan)
         lbl_desc = QLabel(f"{alias} • <small style='color:#64748b;'>{tipe}</small>", w_acuan)
-        lbl_desc.setStyleSheet("color: #475569; font-size: 10.5px;")
+        lbl_desc.setStyleSheet("color: #475569; font-size: 11px;")
         lay_acuan.addWidget(lbl_target)
         lay_acuan.addWidget(lbl_desc)
         self.table.setCellWidget(row, 0, w_acuan)
@@ -702,7 +723,7 @@ class AttributeMappingDialog(QDialog):
 
         combo.currentIndexChanged.connect(on_change)
         btn_reset.clicked.connect(lambda: combo.setCurrentIndex(0))
-        self.table.setRowHeight(row, 56)
+        self.table.setRowHeight(row, 60)
 
     def _update_status_badge(self, label, is_mapped, is_req):
         if is_mapped:
@@ -710,10 +731,10 @@ class AttributeMappingDialog(QDialog):
             label.setStyleSheet("color: #047857; font-weight: 700; font-size: 11px; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 4px; padding: 2px 8px;")
         elif is_req:
             label.setText("Belum Dipetakan")
-            label.setStyleSheet("color: #b91c1c; font-weight: 700; font-size: 10.5px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 4px; padding: 2px 6px;")
+            label.setStyleSheet("color: #b91c1c; font-weight: 700; font-size: 11px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 4px; padding: 2px 6px;")
         else:
             label.setText("Opsional")
-            label.setStyleSheet("color: #64748b; font-size: 10.5px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 6px;")
+            label.setStyleSheet("color: #64748b; font-size: 11px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 6px;")
 
     def _validate_all(self):
         missing_req = []
@@ -722,13 +743,15 @@ class AttributeMappingDialog(QDialog):
                 missing_req.append(target)
 
         if missing_req:
-            self.alert_msg.setText(f"⚠️ Kolom wajib belum terpetakan: {', '.join(missing_req)}")
+            self.alert_msg.setText(f"Perhatian: Kolom wajib belum terpetakan: {', '.join(missing_req)}")
+            self.alert_msg.setStyleSheet("color: #991b1b; font-size: 11px; font-weight: 600; border: none; background: transparent;")
+            self.alert_box.setStyleSheet("QFrame#alertBox { background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 6px 12px; }")
             self.alert_box.setVisible(True)
             self.btn_confirm.setEnabled(False)
         else:
             self.alert_msg.setText("✓ Seluruh kolom wajib acuan telah terpetakan dengan benar!")
-            self.alert_msg.setStyleSheet("color: #047857; font-size: 11px; font-weight: 600;")
-            self.alert_box.setStyleSheet("background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 6px 12px;")
+            self.alert_msg.setStyleSheet("color: #047857; font-size: 11px; font-weight: 600; border: none; background: transparent;")
+            self.alert_box.setStyleSheet("QFrame#alertBox { background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 6px 12px; }")
             self.alert_box.setVisible(True)
             self.btn_confirm.setEnabled(True)
 
@@ -769,7 +792,7 @@ class MetadataPreviewDialog(QDialog):
                 padding: 6px 20px;
                 min-width: 140px;
                 font-weight: 600;
-                font-size: 11.5px;
+                font-size: 12px;
                 border-top-left-radius: 6px;
                 border-top-right-radius: 6px;
                 margin-right: 4px;
@@ -787,7 +810,7 @@ class MetadataPreviewDialog(QDialog):
         lay.setSpacing(10)
 
         head = QLabel(f"Pratinjau Metadata Geospasial ISO 19115: {dataset_title}", self)
-        head.setStyleSheet("color: #0f294d; font-size: 13.5px; font-weight: 800;")
+        head.setStyleSheet("color: #0f294d; font-size: 14px; font-weight: 800;")
         lay.addWidget(head)
 
         tabs = QTabWidget(self)
@@ -887,7 +910,7 @@ class MetadataPreviewDialog(QDialog):
         btn_close.setStyleSheet("""
             QPushButton {
                 background-color: #1f6fd6; color: #ffffff; font-weight: 700;
-                border-radius: 6px; padding: 6px 16px; border: none; font-size: 11.5px;
+                border-radius: 6px; padding: 6px 16px; border: none; font-size: 12px;
             }
             QPushButton:hover { background-color: #1a63c7; }
         """)
@@ -926,6 +949,8 @@ class UploadIgtUtamaDialog(QDialog):
             }
             QLabel {
                 font-family: "Segoe UI", Arial, sans-serif;
+                font-size: 11px;
+                color: #334155;
             }
             QFrame.sectionCard {
                 background-color: #ffffff;
@@ -935,10 +960,10 @@ class UploadIgtUtamaDialog(QDialog):
             }
             QLineEdit, QComboBox {
                 background-color: #ffffff;
-                border: 1.5px solid #cbd5e1;
+                border: 1px solid #cbd5e1;
                 border-radius: 7px;
                 padding: 7px 10px;
-                font-size: 11.5px;
+                font-size: 12px;
                 color: #0f294d;
             }
             QLineEdit:focus, QComboBox:focus {
@@ -960,7 +985,7 @@ class UploadIgtUtamaDialog(QDialog):
                 background-color: #1f6fd6;
                 color: #ffffff;
                 font-weight: 700;
-                font-size: 11.5px;
+                font-size: 12px;
                 border-radius: 7px;
                 padding: 7px 14px;
                 border: none;
@@ -1027,9 +1052,10 @@ class UploadIgtUtamaDialog(QDialog):
         scroll.setFrameShape(QFrame.Shape.NoFrame)
         scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
-        content = QWidget()
+        content = _ScrollContent()
         c_layout = QVBoxLayout(content)
-        c_layout.setContentsMargins(0, 0, 0, 0)
+        c_layout.setSizeConstraint(QLayout.SizeConstraint.SetNoConstraint)
+        c_layout.setContentsMargins(2, 2, 10, 8)
         c_layout.setSpacing(10)
 
         # ------------------------------------------------------------------ Section 1: Jenis IGT
@@ -1040,10 +1066,12 @@ class UploadIgtUtamaDialog(QDialog):
 
         s1_title_text = "1. Layer Derivatif (CMS Geoportal) (*)" if is_derivatif else "1. Jenis IGT (*)"
         s1_title = QLabel(s1_title_text, s1)
-        s1_title.setStyleSheet("color: #0f294d; font-size: 12.5px; font-weight: 800;")
+        s1_title.setStyleSheet("color: #0f294d; font-size: 13px; font-weight: 800;")
         s1_lay.addWidget(s1_title)
 
         self.jenis_combo = QComboBox(s1)
+        self.jenis_combo.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+        self.jenis_combo.setMinimumContentsLength(6)
         if is_derivatif:
             self.jenis_combo.addItems([
                 'Coba Derivatif Bidang',
@@ -1066,7 +1094,8 @@ class UploadIgtUtamaDialog(QDialog):
 
         # Target Renaksi Container (Khusus IGT Utama)
         self.renaksi_box = QFrame(s1)
-        self.renaksi_box.setStyleSheet("background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px;")
+        self.renaksi_box.setObjectName("renaksiBox")
+        self.renaksi_box.setStyleSheet("QFrame#renaksiBox { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px; }")
         rn_lay = QVBoxLayout(self.renaksi_box)
         rn_lay.setContentsMargins(6, 6, 6, 6)
         rn_lay.setSpacing(6)
@@ -1077,26 +1106,32 @@ class UploadIgtUtamaDialog(QDialog):
 
         rn_grid = QGridLayout()
         rn_grid.setSpacing(6)
+        rn_grid.setColumnStretch(1, 1)
+        rn_grid.setColumnStretch(3, 1)
 
-        rn_grid.addWidget(QLabel("Tahun Renaksi:", self.renaksi_box), 0, 0)
+        rn_grid.addWidget(QLabel("Tahun:", self.renaksi_box), 0, 0)
         self.combo_tahun_renaksi = QComboBox(self.renaksi_box)
+        self.combo_tahun_renaksi.setMinimumWidth(70)
         self.combo_tahun_renaksi.addItems(["2026", "2025", "2024"])
         rn_grid.addWidget(self.combo_tahun_renaksi, 0, 1)
 
         rn_grid.addWidget(QLabel("Target:", self.renaksi_box), 0, 2)
         self.inp_target = QLineEdit("1.500", self.renaksi_box)
-        self.inp_target.setEnabled(False)
-        self.inp_target.setStyleSheet("background-color: #f1f5f9; color: #475569; font-weight: 700;")
+        self.inp_target.setMinimumWidth(70)
+        self.inp_target.setReadOnly(True)
+        self.inp_target.setStyleSheet("background-color: #f1f5f9; color: #334155; font-weight: 700; border: 1px solid #cbd5e1;")
         rn_grid.addWidget(self.inp_target, 0, 3)
 
         rn_grid.addWidget(QLabel("Satuan:", self.renaksi_box), 1, 0)
         self.inp_satuan = QLineEdit("Bidang", self.renaksi_box)
-        self.inp_satuan.setEnabled(False)
-        self.inp_satuan.setStyleSheet("background-color: #f1f5f9; color: #475569; font-weight: 700;")
+        self.inp_satuan.setMinimumWidth(70)
+        self.inp_satuan.setReadOnly(True)
+        self.inp_satuan.setStyleSheet("background-color: #f1f5f9; color: #334155; font-weight: 700; border: 1px solid #cbd5e1;")
         rn_grid.addWidget(self.inp_satuan, 1, 1)
 
-        rn_grid.addWidget(QLabel("Jumlah Realisasi (*):", self.renaksi_box), 1, 2)
+        rn_grid.addWidget(QLabel("Realisasi (*):", self.renaksi_box), 1, 2)
         self.inp_realisasi = QLineEdit("1.500", self.renaksi_box)
+        self.inp_realisasi.setMinimumWidth(70)
         self.inp_realisasi.setValidator(QIntValidator(0, 999999999, self))
         rn_grid.addWidget(self.inp_realisasi, 1, 3)
 
@@ -1107,14 +1142,18 @@ class UploadIgtUtamaDialog(QDialog):
 
         sub_grid = QGridLayout()
         sub_grid.setSpacing(8)
+        sub_grid.setColumnStretch(1, 1)
+        sub_grid.setColumnStretch(3, 1)
 
         sub_grid.addWidget(QLabel('Tanggal Upload:', s1), 0, 0)
         self.tgl_upload_lbl = QLabel(QDate.currentDate().toString('yyyy-MM-dd'), s1)
-        self.tgl_upload_lbl.setStyleSheet("color: #0f294d; font-weight: 700; font-size: 11.5px;")
+        self.tgl_upload_lbl.setStyleSheet("color: #0f294d; font-weight: 700; font-size: 12px;")
         sub_grid.addWidget(self.tgl_upload_lbl, 0, 1)
 
         sub_grid.addWidget(QLabel('Jenis Data:', s1), 0, 2)
         self.format_combo = QComboBox(s1)
+        self.format_combo.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+        self.format_combo.setMinimumContentsLength(5)
         self.format_combo.addItems(['SHP', 'GeoPackage (.gpkg)', 'GeoJSON (.geojson)'])
         sub_grid.addWidget(self.format_combo, 0, 3)
 
@@ -1128,18 +1167,23 @@ class UploadIgtUtamaDialog(QDialog):
         s2_lay.setSpacing(8)
 
         s2_title = QLabel("2. File SHP (Pilih dari Layer Aktif di QGIS) (*)", s2)
-        s2_title.setStyleSheet("color: #0f294d; font-size: 12.5px; font-weight: 800;")
+        s2_title.setStyleSheet("color: #0f294d; font-size: 13px; font-weight: 800;")
         s2_lay.addWidget(s2_title)
 
         layer_row = QHBoxLayout()
         layer_row.setSpacing(6)
         self.layer_combo = QComboBox(s2)
+        self.layer_combo.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+        self.layer_combo.setMinimumContentsLength(6)
         layer_row.addWidget(self.layer_combo, 1)
 
-        refresh_btn = QPushButton("🔄", s2)
+        refresh_btn = QPushButton(s2)
+        refresh_btn.setIcon(icon('refresh', '#1f6fd6', 15))
+        refresh_btn.setIconSize(QSize(15, 15))
         refresh_btn.setToolTip("Perbarui daftar layer aktif di kanvas QGIS")
         refresh_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        refresh_btn.setFixedWidth(36)
+        refresh_btn.setFixedSize(34, 32)
+        refresh_btn.setStyleSheet("background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 7px;")
         refresh_btn.clicked.connect(self._refresh_layers)
         layer_row.addWidget(refresh_btn)
 
@@ -1151,7 +1195,7 @@ class UploadIgtUtamaDialog(QDialog):
         s2_lay.addLayout(layer_row)
 
         self.layer_status_lbl = QLabel("Silakan buka file Shapefile atau muat layer ke kanvas QGIS terlebih dahulu.", s2)
-        self.layer_status_lbl.setStyleSheet("color: #64748b; font-size: 10.5px; font-style: italic;")
+        self.layer_status_lbl.setStyleSheet("color: #64748b; font-size: 11px; font-style: italic;")
         s2_lay.addWidget(self.layer_status_lbl)
 
         # Attribute Check Button & Status
@@ -1159,12 +1203,13 @@ class UploadIgtUtamaDialog(QDialog):
         verify_row.setSpacing(8)
         self.btn_verify_attr = QPushButton("Periksa Atribut (Verifikasi Kompilasi)", s2)
         self.btn_verify_attr.setObjectName("primaryActionBtn")
+        self.btn_verify_attr.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         self.btn_verify_attr.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_verify_attr.clicked.connect(self._on_verify_attributes)
         verify_row.addWidget(self.btn_verify_attr)
 
         self.attr_status_lbl = QLabel("Pemeriksaan atribut harus diselesaikan terlebih dahulu", s2)
-        self.attr_status_lbl.setStyleSheet("color: #b45309; font-size: 10.5px; font-weight: 600;")
+        self.attr_status_lbl.setStyleSheet("color: #b45309; font-size: 11px; font-weight: 600;")
         self.attr_status_lbl.setWordWrap(True)
         verify_row.addWidget(self.attr_status_lbl, 1)
         s2_lay.addLayout(verify_row)
@@ -1182,7 +1227,7 @@ class UploadIgtUtamaDialog(QDialog):
         s3_lay.setSpacing(8)
 
         s3_title = QLabel("3. SLD Style", s3)
-        s3_title.setStyleSheet("color: #0f294d; font-size: 12.5px; font-weight: 800;")
+        s3_title.setStyleSheet("color: #0f294d; font-size: 13px; font-weight: 800;")
         s3_lay.addWidget(s3_title)
 
         sld_row = QHBoxLayout()
@@ -1199,7 +1244,7 @@ class UploadIgtUtamaDialog(QDialog):
         s3_lay.addLayout(sld_row)
 
         self.sld_status_lbl = QLabel("", s3)
-        self.sld_status_lbl.setStyleSheet("color: #047857; font-size: 10.5px; font-weight: 700;")
+        self.sld_status_lbl.setStyleSheet("color: #047857; font-size: 11px; font-weight: 700;")
         s3_lay.addWidget(self.sld_status_lbl)
         c_layout.addWidget(s3)
 
@@ -1210,12 +1255,12 @@ class UploadIgtUtamaDialog(QDialog):
         s4_lay.setSpacing(8)
 
         s4_title = QLabel("4. Metadata", s4)
-        s4_title.setStyleSheet("color: #0f294d; font-size: 12.5px; font-weight: 800;")
+        s4_title.setStyleSheet("color: #0f294d; font-size: 13px; font-weight: 800;")
         s4_lay.addWidget(s4_title)
 
         self.meta_check = QCheckBox("Gunakan metadata CMS (Resmi dari sistem)", s4)
         self.meta_check.setChecked(True)
-        self.meta_check.setStyleSheet("color: #1e293b; font-size: 11.5px; font-weight: 600;")
+        self.meta_check.setStyleSheet("color: #1e293b; font-size: 12px; font-weight: 600;")
         s4_lay.addWidget(self.meta_check)
 
         meta_row = QHBoxLayout()
@@ -1243,7 +1288,7 @@ class UploadIgtUtamaDialog(QDialog):
         s5_lay.setSpacing(8)
 
         s5_title = QLabel("5. Dokumen Pendukung Lainnya (opsional)", s5)
-        s5_title.setStyleSheet("color: #0f294d; font-size: 12.5px; font-weight: 800;")
+        s5_title.setStyleSheet("color: #0f294d; font-size: 13px; font-weight: 800;")
         s5_lay.addWidget(s5_title)
 
         doc_row = QHBoxLayout()
@@ -1270,7 +1315,7 @@ class UploadIgtUtamaDialog(QDialog):
 
         s6_title_txt = "4. Keterangan Pengajuan (*)" if is_derivatif else "6. Keterangan (opsional)"
         s6_title = QLabel(s6_title_txt, s6)
-        s6_title.setStyleSheet("color: #0f294d; font-size: 12.5px; font-weight: 800;")
+        s6_title.setStyleSheet("color: #0f294d; font-size: 13px; font-weight: 800;")
         s6_lay.addWidget(s6_title)
 
         self.keterangan_input = QLineEdit(s6)
@@ -1278,6 +1323,7 @@ class UploadIgtUtamaDialog(QDialog):
         self.keterangan_input.setPlaceholderText(ph_txt)
         s6_lay.addWidget(self.keterangan_input)
         c_layout.addWidget(s6)
+        c_layout.addStretch(1)
 
         scroll.setWidget(content)
         layout.addWidget(scroll, 1)
@@ -1328,15 +1374,15 @@ class UploadIgtUtamaDialog(QDialog):
         if found_layers:
             self.layer_combo.addItems(found_layers)
             self.layer_status_lbl.setText(f"✓ Menemukan {len(found_layers)} layer vektor aktif di kanvas QGIS.")
-            self.layer_status_lbl.setStyleSheet("color: #047857; font-size: 10.5px; font-weight: 600;")
+            self.layer_status_lbl.setStyleSheet("color: #047857; font-size: 11px; font-weight: 600;")
         elif self.selected_file_path:
             self.layer_combo.addItem(os.path.basename(self.selected_file_path))
             self.layer_status_lbl.setText(f"✓ Berkas terpilih: {os.path.basename(self.selected_file_path)}")
-            self.layer_status_lbl.setStyleSheet("color: #047857; font-size: 10.5px; font-weight: 600;")
+            self.layer_status_lbl.setStyleSheet("color: #047857; font-size: 11px; font-weight: 600;")
         else:
             self.layer_combo.addItem("Tidak ada layer vektor aktif di kanvas QGIS")
             self.layer_status_lbl.setText("Silakan buka file Shapefile atau muat layer ke kanvas QGIS terlebih dahulu.")
-            self.layer_status_lbl.setStyleSheet("color: #64748b; font-size: 10.5px; font-style: italic;")
+            self.layer_status_lbl.setStyleSheet("color: #64748b; font-size: 11px; font-style: italic;")
 
     def _browse_file(self):
         file_path, _ = QFileDialog.getOpenFileName(
@@ -1364,7 +1410,7 @@ class UploadIgtUtamaDialog(QDialog):
             self.is_attribute_verified = True
             n_mapped = len(dlg.get_result_mappings())
             self.attr_status_lbl.setText(f"✓ Pemetaan atribut berhasil dikonfirmasi ({n_mapped} kolom sesuai skema standar IGT).")
-            self.attr_status_lbl.setStyleSheet("color: #047857; font-size: 10.5px; font-weight: 700;")
+            self.attr_status_lbl.setStyleSheet("color: #047857; font-size: 11px; font-weight: 700;")
 
     def _on_apply_sld(self):
         self.sld_status_lbl.setText("✓ SLD berhasil diterapkan ke layer kanvas QGIS")

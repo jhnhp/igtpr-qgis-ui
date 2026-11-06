@@ -224,11 +224,11 @@ const DerivatifBidang = (() => {
       `<strong style="font-size:13px;color:#0f172a">1. Pilih Layer Derivatif &amp; Load Baseline WMS:</strong>` +
       `</div>` +
       `<div style="padding:12px 14px">` +
-      `<div style="display:flex;gap:6px;margin-bottom:8px">` +
-      `<select id="combo-derivatif-layer" style="flex:1;height:34px;padding:4px 10px;font-weight:700;border:1.5px solid #94a3b8;border-radius:6px;font-size:12.5px">` +
+      `<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">` +
+      `<select id="combo-derivatif-layer" style="flex:1;height:36px;padding:4px 10px;font-weight:700;border:1.5px solid #94a3b8;border-radius:6px;font-size:12.5px">` +
       DERIVATIF_CMS_LAYERS.map((l) => `<option value="${l.id}" ${l.id === curLayer.id ? 'selected' : ''}>${esc(l.name)}</option>`).join('') +
       `</select>` +
-      `<button type="button" class="btn btn-soft" data-act="refresh-der" title="Muat ulang daftar layer derivatif dari server" style="width:36px;height:34px;padding:0;font-size:14px">🔄</button>` +
+      `<button type="button" class="btn btn-soft" data-act="refresh-der" title="Muat ulang daftar layer derivatif dari server" style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;padding:0;flex:none"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#1d4ed8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg></button>` +
       `</div>` +
       `<div style="font-size:11.5px;color:#475569;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:8px 10px;margin-bottom:10px">` +
       `${esc(curLayer.summary)}` +
@@ -260,16 +260,16 @@ const DerivatifBidang = (() => {
       `</div>` +
       `<div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;padding:12px;margin-bottom:10px">` +
       `<div style="font-size:11px;font-weight:800;color:#475569;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">Formulir Atribut Standar CMS (${esc(curLayer.name)})</div>` +
-      `<div class="form-grid" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:10px">` +
+      `<div class="form-grid" style="display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:10px">` +
       curLayer.fields.map((fld) => {
         const val = state.isi.formValues[fld.name] || fld.default || '';
         return (
           `<div class="field" style="margin:0"><label style="font-size:11px;font-weight:700;color:#334155">${esc(fld.label)}</label>` +
           (fld.type === 'select'
-            ? `<select data-isi-field="${esc(fld.name)}" style="height:32px;font-size:12px;padding:4px 8px;border:1px solid #cbd5e1;border-radius:5px">` +
+            ? `<select data-isi-field="${esc(fld.name)}" style="width:100%;box-sizing:border-box;height:34px;font-size:12px;padding:4px 8px;border:1px solid #cbd5e1;border-radius:5px">` +
               fld.options.map((opt) => `<option value="${esc(opt)}" ${val === opt ? 'selected' : ''}>${esc(opt)}</option>`).join('') +
               `</select>`
-            : `<input type="${fld.type === 'number' ? 'number' : 'text'}" data-isi-field="${esc(fld.name)}" value="${esc(val)}" style="height:32px;font-size:12px;padding:4px 8px;border:1px solid #cbd5e1;border-radius:5px">`) +
+            : `<input type="${fld.type === 'number' ? 'number' : 'text'}" data-isi-field="${esc(fld.name)}" value="${esc(val)}" style="width:100%;box-sizing:border-box;height:34px;font-size:12px;padding:4px 8px;border:1px solid #cbd5e1;border-radius:5px">`) +
           `</div>`
         );
       }).join('') +
@@ -286,7 +286,7 @@ const DerivatifBidang = (() => {
       `<div style="font-size:11.5px;font-weight:700"><span style="color:#f59e0b">■ Baru Diisi</span> &nbsp; <span style="color:#10b981">■ Sudah Tersimpan</span></div>` +
       `</div>` +
       `<div style="padding:10px 14px;max-height:220px;overflow:auto">` +
-      `<table class="stack" style="width:100%;font-size:11.5px;margin:0">` +
+      `<table style="width:100%;border-collapse:collapse;font-size:11.5px;margin:0">` +
       `<thead><tr style="background:#f1f5f9;text-align:left"><th style="padding:6px 8px;width:38px">No</th><th style="padding:6px 8px;width:140px">ID Bidang</th><th style="padding:6px 8px">Ringkasan Nilai</th><th style="padding:6px 8px;width:70px;text-align:center">Aksi</th></tr></thead>` +
       `<tbody>` +
       (sessionCount === 0
@@ -345,10 +345,10 @@ const DerivatifBidang = (() => {
       `</div>` +
       `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">` +
       `<label style="font-size:12px;font-weight:700;color:#334155;min-width:100px">Baseline CMS:</label>` +
-      `<select id="combo-create-baseline" style="flex:1;height:32px;font-size:12px;font-weight:700;padding:3px 8px;border:1px solid #94a3b8;border-radius:6px">` +
+      `<select id="combo-create-baseline" style="flex:1;height:34px;font-size:12px;font-weight:700;padding:3px 8px;border:1px solid #94a3b8;border-radius:6px">` +
       CMS_BASELINES.map((b) => `<option value="${b.id}" ${b.id === state.create.selectedBaselineId ? 'selected' : ''}>${esc(b.name)} (${b.count.toLocaleString('id-ID')} bidang)</option>`).join('') +
       `</select>` +
-      `<button type="button" class="btn btn-soft" data-act="refresh-bl" title="Muat ulang baseline dari CMS" style="width:34px;height:32px;padding:0;font-size:14px">🔄</button>` +
+      `<button type="button" class="btn btn-soft" data-act="refresh-bl" title="Muat ulang baseline dari CMS" style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:34px;padding:0;flex:none"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#6d28d9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg></button>` +
       `</div>` +
       `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">` +
       `<button type="button" class="btn btn-primary" data-act="load-baseline-create" style="background:#7c3aed;border-color:#7c3aed;font-weight:700;font-size:12px">⚡ Load Baseline WMS</button>` +
@@ -379,15 +379,15 @@ const DerivatifBidang = (() => {
       `<strong style="font-size:12px;color:#1e293b">A. Atribut Default Baseline (🔒 Terkunci):</strong>` +
       `<span style="font-size:11px;color:#64748b;background:#e2e8f0;padding:1px 6px;border-radius:3px">6 Kolom Bawaan</span>` +
       `</div>` +
-      `<div style="max-height:140px;overflow:auto;border:1px solid #cbd5e1;border-radius:4px"><table class="stack" style="width:100%;font-size:11px;margin:0">` +
-      `<thead><tr style="background:#f1f5f9;text-align:left"><th style="padding:4px 8px;width:130px">Kolom Baseline</th><th style="padding:4px 8px;width:70px">Tipe</th><th style="padding:4px 8px">Nilai (Terkunci 🔒)</th></tr></thead>` +
+      `<div style="border:1px solid #cbd5e1;border-radius:6px;overflow:hidden"><table style="width:100%;border-collapse:collapse;font-size:11.5px;margin:0">` +
+      `<thead><tr style="background:#f1f5f9;text-align:left"><th style="padding:6px 10px;width:140px">Kolom Baseline</th><th style="padding:6px 10px;width:80px">Tipe</th><th style="padding:6px 10px">Nilai (Terkunci 🔒)</th></tr></thead>` +
       `<tbody>` +
-      `<tr><td style="padding:4px 8px"><code>id_bidang</code></td><td style="padding:4px 8px">String</td><td style="padding:4px 8px;color:#475569">🔒 ${esc(parcel.id)}</td></tr>` +
-      `<tr><td style="padding:4px 8px"><code>nib</code></td><td style="padding:4px 8px">String</td><td style="padding:4px 8px;color:#475569">🔒 ${esc(parcel.nib)}</td></tr>` +
-      `<tr><td style="padding:4px 8px"><code>desa</code></td><td style="padding:4px 8px">String</td><td style="padding:4px 8px;color:#475569">🔒 ${esc(parcel.desa)}</td></tr>` +
-      `<tr><td style="padding:4px 8px"><code>kecamatan</code></td><td style="padding:4px 8px">String</td><td style="padding:4px 8px;color:#475569">🔒 ${esc(parcel.kecamatan)}</td></tr>` +
-      `<tr><td style="padding:4px 8px"><code>luas_m2</code></td><td style="padding:4px 8px">Decimal</td><td style="padding:4px 8px;color:#475569">🔒 ${esc(parcel.luas)}</td></tr>` +
-      `<tr><td style="padding:4px 8px"><code>jenis_hak</code></td><td style="padding:4px 8px">String</td><td style="padding:4px 8px;color:#475569">🔒 ${esc(parcel.hak)}</td></tr>` +
+      `<tr style="border-top:1px solid #e2e8f0"><td style="padding:5px 10px"><code>id_bidang</code></td><td style="padding:5px 10px">String</td><td style="padding:5px 10px;color:#475569">🔒 ${esc(parcel.id)}</td></tr>` +
+      `<tr style="border-top:1px solid #e2e8f0"><td style="padding:5px 10px"><code>nib</code></td><td style="padding:5px 10px">String</td><td style="padding:5px 10px;color:#475569">🔒 ${esc(parcel.nib)}</td></tr>` +
+      `<tr style="border-top:1px solid #e2e8f0"><td style="padding:5px 10px"><code>desa</code></td><td style="padding:5px 10px">String</td><td style="padding:5px 10px;color:#475569">🔒 ${esc(parcel.desa)}</td></tr>` +
+      `<tr style="border-top:1px solid #e2e8f0"><td style="padding:5px 10px"><code>kecamatan</code></td><td style="padding:5px 10px">String</td><td style="padding:5px 10px;color:#475569">🔒 ${esc(parcel.kecamatan)}</td></tr>` +
+      `<tr style="border-top:1px solid #e2e8f0"><td style="padding:5px 10px"><code>luas_m2</code></td><td style="padding:5px 10px">Decimal</td><td style="padding:5px 10px;color:#475569">🔒 ${esc(parcel.luas)}</td></tr>` +
+      `<tr style="border-top:1px solid #e2e8f0"><td style="padding:5px 10px"><code>jenis_hak</code></td><td style="padding:5px 10px">String</td><td style="padding:5px 10px;color:#475569">🔒 ${esc(parcel.hak)}</td></tr>` +
       `</tbody></table></div></div>` +
 
       // Sub B: Atribut Custom Tambahan
@@ -396,16 +396,16 @@ const DerivatifBidang = (() => {
       `<strong style="font-size:12px;color:#5b21b6">B. Atribut Custom Tambahan:</strong>` +
       `<button type="button" class="btn btn-soft btn-sm" data-act="add-custom-col" style="font-size:11.5px;font-weight:700;color:#6d28d9;border-color:#c084fc">＋ Tambah Atribut</button>` +
       `</div>` +
-      `<div style="overflow:auto;border:1px solid #cbd5e1;border-radius:4px"><table class="stack" style="width:100%;font-size:11.5px;margin:0" id="table-custom-cols">` +
-      `<thead><tr style="background:#ede9fe;color:#5b21b6;text-align:left"><th style="padding:4px 8px;width:130px">Nama Kolom</th><th style="padding:4px 8px;width:100px">Tipe</th><th style="padding:4px 8px;width:65px">Length</th><th style="padding:4px 8px">Nilai (Isi)</th><th style="padding:4px 8px;width:34px;text-align:center"></th></tr></thead>` +
+      `<div style="border:1px solid #cbd5e1;border-radius:6px;overflow:hidden"><table style="width:100%;border-collapse:collapse;font-size:11.5px;margin:0" id="table-custom-cols">` +
+      `<thead><tr style="background:#ede9fe;color:#5b21b6;text-align:left"><th style="padding:6px 8px;width:180px">Nama Kolom</th><th style="padding:6px 8px;width:130px">Tipe</th><th style="padding:6px 8px;width:80px">Length</th><th style="padding:6px 8px">Nilai (Isi)</th><th style="padding:6px 8px;width:40px;text-align:center"></th></tr></thead>` +
       `<tbody>` +
       state.create.customColumns.map((col, idx) =>
-        `<tr>` +
-        `<td style="padding:4px 6px"><input type="text" data-col-idx="${idx}" data-col-field="name" value="${esc(col.name)}" style="width:100%;height:26px;font-size:11.5px;padding:2px 4px;border:1px solid #cbd5e1;border-radius:4px"></td>` +
-        `<td style="padding:4px 6px"><select data-col-idx="${idx}" data-col-field="type" style="width:100%;height:26px;font-size:11px;padding:1px 4px;border:1px solid #cbd5e1;border-radius:4px"><option ${col.type === 'Teks' ? 'selected' : ''}>Teks</option><option ${col.type === 'Angka Bulat' ? 'selected' : ''}>Angka Bulat</option><option ${col.type === 'Desimal' ? 'selected' : ''}>Desimal</option><option ${col.type === 'Tanggal' ? 'selected' : ''}>Tanggal</option></select></td>` +
-        `<td style="padding:4px 6px"><input type="number" data-col-idx="${idx}" data-col-field="length" value="${col.length || 50}" style="width:100%;height:26px;font-size:11.5px;padding:2px 4px;border:1px solid #cbd5e1;border-radius:4px"></td>` +
-        `<td style="padding:4px 6px"><input type="${col.type === 'Tanggal' ? 'date' : col.type === 'Angka Bulat' || col.type === 'Desimal' ? 'number' : 'text'}" data-col-idx="${idx}" data-col-field="value" value="${esc(col.value)}" style="width:100%;height:26px;font-size:11.5px;padding:2px 4px;border:1px solid #cbd5e1;border-radius:4px"></td>` +
-        `<td style="padding:4px 6px;text-align:center"><button type="button" class="btn btn-soft btn-sm" data-act="remove-custom-col" data-idx="${idx}" style="color:#dc2626;padding:1px 6px;font-weight:700">✕</button></td>` +
+        `<tr style="border-top:1px solid #f1f5f9">` +
+        `<td style="padding:5px 6px"><input type="text" data-col-idx="${idx}" data-col-field="name" value="${esc(col.name)}" style="width:100%;box-sizing:border-box;height:30px;font-size:12px;padding:3px 8px;border:1px solid #cbd5e1;border-radius:5px"></td>` +
+        `<td style="padding:5px 6px"><select data-col-idx="${idx}" data-col-field="type" style="width:100%;box-sizing:border-box;height:30px;font-size:12px;padding:2px 6px;border:1px solid #cbd5e1;border-radius:5px"><option ${col.type === 'Teks' ? 'selected' : ''}>Teks</option><option ${col.type === 'Angka Bulat' ? 'selected' : ''}>Angka Bulat</option><option ${col.type === 'Desimal' ? 'selected' : ''}>Desimal</option><option ${col.type === 'Tanggal' ? 'selected' : ''}>Tanggal</option></select></td>` +
+        `<td style="padding:5px 6px"><input type="number" data-col-idx="${idx}" data-col-field="length" value="${col.length || 50}" style="width:100%;box-sizing:border-box;height:30px;font-size:12px;padding:3px 6px;border:1px solid #cbd5e1;border-radius:5px"></td>` +
+        `<td style="padding:5px 6px"><input type="${col.type === 'Tanggal' ? 'date' : col.type === 'Angka Bulat' || col.type === 'Desimal' ? 'number' : 'text'}" data-col-idx="${idx}" data-col-field="value" value="${esc(col.value)}" style="width:100%;box-sizing:border-box;height:30px;font-size:12px;padding:3px 8px;border:1px solid #cbd5e1;border-radius:5px"></td>` +
+        `<td style="padding:5px 6px;text-align:center"><button type="button" class="btn btn-soft btn-sm" data-act="remove-custom-col" data-idx="${idx}" style="color:#dc2626;padding:3px 8px;font-weight:700">✕</button></td>` +
         `</tr>`
       ).join('') +
       `</tbody></table></div></div>` +
@@ -422,7 +422,7 @@ const DerivatifBidang = (() => {
       `<div style="font-size:11.5px;font-weight:700"><span style="color:#f59e0b">■ Baru Diisi</span> &nbsp; <span style="color:#10b981">■ Sudah Tersimpan</span></div>` +
       `</div>` +
       `<div style="padding:10px 14px;max-height:220px;overflow:auto">` +
-      `<table class="stack" style="width:100%;font-size:11.5px;margin:0">` +
+      `<table style="width:100%;border-collapse:collapse;font-size:11.5px;margin:0">` +
       `<thead><tr style="background:#f1f5f9;text-align:left"><th style="padding:6px 8px;width:38px">No</th><th style="padding:6px 8px;width:140px">ID Bidang</th><th style="padding:6px 8px">Ringkasan Nilai Kustom</th><th style="padding:6px 8px;width:70px;text-align:center">Aksi</th></tr></thead>` +
       `<tbody>` +
       (sessionCount === 0
@@ -495,7 +495,7 @@ const DerivatifBidang = (() => {
       `<div style="padding:12px 14px">` +
       renderCanvasSvg('load') +
       `<div style="max-height:260px;overflow:auto;border:1px solid #cbd5e1;border-radius:6px;margin-top:10px">` +
-      `<table class="stack" style="width:100%;font-size:11.5px;margin:0">` +
+      `<table style="width:100%;border-collapse:collapse;font-size:11.5px;margin:0">` +
       `<thead><tr style="background:#f1f5f9;text-align:left"><th style="padding:6px 8px">ID Bidang</th><th style="padding:6px 8px">NIB</th><th style="padding:6px 8px">Desa</th><th style="padding:6px 8px">Kecamatan</th><th style="padding:6px 8px">Status Kumuh</th><th style="padding:6px 8px">Luas Terdampak</th><th style="padding:6px 8px">Rekomendasi</th></tr></thead>` +
       `<tbody>` +
       state.load.loadedParcels.map((p) =>
@@ -562,16 +562,36 @@ const DerivatifBidang = (() => {
     const badgeModeText = mode === 'isi' ? 'Mode: Isi Tematik' : mode === 'create' ? 'Mode: Create Tematik' : 'Mode: Load Tematik';
     const badgeModeColor = mode === 'isi' ? '#eff6ff;color:#1d4ed8;border-color:#bfdbfe' : mode === 'create' ? '#faf5ff;color:#7c3aed;border-color:#e9d5ff' : '#ecfdf5;color:#047857;border-color:#a7f3d0';
 
+    // Sinkronkan judul dan deskripsi halaman utama (.page-head) agar tidak terjadi duplikasi header
+    const pageTitleEl = document.getElementById('page-title');
+    const pageDescEl = document.getElementById('page-desc');
+    const crumbTitleEl = document.getElementById('crumb-title');
+    if (pageTitleEl) {
+      const baseTitle = mode === 'load' ? 'Muat IGT Derivatif' : mode === 'create' ? 'Buat IGT Derivatif Kustom' : 'Kustom Tematik Derivatif';
+      pageTitleEl.innerHTML = `${baseTitle} <span style="vertical-align:middle;margin-left:8px;font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:12px;border:1px solid;background:${badgeModeColor}">${badgeModeText}</span>`;
+      if (crumbTitleEl) crumbTitleEl.textContent = baseTitle;
+    }
+    if (pageDescEl) {
+      pageDescEl.textContent =
+        mode === 'load'
+          ? 'Pilih berkas tabel atribut derivatif hasil ekspor lokal dan hubungkan kembali ke geometri baseline WMS di kanvas QGIS.'
+          : mode === 'create'
+          ? 'Buat layer derivatif baru dengan atribut baseline terkunci serta struktur kolom atribut kustom tambahan.'
+          : 'Pilih layer derivatif CMS, muat baseline WMS, klik bidang tanah di peta, dan lengkapi atribut tematiknya.';
+    }
+
+    const topNavHtml = isV2
+      ? ''
+      : `<div style="display:flex;align-items:center;justify-content:space-between;background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;margin-bottom:10px">` +
+        `<a class="btn btn-soft btn-sm" href="${backUrl}" style="font-weight:700;color:#2563eb">← Kembali ke Manajemen</a>` +
+        `<div style="display:flex;align-items:center;gap:10px">` +
+        `<strong style="font-size:14px;color:#0f172a">▤ Derivatif Per Bidang</strong>` +
+        `<span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:12px;border:1px solid;background:${badgeModeColor}">${badgeModeText}</span>` +
+        `</div></div>`;
+
     view.innerHTML = (
       `<div class="derivatif-bidang-v2-container" style="max-width:1000px;margin:0 auto">` +
-      // Top Navigation Frame
-      `<div style="display:flex;align-items:center;justify-content:space-between;background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;margin-bottom:10px">` +
-      `<a class="btn btn-soft btn-sm" href="${backUrl}" style="font-weight:700;color:#2563eb">← Kembali ke Manajemen</a>` +
-      `<div style="display:flex;align-items:center;gap:10px">` +
-      `<strong style="font-size:14px;color:#0f172a">▤ Derivatif Per Bidang</strong>` +
-      `<span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:12px;border:1px solid;background:${badgeModeColor}">${badgeModeText}</span>` +
-      `</div></div>` +
-
+      topNavHtml +
       // 3 Tombol Utama di Atas
       `<div style="display:flex;gap:8px;background:#ffffff;border:1px solid #cbd5e1;border-radius:8px;padding:6px;margin-bottom:12px">` +
       `<button type="button" data-act="switch-mode" data-mode="isi" style="${mode === 'isi' ? activeBtnStyle('#2563eb', '#1d4ed8') : inactiveBtnStyle}">✍️ Isi Tematik</button>` +
