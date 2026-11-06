@@ -13,7 +13,7 @@
 <script src="../../../shared/igt-data.js"></script>
 <script src="../../../shared/derivatif-bidang.js"></script>
 <script>
-if (new URLSearchParams(location.search).get('step') === '6') {
+if (new URLSearchParams(location.search).get('step') === '6' || new URLSearchParams(location.search).get('mode') === 'load') {
   document.title = 'Muat Kustom Tematik Derivatif · IGT-PR';
   document.getElementById('crumb-title').textContent = 'Muat Kustom Tematik Derivatif';
   document.getElementById('page-title').textContent = 'Muat Kustom Tematik Derivatif';

@@ -29,7 +29,7 @@ from .assets import ICONS, Q_ICON
 from .catalog_page import CatalogPage
 from .dashboard_page import DashboardPage
 from .data import CATEGORIES, DATASETS, ROLES, SUBMISSIONS, can_access_wfs
-from .derivatif_dialog import DerivatifBidangDialog, LoadDerivatifDialog
+from .derivatif_dialog import DerivatifBidangDialog, DerivatifBidangPage, LoadDerivatifDialog
 from .login_page import LoginPage, svg_pixmap
 from .management_page import ManagementPage
 from .model_builder_page import ModelBuilderPage
@@ -108,6 +108,10 @@ class IgtprDockWidget(QDockWidget):
         self.management_page = ManagementPage(current_category='igt-utama', current_role=self.current_role, parent=self.stack)
         self.stack.addWidget(self.management_page)
 
+        # Page 3: Derivatif Bidang V2 (Ditampilkan langsung sebagai halaman penuh, bukan dialog popup)
+        self.derivatif_bidang_page = DerivatifBidangPage(iface=self.iface, parent=self.stack)
+        self.stack.addWidget(self.derivatif_bidang_page)
+
         # Upload Data V2 (Popup dialog modal, bukan halaman stack)
         self.upload_page = UploadPage(current_category='pertanahan', current_role=self.current_role, parent=self)
 
@@ -135,6 +139,8 @@ class IgtprDockWidget(QDockWidget):
 
         # Connect Sub-Pages Back to Dashboard
         self.management_page.backToDashboardRequested.connect(self.show_dashboard)
+        self.derivatif_bidang_page.backToDashboardRequested.connect(self.show_dashboard)
+        self.derivatif_bidang_page.derivatifSaved.connect(self.upload_page.uploadSubmitted.emit)
         self.upload_page.backToDashboardRequested.connect(self.show_dashboard)
         self.model_builder_page.backToDashboardRequested.connect(self.show_dashboard)
 
@@ -181,28 +187,26 @@ class IgtprDockWidget(QDockWidget):
         dlg.uploadSubmitted.connect(self.upload_page.uploadSubmitted.emit)
         dlg.exec_()
 
-    def show_kustom_derivatif(self):
-        # Menampilkan dialog Derivatif Per Bidang langsung sesuai review Lutfi
+    def show_kustom_derivatif(self, mode='isi'):
+        # Menampilkan halaman Derivatif Per Bidang langsung sebagai Halaman Stack (bukan popup)
         base_role = str(self.current_role).replace('2', '').lower()
         if base_role == 'umum':
             QMessageBox.warning(self, "Akses Dibatasi",
                                 "Alur Derivatif Bidang hanya dapat diakses oleh peran internal ATR/BPN (Superadmin, Admin, Operator).")
             return
-        main_win = self.window()
-        dlg = DerivatifBidangDialog(iface=self.iface, parent=main_win)
-        dlg.derivatifSaved.connect(self.upload_page.uploadSubmitted.emit)
-        dlg.exec_()
+        self.topbar.show()
+        if mode == 'load':
+            self.topbar.set_breadcrumbs(['Dashboard', 'Muat IGT Derivatif'])
+        elif mode == 'create':
+            self.topbar.set_breadcrumbs(['Dashboard', 'Buat IGT Derivatif'])
+        else:
+            self.topbar.set_breadcrumbs(['Dashboard', 'Kustom Tematik Derivatif'])
+        self.derivatif_bidang_page.set_mode(mode)
+        self.stack.setCurrentWidget(self.derivatif_bidang_page)
 
     def show_load_derivatif(self):
-        # Menampilkan dialog Muat Kustom Tematik Derivatif ke kanvas QGIS
-        base_role = str(self.current_role).replace('2', '').lower()
-        if base_role == 'umum':
-            QMessageBox.warning(self, "Akses Dibatasi",
-                                "Alur Derivatif Bidang hanya dapat diakses oleh peran internal ATR/BPN (Superadmin, Admin, Operator).")
-            return
-        main_win = self.window()
-        dlg = LoadDerivatifDialog(iface=self.iface, parent=main_win)
-        dlg.exec_()
+        # Membuka halaman Derivatif langsung pada tab Load Tematik
+        self.show_kustom_derivatif(mode='load')
 
     def show_model_builder(self):
         self.topbar.show()
@@ -224,6 +228,7 @@ class IgtprDockWidget(QDockWidget):
             getattr(self, 'topbar', None),
             getattr(self, 'dashboard_page', None),
             getattr(self, 'management_page', None),
+            getattr(self, 'derivatif_bidang_page', None),
             getattr(self, 'upload_page', None),
             getattr(self, 'model_builder_page', None),
         ):

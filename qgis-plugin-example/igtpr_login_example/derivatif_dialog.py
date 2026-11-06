@@ -16,24 +16,23 @@ from .assets import ICONS
 from .login_page import svg_pixmap
 
 
-class DerivatifBidangDialog(QDialog):
+class DerivatifBidangPage(QWidget):
     """
-    Dialog Terintegrasi Derivatif Per Bidang (Mockup V2).
-    Menyediakan 3 alur kerja lokal:
+    Halaman Terintegrasi Derivatif Per Bidang (Mockup V2).
+    Menyediakan 3 alur kerja lokal langsung di antarmuka plugin:
     1. ✍️ ISI TEMATIK (Pilih layer derivatif, load baseline WMS, klik bidang, isi atribut CMS, simpan & export)
     2. ➕ CREATE TEMATIK (Input nama layer, pilih baseline CMS, atribut default terkunci 🔒 + custom attrs, simpan & export)
     3. 📂 LOAD TEMATIK (Pilih file tabel atribut derivatif hasil ekspor, visualisasi ke kanvas peta QGIS)
     """
 
     derivatifSaved = pyqtSignal(dict)
+    backToDashboardRequested = pyqtSignal()
 
     def __init__(self, iface=None, parent=None):
         super().__init__(parent)
         self.iface = iface
-        self.setWindowTitle('Derivatif Per Bidang')
-        self.resize(720, 840)
-        self.setMinimumSize(640, 700)
-        self.setObjectName('derivatifBidangDialog')
+        self.setMinimumWidth(260)
+        self.setObjectName('derivatifBidangPage')
 
         # Mode Aktif: 'isi', 'create', 'load'
         self.current_mode = 'isi'
@@ -66,7 +65,7 @@ class DerivatifBidangDialog(QDialog):
 
     def _init_ui(self):
         self.setStyleSheet("""
-            QDialog#derivatifBidangDialog {
+            QWidget#derivatifBidangPage, QDialog#derivatifBidangDialog {
                 background-color: #f8fafc;
                 font-family: "Segoe UI", Arial, sans-serif;
             }
@@ -148,35 +147,53 @@ class DerivatifBidangDialog(QDialog):
         layout.setContentsMargins(16, 16, 16, 16)
         layout.setSpacing(10)
 
-        # 1. Header & Navigation Bar
+        # 1. Header (Title, Mode Badge, Desc, Back Button)
         head_layout = QHBoxLayout()
-        back_btn = QPushButton('← Kembali ke Manajemen', self)
-        back_btn.setObjectName('backBtn')
-        back_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        back_btn.clicked.connect(self.reject)
-        head_layout.addWidget(back_btn)
+        head_layout.setSpacing(10)
 
-        head_layout.addSpacing(8)
+        text_layout = QVBoxLayout()
+        text_layout.setSpacing(4)
+
+        title_row = QHBoxLayout()
+        title_row.setSpacing(6)
         icon_lbl = QLabel(self)
-        icon_lbl.setPixmap(svg_pixmap(ICONS['layers'].format(color='#1f6fd6'), QSize(22, 22)))
-        head_layout.addWidget(icon_lbl)
+        icon_lbl.setPixmap(svg_pixmap(ICONS['layers'].format(color='#1f6fd6'), QSize(20, 20)))
+        title_row.addWidget(icon_lbl)
 
         title = QLabel('Derivatif Per Bidang', self)
-        title.setStyleSheet("color: #0f294d; font-size: 16px; font-weight: 800;")
-        head_layout.addWidget(title)
+        title.setStyleSheet("color: #0f294d; font-size: 17px; font-weight: 800;")
+        title_row.addWidget(title)
+        title_row.addStretch()
+        text_layout.addLayout(title_row)
 
+        sub_row = QHBoxLayout()
+        sub_row.setSpacing(8)
         self.mode_badge = QLabel('Mode: Isi Tematik', self)
         self.mode_badge.setStyleSheet("""
             background-color: #eff6ff;
             color: #1d4ed8;
             border: 1px solid #bfdbfe;
-            border-radius: 12px;
+            border-radius: 10px;
             font-size: 10.5px;
             font-weight: 700;
-            padding: 3px 10px;
+            padding: 2px 8px;
         """)
-        head_layout.addWidget(self.mode_badge)
-        head_layout.addStretch()
+        sub_row.addWidget(self.mode_badge)
+
+        desc = QLabel('Buat & kelola layer derivatif tematik berbasis bidang.', self)
+        desc.setStyleSheet("color: #64748b; font-size: 11px;")
+        sub_row.addWidget(desc)
+        sub_row.addStretch()
+        text_layout.addLayout(sub_row)
+
+        head_layout.addLayout(text_layout, 1)
+
+        back_btn = QPushButton('← Kembali ke Dashboard', self)
+        back_btn.setObjectName('backBtn')
+        back_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        back_btn.clicked.connect(self._on_back_clicked)
+        head_layout.addWidget(back_btn)
+
         layout.addLayout(head_layout)
 
         # 2. Mode Switcher Tabs (3 Tombol Pilihan Utama di Atas)
@@ -255,6 +272,20 @@ class DerivatifBidangDialog(QDialog):
             self.mode_badge.setText('Mode: Load Tematik')
             self.mode_badge.setStyleSheet("background-color: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; border-radius: 12px; font-size: 10.5px; font-weight: 700; padding: 3px 10px;")
             self.sub_stack.setCurrentWidget(self.view_load)
+
+    def set_mode(self, mode_name):
+        """Mengganti mode tampilan secara eksternal ('isi', 'create', atau 'load')."""
+        self._switch_mode(mode_name)
+
+    def _on_back_clicked(self):
+        """Menangani klik tombol kembali ke dashboard."""
+        self.backToDashboardRequested.emit()
+        if hasattr(self, 'reject'):
+            self.reject()
+
+    def apply_width(self, width):
+        """Dukungan responsif terhadap lebar panel."""
+        pass
 
     # ==========================================================================
     # SUB-PAGE 0: VIEW ISI TEMATIK
@@ -1056,7 +1087,9 @@ class DerivatifBidangDialog(QDialog):
             'note': f"Kustom {len(self.create_records)} bidang · {len(self.create_custom_cols)} kolom",
             'scope': 'Kabupaten Sleman',
         })
-        self.accept()
+        self.backToDashboardRequested.emit()
+        if hasattr(self, 'accept'):
+            self.accept()
 
     # Load Mode Methods
     def _on_browse_load_file(self):
@@ -1127,7 +1160,9 @@ class DerivatifBidangDialog(QDialog):
             "Layer Derivatif Dimuat",
             f"Berkas '{fname}' berhasil dimuat ke kanvas peta QGIS dan visualisasi poligon bidang diaktifkan!"
         )
-        self.accept()
+        self.backToDashboardRequested.emit()
+        if hasattr(self, 'accept'):
+            self.accept()
 
     def _on_browse_folder(self):
         folder = QFileDialog.getExistingDirectory(self, 'Pilih Folder Penyimpanan', self.folder_input.text())
@@ -1165,7 +1200,9 @@ class DerivatifBidangDialog(QDialog):
             f"Jumlah Rekord: {len(self.records)} bidang\n\n"
             f"Data telah didaftarkan ke antrean Manajemen IGT Derivatif Multiguna."
         )
-        self.accept()
+        self.backToDashboardRequested.emit()
+        if hasattr(self, 'accept'):
+            self.accept()
 
 
 class LoadDerivatifDialog(QDialog):
@@ -1381,4 +1418,27 @@ class LoadDerivatifDialog(QDialog):
 
         self.layerLoaded.emit(layer_name)
         self.accept()
+
+
+class DerivatifBidangDialog(QDialog):
+    """Adapter QDialog wrapper untuk backwards compatibility jika dipanggil sebagai dialog modal."""
+
+    derivatifSaved = pyqtSignal(dict)
+
+    def __init__(self, iface=None, parent=None, initial_mode='isi'):
+        super().__init__(parent)
+        self.setWindowTitle('Kustom Derivatif Per Bidang')
+        self.resize(780, 820)
+        self.setModal(True)
+        self.setObjectName('derivatifBidangDialog')
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.page = DerivatifBidangPage(iface=iface, parent=self)
+        self.page.set_mode(initial_mode)
+        self.page.backToDashboardRequested.connect(self.reject)
+        self.page.derivatifSaved.connect(self.derivatifSaved.emit)
+        self.page.derivatifSaved.connect(lambda _: self.accept())
+        layout.addWidget(self.page)
+
 

@@ -777,7 +777,7 @@ button.hub-card-head:hover {
             <svg class="hub-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
           </a>
 
-          <button type="button" class="hub-item" id="load-derivatif-btn">
+          <a class="hub-item" href="../derivatif-bidang/index.html?mode=load">
             <span class="hub-item-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/>
@@ -787,7 +787,7 @@ button.hub-card-head:hover {
             </span>
             <span class="hub-item-label">Muat Kustom Tematik Derivatif</span>
             <svg class="hub-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
-          </button>
+          </a>
       </div>
     </section>
 
@@ -937,39 +937,6 @@ button.hub-card-head:hover {
     </div>
   </div>
 
-  <!-- POPUP MODAL MUAT KUSTOM TEMATIK DERIVATIF -->
-  <div class="v2-modal-backdrop" id="loadDerivatifModal" hidden role="dialog" aria-modal="true" aria-labelledby="loadDrvTitle">
-    <div class="v2-modal-card">
-      <div class="v2-modal-head">
-        <div>
-          <h3 id="loadDrvTitle">Muat Kustom Tematik Derivatif</h3>
-          <p>Pilih berkas atribut atau layer tematik derivatif untuk dimuat ke QGIS.</p>
-        </div>
-        <button type="button" class="v2-modal-close" id="closeLoadDrvModal" aria-label="Tutup">✕</button>
-      </div>
-      <div class="v2-modal-body">
-        <input id="loadDrvFileInput" type="file" hidden accept=".gpkg,.json,.zip,.shp,.csv">
-        <div class="v2-file-drop" id="loadDrvDropzone">
-          <div class="v2-file-drop-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/>
-              <path d="M12 12v9"/>
-              <path d="m16 16-4-4-4 4"/>
-            </svg>
-          </div>
-          <strong>Pilih berkas Kustom Tematik Derivatif</strong>
-          <p>Format GeoPackage (.gpkg), JSON (.json), atau Shapefile (.zip)</p>
-          <button type="button" class="btn btn-primary" id="pickLoadDrvBtn">Pilih Berkas dari Komputer</button>
-          <div class="v2-file-picked" id="loadDrvPickedName" hidden></div>
-        </div>
-        <div class="v2-modal-actions">
-          <button type="button" class="btn btn-soft" id="cancelLoadDrvBtn">Batal</button>
-          <button type="button" class="btn btn-primary" id="confirmLoadDrvBtn">Muat ke Kanvas QGIS →</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <div class="footer">Mockup UI plugin QGIS · data contoh</div>
 </main>
 </div>
@@ -1006,49 +973,6 @@ document.getElementById('logout-btn').addEventListener('click', () => {
   } else {
     window.location.href = '../../../shared/login2/index.html';
   }
-});
-
-const loadModal = document.getElementById('loadDerivatifModal');
-const loadFileInput = document.getElementById('loadDrvFileInput');
-const pickedNameEl = document.getElementById('loadDrvPickedName');
-let selectedDrvFile = '';
-
-document.getElementById('load-derivatif-btn').addEventListener('click', () => {
-  loadModal.hidden = false;
-});
-document.getElementById('closeLoadDrvModal').addEventListener('click', () => {
-  loadModal.hidden = true;
-});
-document.getElementById('cancelLoadDrvBtn').addEventListener('click', () => {
-  loadModal.hidden = true;
-});
-loadModal.addEventListener('click', (e) => {
-  if (e.target === loadModal) loadModal.hidden = true;
-});
-document.getElementById('pickLoadDrvBtn').addEventListener('click', (e) => {
-  e.stopPropagation();
-  loadFileInput.click();
-});
-document.getElementById('loadDrvDropzone').addEventListener('click', () => {
-  loadFileInput.click();
-});
-loadFileInput.addEventListener('change', () => {
-  const f = loadFileInput.files && loadFileInput.files[0];
-  selectedDrvFile = f ? f.name : '';
-  if (selectedDrvFile) {
-    pickedNameEl.textContent = '✓ Berkas dipilih: ' + selectedDrvFile;
-    pickedNameEl.hidden = false;
-  } else {
-    pickedNameEl.hidden = true;
-  }
-});
-document.getElementById('confirmLoadDrvBtn').addEventListener('click', () => {
-  if (!selectedDrvFile) {
-    loadFileInput.click();
-    return;
-  }
-  loadModal.hidden = true;
-  toast('Simulasi: berkas "' + selectedDrvFile + '" berhasil dimuat dan digabungkan ke bidang tanah pada kanvas QGIS.');
 });
 
 // --- LOGIKA POPUP UNGGAH DATA (DERIVATIF) ---
