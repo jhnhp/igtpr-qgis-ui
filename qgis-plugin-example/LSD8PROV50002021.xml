@@ -1,0 +1,1022 @@
+﻿<MD_Metadata xmlns="http://www.isotc211.org/2005/gmd" xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:gts="http://www.isotc211.org/2005/gts" xmlns:srv="http://www.isotc211.org/2005/srv" xmlns:gml="http://www.opengis.net/gml" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <fileIdentifier>
+    <gco:CharacterString>LSD8PROV50002021</gco:CharacterString>
+  </fileIdentifier>
+  <language>
+    <LanguageCode codeList="http://www.loc.gov/standards/iso639-2/php/code_list.php" codeListValue="ind" codeSpace="ISO639-2">ind</LanguageCode>
+  </language>
+  <characterSet>
+    <MD_CharacterSetCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeListValue="utf8" codeSpace="ISOTC211/19115">utf8</MD_CharacterSetCode>
+  </characterSet>
+  <parentIdentifier>
+    <gco:CharacterString>LSD_INDONESIA</gco:CharacterString>
+  </parentIdentifier>
+  <hierarchyLevel>
+    <MD_ScopeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ScopeCode" codeListValue="feature" codeSpace="ISOTC211/19115">feature</MD_ScopeCode>
+  </hierarchyLevel>
+  <hierarchyLevelName>
+    <gco:CharacterString>LSD8PROVINSI_AR_5K</gco:CharacterString>
+  </hierarchyLevelName>
+  <contact>
+    <CI_ResponsibleParty>
+      <individualName>
+        <gco:CharacterString>Andi Renald</gco:CharacterString>
+      </individualName>
+      <organisationName>
+        <gco:CharacterString>Direktorat Pengendalian Hak Tanah, Alih Fungsi Lahan, Kepulauan, dan Wilayah Tertentu</gco:CharacterString>
+      </organisationName>
+      <positionName>
+        <gco:CharacterString>Direktur Pengendalian Hak Tanah, Alih Fungsi Lahan, Kepulauan, dan Wilayah Tertentu</gco:CharacterString>
+      </positionName>
+      <contactInfo>
+        <CI_Contact>
+          <phone>
+            <CI_Telephone>
+              <voice>
+                <gco:CharacterString>0217264112</gco:CharacterString>
+              </voice>
+            </CI_Telephone>
+          </phone>
+          <address>
+            <CI_Address>
+              <deliveryPoint>
+                <gco:CharacterString>Jalan Raden Patah No.1 Kec. Kebayoran Baru</gco:CharacterString>
+              </deliveryPoint>
+              <city>
+                <gco:CharacterString>Jakarta Selatan</gco:CharacterString>
+              </city>
+              <administrativeArea>
+                <gco:CharacterString>DKI Jakarta</gco:CharacterString>
+              </administrativeArea>
+              <postalCode>
+                <gco:CharacterString>12110</gco:CharacterString>
+              </postalCode>
+              <country>
+                <Country codeList="http://www.iso.org/iso/country_codes/iso_3166_code_lists.htm" codeListValue="ID" codeSpace="ISO3166-1">ID</Country>
+              </country>
+              <electronicMailAddress>
+                <gco:CharacterString>pemantauan.bpnri@gmail.com</gco:CharacterString>
+              </electronicMailAddress>
+            </CI_Address>
+          </address>
+          <hoursOfService>
+            <gco:CharacterString>08.00-16.00</gco:CharacterString>
+          </hoursOfService>
+          <contactInstructions>
+            <gco:CharacterString>Hubungi saat jam kerja</gco:CharacterString>
+          </contactInstructions>
+        </CI_Contact>
+      </contactInfo>
+      <role>
+        <CI_RoleCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="originator" codeSpace="ISOTC211/19115">originator</CI_RoleCode>
+      </role>
+    </CI_ResponsibleParty>
+  </contact>
+  <contact>
+    <CI_ResponsibleParty>
+      <individualName>
+        <gco:CharacterString>Andi Renald</gco:CharacterString>
+      </individualName>
+      <organisationName>
+        <gco:CharacterString>Direktorat Pengendalian Hak Tanah, Alih Fungsi Lahan, Kepulauan, dan Wilayah Tertentu</gco:CharacterString>
+      </organisationName>
+      <positionName>
+        <gco:CharacterString>Direktur Pengendalian Hak Tanah, Alih Fungsi Lahan, Kepulauan, dan Wilayah Tertentu</gco:CharacterString>
+      </positionName>
+      <contactInfo>
+        <CI_Contact>
+          <phone>
+            <CI_Telephone>
+              <voice>
+                <gco:CharacterString>0217264112</gco:CharacterString>
+              </voice>
+            </CI_Telephone>
+          </phone>
+          <address>
+            <CI_Address>
+              <deliveryPoint>
+                <gco:CharacterString>Jalan Raden Patah I No. 1, Kec. Kebayoran Baru</gco:CharacterString>
+              </deliveryPoint>
+              <city>
+                <gco:CharacterString>Jakarta Selatan</gco:CharacterString>
+              </city>
+              <administrativeArea>
+                <gco:CharacterString>DKI Jakarta</gco:CharacterString>
+              </administrativeArea>
+              <postalCode>
+                <gco:CharacterString>12110</gco:CharacterString>
+              </postalCode>
+              <country>
+                <Country codeList="http://www.iso.org/iso/country_codes/iso_3166_code_lists.htm" codeListValue="ID" codeSpace="ISO3166-1">ID</Country>
+              </country>
+              <electronicMailAddress>
+                <gco:CharacterString>pemantauan.bpnri@gmail.com</gco:CharacterString>
+              </electronicMailAddress>
+            </CI_Address>
+          </address>
+          <hoursOfService>
+            <gco:CharacterString>08.00-16.00</gco:CharacterString>
+          </hoursOfService>
+          <contactInstructions>
+            <gco:CharacterString>Hubungi saat jam kerja</gco:CharacterString>
+          </contactInstructions>
+        </CI_Contact>
+      </contactInfo>
+      <role>
+        <CI_RoleCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="custodian" codeSpace="ISOTC211/19115">custodian</CI_RoleCode>
+      </role>
+    </CI_ResponsibleParty>
+  </contact>
+  <contact>
+    <CI_ResponsibleParty>
+      <individualName>
+        <gco:CharacterString>I Ketut Gede Ary Sucaya</gco:CharacterString>
+      </individualName>
+      <organisationName>
+        <gco:CharacterString>Pusat Data dan Informasi Pertanahan, Tata Ruang dan Lahan Pertanian Pangan Berkelanjutan (Pusdatin) Kementerian ATR/BPN</gco:CharacterString>
+      </organisationName>
+      <positionName>
+        <gco:CharacterString>Kepala Pusat Data dan Informasi Pertanahan, Tata Ruang dan Lahan Pertanian Pangan Berkelanjutan (Pusdatin) Kementerian ATR/BPN</gco:CharacterString>
+      </positionName>
+      <contactInfo>
+        <CI_Contact>
+          <phone>
+            <CI_Telephone>
+              <voice>
+                <gco:CharacterString>021-</gco:CharacterString>
+              </voice>
+              <facsimile>
+                <gco:CharacterString>021-</gco:CharacterString>
+              </facsimile>
+            </CI_Telephone>
+          </phone>
+          <address>
+            <CI_Address>
+              <deliveryPoint>
+                <gco:CharacterString>Jl. Akses Tol Cimanggis, Wanaherang, Kec. Gn. Putri, Kabupaten Bogor, Jawa Barat 16966</gco:CharacterString>
+              </deliveryPoint>
+              <city>
+                <gco:CharacterString>Kabupaten Bogor</gco:CharacterString>
+              </city>
+              <administrativeArea>
+                <gco:CharacterString>Jawa Barat</gco:CharacterString>
+              </administrativeArea>
+              <postalCode>
+                <gco:CharacterString>16966</gco:CharacterString>
+              </postalCode>
+              <country>
+                <Country codeList="http://www.iso.org/iso/country_codes/iso_3166_code_lists.htm" codeListValue="ID" codeSpace="ISO3166-1">ID</Country>
+              </country>
+              <electronicMailAddress>
+                <gco:CharacterString>pusdatin@atrbpn.go.id</gco:CharacterString>
+              </electronicMailAddress>
+            </CI_Address>
+          </address>
+          <hoursOfService>
+            <gco:CharacterString>08.00-16.00</gco:CharacterString>
+          </hoursOfService>
+          <contactInstructions>
+            <gco:CharacterString>Hubungi saat jam kerja</gco:CharacterString>
+          </contactInstructions>
+        </CI_Contact>
+      </contactInfo>
+      <role>
+        <CI_RoleCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="distributor" codeSpace="ISOTC211/19115">distributor</CI_RoleCode>
+      </role>
+    </CI_ResponsibleParty>
+  </contact>
+  <dateStamp>
+    <gco:Date>2023-12-13</gco:Date>
+  </dateStamp>
+  <metadataStandardName>
+    <gco:CharacterString>ISO 19139 Geographic Information - Metadata - Implementation Specification</gco:CharacterString>
+  </metadataStandardName>
+  <metadataStandardVersion>
+    <gco:CharacterString>2007</gco:CharacterString>
+  </metadataStandardVersion>
+  <spatialRepresentationInfo>
+    <MD_VectorSpatialRepresentation>
+      <topologyLevel>
+        <MD_TopologyLevelCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_TopologyLevelCode" codeListValue="geometryOnly" codeSpace="ISOTC211/19115">geometryOnly</MD_TopologyLevelCode>
+      </topologyLevel>
+      <geometricObjects>
+        <MD_GeometricObjects>
+          <geometricObjectType>
+            <MD_GeometricObjectTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_GeometricObjectTypeCode" codeListValue="composite" codeSpace="ISOTC211/19115">composite</MD_GeometricObjectTypeCode>
+          </geometricObjectType>
+          <geometricObjectCount>
+            <gco:Integer>830131</gco:Integer>
+          </geometricObjectCount>
+        </MD_GeometricObjects>
+      </geometricObjects>
+    </MD_VectorSpatialRepresentation>
+  </spatialRepresentationInfo>
+  <referenceSystemInfo>
+    <MD_ReferenceSystem>
+      <referenceSystemIdentifier>
+        <RS_Identifier>
+          <code>
+            <gco:CharacterString>4326</gco:CharacterString>
+          </code>
+          <codeSpace>
+            <gco:CharacterString>EPSG</gco:CharacterString>
+          </codeSpace>
+          <version>
+            <gco:CharacterString>6.14(3.0.1)</gco:CharacterString>
+          </version>
+        </RS_Identifier>
+      </referenceSystemIdentifier>
+    </MD_ReferenceSystem>
+  </referenceSystemInfo>
+  <identificationInfo>
+    <MD_DataIdentification>
+      <citation>
+        <CI_Citation>
+          <title>
+            <gco:CharacterString>LSD8PROVINSI_AR_5K</gco:CharacterString>
+          </title>
+          <date>
+            <CI_Date>
+              <date>
+                <gco:Date>2021-12-16</gco:Date>
+              </date>
+              <dateType>
+                <CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="publication" codeSpace="ISOTC211/19115">publication</CI_DateTypeCode>
+              </dateType>
+            </CI_Date>
+          </date>
+          <citedResponsibleParty>
+            <CI_ResponsibleParty>
+              <individualName>
+                <gco:CharacterString>Andi Renald</gco:CharacterString>
+              </individualName>
+              <organisationName>
+                <gco:CharacterString>Direktorat Pengendalian Hak Tanah, Alih Fungsi Lahan, Kepulauan, dan Wilayah Tertentu</gco:CharacterString>
+              </organisationName>
+              <positionName>
+                <gco:CharacterString>Direktur Pengendalian Hak Tanah, Alih Fungsi Lahan, Kepulauan, dan Wilayah Tertentu</gco:CharacterString>
+              </positionName>
+              <contactInfo>
+                <CI_Contact>
+                  <phone>
+                    <CI_Telephone>
+                      <voice>
+                        <gco:CharacterString>0217264112</gco:CharacterString>
+                      </voice>
+                    </CI_Telephone>
+                  </phone>
+                  <address>
+                    <CI_Address>
+                      <deliveryPoint>
+                        <gco:CharacterString>Jalan Raden Patah No.1 Kec. Kebayoran Baru</gco:CharacterString>
+                      </deliveryPoint>
+                      <city>
+                        <gco:CharacterString>Jakarta Selatan</gco:CharacterString>
+                      </city>
+                      <administrativeArea>
+                        <gco:CharacterString>DKI Jakarta</gco:CharacterString>
+                      </administrativeArea>
+                      <postalCode>
+                        <gco:CharacterString>12110</gco:CharacterString>
+                      </postalCode>
+                      <country>
+                        <Country codeList="http://www.iso.org/iso/country_codes/iso_3166_code_lists.htm" codeListValue="ID" codeSpace="ISO3166-1">ID</Country>
+                      </country>
+                      <electronicMailAddress>
+                        <gco:CharacterString>pemantauan.bpnri@gmail.com</gco:CharacterString>
+                      </electronicMailAddress>
+                    </CI_Address>
+                  </address>
+                  <hoursOfService>
+                    <gco:CharacterString>08.00-16.00</gco:CharacterString>
+                  </hoursOfService>
+                  <contactInstructions>
+                    <gco:CharacterString>Hubungi saat jam kerja</gco:CharacterString>
+                  </contactInstructions>
+                </CI_Contact>
+              </contactInfo>
+              <role>
+                <CI_RoleCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="originator" codeSpace="ISOTC211/19115">originator</CI_RoleCode>
+              </role>
+            </CI_ResponsibleParty>
+          </citedResponsibleParty>
+          <presentationForm>
+            <CI_PresentationFormCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_PresentationFormCode" codeListValue="mapDigital" codeSpace="ISOTC211/19115">mapDigital</CI_PresentationFormCode>
+          </presentationForm>
+        </CI_Citation>
+      </citation>
+      <abstract>
+        <gco:CharacterString>Peta Lahan Sawah yang Dilindungi adalah peta yang menggambarkan lahan sawah yang telah ditetapkan berdasarkan Kepmen ATR/Ka.BPN No.1589 Tahun 2021</gco:CharacterString>
+      </abstract>
+      <purpose>
+        <gco:CharacterString>1. untuk memetakan lahan sawah eksisting di kabupaten/kota di Provinsi Sumatera Barat, Banten, Jawa Barat, Jawa Tengah, Daerah Istimewa Yogyakarta, Jawa Timur, Bali, dan Nusa Tenggara Barat 2. untuk mengendalikan alih fungsi lahan sawah dan memenuhi ketersediaan lahan sawah untuk mendukung pangan nasional 3. untuk mempercepat penetapan lahan pertanian pangan berkelanjutan, diperlukan penyiapan data dan informasi lahan sawah</gco:CharacterString>
+      </purpose>
+      <credit>
+        <gco:CharacterString>Kementerian Agraria dan Tata Ruang/Badan Pertanahan Nasional</gco:CharacterString>
+      </credit>
+      <status>
+        <MD_ProgressCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ProgressCode" codeListValue="completed" codeSpace="ISOTC211/19115">completed</MD_ProgressCode>
+      </status>
+      <pointOfContact>
+        <CI_ResponsibleParty>
+          <individualName>
+            <gco:CharacterString>Andi Renald</gco:CharacterString>
+          </individualName>
+          <organisationName>
+            <gco:CharacterString>Direktorat Pengendalian Hak Tanah, Alih Fungsi Lahan, Kepulauan, dan Wilayah Tertentu</gco:CharacterString>
+          </organisationName>
+          <positionName>
+            <gco:CharacterString>Direktur Pengendalian Hak Tanah, Alih Fungsi Lahan, Kepulauan, dan Wilayah Tertentu</gco:CharacterString>
+          </positionName>
+          <contactInfo>
+            <CI_Contact>
+              <phone>
+                <CI_Telephone>
+                  <voice>
+                    <gco:CharacterString>0217264112</gco:CharacterString>
+                  </voice>
+                </CI_Telephone>
+              </phone>
+              <address>
+                <CI_Address>
+                  <deliveryPoint>
+                    <gco:CharacterString>Jalan Raden Patah No.1 Kec. Kebayoran Baru</gco:CharacterString>
+                  </deliveryPoint>
+                  <city>
+                    <gco:CharacterString>Jakarta Selatan</gco:CharacterString>
+                  </city>
+                  <administrativeArea>
+                    <gco:CharacterString>DKI Jakarta</gco:CharacterString>
+                  </administrativeArea>
+                  <postalCode>
+                    <gco:CharacterString>12110</gco:CharacterString>
+                  </postalCode>
+                  <country>
+                    <Country codeList="http://www.iso.org/iso/country_codes/iso_3166_code_lists.htm" codeListValue="ID" codeSpace="ISO3166-1">ID</Country>
+                  </country>
+                  <electronicMailAddress>
+                    <gco:CharacterString>pemantauan.bpnri@gmail.com</gco:CharacterString>
+                  </electronicMailAddress>
+                </CI_Address>
+              </address>
+              <hoursOfService>
+                <gco:CharacterString>08.00-16.00</gco:CharacterString>
+              </hoursOfService>
+              <contactInstructions>
+                <gco:CharacterString>Hubungi saat jam kerja</gco:CharacterString>
+              </contactInstructions>
+            </CI_Contact>
+          </contactInfo>
+          <role>
+            <CI_RoleCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="originator" codeSpace="ISOTC211/19115">originator</CI_RoleCode>
+          </role>
+        </CI_ResponsibleParty>
+      </pointOfContact>
+      <pointOfContact>
+        <CI_ResponsibleParty>
+          <individualName>
+            <gco:CharacterString>I Ketut Gede Ary Sucaya</gco:CharacterString>
+          </individualName>
+          <organisationName>
+            <gco:CharacterString>Pusat Data dan Informasi Pertanahan, Tata Ruang dan Lahan Pertanian Pangan Berkelanjutan (Pusdatin) Kementerian ATR/BPN</gco:CharacterString>
+          </organisationName>
+          <positionName>
+            <gco:CharacterString>Kepala Pusat Data dan Informasi Pertanahan, Tata Ruang dan Lahan Pertanian Pangan Berkelanjutan (Pusdatin) Kementerian ATR/BPN</gco:CharacterString>
+          </positionName>
+          <contactInfo>
+            <CI_Contact>
+              <phone>
+                <CI_Telephone>
+                  <voice>
+                    <gco:CharacterString>021-</gco:CharacterString>
+                  </voice>
+                  <facsimile>
+                    <gco:CharacterString>021-</gco:CharacterString>
+                  </facsimile>
+                </CI_Telephone>
+              </phone>
+              <address>
+                <CI_Address>
+                  <deliveryPoint>
+                    <gco:CharacterString>Jl. Akses Tol Cimanggis, Wanaherang, Kec. Gn. Putri, Kabupaten Bogor, Jawa Barat 16966</gco:CharacterString>
+                  </deliveryPoint>
+                  <city>
+                    <gco:CharacterString>Kabupaten Bogor</gco:CharacterString>
+                  </city>
+                  <administrativeArea>
+                    <gco:CharacterString>Jawa Barat</gco:CharacterString>
+                  </administrativeArea>
+                  <postalCode>
+                    <gco:CharacterString>16966</gco:CharacterString>
+                  </postalCode>
+                  <country>
+                    <Country codeList="http://www.iso.org/iso/country_codes/iso_3166_code_lists.htm" codeListValue="ID" codeSpace="ISO3166-1">ID</Country>
+                  </country>
+                  <electronicMailAddress>
+                    <gco:CharacterString>pusdatin@atrbpn.go.id</gco:CharacterString>
+                  </electronicMailAddress>
+                </CI_Address>
+              </address>
+              <hoursOfService>
+                <gco:CharacterString>08.00-16.00</gco:CharacterString>
+              </hoursOfService>
+              <contactInstructions>
+                <gco:CharacterString>Hubungi saat jam kerja</gco:CharacterString>
+              </contactInstructions>
+            </CI_Contact>
+          </contactInfo>
+          <role>
+            <CI_RoleCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="distributor" codeSpace="ISOTC211/19115">distributor</CI_RoleCode>
+          </role>
+        </CI_ResponsibleParty>
+      </pointOfContact>
+      <pointOfContact>
+        <CI_ResponsibleParty>
+          <individualName>
+            <gco:CharacterString>Andi Renald</gco:CharacterString>
+          </individualName>
+          <organisationName>
+            <gco:CharacterString>Direktorat Pengendalian Hak Tanah, Alih Fungsi Lahan, Kepulauan, dan Wilayah Tertentu</gco:CharacterString>
+          </organisationName>
+          <positionName>
+            <gco:CharacterString>Direktur Pengendalian Hak Tanah, Alih Fungsi Lahan, Kepulauan, dan Wilayah Tertentu</gco:CharacterString>
+          </positionName>
+          <contactInfo>
+            <CI_Contact>
+              <phone>
+                <CI_Telephone>
+                  <voice>
+                    <gco:CharacterString>0217264112</gco:CharacterString>
+                  </voice>
+                </CI_Telephone>
+              </phone>
+              <address>
+                <CI_Address>
+                  <deliveryPoint>
+                    <gco:CharacterString>Jalan Raden Patah I No. 1, Kec. Kebayoran Baru</gco:CharacterString>
+                  </deliveryPoint>
+                  <city>
+                    <gco:CharacterString>Jakarta Selatan</gco:CharacterString>
+                  </city>
+                  <administrativeArea>
+                    <gco:CharacterString>DKI Jakarta</gco:CharacterString>
+                  </administrativeArea>
+                  <postalCode>
+                    <gco:CharacterString>12110</gco:CharacterString>
+                  </postalCode>
+                  <country>
+                    <Country codeList="http://www.iso.org/iso/country_codes/iso_3166_code_lists.htm" codeListValue="ID" codeSpace="ISO3166-1">ID</Country>
+                  </country>
+                  <electronicMailAddress>
+                    <gco:CharacterString>pemantauan.bpnri@gmail.com</gco:CharacterString>
+                  </electronicMailAddress>
+                </CI_Address>
+              </address>
+              <hoursOfService>
+                <gco:CharacterString>08.00-16.00</gco:CharacterString>
+              </hoursOfService>
+              <contactInstructions>
+                <gco:CharacterString>Hubungi saat jam kerja</gco:CharacterString>
+              </contactInstructions>
+            </CI_Contact>
+          </contactInfo>
+          <role>
+            <CI_RoleCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="custodian" codeSpace="ISOTC211/19115">custodian</CI_RoleCode>
+          </role>
+        </CI_ResponsibleParty>
+      </pointOfContact>
+      <resourceMaintenance>
+        <MD_MaintenanceInformation>
+          <maintenanceAndUpdateFrequency>
+            <MD_MaintenanceFrequencyCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_MaintenanceFrequencyCode" codeListValue="asNeeded" codeSpace="ISOTC211/19115">asNeeded</MD_MaintenanceFrequencyCode>
+          </maintenanceAndUpdateFrequency>
+        </MD_MaintenanceInformation>
+      </resourceMaintenance>
+      <descriptiveKeywords>
+        <MD_Keywords>
+          <keyword>
+            <gco:CharacterString>Sumatera Barat, Banten, Jawa Barat, Jawa Tengah, Daerah Istimewa Yogyakarta, Jawa Timur, Bali, Nusa Tenggara Barat</gco:CharacterString>
+          </keyword>
+          <type>
+            <MD_KeywordTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode" codeListValue="place" codeSpace="ISOTC211/19115">place</MD_KeywordTypeCode>
+          </type>
+        </MD_Keywords>
+      </descriptiveKeywords>
+      <descriptiveKeywords>
+        <MD_Keywords>
+          <keyword>
+            <gco:CharacterString>Lahan Sawah yang Dilindungi, Sawah</gco:CharacterString>
+          </keyword>
+          <type>
+            <MD_KeywordTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode" codeListValue="theme" codeSpace="ISOTC211/19115">theme</MD_KeywordTypeCode>
+          </type>
+        </MD_Keywords>
+      </descriptiveKeywords>
+      <descriptiveKeywords>
+        <MD_Keywords>
+          <keyword>
+            <gco:CharacterString>Downloadable Data</gco:CharacterString>
+          </keyword>
+          <thesaurusName uuidref="723f6998-058e-11dc-8314-0800200c9a66" />
+        </MD_Keywords>
+      </descriptiveKeywords>
+      <resourceSpecificUsage>
+        <MD_Usage>
+          <specificUsage>
+            <gco:CharacterString>sebagai bahan penetapan Lahan Pertanian Pangan Berkelanjutan dan/atau Kawasan atau subzona Tanaman Pangan pada Rencana Tata Ruang</gco:CharacterString>
+          </specificUsage>
+          <userContactInfo>
+            <CI_ResponsibleParty>
+              <individualName>
+                <gco:CharacterString>Andi Renald</gco:CharacterString>
+              </individualName>
+              <organisationName>
+                <gco:CharacterString>Direktorat Pengendalian Hak Tanah, Alih Fungsi Lahan, Kepulauan, dan Wilayah Tertentu</gco:CharacterString>
+              </organisationName>
+              <positionName>
+                <gco:CharacterString>Direktur Pengendalian Hak Tanah, Alih Fungsi Lahan, Kepulauan, dan Wilayah Tertentu</gco:CharacterString>
+              </positionName>
+              <contactInfo>
+                <CI_Contact>
+                  <phone>
+                    <CI_Telephone>
+                      <voice>
+                        <gco:CharacterString>0217264112</gco:CharacterString>
+                      </voice>
+                    </CI_Telephone>
+                  </phone>
+                  <address>
+                    <CI_Address>
+                      <deliveryPoint>
+                        <gco:CharacterString>Jalan Raden Patah No.1 Kec. Kebayoran Baru</gco:CharacterString>
+                      </deliveryPoint>
+                      <city>
+                        <gco:CharacterString>Jakarta Selatan</gco:CharacterString>
+                      </city>
+                      <administrativeArea>
+                        <gco:CharacterString>DKI Jakarta</gco:CharacterString>
+                      </administrativeArea>
+                      <postalCode>
+                        <gco:CharacterString>12110</gco:CharacterString>
+                      </postalCode>
+                      <country>
+                        <Country codeList="http://www.iso.org/iso/country_codes/iso_3166_code_lists.htm" codeListValue="ID" codeSpace="ISO3166-1">ID</Country>
+                      </country>
+                      <electronicMailAddress>
+                        <gco:CharacterString>pemantauan.bpnri@gmail.com</gco:CharacterString>
+                      </electronicMailAddress>
+                    </CI_Address>
+                  </address>
+                  <hoursOfService>
+                    <gco:CharacterString>08.00-16.00</gco:CharacterString>
+                  </hoursOfService>
+                  <contactInstructions>
+                    <gco:CharacterString>Hubungi saat jam kerja</gco:CharacterString>
+                  </contactInstructions>
+                </CI_Contact>
+              </contactInfo>
+              <role>
+                <CI_RoleCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="originator" codeSpace="ISOTC211/19115">originator</CI_RoleCode>
+              </role>
+            </CI_ResponsibleParty>
+          </userContactInfo>
+        </MD_Usage>
+      </resourceSpecificUsage>
+      <resourceConstraints>
+        <MD_Constraints>
+          <useLimitation>
+            <gco:CharacterString>Data LSD hanya dapat diunduh oleh kalangan tertentu sesuai dengan Permen ATR/Ka.BPN No.1 Tahun 2023. Menteri/Wakil Menteri dapat mengunduh penuh, Pimpinan Kementerian/Lembaga Lainnya dapat mengunduh terbatas, Eselon I Kementerian (selain Unit Produksi) dapat mengunduh terbatas, Kepala Kantor Wilayah dapat mengunduh terbatas, Kepala Kantor Pertanahan dapat mengunduh terbatas dan Nonpemerintah hanya dapat melihat data LSD.</gco:CharacterString>
+          </useLimitation>
+        </MD_Constraints>
+      </resourceConstraints>
+      <spatialRepresentationType>
+        <MD_SpatialRepresentationTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_SpatialRepresentationTypeCode" codeListValue="vector" codeSpace="ISOTC211/19115">vector</MD_SpatialRepresentationTypeCode>
+      </spatialRepresentationType>
+      <spatialResolution>
+        <MD_Resolution>
+          <equivalentScale>
+            <MD_RepresentativeFraction>
+              <denominator>
+                <gco:Integer>5000</gco:Integer>
+              </denominator>
+            </MD_RepresentativeFraction>
+          </equivalentScale>
+        </MD_Resolution>
+      </spatialResolution>
+      <spatialResolution>
+        <MD_Resolution>
+          <distance>
+            <gco:Distance uom="m" />
+          </distance>
+        </MD_Resolution>
+      </spatialResolution>
+      <language>
+        <LanguageCode codeList="http://www.loc.gov/standards/iso639-2/php/code_list.php" codeListValue="ind" codeSpace="ISO639-2">ind</LanguageCode>
+      </language>
+      <characterSet>
+        <MD_CharacterSetCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeListValue="utf8" codeSpace="ISOTC211/19115">utf8</MD_CharacterSetCode>
+      </characterSet>
+      <topicCategory>
+        <MD_TopicCategoryCode>farming</MD_TopicCategoryCode>
+      </topicCategory>
+      <environmentDescription>
+        <gco:CharacterString> Version 6.2 (Build 9200) ; Esri ArcGIS 10.8.0.12790</gco:CharacterString>
+      </environmentDescription>
+      <extent>
+        <EX_Extent>
+          <description>
+            <gco:CharacterString>Lahan Sawah yang Dilindungi berdasarkan Peta Lahan Sawah yang Dilindungi di Provinsi Sumatera Barat, Banten, Jawa Barat, Daerah Istimewa Yogyakarta, Jawa Tengah, Jawa Timur, Bali, dan Nusa Tenggara Barat yang telah ditetapkan berdasarkan Kepmen ATR/Ka.BPN No.1589 Tahun 2021</gco:CharacterString>
+          </description>
+          <geographicElement>
+            <EX_GeographicBoundingBox>
+              <westBoundLongitude>
+                <gco:Decimal>98.6</gco:Decimal>
+              </westBoundLongitude>
+              <eastBoundLongitude>
+                <gco:Decimal>119.083333</gco:Decimal>
+              </eastBoundLongitude>
+              <southBoundLatitude>
+                <gco:Decimal>-9.25</gco:Decimal>
+              </southBoundLatitude>
+              <northBoundLatitude>
+                <gco:Decimal>0.9</gco:Decimal>
+              </northBoundLatitude>
+            </EX_GeographicBoundingBox>
+          </geographicElement>
+        </EX_Extent>
+      </extent>
+      <extent>
+        <EX_Extent>
+          <geographicElement>
+            <EX_GeographicBoundingBox>
+              <extentTypeCode>
+                <gco:Boolean>true</gco:Boolean>
+              </extentTypeCode>
+              <westBoundLongitude>
+                <gco:Decimal>98.718134</gco:Decimal>
+              </westBoundLongitude>
+              <eastBoundLongitude>
+                <gco:Decimal>119.161596</gco:Decimal>
+              </eastBoundLongitude>
+              <southBoundLatitude>
+                <gco:Decimal>-9.097559</gco:Decimal>
+              </southBoundLatitude>
+              <northBoundLatitude>
+                <gco:Decimal>0.805066</gco:Decimal>
+              </northBoundLatitude>
+            </EX_GeographicBoundingBox>
+          </geographicElement>
+        </EX_Extent>
+      </extent>
+    </MD_DataIdentification>
+  </identificationInfo>
+  <contentInfo>
+    <MD_CoverageDescription>
+      <attributeDescription>
+        <gco:RecordType>LSD</gco:RecordType>
+      </attributeDescription>
+      <contentType>
+        <MD_CoverageContentTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CoverageContentTypeCode" codeListValue="thematicClassification" codeSpace="ISOTC211/19115">thematicClassification</MD_CoverageContentTypeCode>
+      </contentType>
+    </MD_CoverageDescription>
+  </contentInfo>
+  <contentInfo>
+    <MD_CoverageDescription>
+      <attributeDescription>
+        <gco:RecordType>FGSFRF</gco:RecordType>
+      </attributeDescription>
+      <contentType>
+        <MD_CoverageContentTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CoverageContentTypeCode" codeListValue="thematicClassification" codeSpace="ISOTC211/19115">thematicClassification</MD_CoverageContentTypeCode>
+      </contentType>
+    </MD_CoverageDescription>
+  </contentInfo>
+  <contentInfo>
+    <MD_CoverageDescription>
+      <attributeDescription>
+        <gco:RecordType>WADMPR</gco:RecordType>
+      </attributeDescription>
+      <contentType>
+        <MD_CoverageContentTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CoverageContentTypeCode" codeListValue="thematicClassification" codeSpace="ISOTC211/19115">thematicClassification</MD_CoverageContentTypeCode>
+      </contentType>
+    </MD_CoverageDescription>
+  </contentInfo>
+  <contentInfo>
+    <MD_CoverageDescription>
+      <attributeDescription>
+        <gco:RecordType>WADMKK</gco:RecordType>
+      </attributeDescription>
+      <contentType>
+        <MD_CoverageContentTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CoverageContentTypeCode" codeListValue="thematicClassification" codeSpace="ISOTC211/19115">thematicClassification</MD_CoverageContentTypeCode>
+      </contentType>
+    </MD_CoverageDescription>
+  </contentInfo>
+  <contentInfo>
+    <MD_CoverageDescription>
+      <attributeDescription>
+        <gco:RecordType>LUASHA</gco:RecordType>
+      </attributeDescription>
+      <contentType>
+        <MD_CoverageContentTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CoverageContentTypeCode" codeListValue="physicalMeasurement" codeSpace="ISOTC211/19115">physicalMeasurement</MD_CoverageContentTypeCode>
+      </contentType>
+    </MD_CoverageDescription>
+  </contentInfo>
+  <contentInfo>
+    <MD_CoverageDescription>
+      <attributeDescription>
+        <gco:RecordType>CTKSWH</gco:RecordType>
+      </attributeDescription>
+      <contentType>
+        <MD_CoverageContentTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CoverageContentTypeCode" codeListValue="thematicClassification" codeSpace="ISOTC211/19115">thematicClassification</MD_CoverageContentTypeCode>
+      </contentType>
+    </MD_CoverageDescription>
+  </contentInfo>
+  <contentInfo>
+    <MD_CoverageDescription>
+      <attributeDescription>
+        <gco:RecordType>METADATA</gco:RecordType>
+      </attributeDescription>
+      <contentType>
+        <MD_CoverageContentTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CoverageContentTypeCode" codeListValue="thematicClassification" codeSpace="ISOTC211/19115">thematicClassification</MD_CoverageContentTypeCode>
+      </contentType>
+    </MD_CoverageDescription>
+  </contentInfo>
+  <distributionInfo>
+    <MD_Distribution>
+      <distributionFormat>
+        <MD_Format>
+          <name>
+            <gco:CharacterString>File Geodatabase Feature Class</gco:CharacterString>
+          </name>
+          <version>
+            <gco:CharacterString>Geodatabase</gco:CharacterString>
+          </version>
+        </MD_Format>
+      </distributionFormat>
+      <distributor>
+        <MD_Distributor>
+          <distributorContact>
+            <CI_ResponsibleParty>
+              <individualName>
+                <gco:CharacterString>I Ketut Gede Ary Sucaya</gco:CharacterString>
+              </individualName>
+              <organisationName>
+                <gco:CharacterString>Pusat Data dan Informasi Pertanahan, Tata Ruang dan Lahan Pertanian Pangan Berkelanjutan (Pusdatin) Kementerian ATR/BPN</gco:CharacterString>
+              </organisationName>
+              <positionName>
+                <gco:CharacterString>Kepala Pusat Data dan Informasi Pertanahan, Tata Ruang dan Lahan Pertanian Pangan Berkelanjutan (Pusdatin) Kementerian ATR/BPN</gco:CharacterString>
+              </positionName>
+              <contactInfo>
+                <CI_Contact>
+                  <phone>
+                    <CI_Telephone>
+                      <voice>
+                        <gco:CharacterString>021-</gco:CharacterString>
+                      </voice>
+                      <facsimile>
+                        <gco:CharacterString>021-</gco:CharacterString>
+                      </facsimile>
+                    </CI_Telephone>
+                  </phone>
+                  <address>
+                    <CI_Address>
+                      <deliveryPoint>
+                        <gco:CharacterString>Jl. Akses Tol Cimanggis, Wanaherang, Kec. Gn. Putri, Kabupaten Bogor, Jawa Barat 16966</gco:CharacterString>
+                      </deliveryPoint>
+                      <city>
+                        <gco:CharacterString>Kabupaten Bogor</gco:CharacterString>
+                      </city>
+                      <administrativeArea>
+                        <gco:CharacterString>Jawa Barat</gco:CharacterString>
+                      </administrativeArea>
+                      <postalCode>
+                        <gco:CharacterString>16966</gco:CharacterString>
+                      </postalCode>
+                      <country>
+                        <Country codeList="http://www.iso.org/iso/country_codes/iso_3166_code_lists.htm" codeListValue="ID" codeSpace="ISO3166-1">ID</Country>
+                      </country>
+                      <electronicMailAddress>
+                        <gco:CharacterString>pusdatin@atrbpn.go.id</gco:CharacterString>
+                      </electronicMailAddress>
+                    </CI_Address>
+                  </address>
+                  <hoursOfService>
+                    <gco:CharacterString>08.00-16.00</gco:CharacterString>
+                  </hoursOfService>
+                  <contactInstructions>
+                    <gco:CharacterString>Hubungi saat jam kerja</gco:CharacterString>
+                  </contactInstructions>
+                </CI_Contact>
+              </contactInfo>
+              <role>
+                <CI_RoleCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="distributor" codeSpace="ISOTC211/19115">distributor</CI_RoleCode>
+              </role>
+            </CI_ResponsibleParty>
+          </distributorContact>
+        </MD_Distributor>
+      </distributor>
+      <transferOptions>
+        <MD_DigitalTransferOptions>
+          <offLine>
+            <MD_Medium>
+              <mediumFormat>
+                <MD_MediumFormatCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_MediumFormatCode" codeListValue="iso9660" codeSpace="ISOTC211/19115">iso9660</MD_MediumFormatCode>
+              </mediumFormat>
+            </MD_Medium>
+          </offLine>
+        </MD_DigitalTransferOptions>
+      </transferOptions>
+    </MD_Distribution>
+  </distributionInfo>
+  <dataQualityInfo>
+    <DQ_DataQuality>
+      <scope>
+        <DQ_Scope>
+          <level>
+            <MD_ScopeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ScopeCode" codeListValue="dataset" codeSpace="ISOTC211/19115">dataset</MD_ScopeCode>
+          </level>
+          <levelDescription>
+            <MD_ScopeDescription>
+              <dataset>
+                <gco:CharacterString>LSD8PROVINSI_AR_5K</gco:CharacterString>
+              </dataset>
+            </MD_ScopeDescription>
+          </levelDescription>
+        </DQ_Scope>
+      </scope>
+      <report>
+        <DQ_TopologicalConsistency>
+          <measureDescription>
+            <gco:CharacterString>Polygon atau bidang pada Peta Lahan Sawah yang Dilindungi tidak boleh tumpang tindih (overlap) dan tidak boleh ada gap</gco:CharacterString>
+          </measureDescription>
+          <evaluationMethodType>
+            <DQ_EvaluationMethodTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DQ_EvaluationMethodTypeCode" codeListValue="directInternal" codeSpace="ISOTC211/19115">directInternal</DQ_EvaluationMethodTypeCode>
+          </evaluationMethodType>
+          <evaluationMethodDescription>
+            <gco:CharacterString>Cek Topologi dilakukan dengan software ArcMap dengan Topology Rules Must Not Overlap dan Topology Must Not Have Gap</gco:CharacterString>
+          </evaluationMethodDescription>
+          <dateTime>
+            <gco:DateTime>2021-07-09T00:00:00</gco:DateTime>
+          </dateTime>
+          <result>
+            <DQ_ConformanceResult>
+              <specification>
+                <CI_Citation>
+                  <title>
+                    <gco:CharacterString>Cek Topology Must Not Overlap dan Must Not Have Gap</gco:CharacterString>
+                  </title>
+                  <date gco:nilReason="missing" />
+                </CI_Citation>
+              </specification>
+              <explanation>
+                <gco:CharacterString>Data spasial sudah ditetapkan melalui SK Menteri Agraria dan Tata Ruang/Kepala Badan Pertanahan Nasional Nomor 1589/SK-HK.02.01/XII/2021 Tahun 2021. Tidak terdapat tumpang tindih (overlap) pada polygon atau bidang pada Peta Lahan Sawah yang Dilindungi. Gap yang terdapat pada data spasial disebabkan karena faktor pengurang Lahan Sawah yang Dilindungi (LSD) yang telah disetujui oleh Tim Pelaksana LSD. 
+
+Faktor pengurang tersebut diantaranya: PTP untuk rencana penggunaan tanah nonpertanian yang masih berlaku, Hak Milik nonpertanian yang telah diterbitkan, Hak Guna Bangunan yang masih berlaku, Hak Pakai nonpertanian dengan jangka waktu yang masih berlaku, Hak Pakai nonpertanian selama dipergunakan yang telah diterbitkan, Hak Pengelolaan nonpertanian yang masih berlaku, Dasar penguasaan atas tanah nonpertanian yang masih berlaku, KKPR untuk kegiatan nonpertanian yang masih berlaku, Izin atau Konsesi nonpertanian yang masih berlaku, Bangunan dan/atau urukan yang telah ada yang sesuai dengan RTR, Penetapan Lokasi/KKPR PSN yang masih berlaku, Penetapan wilayah relokasi akibat bencana alam; dan/atau LBS yang secara eksisting bukan berupa Lahan Sawah.
+
+</gco:CharacterString>
+              </explanation>
+              <pass>
+                <gco:Boolean>true</gco:Boolean>
+              </pass>
+            </DQ_ConformanceResult>
+          </result>
+          <result>
+            <DQ_QuantitativeResult>
+              <valueType>
+                <gco:RecordType>Percent</gco:RecordType>
+              </valueType>
+              <valueUnit>
+                <gml:UnitDefinition gml:id="ID0ABAAAABNA">
+                  <gml:identifier codeSpace="GML_UomSymbol">Unified Code of Units of Measure</gml:identifier>
+                  <gml:catalogSymbol codeSpace="http://aurora.regenstrief.org/UCUM">%</gml:catalogSymbol>
+                </gml:UnitDefinition>
+              </valueUnit>
+              <errorStatistic>
+                <gco:CharacterString>0</gco:CharacterString>
+              </errorStatistic>
+              <value>
+                <gco:Record>100</gco:Record>
+              </value>
+            </DQ_QuantitativeResult>
+          </result>
+        </DQ_TopologicalConsistency>
+      </report>
+      <lineage>
+        <LI_Lineage>
+          <statement>
+            <gco:CharacterString>Data ini dibuat berdasarkan data Lahan Baku Sawah 2019 yang telah dikoreksi tahun 2021 oleh Badan Informasi Geospasial dan mempertimbangkan faktor pengurang sesuai Peraturan Menteri ATR/Kepala BPN Nomor 12 Tahun 2020</gco:CharacterString>
+          </statement>
+          <processStep>
+            <LI_ProcessStep>
+              <description>
+                <gco:CharacterString>1. Peta LBS terkoreksi 2021 dilakukan koreksi kondisi bidang berdasarkan Citra SPOT-6/SPOT-7/Landsat 8 Lembaga Penerbangan dan Antariksa Nasional 2018-2019 untuk mengidentifikasi kondisi eksisting bidang yang masih sawah, bangunan, urukan, atau tutupan vegetasi lain bukan sawah 2. Peta hasil koreksi kondisi eksisting dilakukan overlay dengan Peta Kawasan Hutan Tahun 2020 3. Peta lahan sawah eksisting (LSD Indikatif) dilakukan overlay dengan Peta Hak Atas Tanah, Pertimbangan Teknis Pertanahan, dan Perizinan yang sudah dikeluarkan oleh Pemerintah Daerah dan Kantor Pertanahan BPN untuk mengidentifikasi faktor pengurang non fisik 4. Peta LSD Indikatif yang tidak bertampalan dengan Hak Atas Tanah, Pertimbangan Teknis Pertanahan, dan Perizinan ditampalkan dengan Peta Proyek Strategis Nasional 5. Peta LSD Indikatif ditampalkan dengan Peta Batas Administrasi Kebijakan Satu Peta Tahun 2020 untuk disesuaikan dengan batas administrasi definitif terbaru</gco:CharacterString>
+              </description>
+              <dateTime>
+                <gco:DateTime>2021-07-09T00:00:00</gco:DateTime>
+              </dateTime>
+              <processor>
+                <CI_ResponsibleParty>
+                  <individualName>
+                    <gco:CharacterString>Andi Renald</gco:CharacterString>
+                  </individualName>
+                  <organisationName>
+                    <gco:CharacterString>Direktorat Pengendalian Hak Tanah, Alih Fungsi Lahan, Kepulauan, dan Wilayah Tertentu</gco:CharacterString>
+                  </organisationName>
+                  <positionName>
+                    <gco:CharacterString>Direktur Pengendalian Hak Tanah, Alih Fungsi Lahan, Kepulauan, dan Wilayah Tertentu</gco:CharacterString>
+                  </positionName>
+                  <contactInfo>
+                    <CI_Contact>
+                      <phone>
+                        <CI_Telephone>
+                          <voice>
+                            <gco:CharacterString>0217264112</gco:CharacterString>
+                          </voice>
+                        </CI_Telephone>
+                      </phone>
+                      <address>
+                        <CI_Address>
+                          <deliveryPoint>
+                            <gco:CharacterString>Jalan Raden Patah No.1 Kec. Kebayoran Baru</gco:CharacterString>
+                          </deliveryPoint>
+                          <city>
+                            <gco:CharacterString>Jakarta Selatan</gco:CharacterString>
+                          </city>
+                          <administrativeArea>
+                            <gco:CharacterString>DKI Jakarta</gco:CharacterString>
+                          </administrativeArea>
+                          <postalCode>
+                            <gco:CharacterString>12110</gco:CharacterString>
+                          </postalCode>
+                          <country>
+                            <Country codeList="http://www.iso.org/iso/country_codes/iso_3166_code_lists.htm" codeListValue="ID" codeSpace="ISO3166-1">ID</Country>
+                          </country>
+                          <electronicMailAddress>
+                            <gco:CharacterString>pemantauan.bpnri@gmail.com</gco:CharacterString>
+                          </electronicMailAddress>
+                        </CI_Address>
+                      </address>
+                      <hoursOfService>
+                        <gco:CharacterString>08.00-16.00</gco:CharacterString>
+                      </hoursOfService>
+                      <contactInstructions>
+                        <gco:CharacterString>Hubungi saat jam kerja</gco:CharacterString>
+                      </contactInstructions>
+                    </CI_Contact>
+                  </contactInfo>
+                  <role>
+                    <CI_RoleCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="originator" codeSpace="ISOTC211/19115">originator</CI_RoleCode>
+                  </role>
+                </CI_ResponsibleParty>
+              </processor>
+            </LI_ProcessStep>
+          </processStep>
+          <source>
+            <LI_Source>
+              <description>
+                <gco:CharacterString>1. Lahan Baku Sawah terkoreksi 2021 2. Peta Batas Administrasi Kebijakan Satu Peta Tahun 2020 3. Peta Kawasan Hutan Kementerian Lingkungan Hidup dan Kehutanan Tahun 2020 4. Citra SPOT-6/SPOT-7/Landsat 8 Lembaga Penerbangan dan Antariksa Nasional 2018-2019</gco:CharacterString>
+              </description>
+              <scaleDenominator>
+                <MD_RepresentativeFraction>
+                  <denominator>
+                    <gco:Integer>5000</gco:Integer>
+                  </denominator>
+                </MD_RepresentativeFraction>
+              </scaleDenominator>
+              <sourceReferenceSystem>
+                <MD_ReferenceSystem>
+                  <referenceSystemIdentifier>
+                    <RS_Identifier>
+                      <code>
+                        <gco:CharacterString>4326</gco:CharacterString>
+                      </code>
+                      <codeSpace>
+                        <gco:CharacterString>EPSG</gco:CharacterString>
+                      </codeSpace>
+                      <version>
+                        <gco:CharacterString>6.14(3.0.1)</gco:CharacterString>
+                      </version>
+                    </RS_Identifier>
+                  </referenceSystemIdentifier>
+                </MD_ReferenceSystem>
+              </sourceReferenceSystem>
+            </LI_Source>
+          </source>
+        </LI_Lineage>
+      </lineage>
+    </DQ_DataQuality>
+  </dataQualityInfo>
+  <metadataConstraints>
+    <MD_Constraints>
+      <useLimitation>
+        <gco:CharacterString>Data LSD hanya dapat diunduh oleh kalangan tertentu sesuai dengan Permen ATR/Ka.BPN No.1 Tahun 2023. Menteri/Wakil Menteri dapat mengunduh penuh, Pimpinan Kementerian/Lembaga Lainnya dapat mengunduh terbatas, Eselon I Kementerian (selain Unit Produksi) dapat mengunduh terbatas, Kepala Kantor Wilayah dapat mengunduh terbatas, Kepala Kantor Pertanahan dapat mengunduh terbatas dan Nonpemerintah hanya dapat melihat data LSD.</gco:CharacterString>
+      </useLimitation>
+    </MD_Constraints>
+  </metadataConstraints>
+  <metadataMaintenance>
+    <MD_MaintenanceInformation>
+      <maintenanceAndUpdateFrequency>
+        <MD_MaintenanceFrequencyCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_MaintenanceFrequencyCode" codeListValue="asNeeded" codeSpace="ISOTC211/19115">asNeeded</MD_MaintenanceFrequencyCode>
+      </maintenanceAndUpdateFrequency>
+    </MD_MaintenanceInformation>
+  </metadataMaintenance>
+</MD_Metadata>

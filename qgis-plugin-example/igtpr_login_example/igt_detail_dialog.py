@@ -1,60 +1,137 @@
 # -*- coding: utf-8 -*-
-"""Dialog Detail Informasi IGT (Mockup V2).
+"""Dialog Preview Metadata IGT (Read-Only).
 
-Menampilkan informasi lengkap mengenai dataset IGT:
-- Nama & ID IGT
-- Direktorat Pembina & Satker
-- Tanggal Integrasi / Pembaruan
-- Jenis IGT & Kategori
-- Ruang Lingkup / Wilayah
-- Keterangan
-- Sistem Koordinat (CRS)
-- Link Dokumen Metadata
-- Rincian Sub-layer (bila multi-layer)
-- Pintasan Muat Layer (WMS / WFS) ke kanvas peta QGIS
+Membaca berkas XML metadata standar ISO 19115 dari folder plugin
+(`bidang_tanah_jawa_barat_kota_bekasi_metadata.xml` atau `LSD8PROV50002021.xml`)
+dan menampilkan tabel pasangan Atribut (XPath) & Nilai secara read-only
+(tanpa tombol Edit per baris maupun tombol Simpan Perubahan).
 """
 
-from qgis.PyQt.QtCore import QSize, Qt, pyqtSignal, QUrl
-from qgis.PyQt.QtGui import QColor, QFont, QDesktopServices
+import os
+import xml.etree.ElementTree as ET
+
+from qgis.PyQt.QtCore import Qt, pyqtSignal
+from qgis.PyQt.QtGui import QColor, QFont
 from qgis.PyQt.QtWidgets import (
-    QDialog, QFrame, QHBoxLayout, QLabel, QLayout, QPushButton,
-    QScrollArea, QSizePolicy, QVBoxLayout, QWidget, QGridLayout, QMessageBox,
+    QAbstractItemView,
+    QDialog,
+    QFrame,
+    QHBoxLayout,
+    QHeaderView,
+    QLabel,
+    QPushButton,
+    QTableWidget,
+    QTableWidgetItem,
+    QVBoxLayout,
 )
 
-from .assets import ICONS
-from .login_page import svg_pixmap
+
+def resolve_metadata_xml(dataset_or_title):
+    """Menentukan nama file XML dan path absolut berdasarkan kategori/nama dataset."""
+    is_pertanahan = False
+    if isinstance(dataset_or_title, dict):
+        cat = str(dataset_or_title.get("category", "")).lower()
+        name = str(dataset_or_title.get("name", "")).lower()
+        if cat == "pertanahan" or any(k in name for k in ("bidang", "hak", "ptsl", "znt", "ip4t", "pertanahan")):
+            is_pertanahan = True
+    else:
+        name = str(dataset_or_title or "").lower()
+        if any(k in name for k in ("bidang", "hak", "ptsl", "znt", "ip4t", "pertanahan")):
+            is_pertanahan = True
+
+    file_name = (
+        "bidang_tanah_jawa_barat_kota_bekasi_metadata.xml"
+        if is_pertanahan
+        else "LSD8PROV50002021.xml"
+    )
+
+    here = os.path.dirname(os.path.abspath(__file__))
+    parent_dir = os.path.dirname(here)
+    candidates = [
+        os.path.join(here, file_name),
+        os.path.join(parent_dir, file_name),
+    ]
+    for path in candidates:
+        if os.path.isfile(path):
+            return file_name, path
+    return file_name, candidates[0]
 
 
-class _ScrollContent(QWidget):
-    def minimumSizeHint(self):
-        h = self.layout().totalMinimumSize().height() if self.layout() else 100
-        return QSize(100, h)
+def parse_metadata_xml(xml_path):
+    """Mem-parsing berkas XML metadata ISO 19115 menjadi daftar pasangan (xpath, value)."""
+    rows = []
+    if not xml_path or not os.path.isfile(xml_path):
+        return rows
 
-    def sizeHint(self):
-        h = self.layout().totalSizeHint().height() if self.layout() else 100
-        return QSize(200, h)
+    try:
+        with open(xml_path, "r", encoding="utf-8", errors="replace") as f:
+            raw = f.read().strip()
+    except Exception:
+        return rows
+
+    if not raw:
+        return rows
+
+    if raw.startswith("\ufeff"):
+        raw = raw[1:].strip()
+    if raw.startswith("ï»¿"):
+        raw = raw[3:].strip()
+
+    EMPTY_VAL = "— Kosong —"
+
+    try:
+        root = ET.fromstring(raw.encode("utf-8"))
+
+        def visit(element, path):
+            tag_clean = element.tag.split("}")[-1] if "}" in element.tag else element.tag
+            current_path = path + [tag_clean]
+
+            for attr_name, attr_val in element.attrib.items():
+                clean_attr = attr_name.split("}")[-1] if "}" in attr_name else attr_name
+                if clean_attr == "xmlns" or clean_attr.startswith("xmlns:"):
+                    continue
+                val_str = str(attr_val or "").strip()
+                rows.append({
+                    "xpath": f"{' / '.join(current_path)} / @{clean_attr}",
+                    "value": val_str if val_str else EMPTY_VAL,
+                })
+
+            children = list(element)
+            if len(children) == 0:
+                val_str = (element.text or "").strip()
+                rows.append({
+                    "xpath": " / ".join(current_path),
+                    "value": val_str if val_str else EMPTY_VAL,
+                })
+                return
+
+            for child in children:
+                visit(child, current_path)
+
+        visit(root, [])
+    except Exception as exc:
+        print(f"[PreviewMetadata] Gagal mem-parsing XML: {exc}")
+
+    return rows
 
 
 class IgtDetailDialog(QDialog):
-    """Dialog detail informasi dan metadata dataset IGT."""
+    """Dialog Modal 'Preview Metadata' (Read-Only)."""
 
-    wmsRequested = pyqtSignal(dict, object)   # (dataset, sublayer or None)
-    wfsRequested = pyqtSignal(dict, object)   # (dataset, sublayer or None)
+    wmsRequested = pyqtSignal(dict, object)
+    wfsRequested = pyqtSignal(dict, object)
 
-    def __init__(self, dataset, allow_wfs=True, parent=None):
+    def __init__(self, dataset=None, allow_wfs=True, parent=None):
         super().__init__(parent)
-        self.dataset = dataset or {}
+        self.dataset = dataset if isinstance(dataset, dict) else {"name": str(dataset or "")}
         self.allow_wfs = allow_wfs
-        self.has_subs = bool(self.dataset.get('subLayers'))
 
-        d_name = self.dataset.get('name', 'IGT Dataset')
-        d_id = self.dataset.get('id', 'IGT-PR-000')
-        cat = self.dataset.get('category', 'pertanahan')
+        self.file_name, self.xml_path = resolve_metadata_xml(self.dataset)
+        self.rows_data = parse_metadata_xml(self.xml_path)
 
-        self.setWindowTitle(f"Detail IGT: {d_name} ({d_id})")
-        self.resize(540, 660)
-        self.setObjectName('igtDetailDialog')
-
+        self.setWindowTitle("Preview Metadata")
+        self.resize(980, 660)
+        self.setObjectName("igtDetailDialog")
         self.setStyleSheet("""
             QDialog#igtDetailDialog {
                 background-color: #f8fafc;
@@ -63,317 +140,137 @@ class IgtDetailDialog(QDialog):
             QLabel {
                 font-family: "Segoe UI", Arial, sans-serif;
             }
-            QFrame.infoCard {
-                background-color: #ffffff;
+        """)
+
+        self._init_ui()
+
+    def _init_ui(self):
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(16, 16, 16, 16)
+        main_layout.setSpacing(10)
+
+        # Header Title
+        title_lbl = QLabel("Preview Metadata", self)
+        title_lbl.setStyleSheet("font-size: 16px; font-weight: bold; color: #0f172a;")
+        main_layout.addWidget(title_lbl)
+
+        # Info Banner (Biru Muda)
+        total_pairs = len(self.rows_data)
+        self.banner = QFrame(self)
+        self.banner.setStyleSheet(
+            "QFrame { background-color: #e0f2fe; border: 1px solid #bae6fd; border-radius: 6px; padding: 8px 12px; }"
+        )
+        ban_lay = QHBoxLayout(self.banner)
+        ban_lay.setContentsMargins(4, 4, 4, 4)
+        self.banner_text = QLabel(
+            f"ℹ️ {total_pairs} pasangan atribut dan nilai dari <b>{self.file_name}</b>.",
+            self.banner,
+        )
+        self.banner_text.setStyleSheet("color: #0369a1; font-size: 11px; border: none; background: transparent;")
+        self.banner_text.setWordWrap(True)
+        ban_lay.addWidget(self.banner_text)
+        main_layout.addWidget(self.banner)
+
+        # Tabel 2 Kolom (Atribut & Nilai - Tanpa Kolom Aksi/Edit)
+        self.table = QTableWidget(self)
+        self.table.setColumnCount(2)
+        self.table.setHorizontalHeaderLabels(["Atribut", "Nilai"])
+        self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Interactive)
+        self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        self.table.setColumnWidth(0, 390)
+        self.table.verticalHeader().setVisible(False)
+        self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectItems)
+        self.table.setWordWrap(True)
+        self.table.setStyleSheet("""
+            QTableWidget {
                 border: 1px solid #e2e8f0;
-                border-radius: 10px;
-                padding: 12px 14px;
-            }
-            QPushButton#primaryBtn {
-                background-color: #1f6fd6;
-                color: #ffffff;
-                font-weight: 700;
-                font-size: 12px;
-                border-radius: 8px;
-                padding: 7px 16px;
-                border: none;
-            }
-            QPushButton#primaryBtn:hover {
-                background-color: #1a63c7;
-            }
-            QPushButton#wfsBtn {
-                background-color: #7c3aed;
-                color: #ffffff;
-                font-weight: 700;
-                font-size: 12px;
-                border-radius: 8px;
-                padding: 7px 16px;
-                border: none;
-            }
-            QPushButton#wfsBtn:hover {
-                background-color: #6d28d9;
-            }
-            QPushButton#closeBtn {
-                background-color: #ffffff;
-                border: 1px solid #cbd5e1;
-                border-radius: 8px;
-                color: #475569;
-                font-size: 12px;
-                font-weight: 600;
-                padding: 7px 14px;
-            }
-            QPushButton#closeBtn:hover {
-                background-color: #f1f5f9;
-                color: #0f294d;
-            }
-            QPushButton#metadataLinkBtn {
-                background-color: #eff6ff;
-                border: 1px solid #bfdbfe;
-                border-radius: 6px;
-                color: #1d4ed8;
+                gridline-color: #f1f5f9;
                 font-size: 11px;
-                font-weight: 700;
-                padding: 5px 10px;
-                text-align: left;
+                background-color: #ffffff;
+                color: #1e293b;
+                selection-background-color: #f0f9ff;
+                selection-color: #0f172a;
             }
-            QPushButton#metadataLinkBtn:hover {
-                background-color: #dbeafe;
-                border-color: #93c5fd;
+            QTableWidget::item {
+                padding: 6px 8px;
+            }
+            QHeaderView::section {
+                background-color: #f8fafc;
+                color: #475569;
+                font-weight: bold;
+                border: none;
+                border-bottom: 2px solid #e2e8f0;
+                border-right: 1px solid #f1f5f9;
+                padding: 6px;
+                font-size: 11px;
             }
         """)
 
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(16, 16, 16, 14)
-        layout.setSpacing(12)
+        self._populate_table()
+        main_layout.addWidget(self.table, 1)
 
-        # 1. Header Card (Gradasi lembut dengan ikon kategori)
-        head_card = QFrame(self)
-        head_card.setObjectName('headCard')
-        head_card.setStyleSheet("""
-            QFrame#headCard {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #102b59, stop:1 #1b4588);
-                border-radius: 12px;
+        # Footer (Hanya Tombol Close / Tutup di Kanan Bawah)
+        footer_lay = QHBoxLayout()
+        footer_lay.setContentsMargins(0, 4, 0, 0)
+        footer_lay.addStretch(1)
+
+        self.btn_close = QPushButton("Close", self)
+        self.btn_close.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_close.setStyleSheet("""
+            QPushButton {
+                background-color: #64748b;
+                color: #ffffff;
+                border-radius: 4px;
+                padding: 6px 18px;
+                font-size: 11px;
+                font-weight: bold;
                 border: none;
             }
+            QPushButton:hover {
+                background-color: #475569;
+            }
         """)
-        hc_layout = QHBoxLayout(head_card)
-        hc_layout.setContentsMargins(16, 14, 16, 14)
-        hc_layout.setSpacing(12)
+        self.btn_close.clicked.connect(self.accept)
+        footer_lay.addWidget(self.btn_close)
 
-        icon_name = 'map' if cat == 'tata-ruang' else 'layers' if cat == 'derivatif' else 'globe' if cat == 'lainnya' else 'pin'
-        icon_badge = QLabel(head_card)
-        icon_badge.setFixedSize(44, 44)
-        icon_badge.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        icon_badge.setStyleSheet("background: rgba(255, 255, 255, 0.15); border-radius: 10px;")
-        icon_badge.setPixmap(svg_pixmap(ICONS.get(icon_name, ICONS['pin']).format(color='#ffffff'), QSize(22, 22)))
-        hc_layout.addWidget(icon_badge)
+        main_layout.addLayout(footer_lay)
 
-        ht_layout = QVBoxLayout()
-        ht_layout.setSpacing(3)
+    def _populate_table(self):
+        self.table.setRowCount(len(self.rows_data))
 
-        eyebrow = QLabel("SISTEM INFORMASI GEOSPASIAL ATR/BPN · DETAIL IGT", head_card)
-        eyebrow.setStyleSheet("color: #bfdbfe; font-size: 9px; font-weight: 800; letter-spacing: 1px;")
-        ht_layout.addWidget(eyebrow)
+        font_attr = QFont("Segoe UI", 9)
+        font_attr.setWeight(QFont.Weight.DemiBold)
 
-        title_lbl = QLabel(d_name, head_card)
-        title_lbl.setStyleSheet("color: #ffffff; font-size: 15px; font-weight: 800;")
-        title_lbl.setWordWrap(True)
-        ht_layout.addWidget(title_lbl)
+        font_val = QFont("Segoe UI", 9)
 
-        sub_info = QLabel(f"ID Dataset: {d_id} · Status: {self.dataset.get('status', 'Terintegrasi')}", head_card)
-        sub_info.setStyleSheet("color: #cbd5e1; font-size: 11px;")
-        ht_layout.addWidget(sub_info)
+        font_empty = QFont("Segoe UI", 9)
+        font_empty.setItalic(True)
 
-        hc_layout.addLayout(ht_layout, 1)
-        layout.addWidget(head_card)
+        color_attr = QColor("#1e293b")
+        color_val = QColor("#1e293b")
+        color_empty = QColor("#94a3b8")
 
-        # 2. Scrollable Body
-        scroll = QScrollArea(self)
-        scroll.setWidgetResizable(True)
-        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        scroll.setFrameShape(QFrame.Shape.NoFrame)
-        scroll.setStyleSheet("QScrollArea { background: transparent; border: none; }")
+        for row, item in enumerate(self.rows_data):
+            xpath_str = item.get("xpath", "")
+            val_str = item.get("value", "")
+            is_empty = val_str == "— Kosong —" or not val_str.strip()
 
-        body_widget = _ScrollContent()
-        body_widget.setStyleSheet("background: transparent;")
-        body_layout = QVBoxLayout(body_widget)
-        body_layout.setSizeConstraint(QLayout.SizeConstraint.SetNoConstraint)
-        body_layout.setContentsMargins(0, 0, 6, 0)
-        body_layout.setSpacing(10)
+            item_attr = QTableWidgetItem(xpath_str)
+            item_attr.setFlags(item_attr.flags() & ~Qt.ItemFlag.ItemIsEditable)
+            item_attr.setFont(font_attr)
+            item_attr.setForeground(color_attr)
+            self.table.setItem(row, 0, item_attr)
 
-        # Card: Informasi Utama Metadata
-        info_card = QFrame(body_widget)
-        info_card.setProperty('class', 'infoCard')
-        ic_layout = QVBoxLayout(info_card)
-        ic_layout.setContentsMargins(14, 12, 14, 12)
-        ic_layout.setSpacing(10)
+            item_val = QTableWidgetItem("— Kosong —" if is_empty else val_str)
+            item_val.setFlags(item_val.flags() & ~Qt.ItemFlag.ItemIsEditable)
+            if is_empty:
+                item_val.setFont(font_empty)
+                item_val.setForeground(color_empty)
+            else:
+                item_val.setFont(font_val)
+                item_val.setForeground(color_val)
+            self.table.setItem(row, 1, item_val)
 
-        card_title = QLabel("Metadata Pokok Dataset", info_card)
-        card_title.setStyleSheet("color: #0f294d; font-size: 13px; font-weight: 800;")
-        ic_layout.addWidget(card_title)
-
-        grid = QGridLayout()
-        grid.setHorizontalSpacing(14)
-        grid.setVerticalSpacing(8)
-
-        # Tentukan Jenis IGT deskriptif
-        if cat == 'pertanahan':
-            jenis_igt = 'IGT Pertanahan (Berbasis Bidang Tanah)'
-        elif cat == 'tata-ruang':
-            jenis_igt = 'IGT Tata Ruang (Berbasis Rencana & Pola Kawasan)'
-        elif cat == 'derivatif':
-            jenis_igt = 'IGT Derivatif Multiguna (Analisis Tematik Lanjutan)'
-        else:
-            jenis_igt = 'IGT K/L Lainnya (Data Tematik Eksternal)'
-
-        direktorat_val = self.dataset.get('direktorat') or self.dataset.get('satker') or 'Direktorat Pengukuran dan Pemetaan Kadastral'
-        satker_val = self.dataset.get('satker') or self.dataset.get('direktorat') or 'Kantah Kab. Sleman'
-        tgl_val = self.dataset.get('updated') or self.dataset.get('date') or '18 Okt 2026'
-        lingkup_val = self.dataset.get('scope') or f"{self.dataset.get('kab', 'Kab. Sleman')}, {self.dataset.get('prov', 'D.I. Yogyakarta')}"
-
-        keterangan_val = (
-            self.dataset.get('keterangan') or
-            self.dataset.get('description') or
-            self.dataset.get('desc') or
-            self.dataset.get('note') or
-            self.dataset.get('catatan') or
-            (f"Dataset terpadu multi-layer memuat {len(self.dataset.get('subLayers', []))} sub-layer tematik terintegrasi siap pakai."
-             if self.has_subs else
-             "Data geospasial tematik pertanahan terverifikasi berbasis bidang tanah (baseline kadastral)."
-             if cat == 'pertanahan' else
-             "Data geospasial tematik tata ruang berstatus terintegrasi dan tervalidasi topologi."
-             if cat == 'tata-ruang' else
-             "Layer tematik hasil analisis dan pemodelan spasial derivatif multiguna."
-             if cat == 'derivatif' else
-             "Data geospasial tematik resmi terintegrasi pada Geoportal Kementerian ATR/BPN.")
-        )
-
-        fields = [
-            ("Direktorat Pembina", direktorat_val),
-            ("Satuan Kerja (Satker)", satker_val),
-            ("Tanggal Integrasi", tgl_val),
-            ("Jenis IGT", jenis_igt),
-            ("Ruang Lingkup / Wilayah", lingkup_val),
-            ("Sistem Koordinat (CRS)", "EPSG:4326 (WGS 84) / EPSG:3857 (Web Mercator)"),
-        ]
-
-        for i, (lbl_txt, val_txt) in enumerate(fields):
-            r = i // 2
-            c = (i % 2) * 2
-
-            lbl = QLabel(lbl_txt.upper(), info_card)
-            lbl.setStyleSheet("color: #64748b; font-size: 10px; font-weight: 700;")
-            grid.addWidget(lbl, r * 2, c)
-
-            val = QLabel(val_txt, info_card)
-            val.setStyleSheet("color: #0f294d; font-size: 11px; font-weight: 600;")
-            val.setWordWrap(True)
-            grid.addWidget(val, r * 2 + 1, c)
-
-        # Keterangan (memanjang memenuhi grid)
-        lbl_ket = QLabel("KETERANGAN", info_card)
-        lbl_ket.setStyleSheet("color: #64748b; font-size: 10px; font-weight: 700; margin-top: 4px;")
-        grid.addWidget(lbl_ket, 6, 0, 1, 3)
-
-        val_ket = QLabel(keterangan_val, info_card)
-        val_ket.setStyleSheet("color: #0f294d; font-size: 11px; font-weight: 600; line-height: 1.4;")
-        val_ket.setWordWrap(True)
-        grid.addWidget(val_ket, 7, 0, 1, 3)
-
-        ic_layout.addLayout(grid)
-        body_layout.addWidget(info_card)
-
-        # Card: Link Metadata Resmi (ISO 19115)
-        meta_card = QFrame(body_widget)
-        meta_card.setProperty('class', 'infoCard')
-        mc_layout = QVBoxLayout(meta_card)
-        mc_layout.setContentsMargins(14, 12, 14, 12)
-        mc_layout.setSpacing(6)
-
-        m_head = QLabel("Dokumen & Spesifikasi Metadata", meta_card)
-        m_head.setStyleSheet("color: #0f294d; font-size: 13px; font-weight: 800;")
-        mc_layout.addWidget(m_head)
-
-        m_desc = QLabel("Metadata geospasial lengkap berstandar ISO 19115 / SNI ISO 19115 tersedia melalui geoportal kementerian:", meta_card)
-        m_desc.setStyleSheet("color: #475569; font-size: 11px;")
-        m_desc.setWordWrap(True)
-        mc_layout.addWidget(m_desc)
-
-        meta_url = f"https://geoportal.atrbpn.go.id/metadata/{d_id.lower()}"
-        meta_link_btn = QPushButton("↗ Buka Dokumen Metadata Geospasial (ISO 19115)", meta_card)
-        meta_link_btn.setObjectName('metadataLinkBtn')
-        meta_link_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        meta_link_btn.setToolTip(f"Buka halaman dokumen metadata geospasial: {meta_url}")
-        meta_link_btn.clicked.connect(lambda: self._open_metadata(meta_url))
-        mc_layout.addWidget(meta_link_btn)
-        body_layout.addWidget(meta_card)
-
-        # Card: Sub-Layer (Bila Multi-Layer)
-        if self.has_subs:
-            subs_card = QFrame(body_widget)
-            subs_card.setProperty('class', 'infoCard')
-            sc_layout = QVBoxLayout(subs_card)
-            sc_layout.setContentsMargins(14, 12, 14, 12)
-            sc_layout.setSpacing(8)
-
-            sub_count = len(self.dataset['subLayers'])
-            s_head = QLabel(f"Daftar Sub-Layer ({sub_count} Sub-IGT Terintegrasi)", subs_card)
-            s_head.setStyleSheet("color: #047857; font-size: 13px; font-weight: 800;")
-            sc_layout.addWidget(s_head)
-
-            for s in self.dataset['subLayers']:
-                s_box = QFrame(subs_card)
-                s_box.setObjectName("subLayerBox")
-                s_box.setStyleSheet("QFrame#subLayerBox { background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 6px 10px; }")
-                sb_lay = QHBoxLayout(s_box)
-                sb_lay.setContentsMargins(4, 2, 4, 2)
-                sb_lay.setSpacing(8)
-
-                s_txt = QVBoxLayout()
-                s_txt.setSpacing(2)
-                s_title = QLabel(f"• {s.get('name', 'Sub-layer')}", s_box)
-                s_title.setStyleSheet("color: #065f46; font-size: 12px; font-weight: 700;")
-                s_txt.addWidget(s_title)
-
-                s_meta = QLabel(f"ID: {s.get('id', '—')} · Update: {s.get('updated', '—')} · Cakupan: {s.get('scope', '—')}", s_box)
-                s_meta.setStyleSheet("color: #047857; font-size: 10px;")
-                s_txt.addWidget(s_meta)
-                sb_lay.addLayout(s_txt, 1)
-
-                sc_layout.addWidget(s_box)
-
-            body_layout.addWidget(subs_card)
-
-        scroll.setWidget(body_widget)
-        layout.addWidget(scroll, 1)
-
-        # 3. Footer Action Buttons
-        footer = QHBoxLayout()
-        footer.setContentsMargins(0, 4, 0, 0)
-        footer.setSpacing(8)
-
-        btn_close = QPushButton("Tutup", self)
-        btn_close.setObjectName('closeBtn')
-        btn_close.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_close.clicked.connect(self.accept)
-        footer.addWidget(btn_close)
-
-        footer.addStretch(1)
-
-        btn_wms = QPushButton("Muat WMS ke Kanvas", self)
-        btn_wms.setObjectName('primaryBtn')
-        btn_wms.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_wms.setToolTip("Muat layer citra WMS ke kanvas QGIS")
-        btn_wms.clicked.connect(self._on_load_wms)
-        footer.addWidget(btn_wms)
-
-        if self.allow_wfs:
-            btn_wfs = QPushButton("Muat WFS ke Kanvas", self)
-            btn_wfs.setObjectName('wfsBtn')
-            btn_wfs.setCursor(Qt.CursorShape.PointingHandCursor)
-            btn_wfs.setToolTip("Muat fitur layer vektor WFS ke kanvas QGIS")
-            btn_wfs.clicked.connect(self._on_load_wfs)
-            footer.addWidget(btn_wfs)
-
-        layout.addLayout(footer)
-
-    def _open_metadata(self, url):
-        # Membuka tautan metadata di peramban sistem atau simulasi dialog
-        QDesktopServices.openUrl(QUrl(url))
-        QMessageBox.information(
-            self,
-            "Tautan Metadata Geospasial",
-            f"Membuka dokumen metadata resmi:\n{url}\n\nStandar format: ISO 19115 / SNI ISO 19115 (Metadata Geospasial Indonesia)."
-        )
-
-    def _on_load_wms(self):
-        if self.has_subs:
-            for s in self.dataset.get('subLayers', []):
-                self.wmsRequested.emit(self.dataset, s)
-        else:
-            self.wmsRequested.emit(self.dataset, None)
-        self.accept()
-
-    def _on_load_wfs(self):
-        self.wfsRequested.emit(self.dataset, None)
-        self.accept()
+            self.table.setRowHeight(row, 40)

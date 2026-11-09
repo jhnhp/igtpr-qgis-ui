@@ -190,7 +190,7 @@ class DatasetCard(QFrame):
         self.title_lbl.setWordWrap(True)
         self.title_lbl.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         self.title_lbl.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.title_lbl.setToolTip("Klik untuk melihat detail lengkap dataset IGT")
+        self.title_lbl.setToolTip("Klik untuk melihat Preview Metadata IGT")
         self.title_lbl.mousePressEvent = lambda e: self.open_detail()
         title_row.addWidget(self.title_lbl, 1, Qt.AlignmentFlag.AlignVCenter)
 
@@ -198,7 +198,7 @@ class DatasetCard(QFrame):
         self.btn_info.setObjectName('btnInfo')
         self.btn_info.setFixedSize(18, 18)
         self.btn_info.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_info.setToolTip("Detail Informasi & Metadata IGT")
+        self.btn_info.setToolTip("Preview Metadata IGT")
         self.btn_info.setIcon(QIcon(svg_pixmap(ICONS.get('info', ICONS['pin']).format(color='#1f6fd6'), QSize(12, 12))))
         self.btn_info.setIconSize(QSize(12, 12))
         self.btn_info.clicked.connect(self.open_detail)
@@ -299,6 +299,9 @@ class DatasetCard(QFrame):
                 s_font.setWeight(QFont.Weight.Normal)
                 sub_title.setFont(s_font)
                 sub_title.setWordWrap(True)
+                sub_title.setCursor(Qt.CursorShape.PointingHandCursor)
+                sub_title.setToolTip("Klik untuk melihat Preview Metadata IGT")
+                sub_title.mousePressEvent = lambda e: self.open_detail()
                 sr_layout.addWidget(sub_title, 1)
 
                 btn_sub_wms = QPushButton('WMS', sub_row)
