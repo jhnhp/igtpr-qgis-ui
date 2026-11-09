@@ -458,7 +458,10 @@ class ManagementPage(QWidget):
                     layer_name = r.get('name') or r.get('layer', '')
                     n_lbl = QLabel(layer_name)
                     n_lbl.setWordWrap(True)
-                    n_lbl.setStyleSheet("color: #0f294d; font-weight: 600; font-size: 12px;")
+                    n_lbl.setCursor(Qt.CursorShape.PointingHandCursor)
+                    n_lbl.setToolTip("Klik untuk melihat Preview Metadata IGT")
+                    n_lbl.setStyleSheet("QLabel { color: #0f294d; font-weight: 600; font-size: 12px; } QLabel:hover { color: #1f6fd6; text-decoration: underline; }")
+                    n_lbl.mousePressEvent = lambda e, rec=r: self._open_metadata_preview(rec)
                     nw_layout.addWidget(n_lbl)
                     sub_parts = []
                     if is_narrow or is_medium:
@@ -601,6 +604,11 @@ class ManagementPage(QWidget):
             self._render_table()
 
     # ------------------------------------------------------------------ Actions Simulation
+    def _open_metadata_preview(self, record):
+        from .igt_detail_dialog import IgtDetailDialog
+        dlg = IgtDetailDialog(record, allow_wfs=False, parent=self.window())
+        dlg.exec_()
+
     def _on_compile(self, record):
         record['status'] = 'Terkompilasi'
         self.actionPerformed.emit('compile', record)

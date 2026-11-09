@@ -907,8 +907,8 @@ const IgtApp = (() => {
               '</button>'
             : '') +
           '<span class="igt-cat-inline-icon is-' + d.category + '" title="' + d.category + '">' + catIcon + '</span>' +
-          '<button type="button" class="igt-catalog-name igt-card-link-title" data-open-detail="' + d.id + '" title="Klik untuk melihat detail lengkap dataset IGT">' + d.name + '</button>' +
-          '<button type="button" class="igt-info-btn" data-open-detail="' + d.id + '" title="Detail Informasi & Metadata IGT" aria-label="Detail Informasi IGT">' + ri('information-line') + '</button>' +
+          '<button type="button" class="igt-catalog-name igt-card-link-title" data-open-detail="' + d.id + '" title="Klik untuk melihat Preview Metadata IGT">' + d.name + '</button>' +
+          '<button type="button" class="igt-info-btn" data-open-detail="' + d.id + '" title="Preview Metadata IGT" aria-label="Preview Metadata IGT">' + ri('information-line') + '</button>' +
           (hasSubs
             ? '<button type="button" class="igt-chip igt-chip--multi-layer igt-chip--compact" data-toggle-sub="' + d.id + '" aria-expanded="' + (isExp ? 'true' : 'false') + '" title="Klik untuk membuka/menutup sub-layer">' +
               '<span class="igt-chip__text">Multi-layer (' + d.subLayers.length + ')</span>' +
@@ -935,7 +935,7 @@ const IgtApp = (() => {
             '<div class="igt-sublayer-branch">' +
             '<span class="igt-tree-branch-line" aria-hidden="true">└─</span>' +
             '<div class="igt-sublayer-content">' +
-            '<span class="igt-sublayer-title">' + sub.name + '</span>' +
+            '<button type="button" class="igt-sublayer-title igt-card-link-title" style="background:none;border:none;padding:0;font:inherit;cursor:pointer;text-align:left;" data-open-detail="' + d.id + '" title="Klik untuk melihat Preview Metadata IGT">' + sub.name + '</button>' +
             '</div></div></td>' +
             '<td data-label="' + orgLabel + '"><span class="igt-sublayer-meta">' + (sub.scope || d.direktorat || '—') + '</span></td>' +
             '<td data-label="Tanggal"><span class="igt-sublayer-date">' + (sub.updated || sub.date || d.updated || '—') + '</span></td>' +
@@ -1608,15 +1608,14 @@ const IgtApp = (() => {
       const displayed = own.filter(statusMatches);
       $('#submission-rows').innerHTML = displayed
         .map((r) => {
-          const id = r.n === undefined || r.category === 'lainnya'
-            ? r.id
-            : `<a class="text-link" href="${DETAIL_URL[CATEGORIES[r.category].detail]}?id=${r.n}&role=${role}">${r.id}</a>`;
+          const id = `<button type="button" class="text-link" style="background:none;border:none;padding:0;font:inherit;cursor:pointer;" data-open-detail="${r.id}" title="Preview Metadata">${r.id}</button>`;
+          const nameLink = `<button type="button" class="igt-card-link-title" style="background:none;border:none;padding:0;font:inherit;cursor:pointer;text-align:left;" data-open-detail="${r.id}" title="Preview Metadata">${r.name}</button>`;
           const orgVal = (r.status === 'Terintegrasi' && r.direktorat)
             ? r.direktorat
             : (r.satker || r.direktorat || r.ditjen || r.instansi || r.source || '—');
           const dateVal = (isMain && isIntegratedTab) || tab === 'derivatif' ? (r.updated || "—") : r.date;
           return (
-            `<tr data-category="${r.category}"><td data-label="ID Pengajuan">${id}</td><td data-label="Layer Target">${r.name}</td>` +
+            `<tr data-category="${r.category}"><td data-label="ID Pengajuan">${id}</td><td data-label="Layer Target">${nameLink}</td>` +
             `<td data-label="${orgLabel}">${orgVal}</td>` +
             (isReviewerMain ? '' : `<td data-label="${dateLabel}">${dateVal}</td>`) +
             `<td data-label="Status">${badge(r.status)}</td>` +
@@ -1647,6 +1646,16 @@ const IgtApp = (() => {
     });
 
     document.addEventListener('click', (event) => {
+      const openDetailBtn = event.target.closest('[data-open-detail]');
+      if (openDetailBtn) {
+        event.stopPropagation();
+        const dsId = openDetailBtn.dataset.openDetail;
+        const ds = records.find((x) => x.id === dsId) || IgtData.loadRecords().find((x) => x.id === dsId);
+        if (ds) {
+          showIgtDetailModal(ds, role);
+        }
+        return;
+      }
       const target = event.target.closest('[data-action], [data-open-upload-modal], [data-close-upload-modal], [data-close-topol-modal], [data-modal-submit], #btn-confirm-topol, #btn-open-attr-mapping, #btn-close-attr-mapping, #btn-cancel-attr-mapping, #btn-confirm-attr-mapping, #btn-open-meta-preview, #btn-close-meta-preview, #btn-ok-meta-preview, #meta-tab-xpath, #meta-tab-raw, #igt-upload-modal, #topology-modal, #attr-mapping-modal, #metadata-preview-modal');
       if (!target) return;
       const { action, id } = target.dataset || {};
@@ -2077,8 +2086,8 @@ const IgtApp = (() => {
                       <span class="igt-catalog-num">${startIdx + idx + 1}</span>
                       <span class="igt-cat-inline-icon is-${cat}" title="${cat}">${iconHtml}</span>
                       <div class="dash-card-title-group">
-                        <button type="button" class="dash-card-title igt-catalog-name igt-card-link-title" data-open-detail="${d.id}" title="Klik untuk melihat detail lengkap dataset IGT">${d.name}</button>
-                        <button type="button" class="igt-info-btn" data-open-detail="${d.id}" title="Detail Informasi & Metadata IGT" aria-label="Detail Informasi IGT">
+                        <button type="button" class="dash-card-title igt-catalog-name igt-card-link-title" data-open-detail="${d.id}" title="Klik untuk melihat Preview Metadata IGT">${d.name}</button>
+                        <button type="button" class="igt-info-btn" data-open-detail="${d.id}" title="Preview Metadata IGT" aria-label="Preview Metadata IGT">
                           ${ri('information-line')}
                         </button>
                         ${hasSubs ? `
@@ -2102,7 +2111,7 @@ const IgtApp = (() => {
                     <div class="dash-sub-item">
                       <div class="dash-sub-left">
                         <span class="dash-sub-branch">└─</span>
-                        <span class="dash-sub-title">${sub.name}</span>
+                        <button type="button" class="dash-sub-title igt-card-link-title" style="background:none;border:none;padding:0;font:inherit;cursor:pointer;text-align:left;" data-open-detail="${d.id}" title="Klik untuk melihat Preview Metadata IGT">${sub.name}</button>
                       </div>
                       <div class="dash-sub-actions">
                         <button type="button" class="dash-sub-btn dash-sub-btn--wms" data-action="wms" data-name="${sub.name.replace(/"/g, '&quot;')}">WMS</button>
